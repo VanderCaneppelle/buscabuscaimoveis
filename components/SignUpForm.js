@@ -122,200 +122,200 @@ export default function SignUpForm({ onBack }) {
                     behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                     keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
                 >
-                <ScrollView
-                    style={styles.scrollView}
-                    contentContainerStyle={styles.scrollContent}
-                    showsVerticalScrollIndicator={false}
-                    keyboardShouldPersistTaps="handled"
-                >
-                    <View style={styles.content}>
-                        <View style={styles.iconContainer}>
-                            <Ionicons name="person-add" size={60} color="#3498db" />
-                        </View>
-                        <Text style={styles.title}>Criar Conta</Text>
-                        <Text style={styles.subtitle}>
-                            Preencha seus dados para começar
-                        </Text>
-
-                        <View style={styles.form}>
-                            {/* Nome Completo */}
-                            <View style={styles.inputContainer}>
-                                <Ionicons name="person-outline" size={20} color="#7f8c8d" style={styles.inputIcon} />
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Nome completo *"
-                                    placeholderTextColor="#7f8c8d"
-                                    value={formData.fullName}
-                                    onChangeText={(value) => updateFormData('fullName', value)}
-                                    autoCapitalize="words"
-                                />
+                    <ScrollView
+                        style={styles.scrollView}
+                        contentContainerStyle={styles.scrollContent}
+                        showsVerticalScrollIndicator={false}
+                        keyboardShouldPersistTaps="handled"
+                    >
+                        <View style={styles.content}>
+                            <View style={styles.iconContainer}>
+                                <Ionicons name="person-add" size={60} color="#3498db" />
                             </View>
+                            <Text style={styles.title}>Criar Conta</Text>
+                            <Text style={styles.subtitle}>
+                                Preencha seus dados para começar
+                            </Text>
 
-                            {/* Email */}
-                            <View style={styles.inputContainer}>
-                                <Ionicons name="mail-outline" size={20} color="#7f8c8d" style={styles.inputIcon} />
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Email *"
-                                    placeholderTextColor="#7f8c8d"
-                                    value={formData.email}
-                                    onChangeText={(value) => updateFormData('email', value)}
-                                    keyboardType="email-address"
-                                    autoCapitalize="none"
-                                    autoCorrect={false}
-                                />
-                            </View>
-
-                            {/* Telefone */}
-                            <View style={styles.inputContainer}>
-                                <Ionicons name="call-outline" size={20} color="#7f8c8d" style={styles.inputIcon} />
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Telefone *"
-                                    placeholderTextColor="#7f8c8d"
-                                    value={formData.phone}
-                                    onChangeText={(value) => updateFormData('phone', value)}
-                                    keyboardType="phone-pad"
-                                />
-                            </View>
-
-                            {/* Senha */}
-                            <View style={styles.inputContainer}>
-                                <Ionicons name="lock-closed-outline" size={20} color="#7f8c8d" style={styles.inputIcon} />
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Senha *"
-                                    placeholderTextColor="#7f8c8d"
-                                    value={formData.password}
-                                    onChangeText={(value) => updateFormData('password', value)}
-                                    secureTextEntry
-                                    autoCapitalize="none"
-                                />
-                            </View>
-
-                            {/* Confirmar Senha */}
-                            <View style={styles.inputContainer}>
-                                <Ionicons name="lock-closed-outline" size={20} color="#7f8c8d" style={styles.inputIcon} />
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Confirmar senha *"
-                                    placeholderTextColor="#7f8c8d"
-                                    value={formData.confirmPassword}
-                                    onChangeText={(value) => updateFormData('confirmPassword', value)}
-                                    secureTextEntry
-                                    autoCapitalize="none"
-                                />
-                            </View>
-
-                            {/* É Corretor? */}
-                            <View style={styles.switchContainer}>
-                                <View style={styles.switchLabel}>
-                                    <Ionicons name="business-outline" size={20} color="#7f8c8d" style={styles.switchIcon} />
-                                    <Text style={styles.switchText}>Sou corretor de imóveis</Text>
-                                </View>
-                                <Switch
-                                    value={formData.isRealtor}
-                                    onValueChange={(value) => updateFormData('isRealtor', value)}
-                                    trackColor={{ false: '#bdc3c7', true: '#3498db' }}
-                                    thumbColor={formData.isRealtor ? '#fff' : '#f4f3f4'}
-                                />
-                            </View>
-
-                            {/* CRECI (apenas se for corretor) */}
-                            {formData.isRealtor && (
+                            <View style={styles.form}>
+                                {/* Nome Completo */}
                                 <View style={styles.inputContainer}>
-                                    <Ionicons name="card-outline" size={20} color="#7f8c8d" style={styles.inputIcon} />
+                                    <Ionicons name="person-outline" size={20} color="#7f8c8d" style={styles.inputIcon} />
                                     <TextInput
                                         style={styles.input}
-                                        placeholder="CRECI *"
+                                        placeholder="Nome completo *"
                                         placeholderTextColor="#7f8c8d"
-                                        value={formData.creci}
-                                        onChangeText={(value) => updateFormData('creci', value)}
-                                        autoCapitalize="characters"
-                                    />
-                                </View>
-                            )}
-
-                            {/* Nome da Empresa (apenas se for corretor) */}
-                            {formData.isRealtor && (
-                                <View style={styles.inputContainer}>
-                                    <Ionicons name="business-outline" size={20} color="#7f8c8d" style={styles.inputIcon} />
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="Nome da empresa"
-                                        placeholderTextColor="#7f8c8d"
-                                        value={formData.companyName}
-                                        onChangeText={(value) => updateFormData('companyName', value)}
+                                        value={formData.fullName}
+                                        onChangeText={(value) => updateFormData('fullName', value)}
                                         autoCapitalize="words"
                                     />
                                 </View>
-                            )}
 
-                            {/* Checkbox de Aceitação dos Termos */}
-                            <View style={styles.termsContainer}>
-                                <TouchableOpacity
-                                    style={styles.checkboxContainer}
-                                    onPress={() => setAcceptedTerms(!acceptedTerms)}
-                                >
-                                    <View style={[styles.checkbox, acceptedTerms && styles.checkboxChecked]}>
-                                        {acceptedTerms && (
-                                            <Ionicons name="checkmark" size={16} color="#fff" />
-                                        )}
+                                {/* Email */}
+                                <View style={styles.inputContainer}>
+                                    <Ionicons name="mail-outline" size={20} color="#7f8c8d" style={styles.inputIcon} />
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Email *"
+                                        placeholderTextColor="#7f8c8d"
+                                        value={formData.email}
+                                        onChangeText={(value) => updateFormData('email', value)}
+                                        keyboardType="email-address"
+                                        autoCapitalize="none"
+                                        autoCorrect={false}
+                                    />
+                                </View>
+
+                                {/* Telefone */}
+                                <View style={styles.inputContainer}>
+                                    <Ionicons name="call-outline" size={20} color="#7f8c8d" style={styles.inputIcon} />
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Telefone *"
+                                        placeholderTextColor="#7f8c8d"
+                                        value={formData.phone}
+                                        onChangeText={(value) => updateFormData('phone', value)}
+                                        keyboardType="phone-pad"
+                                    />
+                                </View>
+
+                                {/* Senha */}
+                                <View style={styles.inputContainer}>
+                                    <Ionicons name="lock-closed-outline" size={20} color="#7f8c8d" style={styles.inputIcon} />
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Senha *"
+                                        placeholderTextColor="#7f8c8d"
+                                        value={formData.password}
+                                        onChangeText={(value) => updateFormData('password', value)}
+                                        secureTextEntry
+                                        autoCapitalize="none"
+                                    />
+                                </View>
+
+                                {/* Confirmar Senha */}
+                                <View style={styles.inputContainer}>
+                                    <Ionicons name="lock-closed-outline" size={20} color="#7f8c8d" style={styles.inputIcon} />
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Confirmar senha *"
+                                        placeholderTextColor="#7f8c8d"
+                                        value={formData.confirmPassword}
+                                        onChangeText={(value) => updateFormData('confirmPassword', value)}
+                                        secureTextEntry
+                                        autoCapitalize="none"
+                                    />
+                                </View>
+
+                                {/* É Corretor? */}
+                                <View style={styles.switchContainer}>
+                                    <View style={styles.switchLabel}>
+                                        <Ionicons name="business-outline" size={20} color="#7f8c8d" style={styles.switchIcon} />
+                                        <Text style={styles.switchText}>Sou corretor de imóveis</Text>
                                     </View>
-                                    <Text style={styles.termsText}>
-                                        Li e aceito os{' '}
-                                        <Text
-                                            style={styles.termsLink}
-                                            onPress={() => {
-                                                setTermsType('terms');
-                                                setShowTerms(true);
-                                            }}
-                                        >
-                                            Termos de Uso
+                                    <Switch
+                                        value={formData.isRealtor}
+                                        onValueChange={(value) => updateFormData('isRealtor', value)}
+                                        trackColor={{ false: '#bdc3c7', true: '#3498db' }}
+                                        thumbColor={formData.isRealtor ? '#fff' : '#f4f3f4'}
+                                    />
+                                </View>
+
+                                {/* CRECI (apenas se for corretor) */}
+                                {formData.isRealtor && (
+                                    <View style={styles.inputContainer}>
+                                        <Ionicons name="card-outline" size={20} color="#7f8c8d" style={styles.inputIcon} />
+                                        <TextInput
+                                            style={styles.input}
+                                            placeholder="CRECI *"
+                                            placeholderTextColor="#7f8c8d"
+                                            value={formData.creci}
+                                            onChangeText={(value) => updateFormData('creci', value)}
+                                            autoCapitalize="characters"
+                                        />
+                                    </View>
+                                )}
+
+                                {/* Nome da Empresa (apenas se for corretor) */}
+                                {formData.isRealtor && (
+                                    <View style={styles.inputContainer}>
+                                        <Ionicons name="business-outline" size={20} color="#7f8c8d" style={styles.inputIcon} />
+                                        <TextInput
+                                            style={styles.input}
+                                            placeholder="Nome da empresa"
+                                            placeholderTextColor="#7f8c8d"
+                                            value={formData.companyName}
+                                            onChangeText={(value) => updateFormData('companyName', value)}
+                                            autoCapitalize="words"
+                                        />
+                                    </View>
+                                )}
+
+                                {/* Checkbox de Aceitação dos Termos */}
+                                <View style={styles.termsContainer}>
+                                    <TouchableOpacity
+                                        style={styles.checkboxContainer}
+                                        onPress={() => setAcceptedTerms(!acceptedTerms)}
+                                    >
+                                        <View style={[styles.checkbox, acceptedTerms && styles.checkboxChecked]}>
+                                            {acceptedTerms && (
+                                                <Ionicons name="checkmark" size={16} color="#fff" />
+                                            )}
+                                        </View>
+                                        <Text style={styles.termsText}>
+                                            Li e aceito os{' '}
+                                            <Text
+                                                style={styles.termsLink}
+                                                onPress={() => {
+                                                    setTermsType('terms');
+                                                    setShowTerms(true);
+                                                }}
+                                            >
+                                                Termos de Uso
+                                            </Text>
+                                            {' '}e{' '}
+                                            <Text
+                                                style={styles.termsLink}
+                                                onPress={() => {
+                                                    setTermsType('privacy');
+                                                    setShowTerms(true);
+                                                }}
+                                            >
+                                                Política de Privacidade
+                                            </Text>
                                         </Text>
-                                        {' '}e{' '}
-                                        <Text
-                                            style={styles.termsLink}
-                                            onPress={() => {
-                                                setTermsType('privacy');
-                                                setShowTerms(true);
-                                            }}
-                                        >
-                                            Política de Privacidade
-                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+
+                                {/* Botão de Cadastro */}
+                                <TouchableOpacity
+                                    style={[styles.button, (isLoading || !acceptedTerms) && styles.buttonDisabled]}
+                                    onPress={handleSignUp}
+                                    disabled={isLoading || !acceptedTerms}
+                                >
+                                    <Ionicons
+                                        name={isLoading ? "hourglass-outline" : "person-add-outline"}
+                                        size={20}
+                                        color="#fff"
+                                        style={styles.buttonIcon}
+                                    />
+                                    <Text style={styles.buttonText}>
+                                        {isLoading ? 'Criando conta...' : !acceptedTerms ? 'Aceite os termos para continuar' : 'Criar Conta'}
                                     </Text>
                                 </TouchableOpacity>
+
+                                {/* Botão Voltar */}
+                                <TouchableOpacity
+                                    style={styles.backButton}
+                                    onPress={onBack}
+                                >
+                                    <Ionicons name="arrow-back-outline" size={16} color="#3498db" style={styles.backIcon} />
+                                    <Text style={styles.backText}>Voltar ao login</Text>
+                                </TouchableOpacity>
                             </View>
-
-                            {/* Botão de Cadastro */}
-                            <TouchableOpacity
-                                style={[styles.button, (isLoading || !acceptedTerms) && styles.buttonDisabled]}
-                                onPress={handleSignUp}
-                                disabled={isLoading || !acceptedTerms}
-                            >
-                                <Ionicons
-                                    name={isLoading ? "hourglass-outline" : "person-add-outline"}
-                                    size={20}
-                                    color="#fff"
-                                    style={styles.buttonIcon}
-                                />
-                                <Text style={styles.buttonText}>
-                                    {isLoading ? 'Criando conta...' : !acceptedTerms ? 'Aceite os termos para continuar' : 'Criar Conta'}
-                                </Text>
-                            </TouchableOpacity>
-
-                            {/* Botão Voltar */}
-                            <TouchableOpacity
-                                style={styles.backButton}
-                                onPress={onBack}
-                            >
-                                <Ionicons name="arrow-back-outline" size={16} color="#3498db" style={styles.backIcon} />
-                                <Text style={styles.backText}>Voltar ao login</Text>
-                            </TouchableOpacity>
                         </View>
-                    </View>
-                </ScrollView>
-            </KeyboardAvoidingView>
+                    </ScrollView>
+                </KeyboardAvoidingView>
             </TouchableWithoutFeedback>
 
             {/* Modal de Termos e Política de Privacidade */}
