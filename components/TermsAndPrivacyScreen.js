@@ -9,14 +9,16 @@ import {
     Modal,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { getTermsInfo } from '../lib/termsConfig';
 
 export default function TermsAndPrivacyScreen({ visible, onClose, type = 'terms' }) {
     const [activeTab, setActiveTab] = useState(type); // 'terms' ou 'privacy'
+    const termsInfo = getTermsInfo();
 
     const termsContent = `
 # Termos de Uso
 
-**Última atualização: Julho/2025**
+**Versão: ${termsInfo.termsVersion} | Última atualização: ${termsInfo.termsLastUpdate}**
 
 Bem-vindo ao aplicativo **Busca Busca Imóveis**. Ao utilizar nossos serviços, você concorda com os presentes Termos de Uso. Leia com atenção antes de utilizar a plataforma.
 
@@ -51,7 +53,7 @@ Estes termos podem ser atualizados a qualquer momento. Recomendamos que o usuár
     const privacyContent = `
 # Política de Privacidade
 
-**Última atualização: Julho/2025**
+**Versão: ${termsInfo.privacyVersion} | Última atualização: ${termsInfo.privacyLastUpdate}**
 
 A sua privacidade é importante para nós. Esta Política explica como coletamos, usamos e protegemos suas informações.
 

@@ -17,6 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
 import { CONFIRM_EMAIL_URL } from '../lib/config';
 import TermsAndPrivacyScreen from './TermsAndPrivacyScreen';
+import { saveTermsAcceptance } from '../lib/termsConfig';
 
 export default function SignUpForm({ onBack }) {
     const [formData, setFormData] = useState({
@@ -98,6 +99,15 @@ export default function SignUpForm({ onBack }) {
                 if (profileError) {
                     console.error('Erro ao criar perfil:', profileError);
                     // Não vamos falhar o cadastro por causa do perfil, mas vamos logar o erro
+                } else {
+                    // 3. Salvar o aceite dos termos
+                    try {
+                        await saveTermsAcceptance(supabase, authData.user.id);
+                        console.log('✅ Aceite dos termos salvo no cadastro');
+                    } catch (termsError) {
+                        console.error('Erro ao salvar aceite dos termos:', termsError);
+                        // Não vamos falhar o cadastro por causa dos termos, mas vamos logar o erro
+                    }
                 }
             }
 

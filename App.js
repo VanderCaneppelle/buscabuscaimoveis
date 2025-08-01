@@ -4,11 +4,13 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoginScreen from './components/LoginScreen';
 import HomeScreen from './components/HomeScreen';
 import ResetPasswordScreen from './components/ResetPasswordScreen';
+import TermsAcceptanceCheck from './components/TermsAcceptanceCheck';
 import * as Linking from 'expo-linking';
 
 function AppContent() {
   const { user, loading } = useAuth();
   const [isResetPassword, setIsResetPassword] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   // Debug: Log do estado de autenticação
   useEffect(() => {
@@ -54,6 +56,16 @@ function AppContent() {
   // Se está na tela de reset de senha, mostrar ela independente do estado de autenticação
   if (isResetPassword) {
     return <ResetPasswordScreen />;
+  }
+
+  // Se usuário está logado, verificar se aceitou os termos
+  if (user && !termsAccepted) {
+    return (
+      <TermsAcceptanceCheck
+        user={user}
+        onTermsAccepted={() => setTermsAccepted(true)}
+      />
+    );
   }
 
   return user ? <HomeScreen /> : <LoginScreen />;
