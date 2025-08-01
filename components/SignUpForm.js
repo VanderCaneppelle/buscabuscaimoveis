@@ -115,12 +115,13 @@ export default function SignUpForm({ onBack }) {
     };
 
     return (
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <KeyboardAvoidingView
-                style={styles.container}
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-            >
+        <View style={styles.container}>
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <KeyboardAvoidingView
+                    style={styles.container}
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+                >
                 <ScrollView
                     style={styles.scrollView}
                     contentContainerStyle={styles.scrollContent}
@@ -315,6 +316,7 @@ export default function SignUpForm({ onBack }) {
                     </View>
                 </ScrollView>
             </KeyboardAvoidingView>
+            </TouchableWithoutFeedback>
 
             {/* Modal de Termos e Política de Privacidade */}
             <TermsAndPrivacyScreen
@@ -322,7 +324,7 @@ export default function SignUpForm({ onBack }) {
                 onClose={() => setShowTerms(false)}
                 type={termsType}
             />
-        </TouchableWithoutFeedback>
+        </View>
     );
 }
 

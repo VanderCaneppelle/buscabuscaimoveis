@@ -90,7 +90,7 @@ Para dúvidas ou solicitações, entre em contato pelo WhatsApp disponível no a
     `;
 
     const formatContent = (content) => {
-        return content
+        const elements = content
             .split('\n')
             .map((line, index) => {
                 if (line.startsWith('# ')) {
@@ -121,6 +121,8 @@ Para dúvidas ou solicitações, entre em contato pelo WhatsApp disponível no a
                     );
                 }
             });
+        
+        return <>{elements}</>;
     };
 
     return (
