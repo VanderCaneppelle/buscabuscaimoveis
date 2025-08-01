@@ -110,15 +110,17 @@ export default function TermsAcceptanceCheck({ user, onTermsAccepted }) {
                         </Text>
 
                         <View style={styles.checkboxContainer}>
-                            <TouchableOpacity
-                                style={styles.checkboxRow}
-                                onPress={() => setAcceptedTerms(!acceptedTerms)}
-                            >
-                                <View style={[styles.checkbox, acceptedTerms && styles.checkboxChecked]}>
-                                    {acceptedTerms && (
-                                        <Ionicons name="checkmark" size={16} color="#fff" />
-                                    )}
-                                </View>
+                            <View style={styles.checkboxRow}>
+                                <TouchableOpacity
+                                    style={styles.checkboxTouchable}
+                                    onPress={() => setAcceptedTerms(!acceptedTerms)}
+                                >
+                                    <View style={[styles.checkbox, acceptedTerms && styles.checkboxChecked]}>
+                                        {acceptedTerms && (
+                                            <Ionicons name="checkmark" size={16} color="#fff" />
+                                        )}
+                                    </View>
+                                </TouchableOpacity>
                                 <Text style={styles.checkboxText}>
                                     Li e aceito os{' '}
                                     <Text
@@ -141,7 +143,7 @@ export default function TermsAcceptanceCheck({ user, onTermsAccepted }) {
                                         Política de Privacidade
                                     </Text>
                                 </Text>
-                            </TouchableOpacity>
+                            </View>
                         </View>
 
                         <View style={styles.buttonContainer}>
@@ -225,14 +227,16 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'flex-start',
     },
+    checkboxTouchable: {
+        marginRight: 10,
+        marginTop: 2,
+    },
     checkbox: {
         width: 20,
         height: 20,
         borderRadius: 4,
         borderWidth: 2,
         borderColor: '#3498db',
-        marginRight: 10,
-        marginTop: 2,
         alignItems: 'center',
         justifyContent: 'center',
     },
