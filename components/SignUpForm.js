@@ -16,6 +16,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
 import { CONFIRM_EMAIL_URL } from '../lib/config';
+import TermsAndPrivacyScreen from './TermsAndPrivacyScreen';
 
 export default function SignUpForm({ onBack }) {
     const [formData, setFormData] = useState({
@@ -29,6 +30,9 @@ export default function SignUpForm({ onBack }) {
         companyName: '',
     });
     const [isLoading, setIsLoading] = useState(false);
+    const [acceptedTerms, setAcceptedTerms] = useState(false);
+    const [showTerms, setShowTerms] = useState(false);
+    const [termsType, setTermsType] = useState('terms');
 
     const updateFormData = (field, value) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -53,6 +57,11 @@ export default function SignUpForm({ onBack }) {
 
         if (formData.isRealtor && !formData.creci) {
             Alert.alert('Erro', 'Para corretores, o CRECI é obrigatório');
+            return;
+        }
+
+        if (!acceptedTerms) {
+            Alert.alert('Erro', 'Você deve aceitar os Termos de Uso e Política de Privacidade para continuar');
             return;
         }
 
@@ -241,11 +250,47 @@ export default function SignUpForm({ onBack }) {
                                 </View>
                             )}
 
+                            {/* Checkbox de Aceitação dos Termos */}
+                            <View style={styles.termsContainer}>
+                                <TouchableOpacity
+                                    style={styles.checkboxContainer}
+                                    onPress={() => setAcceptedTerms(!acceptedTerms)}
+                                >
+                                    <View style={[styles.checkbox, acceptedTerms && styles.checkboxChecked]}>
+                                        {acceptedTerms && (
+                                            <Ionicons name="checkmark" size={16} color="#fff" />
+                                        )}
+                                    </View>
+                                    <Text style={styles.termsText}>
+                                        Li e aceito os{' '}
+                                        <Text
+                                            style={styles.termsLink}
+                                            onPress={() => {
+                                                setTermsType('terms');
+                                                setShowTerms(true);
+                                            }}
+                                        >
+                                            Termos de Uso
+                                        </Text>
+                                        {' '}e{' '}
+                                        <Text
+                                            style={styles.termsLink}
+                                            onPress={() => {
+                                                setTermsType('privacy');
+                                                setShowTerms(true);
+                                            }}
+                                        >
+                                            Política de Privacidade
+                                        </Text>
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+
                             {/* Botão de Cadastro */}
                             <TouchableOpacity
-                                style={[styles.button, isLoading && styles.buttonDisabled]}
+                                style={[styles.button, (isLoading || !acceptedTerms) && styles.buttonDisabled]}
                                 onPress={handleSignUp}
-                                disabled={isLoading}
+                                disabled={isLoading || !acceptedTerms}
                             >
                                 <Ionicons
                                     name={isLoading ? "hourglass-outline" : "person-add-outline"}
@@ -254,7 +299,7 @@ export default function SignUpForm({ onBack }) {
                                     style={styles.buttonIcon}
                                 />
                                 <Text style={styles.buttonText}>
-                                    {isLoading ? 'Criando conta...' : 'Criar Conta'}
+                                    {isLoading ? 'Criando conta...' : !acceptedTerms ? 'Aceite os termos para continuar' : 'Criar Conta'}
                                 </Text>
                             </TouchableOpacity>
 
@@ -270,6 +315,13 @@ export default function SignUpForm({ onBack }) {
                     </View>
                 </ScrollView>
             </KeyboardAvoidingView>
+
+            {/* Modal de Termos e Política de Privacidade */}
+            <TermsAndPrivacyScreen
+                visible={showTerms}
+                onClose={() => setShowTerms(false)}
+                type={termsType}
+            />
         </TouchableWithoutFeedback>
     );
 }
@@ -405,5 +457,43 @@ const styles = StyleSheet.create({
     backText: {
         color: '#3498db',
         fontSize: 14,
+    },
+    termsContainer: {
+        marginBottom: 20,
+        width: '100%',
+    },
+    checkboxContainer: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        padding: 15,
+        borderWidth: 1,
+        borderColor: '#ddd',
+    },
+    checkbox: {
+        width: 20,
+        height: 20,
+        borderRadius: 4,
+        borderWidth: 2,
+        borderColor: '#3498db',
+        marginRight: 10,
+        marginTop: 2,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    checkboxChecked: {
+        backgroundColor: '#3498db',
+    },
+    termsText: {
+        flex: 1,
+        fontSize: 14,
+        color: '#2c3e50',
+        lineHeight: 20,
+    },
+    termsLink: {
+        color: '#3498db',
+        textDecorationLine: 'underline',
+        fontWeight: '500',
     },
 }); 
