@@ -1,0 +1,313 @@
+import React, { useState, useEffect } from 'react';
+import {
+    View,
+    Text,
+    StyleSheet,
+    FlatList,
+    TouchableOpacity,
+    Image,
+    SafeAreaView,
+    RefreshControl,
+    Alert,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
+
+export default function FavoritesScreen({ navigation }) {
+    const { user } = useAuth();
+    const [favorites, setFavorites] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+
+    useEffect(() => {
+        if (user?.id) {
+            fetchFavorites();
+        }
+    }, [user?.id]);
+
+    const fetchFavorites = async () => {
+        try {
+            setLoading(true);
+            const { data, error } = await supabase
+                .from('favorites')
+                .select(`
+                    *,
+                    properties (
+                        id,
+                        title,
+                        description,
+                        price,
+                        property_type,
+                        transaction_type,
+                        bedrooms,
+                        bathrooms,
+                        area,
+                        address,
+                        neighborhood,
+                        city,
+                        state,
+                        images,
+                        status
+                    )
+                `)
+                .eq('user_id', user.id)
+                .eq('properties.status', 'approved')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('Erro ao buscar favoritos:', error);
+            } else {
+                setFavorites(data || []);
+            }
+        } catch (error) {
+            console.error('Erro ao buscar favoritos:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const onRefresh = async () => {
+        setRefreshing(true);
+        await fetchFavorites();
+        setRefreshing(false);
+    };
+
+    const removeFavorite = async (favoriteId) => {
+        try {
+            const { error } = await supabase
+                .from('favorites')
+                .delete()
+                .eq('id', favoriteId);
+
+            if (error) {
+                console.error('Erro ao remover favorito:', error);
+                Alert.alert('Erro', 'Não foi possível remover dos favoritos');
+            } else {
+                // Atualizar lista local
+                setFavorites(prev => prev.filter(fav => fav.id !== favoriteId));
+                Alert.alert('Sucesso', 'Removido dos favoritos');
+            }
+        } catch (error) {
+            console.error('Erro ao remover favorito:', error);
+            Alert.alert('Erro', 'Não foi possível remover dos favoritos');
+        }
+    };
+
+    const confirmRemoveFavorite = (favoriteId, propertyTitle) => {
+        Alert.alert(
+            'Remover Favorito',
+            `Deseja remover "${propertyTitle}" dos favoritos?`,
+            [
+                { text: 'Cancelar', style: 'cancel' },
+                { text: 'Remover', onPress: () => removeFavorite(favoriteId), style: 'destructive' }
+            ]
+        );
+    };
+
+    const renderFavorite = ({ item }) => {
+        const property = item.properties;
+        if (!property) return null;
+
+        return (
+            <View style={styles.favoriteCard}>
+                <Image
+                    source={{ uri: property.images?.[0] || 'https://via.placeholder.com/300x200' }}
+                    style={styles.propertyImage}
+                    resizeMode="cover"
+                />
+                <View style={styles.propertyInfo}>
+                    <View style={styles.propertyHeader}>
+                        <Text style={styles.propertyTitle} numberOfLines={2}>
+                            {property.title}
+                        </Text>
+                        <TouchableOpacity
+                            onPress={() => confirmRemoveFavorite(item.id, property.title)}
+                            style={styles.removeButton}
+                        >
+                            <Ionicons name="heart-dislike" size={20} color="#e74c3c" />
+                        </TouchableOpacity>
+                    </View>
+                    <Text style={styles.propertyLocation}>
+                        {property.neighborhood}, {property.city}
+                    </Text>
+                    <Text style={styles.propertyPrice}>
+                        R$ {property.price?.toLocaleString('pt-BR')}
+                    </Text>
+                    <View style={styles.propertyFeatures}>
+                        {property.bedrooms && (
+                            <Text style={styles.propertyFeature}>{property.bedrooms} quartos</Text>
+                        )}
+                        {property.bathrooms && (
+                            <Text style={styles.propertyFeature}>{property.bathrooms} banheiros</Text>
+                        )}
+                        {property.area && (
+                            <Text style={styles.propertyFeature}>{property.area}m²</Text>
+                        )}
+                    </View>
+                    <Text style={styles.propertyType}>
+                        {property.property_type} • {property.transaction_type}
+                    </Text>
+                </View>
+            </View>
+        );
+    };
+
+    return (
+        <SafeAreaView style={styles.container}>
+            <View style={styles.header}>
+                <Text style={styles.headerTitle}>Favoritos</Text>
+                <Text style={styles.headerSubtitle}>
+                    {favorites.length} imóvel{favorites.length !== 1 ? 'eis' : ''} favoritado{favorites.length !== 1 ? 's' : ''}
+                </Text>
+            </View>
+
+            <FlatList
+                data={favorites}
+                renderItem={renderFavorite}
+                keyExtractor={(item) => item.id}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                }
+                ListEmptyComponent={
+                    <View style={styles.emptyContainer}>
+                        <Ionicons name="heart-outline" size={64} color="#bdc3c7" />
+                        <Text style={styles.emptyText}>Nenhum favorito ainda</Text>
+                        <Text style={styles.emptySubtext}>
+                            Adicione imóveis aos favoritos para vê-los aqui
+                        </Text>
+                        <TouchableOpacity
+                            style={styles.browseButton}
+                            onPress={() => navigation.navigate('Busca')}
+                        >
+                            <Text style={styles.browseButtonText}>Procurar Imóveis</Text>
+                        </TouchableOpacity>
+                    </View>
+                }
+                contentContainerStyle={styles.listContainer}
+            />
+        </SafeAreaView>
+    );
+}
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#f5f5f5',
+    },
+    header: {
+        backgroundColor: '#e74c3c',
+        padding: 20,
+        paddingTop: 20,
+    },
+    headerTitle: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#fff',
+        marginBottom: 5,
+    },
+    headerSubtitle: {
+        fontSize: 16,
+        color: '#fff',
+        opacity: 0.9,
+    },
+    listContainer: {
+        paddingBottom: 20,
+    },
+    favoriteCard: {
+        backgroundColor: '#fff',
+        marginHorizontal: 20,
+        marginTop: 20,
+        borderRadius: 12,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 3.84,
+        elevation: 5,
+    },
+    propertyImage: {
+        width: '100%',
+        height: 200,
+        borderTopLeftRadius: 12,
+        borderTopRightRadius: 12,
+    },
+    propertyInfo: {
+        padding: 15,
+    },
+    propertyHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: 8,
+    },
+    propertyTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#2c3e50',
+        flex: 1,
+        marginRight: 10,
+    },
+    removeButton: {
+        padding: 5,
+    },
+    propertyLocation: {
+        fontSize: 14,
+        color: '#7f8c8d',
+        marginBottom: 8,
+    },
+    propertyPrice: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#3498db',
+        marginBottom: 8,
+    },
+    propertyFeatures: {
+        flexDirection: 'row',
+        gap: 10,
+        marginBottom: 8,
+    },
+    propertyFeature: {
+        fontSize: 12,
+        color: '#7f8c8d',
+        backgroundColor: '#f8f9fa',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 12,
+    },
+    propertyType: {
+        fontSize: 12,
+        color: '#7f8c8d',
+        textTransform: 'capitalize',
+    },
+    emptyContainer: {
+        alignItems: 'center',
+        paddingVertical: 60,
+        paddingHorizontal: 20,
+    },
+    emptyText: {
+        fontSize: 18,
+        color: '#7f8c8d',
+        marginTop: 15,
+        marginBottom: 5,
+    },
+    emptySubtext: {
+        fontSize: 14,
+        color: '#bdc3c7',
+        textAlign: 'center',
+        marginBottom: 30,
+    },
+    browseButton: {
+        backgroundColor: '#e74c3c',
+        paddingHorizontal: 30,
+        paddingVertical: 12,
+        borderRadius: 25,
+    },
+    browseButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+}); 

@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { AppState, Alert } from 'react-native';
 import { supabase } from '../lib/supabase';
+import { PlanService } from '../lib/planService';
 import * as Linking from 'expo-linking';
 import { CONFIRM_EMAIL_URL } from '../lib/config';
 import sessionManager from '../lib/sessionManager';
@@ -76,6 +77,15 @@ export const AuthProvider = ({ children }) => {
             if (event === 'SIGNED_IN' && session?.user) {
                 console.log('Usuário fez login - registrando sessão');
                 await sessionManager.registerSession();
+
+                // Associar plano gratuito automaticamente se for novo usuário
+                try {
+                    await PlanService.assignFreePlan(session.user.id);
+                    console.log('✅ Plano gratuito associado automaticamente');
+                } catch (error) {
+                    console.log('⚠️ Erro ao associar plano gratuito (pode já ter):', error.message);
+                }
+
                 setUser(session.user);
             } else if (event === 'INITIAL_SESSION' && session?.user) {
                 console.log('Sessão inicial detectada');

@@ -1,11 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoginScreen from './components/LoginScreen';
-import HomeScreen from './components/HomeScreen';
+import MainNavigator from './components/MainNavigator';
+import PlansScreen from './components/PlansScreen';
+import CreateAdScreen from './components/CreateAdScreen';
 import ResetPasswordScreen from './components/ResetPasswordScreen';
 import TermsAcceptanceCheck from './components/TermsAcceptanceCheck';
 import * as Linking from 'expo-linking';
+
+const Stack = createStackNavigator();
 
 function AppContent() {
   const { user, loading } = useAuth();
@@ -68,14 +75,24 @@ function AppContent() {
     );
   }
 
-  return user ? <HomeScreen /> : <LoginScreen />;
+  return user ? (
+    <NavigationContainer>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Main" component={MainNavigator} />
+        <Stack.Screen name="Plans" component={PlansScreen} />
+        <Stack.Screen name="CreateAd" component={CreateAdScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  ) : <LoginScreen />;
 }
 
 export default function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <SafeAreaProvider>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 }
 

@@ -6,26 +6,47 @@ import {
     TouchableOpacity,
     SafeAreaView,
     Alert,
+    FlatList,
+    Image,
+    TextInput,
+    Modal,
+    ScrollView,
+    RefreshControl,
+    Dimensions,
+    KeyboardAvoidingView,
+    Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 
-export default function HomeScreen() {
+const { width } = Dimensions.get('window');
+
+export default function HomeScreen({ navigation }) {
     const { user, signOut } = useAuth();
     const [profile, setProfile] = useState(null);
+    const [properties, setProperties] = useState([]);
+    const [stories, setStories] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+    const [showFilters, setShowFilters] = useState(false);
+    const [filters, setFilters] = useState({
+        city: '',
+        propertyType: '',
+        minPrice: '',
+        maxPrice: '',
+    });
 
     useEffect(() => {
         if (user?.id) {
             fetchProfile();
+            fetchProperties();
+            fetchStories();
         }
     }, [user?.id]);
 
     const fetchProfile = async () => {
         try {
-            console.log('🔍 Buscando perfil para usuário:', user?.id);
-
             const { data, error } = await supabase
                 .from('profiles')
                 .select('*')
@@ -35,74 +56,333 @@ export default function HomeScreen() {
             if (error) {
                 console.error('❌ Erro ao buscar perfil:', error);
             } else {
-                console.log('✅ Perfil encontrado:', data);
                 setProfile(data);
             }
         } catch (error) {
             console.error('❌ Erro ao buscar perfil:', error);
+        }
+    };
+
+    const fetchProperties = async (customFilters = null) => {
+        try {
+            let query = supabase
+                .from('properties')
+                .select('*')
+                .eq('status', 'approved')
+                .order('created_at', { ascending: false });
+
+            const activeFilters = customFilters || filters;
+
+            if (activeFilters.city) {
+                query = query.ilike('city', `%${activeFilters.city}%`);
+            }
+            if (activeFilters.propertyType) {
+                query = query.eq('property_type', activeFilters.propertyType);
+            }
+            if (activeFilters.minPrice) {
+                query = query.gte('price', parseFloat(activeFilters.minPrice));
+            }
+            if (activeFilters.maxPrice) {
+                query = query.lte('price', parseFloat(activeFilters.maxPrice));
+            }
+
+            const { data, error } = await query;
+
+            if (error) {
+                console.error('❌ Erro ao buscar imóveis:', error);
+                Alert.alert('Erro', 'Não foi possível carregar os anúncios');
+            } else {
+                setProperties(data || []);
+            }
+        } catch (error) {
+            console.error('❌ Erro ao buscar imóveis:', error);
         } finally {
             setLoading(false);
         }
     };
 
-    const handleSignOut = async () => {
-        await signOut(true); // Mostrar mensagem de logout manual
+    const fetchStories = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('stories')
+                .select('*')
+                .eq('status', 'active')
+                .order('order_index', { ascending: true });
+
+            if (error) {
+                console.error('❌ Erro ao buscar stories:', error);
+            } else {
+                setStories(data || []);
+            }
+        } catch (error) {
+            console.error('❌ Erro ao buscar stories:', error);
+        }
     };
+
+    const onRefresh = async () => {
+        setRefreshing(true);
+        await Promise.all([
+            fetchProperties(),
+            fetchStories(),
+            fetchProfile()
+        ]);
+        setRefreshing(false);
+    };
+
+    const clearFilters = () => {
+        const clearedFilters = {
+            city: '',
+            propertyType: '',
+            minPrice: '',
+            maxPrice: '',
+        };
+        setFilters(clearedFilters);
+        fetchProperties(clearedFilters);
+    };
+
+    const applyFilters = () => {
+        fetchProperties();
+        setShowFilters(false);
+    };
+
+
+
+    const renderStory = ({ item }) => (
+        <TouchableOpacity style={styles.storyCard}>
+            <Image
+                source={{ uri: item.image_url || 'https://via.placeholder.com/80x80' }}
+                style={styles.storyImage}
+                resizeMode="cover"
+            />
+            <Text style={styles.storyTitle} numberOfLines={2}>
+                {item.title}
+            </Text>
+        </TouchableOpacity>
+    );
+
+    const renderProperty = ({ item }) => (
+        <TouchableOpacity style={styles.propertyCard}>
+            <Image
+                source={{ uri: item.images?.[0] || 'https://via.placeholder.com/300x200' }}
+                style={styles.propertyImage}
+                resizeMode="cover"
+            />
+            <View style={styles.propertyInfo}>
+                <Text style={styles.propertyTitle} numberOfLines={2}>
+                    {item.title}
+                </Text>
+                <Text style={styles.propertyLocation}>
+                    {item.neighborhood}, {item.city}
+                </Text>
+                <View style={styles.propertyDetails}>
+                    <Text style={styles.propertyPrice}>
+                        R$ {item.price?.toLocaleString('pt-BR')}
+                    </Text>
+                    <View style={styles.propertyFeatures}>
+                        {item.bedrooms && (
+                            <Text style={styles.propertyFeature}>
+                                {item.bedrooms} quartos
+                            </Text>
+                        )}
+                        {item.bathrooms && (
+                            <Text style={styles.propertyFeature}>
+                                {item.bathrooms} banheiros
+                            </Text>
+                        )}
+                        {item.area && (
+                            <Text style={styles.propertyFeature}>
+                                {item.area}m²
+                            </Text>
+                        )}
+                    </View>
+                </View>
+                <Text style={styles.propertyType}>
+                    {item.property_type} • {item.transaction_type}
+                </Text>
+            </View>
+        </TouchableOpacity>
+    );
+
+    const renderFilterModal = () => (
+        <Modal
+            visible={showFilters}
+            transparent={true}
+            animationType="slide"
+            onRequestClose={() => setShowFilters(false)}
+        >
+            <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                style={styles.modalOverlay}
+            >
+                <View style={styles.modalContent}>
+                    <View style={styles.modalHeader}>
+                        <Text style={styles.modalTitle}>Filtros</Text>
+                        <TouchableOpacity onPress={() => setShowFilters(false)}>
+                            <Ionicons name="close" size={24} color="#2c3e50" />
+                        </TouchableOpacity>
+                    </View>
+
+                    <ScrollView
+                        style={styles.filtersContainer}
+                        keyboardShouldPersistTaps="handled"
+                        showsVerticalScrollIndicator={false}
+                    >
+                        <View style={styles.filterGroup}>
+                            <Text style={styles.filterLabel}>Cidade</Text>
+                            <TextInput
+                                style={styles.filterInput}
+                                value={filters.city}
+                                onChangeText={(text) => setFilters({ ...filters, city: text })}
+                                placeholder="Digite a cidade"
+                                placeholderTextColor="#7f8c8d"
+                            />
+                        </View>
+
+                        <View style={styles.filterGroup}>
+                            <Text style={styles.filterLabel}>Tipo de Imóvel</Text>
+                            <TextInput
+                                style={styles.filterInput}
+                                value={filters.propertyType}
+                                onChangeText={(text) => setFilters({ ...filters, propertyType: text })}
+                                placeholder="Casa, Apartamento, etc."
+                                placeholderTextColor="#7f8c8d"
+                            />
+                        </View>
+
+                        <View style={styles.filterGroup}>
+                            <Text style={styles.filterLabel}>Preço Mínimo</Text>
+                            <TextInput
+                                style={styles.filterInput}
+                                value={filters.minPrice}
+                                onChangeText={(text) => setFilters({ ...filters, minPrice: text })}
+                                placeholder="R$ 0"
+                                placeholderTextColor="#7f8c8d"
+                                keyboardType="numeric"
+                            />
+                        </View>
+
+                        <View style={styles.filterGroup}>
+                            <Text style={styles.filterLabel}>Preço Máximo</Text>
+                            <TextInput
+                                style={styles.filterInput}
+                                value={filters.maxPrice}
+                                onChangeText={(text) => setFilters({ ...filters, maxPrice: text })}
+                                placeholder="R$ 1.000.000"
+                                placeholderTextColor="#7f8c8d"
+                                keyboardType="numeric"
+                            />
+                        </View>
+
+                        <View style={styles.filterButtons}>
+                            <TouchableOpacity style={styles.clearButton} onPress={clearFilters}>
+                                <Text style={styles.clearButtonText}>Ver Todos</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.applyButton} onPress={applyFilters}>
+                                <Text style={styles.applyButtonText}>Aplicar</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </ScrollView>
+                </View>
+            </KeyboardAvoidingView>
+        </Modal>
+    );
+
+    if (loading) {
+        return (
+            <SafeAreaView style={styles.container}>
+                <View style={styles.loadingContainer}>
+                    <Text style={styles.loadingText}>Carregando...</Text>
+                </View>
+            </SafeAreaView>
+        );
+    }
 
     return (
         <SafeAreaView style={styles.container}>
+            {/* Header */}
             <View style={styles.header}>
-                <View style={styles.headerIcon}>
-                    <Ionicons name="home" size={30} color="#fff" />
+                <View style={styles.headerTop}>
+                    <View style={styles.headerIcon}>
+                        <Ionicons name="home" size={30} color="#fff" />
+                    </View>
+                    <Text style={styles.title}>BuscaBusca Imóveis</Text>
+                    <TouchableOpacity onPress={() => setShowFilters(true)} style={styles.filterButton}>
+                        <Ionicons name="filter" size={24} color="#fff" />
+                    </TouchableOpacity>
                 </View>
-                <Text style={styles.title}>BuscaBusca Imóveis</Text>
                 <Text style={styles.welcome}>
                     Bem-vindo, {profile?.full_name || user?.email || 'Usuário'}!
                 </Text>
             </View>
 
-            <View style={styles.content}>
-                <Text style={styles.subtitle}>
-                    Seu app de busca de imóveis está funcionando!
-                </Text>
+            {/* Content */}
+            <FlatList
+                data={properties}
+                renderItem={renderProperty}
+                keyExtractor={(item) => item.id}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                }
+                ListHeaderComponent={
+                    <>
+                        {/* Stories */}
+                        {stories.length > 0 && (
+                            <View style={styles.storiesSection}>
+                                <Text style={styles.sectionTitle}>Destaques</Text>
+                                <FlatList
+                                    data={stories}
+                                    renderItem={renderStory}
+                                    keyExtractor={(item) => item.id}
+                                    horizontal
+                                    showsHorizontalScrollIndicator={false}
+                                    contentContainerStyle={styles.storiesList}
+                                />
+                            </View>
+                        )}
 
-                <View style={styles.infoCard}>
-                    <Text style={styles.infoTitle}>Dados do Perfil</Text>
-                    {loading ? (
-                        <Text style={styles.infoText}>Carregando...</Text>
-                    ) : (
-                        <>
-                            <Text style={styles.infoText}>
-                                Nome: {profile?.full_name || 'Não informado'}
-                            </Text>
-                            <Text style={styles.infoText}>
-                                Email: {user?.email}
-                            </Text>
-                            <Text style={styles.infoText}>
-                                Telefone: {profile?.phone || 'Não informado'}
-                            </Text>
-                            {profile?.is_realtor && (
-                                <>
-                                    <Text style={styles.infoText}>
-                                        CRECI: {profile?.creci || 'Não informado'}
-                                    </Text>
-                                    <Text style={styles.infoText}>
-                                        Empresa: {profile?.company_name || 'Não informado'}
-                                    </Text>
-                                </>
-                            )}
-                            <Text style={styles.infoText}>
-                                Tipo: {profile?.is_realtor ? 'Corretor' : 'Cliente'}
-                            </Text>
-                        </>
-                    )}
-                </View>
+                        {/* Action Buttons */}
+                        <View style={styles.actionButtons}>
+                            <TouchableOpacity
+                                style={styles.actionButton}
+                                onPress={() => navigation.navigate('CreateAd')}
+                            >
+                                <Ionicons name="add-circle" size={20} color="#3498db" />
+                                <Text style={styles.actionButtonText}>Criar Anúncio</Text>
+                            </TouchableOpacity>
 
-                <TouchableOpacity style={styles.logoutButton} onPress={handleSignOut}>
-                    <Ionicons name="log-out-outline" size={20} color="#fff" style={styles.logoutIcon} />
-                    <Text style={styles.logoutButtonText}>Sair</Text>
-                </TouchableOpacity>
-            </View>
+                            <TouchableOpacity
+                                style={styles.actionButton}
+                                onPress={() => navigation.navigate('Plans')}
+                            >
+                                <Ionicons name="card" size={20} color="#f39c12" />
+                                <Text style={styles.actionButtonText}>Ver Planos</Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        {/* Properties Section */}
+                        <View style={styles.propertiesSection}>
+                            <Text style={styles.sectionTitle}>
+                                Anúncios ({properties.length})
+                            </Text>
+                        </View>
+                    </>
+                }
+                ListEmptyComponent={
+                    <View style={styles.emptyContainer}>
+                        <Ionicons name="home-outline" size={64} color="#bdc3c7" />
+                        <Text style={styles.emptyText}>Nenhum anúncio encontrado</Text>
+                        <Text style={styles.emptySubtext}>
+                            Tente ajustar os filtros ou volte mais tarde
+                        </Text>
+                    </View>
+                }
+                contentContainerStyle={styles.listContainer}
+            />
+
+
+
+            {/* Filter Modal */}
+            {renderFilterModal()}
         </SafeAreaView>
     );
 }
@@ -115,44 +395,118 @@ const styles = StyleSheet.create({
     header: {
         backgroundColor: '#3498db',
         padding: 20,
+        paddingTop: 20,
+    },
+    headerTop: {
+        flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 10,
     },
     headerIcon: {
-        marginBottom: 10,
         padding: 10,
         backgroundColor: 'rgba(255, 255, 255, 0.2)',
         borderRadius: 25,
     },
     title: {
-        fontSize: 24,
+        fontSize: 20,
         fontWeight: 'bold',
         color: '#fff',
-        marginBottom: 5,
+        flex: 1,
+        textAlign: 'center',
+    },
+    filterButton: {
+        padding: 5,
     },
     welcome: {
         fontSize: 16,
         color: '#fff',
         opacity: 0.9,
+        textAlign: 'center',
     },
-    content: {
+    loadingContainer: {
         flex: 1,
-        padding: 20,
-        alignItems: 'center',
         justifyContent: 'center',
+        alignItems: 'center',
     },
-    subtitle: {
+    loadingText: {
+        fontSize: 16,
+        color: '#7f8c8d',
+    },
+    listContainer: {
+        paddingBottom: 80,
+    },
+    storiesSection: {
+        marginTop: 20,
+        marginBottom: 20,
+    },
+    sectionTitle: {
         fontSize: 18,
+        fontWeight: 'bold',
+        color: '#2c3e50',
+        marginBottom: 15,
+        paddingHorizontal: 20,
+    },
+    storiesList: {
+        paddingHorizontal: 20,
+    },
+    storyCard: {
+        width: 80,
+        marginRight: 15,
+        alignItems: 'center',
+    },
+    storyImage: {
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        marginBottom: 8,
+    },
+    storyTitle: {
+        fontSize: 12,
         color: '#2c3e50',
         textAlign: 'center',
-        marginBottom: 30,
+        fontWeight: '500',
     },
-    infoCard: {
+    actionButtons: {
+        flexDirection: 'row',
+        gap: 15,
+        marginBottom: 20,
+        paddingHorizontal: 20,
+    },
+    actionButton: {
         backgroundColor: '#fff',
-        padding: 20,
+        paddingHorizontal: 20,
+        paddingVertical: 15,
         borderRadius: 10,
-        marginBottom: 30,
-        width: '100%',
-        maxWidth: 300,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flex: 1,
+        borderWidth: 1,
+        borderColor: '#e0e0e0',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 3.84,
+        elevation: 3,
+    },
+    actionButtonText: {
+        color: '#2c3e50',
+        fontSize: 14,
+        fontWeight: '600',
+        marginLeft: 8,
+    },
+    propertiesSection: {
+        marginBottom: 10,
+    },
+    propertyCard: {
+        backgroundColor: '#fff',
+        marginHorizontal: 20,
+        marginBottom: 15,
+        borderRadius: 12,
         shadowColor: '#000',
         shadowOffset: {
             width: 0,
@@ -162,32 +516,146 @@ const styles = StyleSheet.create({
         shadowRadius: 3.84,
         elevation: 5,
     },
-    infoTitle: {
+    propertyImage: {
+        width: '100%',
+        height: 200,
+        borderTopLeftRadius: 12,
+        borderTopRightRadius: 12,
+    },
+    propertyInfo: {
+        padding: 15,
+    },
+    propertyTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#2c3e50',
+        marginBottom: 5,
+    },
+    propertyLocation: {
+        fontSize: 14,
+        color: '#7f8c8d',
+        marginBottom: 10,
+    },
+    propertyDetails: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 10,
+    },
+    propertyPrice: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#3498db',
+    },
+    propertyFeatures: {
+        flexDirection: 'row',
+        gap: 10,
+    },
+    propertyFeature: {
+        fontSize: 12,
+        color: '#7f8c8d',
+        backgroundColor: '#f8f9fa',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 12,
+    },
+    propertyType: {
+        fontSize: 12,
+        color: '#7f8c8d',
+        textTransform: 'capitalize',
+    },
+    emptyContainer: {
+        alignItems: 'center',
+        paddingVertical: 60,
+        paddingHorizontal: 20,
+    },
+    emptyText: {
+        fontSize: 18,
+        color: '#7f8c8d',
+        marginTop: 15,
+        marginBottom: 5,
+    },
+    emptySubtext: {
+        fontSize: 14,
+        color: '#bdc3c7',
+        textAlign: 'center',
+    },
+
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'flex-end',
+    },
+    modalContent: {
+        backgroundColor: '#fff',
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        maxHeight: '80%',
+    },
+    modalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 20,
+        borderBottomWidth: 1,
+        borderBottomColor: '#e0e0e0',
+    },
+    modalTitle: {
         fontSize: 18,
         fontWeight: 'bold',
         color: '#2c3e50',
-        marginBottom: 10,
     },
-    infoText: {
-        fontSize: 14,
-        color: '#7f8c8d',
-        marginBottom: 5,
+    filtersContainer: {
+        padding: 20,
+        paddingBottom: 40,
     },
-    logoutButton: {
-        backgroundColor: '#e74c3c',
-        paddingHorizontal: 30,
-        paddingVertical: 15,
-        borderRadius: 10,
+    filterGroup: {
+        marginBottom: 20,
+    },
+    filterLabel: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#2c3e50',
+        marginBottom: 8,
+    },
+    filterInput: {
+        borderWidth: 1,
+        borderColor: '#e0e0e0',
+        borderRadius: 8,
+        paddingHorizontal: 15,
+        paddingVertical: 12,
+        fontSize: 16,
+        color: '#2c3e50',
+        backgroundColor: '#fff',
+    },
+    filterButtons: {
         flexDirection: 'row',
+        gap: 15,
+        marginTop: 20,
+    },
+    clearButton: {
+        flex: 1,
+        borderWidth: 1,
+        borderColor: '#3498db',
+        borderRadius: 8,
+        paddingVertical: 12,
         alignItems: 'center',
-        justifyContent: 'center',
     },
-    logoutIcon: {
-        marginRight: 8,
+    clearButtonText: {
+        color: '#3498db',
+        fontSize: 16,
+        fontWeight: '600',
     },
-    logoutButtonText: {
+    applyButton: {
+        flex: 1,
+        backgroundColor: '#3498db',
+        borderRadius: 8,
+        paddingVertical: 12,
+        alignItems: 'center',
+    },
+    applyButtonText: {
         color: '#fff',
         fontSize: 16,
-        fontWeight: 'bold',
+        fontWeight: '600',
     },
 }); 
