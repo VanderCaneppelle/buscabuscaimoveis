@@ -89,7 +89,8 @@ StorageUnknownError: Network request failed
 
 ### **Estratégias de Upload:**
 - 🎥 **Vídeos iOS:** Upload via fetch + blob
-- 🎥 **Vídeos Android:** Upload via FileSystem + Uint8Array
+- 🎥 **Vídeos Android < 10MB:** Upload direto via FileSystem + Uint8Array
+- 🎥 **Vídeos Android > 10MB:** Upload em chunks (2MB por chunk)
 - 🖼️ **Imagens < 5MB:** Upload direto via FileSystem
 - 🖼️ **Imagens > 5MB:** Upload em chunks (1MB por chunk)
 
@@ -188,4 +189,5 @@ CREATE POLICY "Arquivos são públicos" ON storage.objects
 - ✅ Verificação de conectividade antes do upload
 - ✅ Upload específico para vídeos (fetch) e imagens (FileSystem)
 - ✅ Vídeos sempre usam fetch (evita problemas de MIME type)
-- ✅ Upload específico por plataforma (iOS vs Android) 
+- ✅ Upload específico por plataforma (iOS vs Android)
+- ✅ Upload em chunks para vídeos grandes no Android (2MB por chunk) 

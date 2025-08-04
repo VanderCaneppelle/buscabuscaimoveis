@@ -32,6 +32,8 @@ export default function CreateAdScreen({ navigation, route }) {
     const [showPlanModal, setShowPlanModal] = useState(false);
     const [showMediaModal, setShowMediaModal] = useState(false);
     const [mediaFiles, setMediaFiles] = useState([]);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [showProgressModal, setShowProgressModal] = useState(false);
     const [formData, setFormData] = useState({
         title: '',
         description: '',
@@ -212,14 +214,22 @@ export default function CreateAdScreen({ navigation, route }) {
 
         try {
             setSubmitting(true);
+            setUploadProgress(0);
+            setShowProgressModal(true);
 
             const propertyData = {
                 user_id: user.id,
                 ...formData
             };
 
-            const newProperty = await PropertyService.createProperty(propertyData, mediaFiles);
+            // Callback para atualizar progresso
+            const onUploadProgress = (progress) => {
+                setUploadProgress(progress);
+            };
 
+            const newProperty = await PropertyService.createProperty(propertyData, mediaFiles, onUploadProgress);
+
+            setShowProgressModal(false);
             Alert.alert(
                 'Sucesso!',
                 'Anúncio criado com sucesso! Aguarde a aprovação do administrador.',
@@ -234,6 +244,7 @@ export default function CreateAdScreen({ navigation, route }) {
             );
         } catch (error) {
             console.error('Erro ao criar anúncio:', error);
+            setShowProgressModal(false);
 
             // Verificar tipo de erro para mostrar mensagem específica
             if (error.message && error.message.includes('muito grande')) {
@@ -656,6 +667,42 @@ export default function CreateAdScreen({ navigation, route }) {
                     </View>
                 </View>
             </Modal>
+
+            {/* Progress Modal */}
+            <Modal
+                visible={showProgressModal}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => { }}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <View style={styles.modalIcon}>
+                            <Ionicons name="cloud-upload" size={48} color="#3498db" />
+                        </View>
+
+                        <Text style={styles.modalTitle}>Enviando Mídias</Text>
+                        <Text style={styles.modalText}>
+                            Aguarde enquanto suas mídias são enviadas...
+                        </Text>
+
+                        {/* Progress Bar */}
+                        <View style={styles.progressContainer}>
+                            <View style={styles.progressBar}>
+                                <View
+                                    style={[
+                                        styles.progressFill,
+                                        { width: `${uploadProgress}%` }
+                                    ]}
+                                />
+                            </View>
+                            <Text style={styles.progressText}>{uploadProgress}%</Text>
+                        </View>
+
+                        <ActivityIndicator size="large" color="#3498db" style={{ marginTop: 20 }} />
+                    </View>
+                </View>
+            </Modal>
         </SafeAreaView>
     );
 }
@@ -974,6 +1021,29 @@ const styles = StyleSheet.create({
     modalConfirmText: {
         color: '#fff',
         fontSize: 16,
+        fontWeight: '600',
+    },
+    progressContainer: {
+        width: '100%',
+        marginBottom: 20,
+    },
+    progressBar: {
+        width: '100%',
+        height: 8,
+        backgroundColor: '#ecf0f1',
+        borderRadius: 4,
+        overflow: 'hidden',
+        marginBottom: 10,
+    },
+    progressFill: {
+        height: '100%',
+        backgroundColor: '#3498db',
+        borderRadius: 4,
+    },
+    progressText: {
+        fontSize: 14,
+        color: '#2c3e50',
+        textAlign: 'center',
         fontWeight: '600',
     },
 }); 
