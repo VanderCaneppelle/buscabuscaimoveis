@@ -550,7 +550,12 @@ export default function CreateAdScreen({ navigation, route }) {
 
                                     {showPropertyTypeDropdown && (
                                         <View style={styles.dropdownList}>
-                                            <ScrollView style={styles.dropdownScroll} showsVerticalScrollIndicator={false}>
+                                            <ScrollView
+                                                style={styles.dropdownScroll}
+                                                showsVerticalScrollIndicator={true}
+                                                indicatorStyle="black"
+                                                nestedScrollEnabled={true}
+                                            >
                                                 {propertyTypes.map((type, index) => (
                                                     <TouchableOpacity
                                                         key={index}
@@ -591,7 +596,12 @@ export default function CreateAdScreen({ navigation, route }) {
 
                                     {showTransactionTypeDropdown && (
                                         <View style={styles.dropdownList}>
-                                            <ScrollView style={styles.dropdownScroll} showsVerticalScrollIndicator={false}>
+                                            <ScrollView
+                                                style={styles.dropdownScroll}
+                                                showsVerticalScrollIndicator={true}
+                                                indicatorStyle="black"
+                                                nestedScrollEnabled={true}
+                                            >
                                                 {transactionTypes.map((type, index) => (
                                                     <TouchableOpacity
                                                         key={index}
@@ -635,7 +645,12 @@ export default function CreateAdScreen({ navigation, route }) {
 
                                     {showBedroomsDropdown && (
                                         <View style={styles.dropdownList}>
-                                            <ScrollView style={styles.dropdownScroll} showsVerticalScrollIndicator={false}>
+                                            <ScrollView
+                                                style={styles.dropdownScroll}
+                                                showsVerticalScrollIndicator={true}
+                                                indicatorStyle="black"
+                                                nestedScrollEnabled={true}
+                                            >
                                                 {numericOptions.map((value, index) => (
                                                     <TouchableOpacity
                                                         key={index}
@@ -676,7 +691,12 @@ export default function CreateAdScreen({ navigation, route }) {
 
                                     {showBathroomsDropdown && (
                                         <View style={styles.dropdownList}>
-                                            <ScrollView style={styles.dropdownScroll} showsVerticalScrollIndicator={false}>
+                                            <ScrollView
+                                                style={styles.dropdownScroll}
+                                                showsVerticalScrollIndicator={true}
+                                                indicatorStyle="black"
+                                                nestedScrollEnabled={true}
+                                            >
                                                 {numericOptions.map((value, index) => (
                                                     <TouchableOpacity
                                                         key={index}
@@ -717,7 +737,12 @@ export default function CreateAdScreen({ navigation, route }) {
 
                                     {showParkingDropdown && (
                                         <View style={styles.dropdownList}>
-                                            <ScrollView style={styles.dropdownScroll} showsVerticalScrollIndicator={false}>
+                                            <ScrollView
+                                                style={styles.dropdownScroll}
+                                                showsVerticalScrollIndicator={true}
+                                                indicatorStyle="black"
+                                                nestedScrollEnabled={true}
+                                            >
                                                 {numericOptions.map((value, index) => (
                                                     <TouchableOpacity
                                                         key={index}
@@ -1324,10 +1349,12 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 3.84,
         marginTop: 2,
+        overflow: 'hidden',
     },
 
     dropdownScroll: {
         maxHeight: 200,
+        flexGrow: 0,
     },
     dropdownItem: {
         paddingVertical: 12,
