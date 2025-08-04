@@ -14,6 +14,8 @@ import {
     Image,
     FlatList,
     Dimensions,
+    TouchableWithoutFeedback,
+    Pressable,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -34,6 +36,11 @@ export default function CreateAdScreen({ navigation, route }) {
     const [mediaFiles, setMediaFiles] = useState([]);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [showProgressModal, setShowProgressModal] = useState(false);
+    const [showPropertyTypeDropdown, setShowPropertyTypeDropdown] = useState(false);
+    const [showTransactionTypeDropdown, setShowTransactionTypeDropdown] = useState(false);
+    const [showBedroomsDropdown, setShowBedroomsDropdown] = useState(false);
+    const [showBathroomsDropdown, setShowBathroomsDropdown] = useState(false);
+    const [showParkingDropdown, setShowParkingDropdown] = useState(false);
     const [formData, setFormData] = useState({
         title: '',
         description: '',
@@ -79,6 +86,82 @@ export default function CreateAdScreen({ navigation, route }) {
         }));
     };
 
+    // Formatar preço para moeda brasileira
+    const formatCurrency = (value) => {
+        // Remover tudo que não é número
+        const numericValue = value.replace(/\D/g, '');
+
+        if (numericValue === '') return '';
+
+        // Converter para número e dividir por 100 para ter centavos
+        const number = parseFloat(numericValue) / 100;
+
+        // Formatar para moeda brasileira
+        return number.toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL',
+            minimumFractionDigits: 2
+        });
+    };
+
+    const handlePriceChange = (value) => {
+        const formattedValue = formatCurrency(value);
+        setFormData(prev => ({
+            ...prev,
+            price: formattedValue
+        }));
+    };
+
+    // Extrair valor numérico do preço formatado
+    const getNumericPrice = (formattedPrice) => {
+        return parseFloat(formattedPrice.replace(/\D/g, '')) / 100;
+    };
+
+    // Opções para dropdowns
+    const propertyTypes = [
+        'Casa',
+        'Apartamento',
+        'Cobertura',
+        'Studio',
+        'Loft',
+        'Sobrado',
+        'Casa de Condomínio',
+        'Kitnet',
+        'Flat',
+        'Terreno',
+        'Comercial',
+        'Rural'
+    ];
+
+    const transactionTypes = [
+        'Venda',
+        'Aluguel',
+        'Temporada',
+        'Permuta'
+    ];
+
+    // Opções numéricas para dropdowns (0 a 8)
+    const numericOptions = Array.from({ length: 9 }, (_, i) => i.toString()); // 0 a 8
+
+    // Função para fechar todos os dropdowns
+    const closeAllDropdowns = () => {
+        setShowPropertyTypeDropdown(false);
+        setShowTransactionTypeDropdown(false);
+        setShowBedroomsDropdown(false);
+        setShowBathroomsDropdown(false);
+        setShowParkingDropdown(false);
+    };
+
+    // Função para selecionar valor numérico
+    const selectNumericValue = (field, value) => {
+        setFormData(prev => ({
+            ...prev,
+            [field]: value
+        }));
+    };
+
+
+
     const validateForm = () => {
         const requiredFields = ['title', 'price', 'propertyType', 'transactionType', 'address', 'city', 'state'];
 
@@ -98,7 +181,8 @@ export default function CreateAdScreen({ navigation, route }) {
             }
         }
 
-        if (isNaN(parseFloat(formData.price)) || parseFloat(formData.price) <= 0) {
+        const numericPrice = getNumericPrice(formData.price);
+        if (isNaN(numericPrice) || numericPrice <= 0) {
             Alert.alert('Preço Inválido', 'Digite um preço válido');
             return false;
         }
@@ -219,7 +303,8 @@ export default function CreateAdScreen({ navigation, route }) {
 
             const propertyData = {
                 user_id: user.id,
-                ...formData
+                ...formData,
+                price: getNumericPrice(formData.price).toString()
             };
 
             // Callback para atualizar progresso
@@ -328,257 +413,410 @@ export default function CreateAdScreen({ navigation, route }) {
                 style={styles.keyboardView}
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             >
-                <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-                    {/* Plan Info Card */}
-                    {userPlanInfo?.plan && (
-                        <View style={styles.planInfoCard}>
-                            <Ionicons name="information-circle" size={20} color="#3498db" />
-                            <View style={styles.planInfoContent}>
-                                <Text style={styles.planInfoTitle}>
-                                    Plano {userPlanInfo.plan.display_name}
-                                </Text>
-                                <Text style={styles.planInfoText}>
-                                    {userPlanInfo.canCreate.can_create
-                                        ? `${userPlanInfo.canCreate.current_ads}/${userPlanInfo.canCreate.max_ads} anúncios ativos`
-                                        : userPlanInfo.canCreate.reason
-                                    }
-                                </Text>
+                <TouchableWithoutFeedback onPress={closeAllDropdowns}>
+                    <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+                        {/* Plan Info Card */}
+                        {userPlanInfo?.plan && (
+                            <View style={styles.planInfoCard}>
+                                <Ionicons name="information-circle" size={20} color="#3498db" />
+                                <View style={styles.planInfoContent}>
+                                    <Text style={styles.planInfoTitle}>
+                                        Plano {userPlanInfo.plan.display_name}
+                                    </Text>
+                                    <Text style={styles.planInfoText}>
+                                        {userPlanInfo.canCreate.can_create
+                                            ? `${userPlanInfo.canCreate.current_ads}/${userPlanInfo.canCreate.max_ads} anúncios ativos`
+                                            : userPlanInfo.canCreate.reason
+                                        }
+                                    </Text>
+                                </View>
                             </View>
-                        </View>
-                    )}
-
-                    {/* Media Section */}
-                    <View style={styles.formSection}>
-                        <Text style={styles.sectionTitle}>Fotos e Vídeos</Text>
-                        <Text style={styles.sectionSubtitle}>
-                            Adicione fotos e vídeos do seu imóvel (máximo 10 arquivos, 50MB cada)
-                        </Text>
-
-                        {mediaFiles.length > 0 && (
-                            <FlatList
-                                data={mediaFiles}
-                                renderItem={renderMediaItem}
-                                keyExtractor={(item, index) => index.toString()}
-                                horizontal
-                                showsHorizontalScrollIndicator={false}
-                                style={styles.mediaList}
-                            />
                         )}
 
-                        {mediaFiles.length < 10 && (
-                            <TouchableOpacity
-                                style={styles.addMediaButton}
-                                onPress={() => setShowMediaModal(true)}
-                            >
-                                <Ionicons name="add" size={24} color="#3498db" />
-                                <Text style={styles.addMediaText}>Adicionar Mídia</Text>
-                            </TouchableOpacity>
-                        )}
-
-                        {mediaFiles.length >= 10 && (
-                            <Text style={styles.mediaLimitText}>
-                                Limite máximo de 10 arquivos atingido
+                        {/* Media Section */}
+                        <View style={styles.formSection}>
+                            <Text style={styles.sectionTitle}>Fotos e Vídeos</Text>
+                            <Text style={styles.sectionSubtitle}>
+                                Adicione fotos e vídeos do seu imóvel (máximo 10 arquivos, 50MB cada)
                             </Text>
-                        )}
-                    </View>
 
-                    {/* Form Fields */}
-                    <View style={styles.formSection}>
-                        <Text style={styles.sectionTitle}>Informações Básicas</Text>
-
-                        <View style={styles.inputGroup}>
-                            <Text style={styles.inputLabel}>Título do Anúncio *</Text>
-                            <TextInput
-                                style={styles.textInput}
-                                value={formData.title}
-                                onChangeText={(value) => handleInputChange('title', value)}
-                                placeholder="Ex: Casa com 3 quartos em condomínio"
-                                placeholderTextColor="#7f8c8d"
-                            />
-                        </View>
-
-                        <View style={styles.inputGroup}>
-                            <Text style={styles.inputLabel}>Descrição</Text>
-                            <TextInput
-                                style={[styles.textInput, styles.textArea]}
-                                value={formData.description}
-                                onChangeText={(value) => handleInputChange('description', value)}
-                                placeholder="Descreva detalhes do imóvel..."
-                                placeholderTextColor="#7f8c8d"
-                                multiline
-                                numberOfLines={4}
-                            />
-                        </View>
-
-                        <View style={styles.row}>
-                            <View style={[styles.inputGroup, styles.halfWidth]}>
-                                <Text style={styles.inputLabel}>Preço *</Text>
-                                <TextInput
-                                    style={styles.textInput}
-                                    value={formData.price}
-                                    onChangeText={(value) => handleInputChange('price', value)}
-                                    placeholder="R$ 0,00"
-                                    placeholderTextColor="#7f8c8d"
-                                    keyboardType="numeric"
+                            {mediaFiles.length > 0 && (
+                                <FlatList
+                                    data={mediaFiles}
+                                    renderItem={renderMediaItem}
+                                    keyExtractor={(item, index) => index.toString()}
+                                    horizontal
+                                    showsHorizontalScrollIndicator={false}
+                                    style={styles.mediaList}
                                 />
-                            </View>
-                            <View style={[styles.inputGroup, styles.halfWidth]}>
-                                <Text style={styles.inputLabel}>Área (m²)</Text>
-                                <TextInput
-                                    style={styles.textInput}
-                                    value={formData.area}
-                                    onChangeText={(value) => handleInputChange('area', value)}
-                                    placeholder="0"
-                                    placeholderTextColor="#7f8c8d"
-                                    keyboardType="numeric"
-                                />
-                            </View>
-                        </View>
-                    </View>
-
-                    <View style={styles.formSection}>
-                        <Text style={styles.sectionTitle}>Tipo de Imóvel</Text>
-
-                        <View style={styles.row}>
-                            <View style={[styles.inputGroup, styles.halfWidth]}>
-                                <Text style={styles.inputLabel}>Tipo *</Text>
-                                <TextInput
-                                    style={styles.textInput}
-                                    value={formData.propertyType}
-                                    onChangeText={(value) => handleInputChange('propertyType', value)}
-                                    placeholder="Casa, Apartamento..."
-                                    placeholderTextColor="#7f8c8d"
-                                />
-                            </View>
-                            <View style={[styles.inputGroup, styles.halfWidth]}>
-                                <Text style={styles.inputLabel}>Transação *</Text>
-                                <TextInput
-                                    style={styles.textInput}
-                                    value={formData.transactionType}
-                                    onChangeText={(value) => handleInputChange('transactionType', value)}
-                                    placeholder="Venda, Aluguel..."
-                                    placeholderTextColor="#7f8c8d"
-                                />
-                            </View>
-                        </View>
-
-                        <View style={styles.row}>
-                            <View style={[styles.inputGroup, styles.thirdWidth]}>
-                                <Text style={styles.inputLabel}>Quartos</Text>
-                                <TextInput
-                                    style={styles.textInput}
-                                    value={formData.bedrooms}
-                                    onChangeText={(value) => handleInputChange('bedrooms', value)}
-                                    placeholder="0"
-                                    placeholderTextColor="#7f8c8d"
-                                    keyboardType="numeric"
-                                />
-                            </View>
-                            <View style={[styles.inputGroup, styles.thirdWidth]}>
-                                <Text style={styles.inputLabel}>Banheiros</Text>
-                                <TextInput
-                                    style={styles.textInput}
-                                    value={formData.bathrooms}
-                                    onChangeText={(value) => handleInputChange('bathrooms', value)}
-                                    placeholder="0"
-                                    placeholderTextColor="#7f8c8d"
-                                    keyboardType="numeric"
-                                />
-                            </View>
-                            <View style={[styles.inputGroup, styles.thirdWidth]}>
-                                <Text style={styles.inputLabel}>Vagas</Text>
-                                <TextInput
-                                    style={styles.textInput}
-                                    value={formData.parkingSpaces}
-                                    onChangeText={(value) => handleInputChange('parkingSpaces', value)}
-                                    placeholder="0"
-                                    placeholderTextColor="#7f8c8d"
-                                    keyboardType="numeric"
-                                />
-                            </View>
-                        </View>
-                    </View>
-
-                    <View style={styles.formSection}>
-                        <Text style={styles.sectionTitle}>Localização</Text>
-
-                        <View style={styles.inputGroup}>
-                            <Text style={styles.inputLabel}>Endereço *</Text>
-                            <TextInput
-                                style={styles.textInput}
-                                value={formData.address}
-                                onChangeText={(value) => handleInputChange('address', value)}
-                                placeholder="Rua, número..."
-                                placeholderTextColor="#7f8c8d"
-                            />
-                        </View>
-
-                        <View style={styles.row}>
-                            <View style={[styles.inputGroup, styles.halfWidth]}>
-                                <Text style={styles.inputLabel}>Bairro</Text>
-                                <TextInput
-                                    style={styles.textInput}
-                                    value={formData.neighborhood}
-                                    onChangeText={(value) => handleInputChange('neighborhood', value)}
-                                    placeholder="Nome do bairro"
-                                    placeholderTextColor="#7f8c8d"
-                                />
-                            </View>
-                            <View style={[styles.inputGroup, styles.halfWidth]}>
-                                <Text style={styles.inputLabel}>CEP</Text>
-                                <TextInput
-                                    style={styles.textInput}
-                                    value={formData.zipCode}
-                                    onChangeText={(value) => handleInputChange('zipCode', value)}
-                                    placeholder="00000-000"
-                                    placeholderTextColor="#7f8c8d"
-                                    keyboardType="numeric"
-                                />
-                            </View>
-                        </View>
-
-                        <View style={styles.row}>
-                            <View style={[styles.inputGroup, styles.halfWidth]}>
-                                <Text style={styles.inputLabel}>Cidade *</Text>
-                                <TextInput
-                                    style={styles.textInput}
-                                    value={formData.city}
-                                    onChangeText={(value) => handleInputChange('city', value)}
-                                    placeholder="Nome da cidade"
-                                    placeholderTextColor="#7f8c8d"
-                                />
-                            </View>
-                            <View style={[styles.inputGroup, styles.halfWidth]}>
-                                <Text style={styles.inputLabel}>Estado *</Text>
-                                <TextInput
-                                    style={styles.textInput}
-                                    value={formData.state}
-                                    onChangeText={(value) => handleInputChange('state', value)}
-                                    placeholder="UF"
-                                    placeholderTextColor="#7f8c8d"
-                                />
-                            </View>
-                        </View>
-                    </View>
-
-                    {/* Submit Button */}
-                    <View style={styles.submitSection}>
-                        <TouchableOpacity
-                            style={[
-                                styles.submitButton,
-                                (!userPlanInfo?.canCreate.can_create || submitting) && styles.disabledButton
-                            ]}
-                            onPress={handleSubmit}
-                            disabled={!userPlanInfo?.canCreate.can_create || submitting}
-                        >
-                            {submitting ? (
-                                <ActivityIndicator size="small" color="#fff" />
-                            ) : (
-                                <Text style={styles.submitButtonText}>Criar Anúncio</Text>
                             )}
-                        </TouchableOpacity>
-                    </View>
-                </ScrollView>
+
+                            {mediaFiles.length < 10 && (
+                                <TouchableOpacity
+                                    style={styles.addMediaButton}
+                                    onPress={() => setShowMediaModal(true)}
+                                >
+                                    <Ionicons name="add" size={24} color="#3498db" />
+                                    <Text style={styles.addMediaText}>Adicionar Mídia</Text>
+                                </TouchableOpacity>
+                            )}
+
+                            {mediaFiles.length >= 10 && (
+                                <Text style={styles.mediaLimitText}>
+                                    Limite máximo de 10 arquivos atingido
+                                </Text>
+                            )}
+                        </View>
+
+                        {/* Form Fields - Unificado */}
+                        <View style={styles.formSection}>
+                            {/* Informações Básicas */}
+                            <Text style={styles.sectionTitle}>Informações Básicas</Text>
+
+                            <View style={styles.inputGroup}>
+                                <Text style={styles.inputLabel}>Título do Anúncio *</Text>
+                                <TextInput
+                                    style={styles.textInput}
+                                    value={formData.title}
+                                    onChangeText={(value) => handleInputChange('title', value)}
+                                    placeholder="Ex: Casa com 3 quartos em condomínio"
+                                    placeholderTextColor="#7f8c8d"
+                                />
+                            </View>
+
+                            <View style={styles.inputGroup}>
+                                <Text style={styles.inputLabel}>Descrição</Text>
+                                <TextInput
+                                    style={[styles.textInput, styles.textArea]}
+                                    value={formData.description}
+                                    onChangeText={(value) => handleInputChange('description', value)}
+                                    placeholder="Descreva detalhes do imóvel..."
+                                    placeholderTextColor="#7f8c8d"
+                                    multiline
+                                    numberOfLines={4}
+                                />
+                            </View>
+
+                            <View style={styles.row}>
+                                <View style={[styles.inputGroup, styles.halfWidth]}>
+                                    <Text style={styles.inputLabel}>Preço *</Text>
+                                    <TextInput
+                                        style={styles.textInput}
+                                        value={formData.price}
+                                        onChangeText={handlePriceChange}
+                                        placeholder="R$ 0,00"
+                                        placeholderTextColor="#7f8c8d"
+                                        keyboardType="numeric"
+                                    />
+                                </View>
+                                <View style={[styles.inputGroup, styles.halfWidth]}>
+                                    <Text style={styles.inputLabel}>Área (m²)</Text>
+                                    <TextInput
+                                        style={styles.textInput}
+                                        value={formData.area}
+                                        onChangeText={(value) => handleInputChange('area', value)}
+                                        placeholder="0"
+                                        placeholderTextColor="#7f8c8d"
+                                        keyboardType="numeric"
+                                    />
+                                </View>
+                            </View>
+
+                            {/* Tipo de Imóvel */}
+                            <Text style={[styles.sectionTitle, styles.sectionTitleWithMargin]}>Tipo de Imóvel</Text>
+
+                            <View style={styles.row}>
+                                <View style={[styles.inputGroup, styles.halfWidth]}>
+                                    <Text style={styles.inputLabel}>Tipo *</Text>
+                                    <TouchableOpacity
+                                        style={styles.dropdownButton}
+                                        onPress={() => {
+                                            closeAllDropdowns();
+                                            setShowPropertyTypeDropdown(!showPropertyTypeDropdown);
+                                        }}
+                                    >
+                                        <Text style={[
+                                            styles.dropdownButtonText,
+                                            !formData.propertyType && styles.placeholderText
+                                        ]}>
+                                            {formData.propertyType || 'Selecione o tipo'}
+                                        </Text>
+                                        <Ionicons
+                                            name={showPropertyTypeDropdown ? 'chevron-up' : 'chevron-down'}
+                                            size={20}
+                                            color="#7f8c8d"
+                                        />
+                                    </TouchableOpacity>
+
+                                    {showPropertyTypeDropdown && (
+                                        <View style={styles.dropdownList}>
+                                            <ScrollView style={styles.dropdownScroll} showsVerticalScrollIndicator={false}>
+                                                {propertyTypes.map((type, index) => (
+                                                    <TouchableOpacity
+                                                        key={index}
+                                                        style={styles.dropdownItem}
+                                                        onPress={() => {
+                                                            handleInputChange('propertyType', type);
+                                                            setShowPropertyTypeDropdown(false);
+                                                        }}
+                                                    >
+                                                        <Text style={styles.dropdownItemText}>{type}</Text>
+                                                    </TouchableOpacity>
+                                                ))}
+                                            </ScrollView>
+                                        </View>
+                                    )}
+                                </View>
+                                <View style={[styles.inputGroup, styles.halfWidth]}>
+                                    <Text style={styles.inputLabel}>Transação *</Text>
+                                    <TouchableOpacity
+                                        style={styles.dropdownButton}
+                                        onPress={() => {
+                                            closeAllDropdowns();
+                                            setShowTransactionTypeDropdown(!showTransactionTypeDropdown);
+                                        }}
+                                    >
+                                        <Text style={[
+                                            styles.dropdownButtonText,
+                                            !formData.transactionType && styles.placeholderText
+                                        ]}>
+                                            {formData.transactionType || 'Selecione a transação'}
+                                        </Text>
+                                        <Ionicons
+                                            name={showTransactionTypeDropdown ? 'chevron-up' : 'chevron-down'}
+                                            size={20}
+                                            color="#7f8c8d"
+                                        />
+                                    </TouchableOpacity>
+
+                                    {showTransactionTypeDropdown && (
+                                        <View style={styles.dropdownList}>
+                                            <ScrollView style={styles.dropdownScroll} showsVerticalScrollIndicator={false}>
+                                                {transactionTypes.map((type, index) => (
+                                                    <TouchableOpacity
+                                                        key={index}
+                                                        style={styles.dropdownItem}
+                                                        onPress={() => {
+                                                            handleInputChange('transactionType', type);
+                                                            setShowTransactionTypeDropdown(false);
+                                                        }}
+                                                    >
+                                                        <Text style={styles.dropdownItemText}>{type}</Text>
+                                                    </TouchableOpacity>
+                                                ))}
+                                            </ScrollView>
+                                        </View>
+                                    )}
+                                </View>
+                            </View>
+
+                            <View style={styles.row}>
+                                <View style={[styles.inputGroup, styles.thirdWidth]}>
+                                    <Text style={styles.inputLabel}>Quartos</Text>
+                                    <TouchableOpacity
+                                        style={styles.dropdownButton}
+                                        onPress={() => {
+                                            closeAllDropdowns();
+                                            setShowBedroomsDropdown(!showBedroomsDropdown);
+                                        }}
+                                    >
+                                        <Text style={[
+                                            styles.dropdownButtonText,
+                                            !formData.bedrooms && styles.placeholderText
+                                        ]}>
+                                            {formData.bedrooms || '0'}
+                                        </Text>
+                                        <Ionicons
+                                            name={showBedroomsDropdown ? 'chevron-up' : 'chevron-down'}
+                                            size={20}
+                                            color="#7f8c8d"
+                                        />
+                                    </TouchableOpacity>
+
+                                    {showBedroomsDropdown && (
+                                        <View style={styles.dropdownList}>
+                                            <ScrollView style={styles.dropdownScroll} showsVerticalScrollIndicator={false}>
+                                                {numericOptions.map((value, index) => (
+                                                    <TouchableOpacity
+                                                        key={index}
+                                                        style={styles.dropdownItem}
+                                                        onPress={() => {
+                                                            selectNumericValue('bedrooms', value);
+                                                            setShowBedroomsDropdown(false);
+                                                        }}
+                                                    >
+                                                        <Text style={styles.dropdownItemText}>{value}</Text>
+                                                    </TouchableOpacity>
+                                                ))}
+                                            </ScrollView>
+                                        </View>
+                                    )}
+                                </View>
+                                <View style={[styles.inputGroup, styles.thirdWidth]}>
+                                    <Text style={styles.inputLabel}>Banheiros</Text>
+                                    <TouchableOpacity
+                                        style={styles.dropdownButton}
+                                        onPress={() => {
+                                            closeAllDropdowns();
+                                            setShowBathroomsDropdown(!showBathroomsDropdown);
+                                        }}
+                                    >
+                                        <Text style={[
+                                            styles.dropdownButtonText,
+                                            !formData.bathrooms && styles.placeholderText
+                                        ]}>
+                                            {formData.bathrooms || '0'}
+                                        </Text>
+                                        <Ionicons
+                                            name={showBathroomsDropdown ? 'chevron-up' : 'chevron-down'}
+                                            size={20}
+                                            color="#7f8c8d"
+                                        />
+                                    </TouchableOpacity>
+
+                                    {showBathroomsDropdown && (
+                                        <View style={styles.dropdownList}>
+                                            <ScrollView style={styles.dropdownScroll} showsVerticalScrollIndicator={false}>
+                                                {numericOptions.map((value, index) => (
+                                                    <TouchableOpacity
+                                                        key={index}
+                                                        style={styles.dropdownItem}
+                                                        onPress={() => {
+                                                            selectNumericValue('bathrooms', value);
+                                                            setShowBathroomsDropdown(false);
+                                                        }}
+                                                    >
+                                                        <Text style={styles.dropdownItemText}>{value}</Text>
+                                                    </TouchableOpacity>
+                                                ))}
+                                            </ScrollView>
+                                        </View>
+                                    )}
+                                </View>
+                                <View style={[styles.inputGroup, styles.thirdWidth]}>
+                                    <Text style={styles.inputLabel}>Vagas</Text>
+                                    <TouchableOpacity
+                                        style={styles.dropdownButton}
+                                        onPress={() => {
+                                            closeAllDropdowns();
+                                            setShowParkingDropdown(!showParkingDropdown);
+                                        }}
+                                    >
+                                        <Text style={[
+                                            styles.dropdownButtonText,
+                                            !formData.parkingSpaces && styles.placeholderText
+                                        ]}>
+                                            {formData.parkingSpaces || '0'}
+                                        </Text>
+                                        <Ionicons
+                                            name={showParkingDropdown ? 'chevron-up' : 'chevron-down'}
+                                            size={20}
+                                            color="#7f8c8d"
+                                        />
+                                    </TouchableOpacity>
+
+                                    {showParkingDropdown && (
+                                        <View style={styles.dropdownList}>
+                                            <ScrollView style={styles.dropdownScroll} showsVerticalScrollIndicator={false}>
+                                                {numericOptions.map((value, index) => (
+                                                    <TouchableOpacity
+                                                        key={index}
+                                                        style={styles.dropdownItem}
+                                                        onPress={() => {
+                                                            selectNumericValue('parkingSpaces', value);
+                                                            setShowParkingDropdown(false);
+                                                        }}
+                                                    >
+                                                        <Text style={styles.dropdownItemText}>{value}</Text>
+                                                    </TouchableOpacity>
+                                                ))}
+                                            </ScrollView>
+                                        </View>
+                                    )}
+                                </View>
+                            </View>
+
+                            {/* Localização */}
+                            <Text style={[styles.sectionTitle, styles.sectionTitleWithMargin]}>Localização</Text>
+
+                            <View style={styles.inputGroup}>
+                                <Text style={styles.inputLabel}>Endereço *</Text>
+                                <TextInput
+                                    style={styles.textInput}
+                                    value={formData.address}
+                                    onChangeText={(value) => handleInputChange('address', value)}
+                                    placeholder="Rua, número..."
+                                    placeholderTextColor="#7f8c8d"
+                                />
+                            </View>
+
+                            <View style={styles.row}>
+                                <View style={[styles.inputGroup, styles.halfWidth]}>
+                                    <Text style={styles.inputLabel}>Bairro</Text>
+                                    <TextInput
+                                        style={styles.textInput}
+                                        value={formData.neighborhood}
+                                        onChangeText={(value) => handleInputChange('neighborhood', value)}
+                                        placeholder="Nome do bairro"
+                                        placeholderTextColor="#7f8c8d"
+                                    />
+                                </View>
+                                <View style={[styles.inputGroup, styles.halfWidth]}>
+                                    <Text style={styles.inputLabel}>CEP</Text>
+                                    <TextInput
+                                        style={styles.textInput}
+                                        value={formData.zipCode}
+                                        onChangeText={(value) => handleInputChange('zipCode', value)}
+                                        placeholder="00000-000"
+                                        placeholderTextColor="#7f8c8d"
+                                        keyboardType="numeric"
+                                    />
+                                </View>
+                            </View>
+
+                            <View style={styles.row}>
+                                <View style={[styles.inputGroup, styles.halfWidth]}>
+                                    <Text style={styles.inputLabel}>Cidade *</Text>
+                                    <TextInput
+                                        style={styles.textInput}
+                                        value={formData.city}
+                                        onChangeText={(value) => handleInputChange('city', value)}
+                                        placeholder="Nome da cidade"
+                                        placeholderTextColor="#7f8c8d"
+                                    />
+                                </View>
+                                <View style={[styles.inputGroup, styles.halfWidth]}>
+                                    <Text style={styles.inputLabel}>Estado *</Text>
+                                    <TextInput
+                                        style={styles.textInput}
+                                        value={formData.state}
+                                        onChangeText={(value) => handleInputChange('state', value)}
+                                        placeholder="UF"
+                                        placeholderTextColor="#7f8c8d"
+                                    />
+                                </View>
+                            </View>
+                        </View>
+
+                        {/* Submit Button */}
+                        <View style={styles.submitSection}>
+                            <TouchableOpacity
+                                style={[
+                                    styles.submitButton,
+                                    (!userPlanInfo?.canCreate.can_create || submitting) && styles.disabledButton
+                                ]}
+                                onPress={handleSubmit}
+                                disabled={!userPlanInfo?.canCreate.can_create || submitting}
+                            >
+                                {submitting ? (
+                                    <ActivityIndicator size="small" color="#fff" />
+                                ) : (
+                                    <Text style={styles.submitButtonText}>Criar Anúncio</Text>
+                                )}
+                            </TouchableOpacity>
+                        </View>
+                    </ScrollView>
+                </TouchableWithoutFeedback>
             </KeyboardAvoidingView>
 
             {/* Media Selection Modal */}
@@ -776,7 +1014,7 @@ const styles = StyleSheet.create({
         marginHorizontal: 20,
         marginBottom: 20,
         borderRadius: 12,
-        padding: 20,
+        padding: 25,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
@@ -788,6 +1026,9 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#2c3e50',
         marginBottom: 10,
+    },
+    sectionTitleWithMargin: {
+        marginTop: 20,
     },
     sectionSubtitle: {
         fontSize: 14,
@@ -1046,4 +1287,57 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontWeight: '600',
     },
+    // Dropdown styles
+    dropdownButton: {
+        borderWidth: 1,
+        borderColor: '#e0e0e0',
+        borderRadius: 8,
+        paddingHorizontal: 15,
+        paddingVertical: 12,
+        backgroundColor: '#fff',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    dropdownButtonText: {
+        fontSize: 16,
+        color: '#2c3e50',
+        flex: 1,
+    },
+    placeholderText: {
+        color: '#7f8c8d',
+    },
+    dropdownList: {
+        position: 'absolute',
+        top: '100%',
+        left: 0,
+        right: 0,
+        backgroundColor: '#fff',
+        borderWidth: 1,
+        borderColor: '#e0e0e0',
+        borderRadius: 8,
+        maxHeight: 200,
+        zIndex: 9999,
+        elevation: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        marginTop: 2,
+    },
+
+    dropdownScroll: {
+        maxHeight: 200,
+    },
+    dropdownItem: {
+        paddingVertical: 12,
+        paddingHorizontal: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: '#f0f0f0',
+    },
+    dropdownItemText: {
+        fontSize: 16,
+        color: '#2c3e50',
+    },
+
 }); 
