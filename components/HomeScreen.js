@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     View,
     Text,
@@ -22,6 +22,8 @@ import { supabase } from '../lib/supabase';
 
 const { width } = Dimensions.get('window');
 
+
+
 export default function HomeScreen({ navigation }) {
     const { user, signOut } = useAuth();
     const [profile, setProfile] = useState(null);
@@ -36,6 +38,8 @@ export default function HomeScreen({ navigation }) {
         minPrice: '',
         maxPrice: '',
     });
+    const [selectedPropertyIndex, setSelectedPropertyIndex] = useState(null);
+    const [currentImageIndex, setCurrentImageIndex] = useState({});
 
     useEffect(() => {
         if (user?.id) {
@@ -67,7 +71,7 @@ export default function HomeScreen({ navigation }) {
         try {
             let query = supabase
                 .from('properties')
-                .select('*')
+                .select('*, images')
                 .eq('status', 'approved')
                 .order('created_at', { ascending: false });
 
@@ -160,48 +164,138 @@ export default function HomeScreen({ navigation }) {
         </TouchableOpacity>
     );
 
-    const renderProperty = ({ item }) => (
-        <TouchableOpacity style={styles.propertyCard}>
-            <Image
-                source={{ uri: item.images?.[0] || 'https://via.placeholder.com/300x200' }}
-                style={styles.propertyImage}
-                resizeMode="cover"
-            />
-            <View style={styles.propertyInfo}>
-                <Text style={styles.propertyTitle} numberOfLines={2}>
-                    {item.title}
-                </Text>
-                <Text style={styles.propertyLocation}>
-                    {item.neighborhood}, {item.city}
-                </Text>
-                <View style={styles.propertyDetails}>
-                    <Text style={styles.propertyPrice}>
-                        R$ {item.price?.toLocaleString('pt-BR')}
-                    </Text>
-                    <View style={styles.propertyFeatures}>
-                        {item.bedrooms && (
-                            <Text style={styles.propertyFeature}>
-                                {item.bedrooms} quartos
+    const renderProperty = ({ item, index }) => {
+        const mediaFiles = item.images || [];
+        const currentIndex = currentImageIndex[index] || 0;
+
+        // Filtrar apenas imagens (excluir vídeos)
+        const imageFiles = mediaFiles.filter(file =>
+            !file.includes('.mp4') &&
+            !file.includes('.mov') &&
+            !file.includes('.avi') &&
+            !file.includes('.mkv') &&
+            !file.includes('.webm')
+        );
+
+        const hasMultipleMedia = imageFiles.length > 1;
+
+        // Fallback para quando não há imagens
+        const defaultImage = 'https://via.placeholder.com/300x200?text=Sem+Imagem';
+        const displayMediaFiles = imageFiles.length > 0 ? imageFiles : [defaultImage];
+
+        const handleImageScroll = (event) => {
+            const contentOffset = event.nativeEvent.contentOffset.x;
+            const imageIndex = Math.round(contentOffset / (width - 40)); // 40 é o padding
+            setCurrentImageIndex(prev => ({
+                ...prev,
+                [index]: imageIndex
+            }));
+        };
+
+        const renderMediaItem = ({ item: mediaItem, mediaIndex }) => {
+            return (
+                <Image
+                    source={{ uri: mediaItem }}
+                    style={styles.mediaItem}
+                    resizeMode="cover"
+                />
+            );
+        };
+
+        return (
+            <View style={styles.propertyCard}>
+                <View style={styles.mediaSection}>
+                    <FlatList
+                        data={displayMediaFiles}
+                        renderItem={renderMediaItem}
+                        keyExtractor={(mediaItem, mediaIndex) => `${index}-${mediaIndex}`}
+                        horizontal
+                        pagingEnabled
+                        showsHorizontalScrollIndicator={false}
+                        onScroll={handleImageScroll}
+                        scrollEventThrottle={16}
+                        style={styles.mediaList}
+                        nestedScrollEnabled={true}
+                        scrollEnabled={true}
+                        bounces={false}
+                        decelerationRate="fast"
+                    />
+
+                    {/* Indicadores de múltiplas imagens */}
+                    {hasMultipleMedia && (
+                        <View style={styles.mediaIndicators}>
+                            {displayMediaFiles.map((_, mediaIndex) => (
+                                <View
+                                    key={mediaIndex}
+                                    style={[
+                                        styles.mediaIndicator,
+                                        mediaIndex === currentIndex && styles.mediaIndicatorActive
+                                    ]}
+                                />
+                            ))}
+                        </View>
+                    )}
+
+                    {/* Indicador de quantidade de mídias */}
+                    {hasMultipleMedia && (
+                        <View style={styles.mediaCountBadge}>
+                            <Text style={styles.mediaCountText}>
+                                {currentIndex + 1}/{displayMediaFiles.length}
                             </Text>
-                        )}
-                        {item.bathrooms && (
-                            <Text style={styles.propertyFeature}>
-                                {item.bathrooms} banheiros
-                            </Text>
-                        )}
-                        {item.area && (
-                            <Text style={styles.propertyFeature}>
-                                {item.area}m²
-                            </Text>
-                        )}
-                    </View>
+                        </View>
+                    )}
                 </View>
-                <Text style={styles.propertyType}>
-                    {item.property_type} • {item.transaction_type}
-                </Text>
+
+                <TouchableOpacity
+                    style={styles.propertyInfo}
+                    onPress={() => {
+                        // Navegação para página de detalhes do imóvel
+                        // TODO: Implementar PropertyDetailsScreen
+                        Alert.alert(
+                            'Detalhes do Imóvel',
+                            `Página de detalhes para: ${item.title}\n\nEm breve será implementada!`,
+                            [{ text: 'OK' }]
+                        );
+                    }}
+                    activeOpacity={0.7}
+                    delayPressIn={150}
+                    delayLongPress={500}
+                >
+                    <Text style={styles.propertyTitle} numberOfLines={2}>
+                        {item.title}
+                    </Text>
+                    <Text style={styles.propertyLocation}>
+                        {item.neighborhood}, {item.city}
+                    </Text>
+                    <View style={styles.propertyDetails}>
+                        <Text style={styles.propertyPrice}>
+                            R$ {item.price?.toLocaleString('pt-BR')}
+                        </Text>
+                        <View style={styles.propertyFeatures}>
+                            {item.bedrooms && (
+                                <Text style={styles.propertyFeature}>
+                                    {item.bedrooms} quartos
+                                </Text>
+                            )}
+                            {item.bathrooms && (
+                                <Text style={styles.propertyFeature}>
+                                    {item.bathrooms} banheiros
+                                </Text>
+                            )}
+                            {item.area && (
+                                <Text style={styles.propertyFeature}>
+                                    {item.area}m²
+                                </Text>
+                            )}
+                        </View>
+                    </View>
+                    <Text style={styles.propertyType}>
+                        {item.property_type} • {item.transaction_type}
+                    </Text>
+                </TouchableOpacity>
             </View>
-        </TouchableOpacity>
-    );
+        );
+    };
 
     const renderFilterModal = () => (
         <Modal
@@ -381,6 +475,8 @@ export default function HomeScreen({ navigation }) {
 
 
 
+
+
             {/* Filter Modal */}
             {renderFilterModal()}
         </SafeAreaView>
@@ -516,14 +612,60 @@ const styles = StyleSheet.create({
         shadowRadius: 3.84,
         elevation: 5,
     },
-    propertyImage: {
-        width: '100%',
+    // Media Gallery Styles
+    mediaSection: {
+        position: 'relative',
         height: 200,
         borderTopLeftRadius: 12,
         borderTopRightRadius: 12,
+        overflow: 'hidden',
+    },
+    mediaList: {
+        height: 200,
+    },
+    mediaItem: {
+        width: width - 40, // 40 é o padding horizontal
+        height: 200,
+    },
+
+    mediaIndicators: {
+        position: 'absolute',
+        bottom: 15,
+        left: 15,
+        right: 15,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        gap: 8,
+    },
+    mediaIndicator: {
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    },
+    mediaIndicatorActive: {
+        backgroundColor: '#fff',
+        width: 20,
+    },
+    mediaCountBadge: {
+        position: 'absolute',
+        top: 15,
+        right: 15,
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 12,
+    },
+    mediaCountText: {
+        color: '#fff',
+        fontSize: 12,
+        fontWeight: '600',
     },
     propertyInfo: {
         padding: 15,
+        backgroundColor: '#fff',
+        borderBottomLeftRadius: 12,
+        borderBottomRightRadius: 12,
     },
     propertyTitle: {
         fontSize: 16,
@@ -658,4 +800,6 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '600',
     },
+
+
 }); 
