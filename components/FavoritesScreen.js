@@ -11,6 +11,7 @@ import {
     Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -25,6 +26,15 @@ export default function FavoritesScreen({ navigation }) {
             fetchFavorites();
         }
     }, [user?.id]);
+
+    // Sincronizar favoritos quando a tela receber foco
+    useFocusEffect(
+        React.useCallback(() => {
+            if (user?.id) {
+                fetchFavorites();
+            }
+        }, [user?.id])
+    );
 
     const fetchFavorites = async () => {
         try {
@@ -86,7 +96,6 @@ export default function FavoritesScreen({ navigation }) {
             } else {
                 // Atualizar lista local
                 setFavorites(prev => prev.filter(fav => fav.id !== favoriteId));
-                Alert.alert('Sucesso', 'Removido dos favoritos');
             }
         } catch (error) {
             console.error('Erro ao remover favorito:', error);

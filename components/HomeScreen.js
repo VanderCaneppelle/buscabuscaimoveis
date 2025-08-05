@@ -18,6 +18,7 @@ import {
     useColorScheme,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 
@@ -45,6 +46,7 @@ export default function HomeScreen({ navigation }) {
     const [currentImageIndex, setCurrentImageIndex] = useState({});
     const [showStoryModal, setShowStoryModal] = useState(false);
     const [selectedStory, setSelectedStory] = useState(null);
+    const [favorites, setFavorites] = useState({});
 
     // Cores dinâmicas baseadas no tema do dispositivo
     const colors = {
@@ -61,8 +63,18 @@ export default function HomeScreen({ navigation }) {
             fetchProfile();
             fetchProperties();
             fetchStories();
+            fetchFavorites();
         }
     }, [user?.id]);
+
+    // Sincronizar favoritos quando a tela receber foco
+    useFocusEffect(
+        React.useCallback(() => {
+            if (user?.id) {
+                fetchFavorites();
+            }
+        }, [user?.id])
+    );
 
     const fetchProfile = async () => {
         try {
@@ -186,7 +198,8 @@ export default function HomeScreen({ navigation }) {
         await Promise.all([
             fetchProperties(),
             fetchStories(),
-            fetchProfile()
+            fetchProfile(),
+            fetchFavorites()
         ]);
         setRefreshing(false);
     };
@@ -225,6 +238,72 @@ export default function HomeScreen({ navigation }) {
     const closeStoryModal = () => {
         setShowStoryModal(false);
         setSelectedStory(null);
+    };
+
+    const fetchFavorites = async () => {
+        if (!user?.id) return;
+
+        try {
+            const { data, error } = await supabase
+                .from('favorites')
+                .select('property_id')
+                .eq('user_id', user.id);
+
+            if (error) {
+                console.error('❌ Erro ao buscar favoritos:', error);
+            } else {
+                const favoritesMap = {};
+                data.forEach(fav => {
+                    favoritesMap[fav.property_id] = true;
+                });
+                setFavorites(favoritesMap);
+            }
+        } catch (error) {
+            console.error('❌ Erro ao buscar favoritos:', error);
+        }
+    };
+
+    const toggleFavorite = async (propertyId) => {
+        if (!user?.id) {
+            Alert.alert('Atenção', 'Você precisa estar logado para favoritar imóveis');
+            return;
+        }
+
+        try {
+            if (favorites[propertyId]) {
+                // Remover dos favoritos
+                const { error } = await supabase
+                    .from('favorites')
+                    .delete()
+                    .eq('user_id', user.id)
+                    .eq('property_id', propertyId);
+
+                if (error) {
+                    console.error('❌ Erro ao remover favorito:', error);
+                    Alert.alert('Erro', 'Não foi possível remover dos favoritos');
+                } else {
+                    setFavorites(prev => ({ ...prev, [propertyId]: false }));
+                }
+            } else {
+                // Adicionar aos favoritos
+                const { error } = await supabase
+                    .from('favorites')
+                    .insert({
+                        user_id: user.id,
+                        property_id: propertyId,
+                    });
+
+                if (error) {
+                    console.error('❌ Erro ao adicionar favorito:', error);
+                    Alert.alert('Erro', 'Não foi possível adicionar aos favoritos');
+                } else {
+                    setFavorites(prev => ({ ...prev, [propertyId]: true }));
+                }
+            }
+        } catch (error) {
+            console.error('❌ Erro ao gerenciar favorito:', error);
+            Alert.alert('Erro', 'Ocorreu um erro inesperado');
+        }
     };
 
 
@@ -335,18 +414,25 @@ export default function HomeScreen({ navigation }) {
                             </Text>
                         </View>
                     )}
+
+                    {/* Botão de Favoritos */}
+                    <TouchableOpacity
+                        style={styles.favoriteButton}
+                        onPress={() => toggleFavorite(item.id)}
+                        activeOpacity={0.8}
+                    >
+                        <Ionicons
+                            name={favorites[item.id] ? "heart" : "heart-outline"}
+                            size={24}
+                            color={favorites[item.id] ? "#dc2626" : "#fff"}
+                        />
+                    </TouchableOpacity>
                 </View>
 
                 <TouchableOpacity
                     style={styles.propertyInfo}
                     onPress={() => {
-                        // Navegação para página de detalhes do imóvel
-                        // TODO: Implementar PropertyDetailsScreen
-                        Alert.alert(
-                            'Detalhes do Imóvel',
-                            `Página de detalhes para: ${item.title}\n\nEm breve será implementada!`,
-                            [{ text: 'OK' }]
-                        );
+                        navigation.navigate('PropertyDetails', { property: item });
                     }}
                     activeOpacity={0.7}
                     delayPressIn={150}
@@ -683,15 +769,15 @@ const styles = StyleSheet.create({
         paddingBottom: 80,
     },
     storiesSection: {
-        marginTop: 30,
-        marginBottom: 30,
+        marginTop: 5,
+        marginBottom: 15,
         paddingTop: 10,
     },
     sectionTitle: {
         fontSize: 18,
         fontWeight: 'bold',
         color: '#1e3a8a',
-        marginBottom: 15,
+        marginBottom: 5,
         paddingHorizontal: 20,
     },
     storiesList: {
@@ -817,6 +903,15 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 12,
         fontWeight: '600',
+    },
+    favoriteButton: {
+        position: 'absolute',
+        top: 15,
+        left: 15,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        borderRadius: 20,
+        padding: 8,
+        zIndex: 10,
     },
     propertyInfo: {
         padding: 15,
@@ -989,8 +1084,8 @@ const styles = StyleSheet.create({
     },
 
     appTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
+        fontSize: 16,
+        fontWeight: 'normal',
         textAlign: 'center',
         marginBottom: 10,
         color: '#1e3a8a',
@@ -999,7 +1094,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginTop: 10,
+        marginTop: 5,
     },
     leftButtons: {
         flexDirection: 'row',

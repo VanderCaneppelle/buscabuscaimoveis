@@ -1,6 +1,6 @@
 {
   "cli": {
-    "version": ">= 16.17.4"
+    "version": ">= 6.0.0"
   },
   "build": {
     "development": {
@@ -11,13 +11,23 @@
       }
     },
     "preview": {
+      "distribution": "internal",
       "android": {
         "buildType": "apk"
       }
     },
-    "production": {}
+    "production": {
+      "android": {
+        "buildType": "apk"
+      },
+      "distribution": "store"
+    }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "android": {
+        "track": "internal" // ou "production", dependendo do canal do Google Play
+      }
+    }
   }
 }

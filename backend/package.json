@@ -1,0 +1,19 @@
+{
+    "name": "buscabuscaimoveis-backend",
+    "version": "1.0.0",
+    "description": "Backend para integração com Mercado Pago",
+    "type": "module",
+    "main": "index.js",
+    "scripts": {
+        "dev": "vercel dev",
+        "deploy": "vercel --prod"
+    },
+    "dependencies": {
+        "@supabase/supabase-js": "^2.38.0",
+        "axios": "^1.6.0",
+        "cors": "^2.8.5"
+    },
+    "devDependencies": {
+        "vercel": "^32.0.0"
+    }
+}

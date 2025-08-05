@@ -68,30 +68,38 @@ export default function PlansScreen({ navigation, route }) {
         try {
             setSubscribing(true);
 
-            const success = await PlanService.subscribeToPlan(user.id, selectedPlan.name);
+            // Se for plano gratuito, usar o método antigo
+            if (selectedPlan.name === 'free') {
+                const success = await PlanService.subscribeToPlan(user.id, selectedPlan.name);
 
-            if (success) {
-                Alert.alert(
-                    'Sucesso!',
-                    `Plano ${selectedPlan.display_name} contratado com sucesso!`,
-                    [
-                        {
-                            text: 'OK',
-                            onPress: () => {
-                                setShowConfirmModal(false);
-                                setSelectedPlan(null);
-                                loadPlansAndUserInfo(); // Recarregar dados
+                if (success) {
+                    Alert.alert(
+                        'Sucesso!',
+                        `Plano ${selectedPlan.display_name} contratado com sucesso!`,
+                        [
+                            {
+                                text: 'OK',
+                                onPress: () => {
+                                    setShowConfirmModal(false);
+                                    setSelectedPlan(null);
+                                    loadPlansAndUserInfo(); // Recarregar dados
 
-                                // Se veio da tela de anunciar, voltar
-                                if (route.params?.fromAdvertise) {
-                                    navigation.goBack();
+                                    // Se veio da tela de anunciar, voltar
+                                    if (route.params?.fromAdvertise) {
+                                        navigation.goBack();
+                                    }
                                 }
                             }
-                        }
-                    ]
-                );
+                        ]
+                    );
+                } else {
+                    Alert.alert('Erro', 'Não foi possível contratar o plano. Tente novamente.');
+                }
             } else {
-                Alert.alert('Erro', 'Não foi possível contratar o plano. Tente novamente.');
+                // Para planos pagos, navegar para a tela de pagamento
+                setShowConfirmModal(false);
+                setSelectedPlan(null);
+                navigation.navigate('Payment', { plan: selectedPlan });
             }
         } catch (error) {
             console.error('Erro ao contratar plano:', error);
@@ -272,11 +280,17 @@ export default function PlansScreen({ navigation, route }) {
                     <View style={styles.modalContent}>
                         <Text style={styles.modalTitle}>Confirmar Contratação</Text>
                         <Text style={styles.modalText}>
-                            Você está prestes a contratar o plano {selectedPlan?.display_name} por R$ {selectedPlan?.price?.toFixed(2).replace('.', ',')}/mês.
+                            Você está prestes a contratar o plano {selectedPlan?.display_name}.
                         </Text>
-                        <Text style={styles.modalSubtext}>
-                            Esta é uma simulação. Nenhum pagamento será processado.
-                        </Text>
+                        {selectedPlan?.name === 'free' ? (
+                            <Text style={styles.modalSubtext}>
+                                Este é um plano gratuito. Nenhum pagamento será processado.
+                            </Text>
+                        ) : (
+                            <Text style={styles.modalSubtext}>
+                                Pagamento será processado via Mercado Pago.
+                            </Text>
+                        )}
 
                         <View style={styles.modalButtons}>
                             <TouchableOpacity
@@ -294,7 +308,9 @@ export default function PlansScreen({ navigation, route }) {
                                 {subscribing ? (
                                     <ActivityIndicator size="small" color="#fff" />
                                 ) : (
-                                    <Text style={styles.modalConfirmText}>Confirmar</Text>
+                                    <Text style={styles.modalConfirmText}>
+                                        {selectedPlan?.name === 'free' ? 'Confirmar' : 'Pagar Agora'}
+                                    </Text>
                                 )}
                             </TouchableOpacity>
                         </View>

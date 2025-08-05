@@ -8,6 +8,9 @@ import LoginScreen from './components/LoginScreen';
 import MainNavigator from './components/MainNavigator';
 import PlansScreen from './components/PlansScreen';
 import CreateAdScreen from './components/CreateAdScreen';
+import PropertyDetailsScreen from './components/PropertyDetailsScreen';
+import PaymentScreen from './components/PaymentScreen';
+
 import ResetPasswordScreen from './components/ResetPasswordScreen';
 import TermsAcceptanceCheck from './components/TermsAcceptanceCheck';
 import * as Linking from 'expo-linking';
@@ -25,7 +28,7 @@ function AppContent() {
   }, [user, loading]);
 
   useEffect(() => {
-    // Verificar se o app foi aberto através de um deep link de reset de senha
+    // Verificar se o app foi aberto através de um deep link
     const checkInitialURL = async () => {
       try {
         const initialURL = await Linking.getInitialURL();
@@ -45,6 +48,10 @@ function AppContent() {
       console.log('URL changed:', event.url);
       if (event.url && (event.url.includes('reset-password') || event.url.includes('type=recovery'))) {
         setIsResetPassword(true);
+      } else if (event.url && event.url.includes('payment-success')) {
+        console.log('🎉 Deep link de sucesso de pagamento recebido');
+        // O usuário será redirecionado automaticamente para a tela de planos
+        // onde poderá ver que o plano foi ativado
       }
     });
 
@@ -81,6 +88,29 @@ function AppContent() {
         <Stack.Screen name="Main" component={MainNavigator} />
         <Stack.Screen name="Plans" component={PlansScreen} />
         <Stack.Screen name="CreateAd" component={CreateAdScreen} />
+        <Stack.Screen
+          name="PropertyDetails"
+          component={PropertyDetailsScreen}
+          options={{
+            headerShown: true,
+            title: 'Detalhes do Imóvel',
+            headerStyle: {
+              backgroundColor: '#1e3a8a',
+            },
+            headerTintColor: '#fff',
+            headerTitleStyle: {
+              fontWeight: 'bold',
+            },
+          }}
+        />
+        <Stack.Screen
+          name="Payment"
+          component={PaymentScreen}
+          options={{
+            headerShown: false
+          }}
+        />
+
       </Stack.Navigator>
     </NavigationContainer>
   ) : <LoginScreen />;

@@ -1,0 +1,14 @@
+{
+    "version": 2,
+    "functions": {
+        "api/webhook/mercadopago.js": {
+            "maxDuration": 30
+        },
+        "api/payments/create.js": {
+            "maxDuration": 30
+        },
+        "api/payments/status.js": {
+            "maxDuration": 30
+        }
+    }
+}
