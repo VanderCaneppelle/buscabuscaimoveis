@@ -15,6 +15,7 @@ import {
     Dimensions,
     KeyboardAvoidingView,
     Platform,
+    useColorScheme,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
@@ -26,12 +27,14 @@ const { width } = Dimensions.get('window');
 
 export default function HomeScreen({ navigation }) {
     const { user, signOut } = useAuth();
+    const colorScheme = useColorScheme();
     const [profile, setProfile] = useState(null);
     const [properties, setProperties] = useState([]);
     const [stories, setStories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [showFilters, setShowFilters] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
     const [filters, setFilters] = useState({
         city: '',
         propertyType: '',
@@ -40,6 +43,18 @@ export default function HomeScreen({ navigation }) {
     });
     const [selectedPropertyIndex, setSelectedPropertyIndex] = useState(null);
     const [currentImageIndex, setCurrentImageIndex] = useState({});
+    const [showStoryModal, setShowStoryModal] = useState(false);
+    const [selectedStory, setSelectedStory] = useState(null);
+
+    // Cores dinâmicas baseadas no tema do dispositivo
+    const colors = {
+        headerBg: '#ffffff', // Header sempre branco
+        headerBorder: '#e2e8f0',
+        textPrimary: '#1e3a8a',
+        textSecondary: '#64748b',
+        buttonBg: '#1e3a8a',
+        buttonText: '#ffffff',
+    };
 
     useEffect(() => {
         if (user?.id) {
@@ -67,7 +82,7 @@ export default function HomeScreen({ navigation }) {
         }
     };
 
-    const fetchProperties = async (customFilters = null) => {
+    const fetchProperties = async (customFilters = null, searchQuery = null) => {
         try {
             let query = supabase
                 .from('properties')
@@ -76,6 +91,12 @@ export default function HomeScreen({ navigation }) {
                 .order('created_at', { ascending: false });
 
             const activeFilters = customFilters || filters;
+            const activeSearch = searchQuery !== null ? searchQuery : searchTerm;
+
+            // Aplicar pesquisa
+            if (activeSearch) {
+                query = query.or(`title.ilike.%${activeSearch}%,city.ilike.%${activeSearch}%,neighborhood.ilike.%${activeSearch}%`);
+            }
 
             if (activeFilters.city) {
                 query = query.ilike('city', `%${activeFilters.city}%`);
@@ -116,7 +137,44 @@ export default function HomeScreen({ navigation }) {
             if (error) {
                 console.error('❌ Erro ao buscar stories:', error);
             } else {
-                setStories(data || []);
+                // Se não há stories no banco, usar dados de exemplo
+                if (!data || data.length === 0) {
+                    const sampleStories = [
+                        {
+                            id: '1',
+                            title: 'Novos Lançamentos',
+                            image_url: 'https://via.placeholder.com/80x80/1e3a8a/ffffff?text=NL',
+                            description: 'Confira os novos lançamentos exclusivos'
+                        },
+                        {
+                            id: '2',
+                            title: 'Ofertas Especiais',
+                            image_url: 'https://via.placeholder.com/80x80/f59e0b/ffffff?text=OE',
+                            description: 'Ofertas imperdíveis para você'
+                        },
+                        {
+                            id: '3',
+                            title: 'Área Premium',
+                            image_url: 'https://via.placeholder.com/80x80/059669/ffffff?text=AP',
+                            description: 'Imóveis em áreas nobres da cidade'
+                        },
+                        {
+                            id: '4',
+                            title: 'Financiamento',
+                            image_url: 'https://via.placeholder.com/80x80/dc2626/ffffff?text=FIN',
+                            description: 'Condições especiais de financiamento'
+                        },
+                        {
+                            id: '5',
+                            title: 'Plantão',
+                            image_url: 'https://via.placeholder.com/80x80/7c3aed/ffffff?text=PL',
+                            description: 'Plantão de vendas 24h'
+                        }
+                    ];
+                    setStories(sampleStories);
+                } else {
+                    setStories(data);
+                }
             }
         } catch (error) {
             console.error('❌ Erro ao buscar stories:', error);
@@ -133,6 +191,16 @@ export default function HomeScreen({ navigation }) {
         setRefreshing(false);
     };
 
+    const handleSearch = (text) => {
+        setSearchTerm(text);
+        fetchProperties(filters, text);
+    };
+
+    const clearSearch = () => {
+        setSearchTerm('');
+        fetchProperties(filters, '');
+    };
+
     const clearFilters = () => {
         const clearedFilters = {
             city: '',
@@ -141,25 +209,48 @@ export default function HomeScreen({ navigation }) {
             maxPrice: '',
         };
         setFilters(clearedFilters);
-        fetchProperties(clearedFilters);
+        fetchProperties(clearedFilters, searchTerm);
     };
 
     const applyFilters = () => {
-        fetchProperties();
+        fetchProperties(filters, searchTerm);
         setShowFilters(false);
+    };
+
+    const openStoryModal = (story) => {
+        setSelectedStory(story);
+        setShowStoryModal(true);
+    };
+
+    const closeStoryModal = () => {
+        setShowStoryModal(false);
+        setSelectedStory(null);
     };
 
 
 
     const renderStory = ({ item }) => (
-        <TouchableOpacity style={styles.storyCard}>
-            <Image
-                source={{ uri: item.image_url || 'https://via.placeholder.com/80x80' }}
-                style={styles.storyImage}
-                resizeMode="cover"
-            />
+        <TouchableOpacity
+            style={styles.storyCard}
+            onPress={() => openStoryModal(item)}
+            activeOpacity={0.7}
+        >
+            <View style={styles.storyImageContainer}>
+                <Image
+                    source={{ uri: item.image_url || 'https://via.placeholder.com/80x80?text=Story' }}
+                    style={styles.storyImage}
+                    resizeMode="cover"
+                />
+                {!item.image_url && (
+                    <View style={styles.storyPlaceholder}>
+                        <Ionicons name="image-outline" size={24} color="#1e3a8a" />
+                    </View>
+                )}
+                {/* Borda colorida ao redor da bolha */}
+                <View style={styles.storyBorder} />
+            </View>
             <Text style={styles.storyTitle} numberOfLines={2}>
-                {item.title}
+                {item.title || 'Story em Destaque'}
             </Text>
         </TouchableOpacity>
     );
@@ -297,6 +388,46 @@ export default function HomeScreen({ navigation }) {
         );
     };
 
+    const renderStoryModal = () => (
+        <Modal
+            visible={showStoryModal}
+            transparent={true}
+            animationType="fade"
+            onRequestClose={closeStoryModal}
+        >
+            <View style={styles.storyModalOverlay}>
+                <TouchableOpacity
+                    style={styles.storyModalCloseButton}
+                    onPress={closeStoryModal}
+                >
+                    <Ionicons name="close" size={30} color="#fff" />
+                </TouchableOpacity>
+
+                <View style={styles.storyModalContent}>
+                    <Image
+                        source={{
+                            uri: selectedStory?.image_url || 'https://via.placeholder.com/400x600?text=Story+Image'
+                        }}
+                        style={styles.storyModalImage}
+                        resizeMode="contain"
+                    />
+                    {selectedStory?.title && (
+                        <View style={styles.storyModalInfo}>
+                            <Text style={styles.storyModalTitle}>
+                                {selectedStory.title}
+                            </Text>
+                            {selectedStory?.description && (
+                                <Text style={styles.storyModalDescription}>
+                                    {selectedStory.description}
+                                </Text>
+                            )}
+                        </View>
+                    )}
+                </View>
+            </View>
+        </Modal>
+    );
+
     const renderFilterModal = () => (
         <Modal
             visible={showFilters}
@@ -395,6 +526,10 @@ export default function HomeScreen({ navigation }) {
         <SafeAreaView style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
+                {/* Nome do app - pequeno e acima da barra de pesquisa */}
+                <Text style={styles.appTitle}>BuscaBusca Imóveis</Text>
+
+                {/* Primeira linha: Logo + Barra de Pesquisa */}
                 <View style={styles.headerTop}>
                     <View style={styles.headerLogo}>
                         <Image
@@ -403,14 +538,50 @@ export default function HomeScreen({ navigation }) {
                             resizeMode="contain"
                         />
                     </View>
-                    <Text style={styles.title}>BuscaBusca Imóveis</Text>
-                    <TouchableOpacity onPress={() => setShowFilters(true)} style={styles.filterButton}>
-                        <Ionicons name="filter" size={24} color="#fff" />
-                    </TouchableOpacity>
+
+                    {/* Barra de Pesquisa */}
+                    <View style={styles.searchBar}>
+                        <Ionicons name="search" size={20} color="#7f8c8d" style={styles.searchIcon} />
+                        <TextInput
+                            style={styles.searchInput}
+                            placeholder="Buscar imóveis..."
+                            placeholderTextColor="#7f8c8d"
+                            value={searchTerm}
+                            onChangeText={handleSearch}
+                            returnKeyType="search"
+                        />
+                        {searchTerm.length > 0 && (
+                            <TouchableOpacity onPress={clearSearch} style={styles.clearSearchButton}>
+                                <Ionicons name="close-circle" size={20} color="#7f8c8d" />
+                            </TouchableOpacity>
+                        )}
+                    </View>
                 </View>
-                <Text style={styles.welcome}>
-                    Bem-vindo, {profile?.full_name || user?.email || 'Usuário'}!
-                </Text>
+
+                {/* Segunda linha: Filtros + Ver Mapa + Ordenar */}
+                <View style={styles.headerBottom}>
+                    <View style={styles.leftButtons}>
+                        <TouchableOpacity onPress={() => setShowFilters(true)} style={styles.filterButton}>
+                            <Ionicons name="filter" size={20} color="#fff" />
+                        </TouchableOpacity>
+
+                        <TouchableOpacity onPress={clearFilters} style={styles.clearFiltersButton}>
+                            <Text style={styles.clearFiltersText}>Limpar Filtros</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    <View style={styles.actionButtons}>
+                        <TouchableOpacity style={styles.actionButton}>
+                            <Ionicons name="map" size={18} color="#fff" />
+                            <Text style={styles.actionButtonText}>Ver Mapa</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity style={styles.actionButton}>
+                            <Ionicons name="swap-vertical" size={18} color="#fff" />
+                            <Text style={styles.actionButtonText}>Ordenar</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
             </View>
 
             {/* Content */}
@@ -424,37 +595,16 @@ export default function HomeScreen({ navigation }) {
                 ListHeaderComponent={
                     <>
                         {/* Stories */}
-                        {stories.length > 0 && (
-                            <View style={styles.storiesSection}>
-                                <Text style={styles.sectionTitle}>Destaques</Text>
-                                <FlatList
-                                    data={stories}
-                                    renderItem={renderStory}
-                                    keyExtractor={(item) => item.id}
-                                    horizontal
-                                    showsHorizontalScrollIndicator={false}
-                                    contentContainerStyle={styles.storiesList}
-                                />
-                            </View>
-                        )}
-
-                        {/* Action Buttons */}
-                        <View style={styles.actionButtons}>
-                            <TouchableOpacity
-                                style={styles.actionButton}
-                                onPress={() => navigation.navigate('CreateAd')}
-                            >
-                                <Ionicons name="add-circle" size={20} color="#1e3a8a" />
-                                <Text style={styles.actionButtonText}>Criar Anúncio</Text>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity
-                                style={styles.actionButton}
-                                onPress={() => navigation.navigate('Plans')}
-                            >
-                                <Ionicons name="card" size={20} color="#f59e0b" />
-                                <Text style={styles.actionButtonText}>Ver Planos</Text>
-                            </TouchableOpacity>
+                        <View style={styles.storiesSection}>
+                            <Text style={styles.sectionTitle}>Destaques</Text>
+                            <FlatList
+                                data={stories}
+                                renderItem={renderStory}
+                                keyExtractor={(item) => item.id}
+                                horizontal
+                                showsHorizontalScrollIndicator={false}
+                                contentContainerStyle={styles.storiesList}
+                            />
                         </View>
 
                         {/* Properties Section */}
@@ -477,12 +627,11 @@ export default function HomeScreen({ navigation }) {
                 contentContainerStyle={styles.listContainer}
             />
 
-
-
-
-
             {/* Filter Modal */}
             {renderFilterModal()}
+
+            {/* Story Modal */}
+            {renderStoryModal()}
         </SafeAreaView>
     );
 }
@@ -493,15 +642,14 @@ const styles = StyleSheet.create({
         backgroundColor: '#f8f9fa',
     },
     header: {
-        backgroundColor: '#1e3a8a', // Azul escuro da logo
         padding: 20,
         paddingTop: 20,
+        paddingBottom: 20,
     },
     headerTop: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: 10,
+        gap: 15,
     },
     headerLogo: {
         alignItems: 'center',
@@ -512,21 +660,16 @@ const styles = StyleSheet.create({
         height: 40,
         borderRadius: 20,
     },
-    title: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#fff',
-        flex: 1,
-        textAlign: 'center',
-    },
     filterButton: {
-        padding: 5,
+        borderRadius: 20,
+        padding: 10,
+        width: 40,
+        height: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#1e3a8a',
     },
-    welcome: {
-        fontSize: 16,
-        color: '#e2e8f0',
-        textAlign: 'center',
-    },
+
     loadingContainer: {
         flex: 1,
         justifyContent: 'center',
@@ -540,8 +683,9 @@ const styles = StyleSheet.create({
         paddingBottom: 80,
     },
     storiesSection: {
-        marginTop: 20,
-        marginBottom: 20,
+        marginTop: 30,
+        marginBottom: 30,
+        paddingTop: 10,
     },
     sectionTitle: {
         fontSize: 18,
@@ -552,17 +696,54 @@ const styles = StyleSheet.create({
     },
     storiesList: {
         paddingHorizontal: 20,
+        paddingVertical: 10,
     },
     storyCard: {
         width: 80,
         marginRight: 15,
         alignItems: 'center',
+        paddingTop: 5,
+    },
+    storyImageContainer: {
+        position: 'relative',
+        marginBottom: 8,
+        width: 70,
+        height: 70,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 5,
     },
     storyImage: {
         width: 60,
         height: 60,
         borderRadius: 30,
-        marginBottom: 8,
+        borderWidth: 3,
+        borderColor: '#fff',
+    },
+    storyPlaceholder: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: '#f1f5f9',
+        borderRadius: 30,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 2,
+        borderColor: '#e2e8f0',
+        borderStyle: 'dashed',
+    },
+    storyBorder: {
+        position: 'absolute',
+        top: -2,
+        left: -2,
+        right: -2,
+        bottom: -2,
+        borderRadius: 37,
+        borderWidth: 2,
+        borderColor: '#1e3a8a',
+        backgroundColor: 'transparent',
     },
     storyTitle: {
         fontSize: 12,
@@ -570,38 +751,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontWeight: '500',
     },
-    actionButtons: {
-        flexDirection: 'row',
-        gap: 15,
-        marginBottom: 20,
-        paddingHorizontal: 20,
-    },
-    actionButton: {
-        backgroundColor: '#fff',
-        paddingHorizontal: 20,
-        paddingVertical: 15,
-        borderRadius: 10,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flex: 1,
-        borderWidth: 1,
-        borderColor: '#e2e8f0',
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.1,
-        shadowRadius: 3.84,
-        elevation: 3,
-    },
-    actionButtonText: {
-        color: '#1e3a8a',
-        fontSize: 14,
-        fontWeight: '600',
-        marginLeft: 8,
-    },
+
     propertiesSection: {
         marginBottom: 10,
     },
@@ -808,5 +958,126 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
 
+
+    searchBar: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+        borderRadius: 25,
+        paddingHorizontal: 15,
+        paddingVertical: 12,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 3.84,
+        elevation: 3,
+    },
+    searchIcon: {
+        marginRight: 10,
+    },
+    searchInput: {
+        flex: 1,
+        fontSize: 16,
+        color: '#1e3a8a',
+    },
+    clearSearchButton: {
+        padding: 5,
+    },
+
+    appTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        marginBottom: 10,
+        color: '#1e3a8a',
+    },
+    headerBottom: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginTop: 10,
+    },
+    leftButtons: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 15,
+    },
+    actionButtons: {
+        flexDirection: 'row',
+        gap: 15,
+    },
+    actionButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderRadius: 20,
+        paddingVertical: 8,
+        paddingHorizontal: 15,
+        gap: 5,
+        backgroundColor: '#1e3a8a',
+    },
+    actionButtonText: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#ffffff',
+    },
+    clearFiltersButton: {
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+    },
+    clearFiltersText: {
+        fontSize: 14,
+        fontWeight: '500',
+        color: '#1e3a8a',
+    },
+
+    // Story Modal Styles
+    storyModalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.9)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    storyModalCloseButton: {
+        position: 'absolute',
+        top: 50,
+        right: 20,
+        zIndex: 10,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        borderRadius: 20,
+        padding: 10,
+    },
+    storyModalContent: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+    },
+    storyModalImage: {
+        width: '100%',
+        height: '70%',
+        borderRadius: 12,
+    },
+    storyModalInfo: {
+        marginTop: 20,
+        alignItems: 'center',
+        maxWidth: '80%',
+    },
+    storyModalTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#fff',
+        textAlign: 'center',
+        marginBottom: 10,
+    },
+    storyModalDescription: {
+        fontSize: 16,
+        color: '#e2e8f0',
+        textAlign: 'center',
+        lineHeight: 24,
+    },
 
 }); 
