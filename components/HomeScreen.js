@@ -396,8 +396,12 @@ export default function HomeScreen({ navigation }) {
             {/* Header */}
             <View style={styles.header}>
                 <View style={styles.headerTop}>
-                    <View style={styles.headerIcon}>
-                        <Ionicons name="home" size={30} color="#fff" />
+                    <View style={styles.headerLogo}>
+                        <Image
+                            source={require('../assets/logo_bb.jpg')}
+                            style={styles.logo}
+                            resizeMode="contain"
+                        />
                     </View>
                     <Text style={styles.title}>BuscaBusca Imóveis</Text>
                     <TouchableOpacity onPress={() => setShowFilters(true)} style={styles.filterButton}>
@@ -440,7 +444,7 @@ export default function HomeScreen({ navigation }) {
                                 style={styles.actionButton}
                                 onPress={() => navigation.navigate('CreateAd')}
                             >
-                                <Ionicons name="add-circle" size={20} color="#3498db" />
+                                <Ionicons name="add-circle" size={20} color="#1e3a8a" />
                                 <Text style={styles.actionButtonText}>Criar Anúncio</Text>
                             </TouchableOpacity>
 
@@ -448,7 +452,7 @@ export default function HomeScreen({ navigation }) {
                                 style={styles.actionButton}
                                 onPress={() => navigation.navigate('Plans')}
                             >
-                                <Ionicons name="card" size={20} color="#f39c12" />
+                                <Ionicons name="card" size={20} color="#f59e0b" />
                                 <Text style={styles.actionButtonText}>Ver Planos</Text>
                             </TouchableOpacity>
                         </View>
@@ -486,10 +490,10 @@ export default function HomeScreen({ navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f5f5f5',
+        backgroundColor: '#f8f9fa',
     },
     header: {
-        backgroundColor: '#3498db',
+        backgroundColor: '#1e3a8a', // Azul escuro da logo
         padding: 20,
         paddingTop: 20,
     },
@@ -499,10 +503,14 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         marginBottom: 10,
     },
-    headerIcon: {
-        padding: 10,
-        backgroundColor: 'rgba(255, 255, 255, 0.2)',
-        borderRadius: 25,
+    headerLogo: {
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    logo: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
     },
     title: {
         fontSize: 20,
@@ -516,8 +524,7 @@ const styles = StyleSheet.create({
     },
     welcome: {
         fontSize: 16,
-        color: '#fff',
-        opacity: 0.9,
+        color: '#e2e8f0',
         textAlign: 'center',
     },
     loadingContainer: {
@@ -539,7 +546,7 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#2c3e50',
+        color: '#1e3a8a',
         marginBottom: 15,
         paddingHorizontal: 20,
     },
@@ -559,7 +566,7 @@ const styles = StyleSheet.create({
     },
     storyTitle: {
         fontSize: 12,
-        color: '#2c3e50',
+        color: '#1e3a8a',
         textAlign: 'center',
         fontWeight: '500',
     },
@@ -579,7 +586,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         flex: 1,
         borderWidth: 1,
-        borderColor: '#e0e0e0',
+        borderColor: '#e2e8f0',
         shadowColor: '#000',
         shadowOffset: {
             width: 0,
@@ -590,7 +597,7 @@ const styles = StyleSheet.create({
         elevation: 3,
     },
     actionButtonText: {
-        color: '#2c3e50',
+        color: '#1e3a8a',
         fontSize: 14,
         fontWeight: '600',
         marginLeft: 8,
@@ -670,12 +677,12 @@ const styles = StyleSheet.create({
     propertyTitle: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#2c3e50',
+        color: '#1e3a8a',
         marginBottom: 5,
     },
     propertyLocation: {
         fontSize: 14,
-        color: '#7f8c8d',
+        color: '#64748b',
         marginBottom: 10,
     },
     propertyDetails: {
@@ -687,7 +694,7 @@ const styles = StyleSheet.create({
     propertyPrice: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#3498db',
+        color: '#059669',
     },
     propertyFeatures: {
         flexDirection: 'row',
@@ -695,8 +702,8 @@ const styles = StyleSheet.create({
     },
     propertyFeature: {
         fontSize: 12,
-        color: '#7f8c8d',
-        backgroundColor: '#f8f9fa',
+        color: '#64748b',
+        backgroundColor: '#f1f5f9',
         paddingHorizontal: 8,
         paddingVertical: 4,
         borderRadius: 12,
@@ -745,7 +752,7 @@ const styles = StyleSheet.create({
     modalTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#2c3e50',
+        color: '#1e3a8a',
     },
     filtersContainer: {
         padding: 20,
@@ -757,17 +764,17 @@ const styles = StyleSheet.create({
     filterLabel: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#2c3e50',
+        color: '#1e3a8a',
         marginBottom: 8,
     },
     filterInput: {
         borderWidth: 1,
-        borderColor: '#e0e0e0',
+        borderColor: '#e2e8f0',
         borderRadius: 8,
         paddingHorizontal: 15,
         paddingVertical: 12,
         fontSize: 16,
-        color: '#2c3e50',
+        color: '#1e3a8a',
         backgroundColor: '#fff',
     },
     filterButtons: {
@@ -778,19 +785,19 @@ const styles = StyleSheet.create({
     clearButton: {
         flex: 1,
         borderWidth: 1,
-        borderColor: '#3498db',
+        borderColor: '#1e3a8a',
         borderRadius: 8,
         paddingVertical: 12,
         alignItems: 'center',
     },
     clearButtonText: {
-        color: '#3498db',
+        color: '#1e3a8a',
         fontSize: 16,
         fontWeight: '600',
     },
     applyButton: {
         flex: 1,
-        backgroundColor: '#3498db',
+        backgroundColor: '#1e3a8a',
         borderRadius: 8,
         paddingVertical: 12,
         alignItems: 'center',

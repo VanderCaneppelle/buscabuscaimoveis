@@ -11,6 +11,7 @@ import {
     ScrollView,
     TouchableWithoutFeedback,
     Keyboard,
+    Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
@@ -104,8 +105,12 @@ export default function LoginScreen() {
                     keyboardShouldPersistTaps="handled"
                 >
                     <View style={styles.content}>
-                        <View style={styles.iconContainer}>
-                            <Ionicons name="home" size={60} color="#3498db" />
+                        <View style={styles.logoContainer}>
+                            <Image
+                                source={require('../assets/logo_bb.jpg')}
+                                style={styles.logo}
+                                resizeMode="contain"
+                            />
                         </View>
                         <Text style={styles.title}>BuscaBusca Imóveis</Text>
                         <Text style={styles.subtitle}>
@@ -203,7 +208,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f5f5f5',
+        backgroundColor: '#f8f9fa',
     },
     scrollContainer: {
         flexGrow: 1,
@@ -214,11 +219,15 @@ const styles = StyleSheet.create({
         padding: 20,
         alignItems: 'center',
     },
-    iconContainer: {
+    logoContainer: {
         marginBottom: 20,
-        padding: 20,
-        backgroundColor: '#fff',
-        borderRadius: 50,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    logo: {
+        width: 120,
+        height: 120,
+        borderRadius: 60,
         shadowColor: '#000',
         shadowOffset: {
             width: 0,
@@ -231,12 +240,12 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 28,
         fontWeight: 'bold',
-        color: '#2c3e50',
+        color: '#1e3a8a',
         marginBottom: 10,
     },
     subtitle: {
         fontSize: 16,
-        color: '#7f8c8d',
+        color: '#64748b',
         marginBottom: 40,
         textAlign: 'center',
     },
@@ -251,7 +260,7 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         marginBottom: 15,
         borderWidth: 1,
-        borderColor: '#ddd',
+        borderColor: '#e2e8f0',
         paddingHorizontal: 15,
     },
     inputIcon: {
@@ -264,7 +273,7 @@ const styles = StyleSheet.create({
         color: '#000', // Cor do texto para ser visível
     },
     button: {
-        backgroundColor: '#3498db',
+        backgroundColor: '#1e3a8a',
         borderRadius: 10,
         padding: 15,
         flexDirection: 'row',
@@ -295,7 +304,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     switchText: {
-        color: '#3498db',
+        color: '#1e3a8a',
         fontSize: 14,
     },
     forgotButton: {

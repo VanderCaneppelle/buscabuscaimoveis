@@ -4,6 +4,12 @@ export default {
   version: '1.0.0',
   orientation: 'portrait',
   scheme: 'buscabuscaimoveis',
+  icon: './assets/logo_bb.jpg',
+  splash: {
+    image: './assets/logo_bb.jpg',
+    resizeMode: 'contain',
+    backgroundColor: '#1e3a8a'
+  },
   ios: {
     bundleIdentifier: 'com.appsimples.app',
     infoPlist: {

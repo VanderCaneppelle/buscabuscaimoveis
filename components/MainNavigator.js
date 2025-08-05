@@ -34,12 +34,12 @@ export default function MainNavigator() {
 
                     return <Ionicons name={iconName} size={size} color={color} />;
                 },
-                tabBarActiveTintColor: '#3498db',
-                tabBarInactiveTintColor: '#7f8c8d',
+                tabBarActiveTintColor: '#1e3a8a',
+                tabBarInactiveTintColor: '#64748b',
                 tabBarStyle: {
                     backgroundColor: '#fff',
                     borderTopWidth: 1,
-                    borderTopColor: '#e0e0e0',
+                    borderTopColor: '#e2e8f0',
                     paddingTop: 8,
                     paddingBottom: insets.bottom + 8,
                     height: 60 + insets.bottom,

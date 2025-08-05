@@ -865,7 +865,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                 style={styles.mediaOption}
                                 onPress={() => handleAddMedia('camera')}
                             >
-                                <View style={[styles.mediaOptionIcon, { backgroundColor: '#3498db' }]}>
+                                <View style={[styles.mediaOptionIcon, { backgroundColor: '#1e3a8a' }]}>
                                     <Ionicons name="camera" size={32} color="#fff" />
                                 </View>
                                 <Text style={styles.mediaOptionText}>Tirar Foto</Text>
@@ -1150,7 +1150,7 @@ const styles = StyleSheet.create({
         paddingBottom: 30,
     },
     submitButton: {
-        backgroundColor: '#3498db',
+        backgroundColor: '#1e3a8a',
         borderRadius: 12,
         paddingVertical: 15,
         alignItems: 'center',
