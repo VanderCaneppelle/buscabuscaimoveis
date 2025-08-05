@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes do Imóvel - BuscaBusca Imóveis</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+        }
+
+        .back-button {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.2rem;
+            padding: 0.5rem;
+            margin-right: 1rem;
+        }
+
+        .property-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+
+        .property-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .property-location {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .property-price {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #28a745;
+        }
+
+        .property-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .property-images {
+            position: relative;
+            height: 400px;
+            overflow: hidden;
+        }
+
+        .property-images img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-counter {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .property-info {
+            padding: 2rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-item {
+            text-align: center;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .info-item i {
+            font-size: 2rem;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 0.25rem;
+        }
+
+        .info-value {
+            color: #666;
+        }
+
+        .status-badge {
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
+        }
+
+        .whatsapp-button {
+            background: #25d366;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+        }
+
+        .whatsapp-button:hover {
+            background: #128c7e;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+        }
+
+        .description-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .description-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .description-text {
+            line-height: 1.8;
+            color: #666;
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-size: 1.2rem;
+            color: #666;
+        }
+
+        .error-message {
+            text-align: center;
+            padding: 2rem;
+            color: #dc3545;
+        }
+
+        .property-details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .detail-section {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 0.5rem;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-weight: 500;
+            color: #666;
+        }
+
+        .detail-value {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .contact-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .contact-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        .contact-text {
+            margin-bottom: 1.5rem;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Loading -->
+    <div id="loading" class="loading">
+        <div class="spinner-border text-primary me-3" role="status">
+            <span class="visually-hidden">Carregando...</span>
+        </div>
+        Carregando detalhes do imóvel...
+    </div>
+
+    <!-- Error Message -->
+    <div id="error-message" class="error-message" style="display: none;">
+        <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+        <h4>Erro ao carregar detalhes</h4>
+        <p id="error-text">Não foi possível carregar os detalhes do imóvel.</p>
+        <button class="btn btn-primary" onclick="window.history.back()">Voltar</button>
+    </div>
+
+    <!-- Main Content -->
+    <div id="main-content" style="display: none;">
+        <!-- Navigation -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <button class="back-button" onclick="window.history.back()">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <a class="navbar-brand" href="#">
+                    <i class="fas fa-home me-2"></i>
+                    BuscaBusca Imóveis
+                </a>
+                <div class="navbar-nav ms-auto">
+                    <span class="navbar-text">
+                        <i class="fas fa-user me-2"></i>
+                        <span id="admin-name">Administrador</span>
+                    </span>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Property Header -->
+        <div class="property-header">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 id="property-title" class="property-title">Carregando...</h1>
+                        <p id="property-location" class="property-location">
+                            <i class="fas fa-map-marker-alt me-2"></i>
+                            Carregando localização...
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div id="property-price" class="property-price">R$ --</div>
+                        <span id="status-badge" class="badge status-badge bg-warning">Carregando...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <!-- Property Images -->
+            <div class="property-card">
+                <div class="property-images" id="property-images">
+                    <img src="https://via.placeholder.com/800x400?text=Carregando+Imagem" alt="Imagem do imóvel">
+                    <div class="image-counter" id="image-counter" style="display: none;">1/1</div>
+                </div>
+            </div>
+
+            <!-- Property Details Grid -->
+            <div class="property-details-grid">
+                <!-- Basic Info -->
+                <div class="detail-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Informações Básicas
+                    </h3>
+                    <div class="detail-item">
+                        <span class="detail-label">Tipo de Imóvel</span>
+                        <span class="detail-value" id="property-type">--</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Tipo de Transação</span>
+                        <span class="detail-value" id="transaction-type">--</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Preço</span>
+                        <span class="detail-value" id="price-display">R$ --</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Status</span>
+                        <span class="detail-value" id="status-display">--</span>
+                    </div>
+                </div>
+
+                <!-- Property Features -->
+                <div class="detail-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-home me-2"></i>
+                        Características
+                    </h3>
+                    <div class="detail-item">
+                        <span class="detail-label">Quartos</span>
+                        <span class="detail-value" id="bedrooms">--</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Banheiros</span>
+                        <span class="detail-value" id="bathrooms">--</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Vagas</span>
+                        <span class="detail-value" id="parking-spaces">--</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Área</span>
+                        <span class="detail-value" id="area">--</span>
+                    </div>
+                </div>
+
+                <!-- Location Info -->
+                <div class="detail-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-map-marker-alt me-2"></i>
+                        Localização
+                    </h3>
+                    <div class="detail-item">
+                        <span class="detail-label">Cidade</span>
+                        <span class="detail-value" id="city">--</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Bairro</span>
+                        <span class="detail-value" id="neighborhood">--</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">CEP</span>
+                        <span class="detail-value" id="zip-code">--</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Data de Criação</span>
+                        <span class="detail-value" id="created-date">--</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Section -->
+            <div class="contact-section">
+                <h3 class="contact-title">
+                    <i class="fab fa-whatsapp me-2"></i>
+                    Solicitar Informações
+                </h3>
+                <p class="contact-text">
+                    Para aprovar este anúncio, entre em contato com o usuário que o publicou para solicitar documentos e
+                    informações adicionais.
+                </p>
+                <a href="#" id="whatsapp-link" class="whatsapp-button" target="_blank">
+                    <i class="fab fa-whatsapp"></i>
+                    Solicitar Informações
+                </a>
+            </div>
+
+            <!-- Description -->
+            <div class="description-card" id="description-section" style="display: none;">
+                <h3 class="description-title">
+                    <i class="fas fa-align-left me-2"></i>
+                    Descrição
+                </h3>
+                <p id="description-text" class="description-text">
+                    Carregando descrição...
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Property Details Script -->
+    <script src="property-details.js"></script>
+</body>
+
+</html>
