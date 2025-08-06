@@ -68,8 +68,30 @@ export default function PlansScreen({ navigation, route }) {
             return;
         }
 
-        setSelectedPlan(plan);
-        setShowConfirmModal(true);
+        // Verificar se está tentando voltar para plano gratuito
+        if (plan.name === 'free' && userPlan?.plan?.plan_name !== 'free') {
+            Alert.alert(
+                'Downgrade para Plano Gratuito',
+                'Para voltar ao plano gratuito, entre em contato com nosso suporte através do WhatsApp ou email.',
+                [
+                    { text: 'Cancelar', style: 'cancel' },
+                    {
+                        text: 'Entendi',
+                        style: 'default'
+                    }
+                ]
+            );
+            return;
+        }
+
+        // Se for plano gratuito (e não for downgrade), usar método antigo
+        if (plan.name === 'free') {
+            setSelectedPlan(plan);
+            setShowConfirmModal(true);
+        } else {
+            // Para planos pagos, ir direto para PaymentDetails
+            navigation.navigate('PaymentDetails', { plan: plan });
+        }
     };
 
     const handleSubscribe = async () => {
@@ -161,6 +183,7 @@ export default function PlansScreen({ navigation, route }) {
         const isCurrentPlan = userPlan?.plan?.plan_name === plan.name;
         const isFreePlan = plan.name === 'free';
         const isPopular = plan.name === 'silver';
+        const isDowngradeToFree = isFreePlan && userPlan?.plan?.plan_name !== 'free';
 
         return (
             <TouchableOpacity
@@ -208,16 +231,19 @@ export default function PlansScreen({ navigation, route }) {
                 <TouchableOpacity
                     style={[
                         styles.selectButton,
-                        isCurrentPlan && styles.currentPlanButton
+                        isCurrentPlan && styles.currentPlanButton,
+                        isDowngradeToFree && styles.disabledButton
                     ]}
                     onPress={() => handlePlanSelection(plan)}
-                    disabled={isCurrentPlan}
+                    disabled={isCurrentPlan || isDowngradeToFree}
                 >
                     <Text style={[
                         styles.selectButtonText,
-                        isCurrentPlan && styles.currentPlanButtonText
+                        isCurrentPlan && styles.currentPlanButtonText,
+                        isDowngradeToFree && styles.disabledButtonText
                     ]}>
-                        {isCurrentPlan ? 'Plano Atual' : 'Selecionar Plano'}
+                        {isCurrentPlan ? 'Plano Atual' :
+                            isDowngradeToFree ? 'Contatar Suporte' : 'Selecionar Plano'}
                     </Text>
                 </TouchableOpacity>
             </TouchableOpacity>
@@ -677,5 +703,13 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 16,
         fontWeight: '600',
+    },
+    disabledButton: {
+        backgroundColor: '#bdc3c7',
+        borderWidth: 1,
+        borderColor: '#95a5a6',
+    },
+    disabledButtonText: {
+        color: '#7f8c8d',
     },
 }); 

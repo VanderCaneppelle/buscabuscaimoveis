@@ -14,12 +14,70 @@ import * as WebBrowser from 'expo-web-browser';
 import { BackendService } from '../lib/backendService';
 import { PushNotificationService } from '../lib/pushNotificationService';
 import { useAuth } from '../contexts/AuthContext';
-
+import { supabase } from '../lib/supabase.js';
 export default function PaymentDetailsScreen({ route, navigation }) {
     const { plan } = route.params;
     const { user } = useAuth();
 
     const [loading, setLoading] = useState(false);
+
+    async function checkDowngradePossibility(userId, newPlanId) {
+        try {
+            console.log('🔍 Verificando possibilidade de downgrade - FORA DO BACKEND...');
+
+            // Buscar o novo plano
+            const { data: newPlan, error: planError } = await supabase
+                .from('plans')
+                .select('*')
+                .eq('id', newPlanId)
+                .single();
+            console.log('🔍 Novo plano (create.js):', newPlan);
+
+            if (planError || !newPlan) {
+                console.error('❌ Erro ao buscar novo plano:', planError);
+                return { canDowngrade: false, message: 'Plano não encontrado' };
+            }
+
+            // Buscar anúncios ativos do usuário
+            const { data: activeAds, error: adsError } = await supabase
+                .from('properties')
+                .select('*')
+                .eq('user_id', userId)
+                .in('status', ['approved', 'pending', 'active'])
+                .order('created_at', { ascending: false });
+
+            if (adsError) {
+                console.error('❌ Erro ao buscar anúncios:', adsError);
+                return { canDowngrade: false, message: 'Erro ao verificar anúncios' };
+            }
+
+            const currentAdsCount = activeAds?.length || 0;
+            const newPlanLimit = newPlan.max_ads ?? Infinity;
+
+            console.log(`📊 Anúncios atuais: ${currentAdsCount}, Limite do novo plano: ${newPlanLimit}`);
+
+            if (currentAdsCount > newPlanLimit) {
+                const adsToDeactivate = currentAdsCount - newPlanLimit;
+                const message = `Você tem ${currentAdsCount} anúncios ativos, mas o plano ${newPlan.display_name} permite apenas ${newPlanLimit}. Você precisa desativar ${adsToDeactivate} anúncio(s) antes de fazer o downgrade.`;
+
+                console.log(`❌ Downgrade bloqueado: ${message}`);
+                return {
+                    canDowngrade: false,
+                    message,
+                    currentAds: currentAdsCount,
+                    newPlanLimit,
+                    adsToDeactivate
+                };
+            } else {
+                console.log('✅ Downgrade permitido - anúncios dentro do limite');
+                return { canDowngrade: true, message: 'Downgrade permitido' };
+            }
+        } catch (error) {
+            console.error('❌ Erro na verificação de downgrade:', error);
+            return { canDowngrade: false, message: 'Erro interno na verificação' };
+        }
+    }
+
 
     const handlePayment = async () => {
         if (!user) {
@@ -33,6 +91,13 @@ export default function PaymentDetailsScreen({ route, navigation }) {
 
             // Configurar notificações locais
             await PushNotificationService.requestPermissions();
+
+            //check downgrade possibility
+            const downgradeCheck = await checkDowngradePossibility(user.id, plan.id);
+            if (!downgradeCheck.canDowngrade) {
+                Alert.alert('Erro', downgradeCheck.message);
+                return;
+            }
 
             // Criar pagamento no backend
             const result = await BackendService.createPayment(plan, user);
