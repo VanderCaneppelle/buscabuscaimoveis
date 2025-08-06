@@ -40,6 +40,7 @@ export default async function handler(req, res) {
             stats: { total, pending, approved, rejected },
             payments: payments.map(p => ({
                 id: p.id,
+                user_id: p.user_id,
                 status: p.status,
                 preference_id: p.mercado_pago_preference_id,
                 payment_id: p.mercado_pago_payment_id,

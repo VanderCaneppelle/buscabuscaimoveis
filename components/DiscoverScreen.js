@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function DiscoverScreen({ navigation }) {
     const [featuredProperties, setFeaturedProperties] = useState([]);
@@ -21,6 +22,14 @@ export default function DiscoverScreen({ navigation }) {
     useEffect(() => {
         loadData();
     }, []);
+
+    // Atualizar dados sempre que a tela ganhar foco
+    useFocusEffect(
+        React.useCallback(() => {
+            console.log('🔄 DiscoverScreen: Atualizando dados...');
+            loadData();
+        }, [])
+    );
 
     const loadData = async () => {
         try {

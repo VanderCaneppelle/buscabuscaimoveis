@@ -23,6 +23,7 @@ import { PlanService } from '../lib/planService';
 import { PropertyService } from '../lib/propertyService';
 import { MediaService } from '../lib/mediaService';
 import { useAuth } from '../contexts/AuthContext';
+import { useFocusEffect } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
 
@@ -61,6 +62,14 @@ export default function CreateAdScreen({ navigation, route }) {
     useEffect(() => {
         checkUserPermissions();
     }, []);
+
+    // Atualizar dados sempre que a tela ganhar foco
+    useFocusEffect(
+        React.useCallback(() => {
+            console.log('🔄 CreateAdScreen: Atualizando dados...');
+            checkUserPermissions();
+        }, [])
+    );
 
     const checkUserPermissions = async () => {
         try {

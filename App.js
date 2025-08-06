@@ -50,10 +50,10 @@ function AppContent() {
       console.log('URL changed:', event.url);
       if (event.url && (event.url.includes('reset-password') || event.url.includes('type=recovery'))) {
         setIsResetPassword(true);
-      } else if (event.url && event.url.includes('payment-success')) {
-        console.log('🎉 Deep link de sucesso de pagamento recebido');
-        // O usuário será redirecionado automaticamente para a tela de planos
-        // onde poderá ver que o plano foi ativado
+      } else if (event.url && event.url.includes('payment-confirmation')) {
+        console.log('🎉 Deep link de confirmação de pagamento recebido');
+        // O usuário será redirecionado para a PaymentConfirmationScreen
+        // onde poderá ver a contagem regressiva e status do pagamento
       }
     });
 

@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { PlanService } from '../lib/planService';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function AccountScreen({ navigation }) {
     const { user, signOut } = useAuth();
@@ -25,6 +26,16 @@ export default function AccountScreen({ navigation }) {
             loadUserData();
         }
     }, [user?.id]);
+
+    // Atualizar dados sempre que a tela ganhar foco
+    useFocusEffect(
+        React.useCallback(() => {
+            if (user?.id) {
+                console.log('🔄 AccountScreen: Atualizando dados...');
+                loadUserData();
+            }
+        }, [user?.id])
+    );
 
     const loadUserData = async () => {
         try {
@@ -60,10 +71,70 @@ export default function AccountScreen({ navigation }) {
 
     const fetchUserPlanInfo = async () => {
         try {
-            const planInfo = await PlanService.getUserPlanInfo(user.id);
-            setUserPlanInfo(planInfo);
+            // Buscar dados diretamente das tabelas
+            const [activeSubscription, activeAds, favorites] = await Promise.all([
+                // Buscar assinatura ativa
+                supabase
+                    .from('user_subscriptions')
+                    .select(`
+                        *,
+                        plans (
+                            id,
+                            name,
+                            display_name,
+                            max_ads,
+                            price
+                        )
+                    `)
+                    .eq('user_id', user.id)
+                    .eq('status', 'active')
+                    .single(),
+
+                // Buscar anúncios aprovados
+                supabase
+                    .from('properties')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .eq('status', 'approved'),
+
+                // Buscar favoritos
+                supabase
+                    .from('favorites')
+                    .select('*')
+                    .eq('user_id', user.id)
+            ]);
+
+            // Processar dados
+            const planData = activeSubscription.data;
+            const adsData = activeAds.data || [];
+            const favoritesData = favorites.data || [];
+
+            // Calcular visualizações (soma de todas as visualizações dos anúncios aprovados)
+            const totalViews = adsData.reduce((sum, ad) => sum + (ad.views || 0), 0);
+
+            setUserPlanInfo({
+                plan: planData?.plans || null,
+                subscription: planData,
+                canCreate: {
+                    can_create: planData ? adsData.length < planData.plans.max_ads : false,
+                    current_ads: adsData.length,
+                    max_ads: planData?.plans?.max_ads || 0,
+                    plan_name: planData?.plans?.name || 'free'
+                },
+                stats: {
+                    approvedAds: adsData.length,
+                    favorites: favoritesData.length,
+                    views: totalViews
+                }
+            });
         } catch (error) {
             console.error('Erro ao buscar informações do plano:', error);
+            // Fallback para dados básicos
+            setUserPlanInfo({
+                plan: null,
+                canCreate: { can_create: false, current_ads: 0, max_ads: 0, plan_name: 'free' },
+                stats: { approvedAds: 0, favorites: 0, views: 0 }
+            });
         }
     };
 
@@ -139,20 +210,20 @@ export default function AccountScreen({ navigation }) {
                     <Text style={styles.sectionTitle}>Resumo</Text>
                     <View style={styles.statsGrid}>
                         {renderStatsCard(
-                            'Anúncios',
-                            userPlanInfo?.canCreate.current_ads || 0,
+                            'Anúncios Aprovados',
+                            userPlanInfo?.stats?.approvedAds || 0,
                             'home',
                             '#3498db'
                         )}
                         {renderStatsCard(
                             'Favoritos',
-                            '0',
+                            userPlanInfo?.stats?.favorites || 0,
                             'heart',
                             '#e74c3c'
                         )}
                         {renderStatsCard(
                             'Visualizações',
-                            '0',
+                            userPlanInfo?.stats?.views || 0,
                             'eye',
                             '#2ecc71'
                         )}
@@ -160,29 +231,47 @@ export default function AccountScreen({ navigation }) {
                 </View>
 
                 {/* Plan Info */}
-                {userPlanInfo?.plan && (
-                    <View style={styles.planSection}>
-                        <Text style={styles.sectionTitle}>Plano Atual</Text>
-                        <View style={styles.planCard}>
-                            <View style={styles.planHeader}>
-                                <Ionicons name="card" size={24} color="#3498db" />
-                                <Text style={styles.planName}>{userPlanInfo.plan.display_name}</Text>
-                            </View>
-                            <Text style={styles.planStatus}>
-                                {userPlanInfo.canCreate.can_create
-                                    ? `${userPlanInfo.canCreate.current_ads}/${userPlanInfo.canCreate.max_ads} anúncios ativos`
-                                    : userPlanInfo.canCreate.reason
-                                }
-                            </Text>
-                            <TouchableOpacity
-                                style={styles.upgradeButton}
-                                onPress={() => navigation.navigate('Plans')}
-                            >
-                                <Text style={styles.upgradeButtonText}>Alterar Plano</Text>
-                            </TouchableOpacity>
-                        </View>
+                <View style={styles.planSection}>
+                    <Text style={styles.sectionTitle}>Plano Atual</Text>
+                    <View style={styles.planCard}>
+                        {userPlanInfo?.plan ? (
+                            <>
+                                <View style={styles.planHeader}>
+                                    <Ionicons name="card" size={24} color="#3498db" />
+                                    <Text style={styles.planName}>{userPlanInfo.plan.display_name}</Text>
+                                </View>
+                                <Text style={styles.planStatus}>
+                                    {userPlanInfo.canCreate.can_create
+                                        ? `${userPlanInfo.canCreate.current_ads}/${userPlanInfo.canCreate.max_ads} anúncios aprovados`
+                                        : `Limite atingido: ${userPlanInfo.canCreate.current_ads}/${userPlanInfo.canCreate.max_ads} anúncios`
+                                    }
+                                </Text>
+                                <TouchableOpacity
+                                    style={styles.upgradeButton}
+                                    onPress={() => navigation.navigate('Plans')}
+                                >
+                                    <Text style={styles.upgradeButtonText}>Alterar Plano</Text>
+                                </TouchableOpacity>
+                            </>
+                        ) : (
+                            <>
+                                <View style={styles.planHeader}>
+                                    <Ionicons name="card" size={24} color="#95a5a6" />
+                                    <Text style={styles.planName}>Plano Gratuito</Text>
+                                </View>
+                                <Text style={styles.planStatus}>
+                                    {userPlanInfo?.canCreate?.current_ads || 0} anúncios aprovados
+                                </Text>
+                                <TouchableOpacity
+                                    style={styles.upgradeButton}
+                                    onPress={() => navigation.navigate('Plans')}
+                                >
+                                    <Text style={styles.upgradeButtonText}>Ver Planos</Text>
+                                </TouchableOpacity>
+                            </>
+                        )}
                     </View>
-                )}
+                </View>
 
                 {/* Menu Items */}
                 <View style={styles.menuSection}>

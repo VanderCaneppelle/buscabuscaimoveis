@@ -27,7 +27,7 @@ export const createPaymentPreference = async (plan, user) => {
             ],
             payer: {
                 name: user.user_metadata?.full_name || 'Usuário',
-                email: user.email
+                email: user.email || `${user.id}@buscabusca.com` // Fallback email se user.email for undefined
             },
             back_urls: {
                 success: 'https://buscabusca.vercel.app/api/payments/success',

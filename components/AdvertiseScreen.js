@@ -11,6 +11,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { PlanService } from '../lib/planService';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function AdvertiseScreen({ navigation }) {
     const { user } = useAuth();
@@ -22,6 +23,16 @@ export default function AdvertiseScreen({ navigation }) {
             checkUserPermissions();
         }
     }, [user?.id]);
+
+    // Atualizar dados sempre que a tela ganhar foco
+    useFocusEffect(
+        React.useCallback(() => {
+            if (user?.id) {
+                console.log('🔄 AdvertiseScreen: Atualizando dados...');
+                checkUserPermissions();
+            }
+        }, [user?.id])
+    );
 
     const checkUserPermissions = async () => {
         try {

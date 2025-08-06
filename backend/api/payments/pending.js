@@ -1,10 +1,29 @@
 export default async function handler(req, res) {
-    const { payment_id, preference_id, external_reference } = req.query;
+    // Configurar CORS
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-    console.log('⏳ Redirecionamento de pendente:', { payment_id, preference_id, external_reference });
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
 
-    // Redirecionar para o app com deep link
-    const redirectUrl = `buscabuscaimoveis://payment/pending?payment_id=${payment_id}&preference_id=${preference_id}&external_reference=${external_reference}`;
+    try {
+        const { payment_id, preference_id, external_reference } = req.query;
 
-    res.redirect(redirectUrl);
+        console.log('⏳ Redirecionamento de pendente:', { payment_id, preference_id, external_reference });
+
+        // Redirecionar diretamente para a PaymentConfirmationScreen
+        const appUrl = 'buscabuscaimoveis://payment-confirmation';
+
+        console.log('🔄 Redirecionando para:', appUrl);
+
+        // Redirecionamento HTTP 302 para o deep link
+        res.setHeader('Location', appUrl);
+        return res.status(302).end();
+
+    } catch (error) {
+        console.error('❌ Erro no redirecionamento de pendente:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
 } 

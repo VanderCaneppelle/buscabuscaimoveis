@@ -12,7 +12,9 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PlanService } from '../lib/planService';
+import { BackendService } from '../lib/backendService';
 import { useAuth } from '../contexts/AuthContext';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function PlansScreen({ navigation, route }) {
     const { user } = useAuth();
@@ -26,6 +28,14 @@ export default function PlansScreen({ navigation, route }) {
     useEffect(() => {
         loadPlansAndUserInfo();
     }, []);
+
+    // Atualizar dados sempre que a tela ganhar foco
+    useFocusEffect(
+        React.useCallback(() => {
+            console.log('🔄 PlansScreen: Atualizando dados...');
+            loadPlansAndUserInfo();
+        }, [])
+    );
 
     const loadPlansAndUserInfo = async () => {
         try {
@@ -96,10 +106,48 @@ export default function PlansScreen({ navigation, route }) {
                     Alert.alert('Erro', 'Não foi possível contratar o plano. Tente novamente.');
                 }
             } else {
-                // Para planos pagos, navegar para a tela de pagamento
-                setShowConfirmModal(false);
-                setSelectedPlan(null);
-                navigation.navigate('PaymentDetails', { plan: selectedPlan });
+                // Para planos pagos, verificar downgrade ANTES de navegar
+                try {
+                    console.log('🔍 Verificando possibilidade de downgrade...');
+
+                    // Simular uma chamada para verificar downgrade
+                    const testData = {
+                        plan: selectedPlan,
+                        user: { id: user.id, email: user.email }
+                    };
+
+                    const response = await BackendService.createPayment(testData);
+
+                    // Se chegou até aqui, não é downgrade ou é permitido
+                    console.log('✅ Downgrade permitido ou upgrade detectado');
+                    setShowConfirmModal(false);
+                    setSelectedPlan(null);
+                    navigation.navigate('PaymentDetails', { plan: selectedPlan });
+
+                } catch (error) {
+                    console.log('❌ Erro na verificação:', error);
+
+                    // Verificar se é erro de downgrade bloqueado
+                    if (error.response?.status === 400 && error.response?.data?.error === 'downgrade_blocked') {
+                        const errorData = error.response.data;
+                        Alert.alert(
+                            'Downgrade Não Permitido',
+                            errorData.message,
+                            [
+                                {
+                                    text: 'Entendi',
+                                    style: 'cancel'
+                                }
+                            ]
+                        );
+                    } else {
+                        // Outro tipo de erro, permitir continuar
+                        console.log('⚠️ Erro não relacionado ao downgrade, continuando...');
+                        setShowConfirmModal(false);
+                        setSelectedPlan(null);
+                        navigation.navigate('PaymentDetails', { plan: selectedPlan });
+                    }
+                }
             }
         } catch (error) {
             console.error('Erro ao contratar plano:', error);

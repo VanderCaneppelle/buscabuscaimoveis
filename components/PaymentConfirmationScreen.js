@@ -113,7 +113,12 @@ export default function PaymentConfirmationScreen({ route, navigation }) {
                     if (statusResult.payment.status === 'approved') {
                         console.log('✅ Pagamento aprovado via polling!');
                         setStatus('success');
-                        PlanService.loadUserInfo();
+                        // Atualizar informações do usuário
+                        try {
+                            await PlanService.getUserPlanInfo(user.id);
+                        } catch (error) {
+                            console.error('❌ Erro ao atualizar informações do usuário:', error);
+                        }
 
                         // Enviar notificação local
                         PushNotificationService.sendLocalNotification(
@@ -157,7 +162,7 @@ export default function PaymentConfirmationScreen({ route, navigation }) {
     };
 
     const handleVerImoveis = () => {
-        navigation.navigate('Home');
+        navigation.navigate('Main', { screen: 'Busca' });
     };
 
     const handleTentarNovamente = () => {
@@ -238,7 +243,7 @@ export default function PaymentConfirmationScreen({ route, navigation }) {
                     <Text style={styles.primaryButtonText}>Criar Anúncio</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.secondaryButton} onPress={handleVerImoveis}>
-                    <Ionicons name="home" size={20} color="#27ae60" />
+                    <Ionicons name="home-outline" size={20} color="#27ae60" />
                     <Text style={styles.secondaryButtonText}>Ver Imóveis</Text>
                 </TouchableOpacity>
             </View>
