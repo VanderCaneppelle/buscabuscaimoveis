@@ -18,6 +18,7 @@ export default {
       supportsTablet: true
     },
     android: {
+      package: "com.buscabuscaimoveis.app",
       adaptiveIcon: {
         foregroundImage: "./assets/adaptive-icon.png",
         backgroundColor: "#ffffff"
@@ -28,10 +29,12 @@ export default {
     },
     extra: {
       eas: {
-        projectId: "your-project-id"
+        projectId: "3d62b9b3-f6a9-47db-93db-666f037084e3"
       }
     },
-    plugins: [],
+    plugins: [
+      "expo-notifications"
+    ],
     scheme: "buscabuscaimoveis",
     // Configurações do Mercado Pago
     env: {

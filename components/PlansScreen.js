@@ -99,7 +99,7 @@ export default function PlansScreen({ navigation, route }) {
                 // Para planos pagos, navegar para a tela de pagamento
                 setShowConfirmModal(false);
                 setSelectedPlan(null);
-                navigation.navigate('Payment', { plan: selectedPlan });
+                navigation.navigate('PaymentDetails', { plan: selectedPlan });
             }
         } catch (error) {
             console.error('Erro ao contratar plano:', error);

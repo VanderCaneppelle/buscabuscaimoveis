@@ -24,7 +24,6 @@ export default function PaymentScreen({ route, navigation }) {
 
     const [loading, setLoading] = useState(false);
     const [paymentData, setPaymentData] = useState(null);
-    const [checkingStatus, setCheckingStatus] = useState(false);
 
     const styles = StyleSheet.create({
         container: {
@@ -52,23 +51,38 @@ export default function PaymentScreen({ route, navigation }) {
         },
         planCard: {
             backgroundColor: isDark ? '#1a1a1a' : '#f8f9fa',
-            borderRadius: 12,
-            padding: 20,
-            marginBottom: 20,
+            borderRadius: 16,
+            padding: 24,
+            marginBottom: 24,
             borderWidth: 1,
             borderColor: isDark ? '#333' : '#e0e0e0',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 8,
+            elevation: 3,
+        },
+        planHeader: {
+            alignItems: 'center',
+            marginBottom: 20,
         },
         planName: {
-            fontSize: 24,
+            fontSize: 28,
             fontWeight: 'bold',
             color: isDark ? '#fff' : '#000',
             marginBottom: 8,
+            textAlign: 'center',
         },
         planPrice: {
-            fontSize: 32,
+            fontSize: 36,
             fontWeight: 'bold',
             color: '#007AFF',
-            marginBottom: 8,
+            marginBottom: 4,
+        },
+        planPeriod: {
+            fontSize: 16,
+            color: isDark ? '#ccc' : '#666',
+            marginBottom: 16,
         },
         planFeatures: {
             marginTop: 16,
@@ -88,14 +102,19 @@ export default function PaymentScreen({ route, navigation }) {
         },
         paymentButton: {
             backgroundColor: '#007AFF',
-            borderRadius: 12,
-            padding: 16,
+            borderRadius: 16,
+            padding: 20,
             alignItems: 'center',
             marginTop: 20,
+            shadowColor: '#007AFF',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.3,
+            shadowRadius: 8,
+            elevation: 5,
         },
         paymentButtonText: {
             color: '#fff',
-            fontSize: 18,
+            fontSize: 20,
             fontWeight: 'bold',
         },
         paymentButtonDisabled: {
@@ -106,37 +125,8 @@ export default function PaymentScreen({ route, navigation }) {
             justifyContent: 'center',
             alignItems: 'center',
         },
-        statusContainer: {
-            backgroundColor: isDark ? '#1a1a1a' : '#f8f9fa',
-            borderRadius: 12,
-            padding: 20,
-            marginTop: 20,
-            borderWidth: 1,
-            borderColor: isDark ? '#333' : '#e0e0e0',
-        },
-        statusTitle: {
-            fontSize: 18,
-            fontWeight: 'bold',
-            color: isDark ? '#fff' : '#000',
-            marginBottom: 8,
-        },
-        statusText: {
-            fontSize: 16,
-            color: isDark ? '#ccc' : '#666',
-            marginBottom: 8,
-        },
-        checkStatusButton: {
-            backgroundColor: '#4CAF50',
-            borderRadius: 8,
-            padding: 12,
-            alignItems: 'center',
-            marginTop: 12,
-        },
-        checkStatusButtonText: {
-            color: '#fff',
-            fontSize: 16,
-            fontWeight: 'bold',
-        },
+
+
     });
 
     const handlePayment = async () => {
@@ -163,13 +153,12 @@ export default function PaymentScreen({ route, navigation }) {
 
             console.log('🔙 Navegador fechado:', result_browser.type);
 
-            // Sempre verificar status após o navegador fechar
-            console.log('🔍 Verificando status após navegador fechar...');
-
-            // Aguardar um pouco para o webhook processar
-            setTimeout(async () => {
-                await checkPaymentStatus();
-            }, 2000);
+            // Redirecionar imediatamente para a tela de confirmação
+            // O timer só vai começar quando chegar na tela de confirmação
+            navigation.navigate('PaymentConfirmation', {
+                paymentData: result,
+                plan: plan
+            });
 
         } catch (error) {
             console.error('❌ Erro no pagamento:', error);
@@ -183,71 +172,7 @@ export default function PaymentScreen({ route, navigation }) {
         }
     };
 
-    const checkPaymentStatus = async () => {
-        if (!paymentData?.payment?.id) {
-            Alert.alert('Erro', 'Dados de pagamento não encontrados');
-            return;
-        }
 
-        setCheckingStatus(true);
-        try {
-            console.log('🔍 Verificando status do pagamento...');
-
-            const statusResult = await BackendService.checkPaymentStatus(paymentData.payment.id);
-
-            console.log('📊 Status do pagamento:', statusResult);
-
-            if (statusResult.payment.status === 'approved') {
-                Alert.alert(
-                    'Pagamento Aprovado! 🎉',
-                    'Seu plano foi ativado com sucesso!',
-                    [
-                        {
-                            text: 'OK',
-                            onPress: () => {
-                                // Atualizar dados do usuário
-                                PlanService.loadUserInfo();
-                                // Voltar para a tela anterior ou para Plans
-                                if (route.params?.fromAdvertise) {
-                                    navigation.navigate('CreateAd');
-                                } else {
-                                    navigation.navigate('Plans');
-                                }
-                            }
-                        }
-                    ]
-                );
-            } else if (statusResult.payment.status === 'pending') {
-                Alert.alert(
-                    'Pagamento Pendente',
-                    'Seu pagamento está sendo processado. Você receberá uma notificação quando for aprovado.',
-                    [{ text: 'OK' }]
-                );
-            } else if (statusResult.payment.status === 'rejected') {
-                Alert.alert(
-                    'Pagamento Rejeitado',
-                    'Seu pagamento foi rejeitado. Tente novamente com outro método de pagamento.',
-                    [{ text: 'OK' }]
-                );
-            } else {
-                Alert.alert(
-                    'Status do Pagamento',
-                    `Status atual: ${statusResult.payment.status}`,
-                    [{ text: 'OK' }]
-                );
-            }
-
-        } catch (error) {
-            console.error('❌ Erro ao verificar status:', error);
-            Alert.alert(
-                'Erro',
-                'Não foi possível verificar o status do pagamento.',
-                [{ text: 'OK' }]
-            );
-        } finally {
-            setCheckingStatus(false);
-        }
-    };
 
     const getPlanFeatures = () => {
         switch (plan.name) {
@@ -300,10 +225,13 @@ export default function PaymentScreen({ route, navigation }) {
 
             <ScrollView style={styles.content}>
                 <View style={styles.planCard}>
-                    <Text style={styles.planName}>{plan.display_name}</Text>
-                    <Text style={styles.planPrice}>
-                        R$ {plan.price?.toFixed(2).replace('.', ',')}/mês
-                    </Text>
+                    <View style={styles.planHeader}>
+                        <Text style={styles.planName}>{plan.display_name}</Text>
+                        <Text style={styles.planPrice}>
+                            R$ {plan.price?.toFixed(2).replace('.', ',')}
+                        </Text>
+                        <Text style={styles.planPeriod}>por mês</Text>
+                    </View>
 
                     <View style={styles.planFeatures}>
                         {getPlanFeatures().map((feature, index) => (
@@ -332,27 +260,7 @@ export default function PaymentScreen({ route, navigation }) {
                     </Text>
                 </TouchableOpacity>
 
-                {paymentData && (
-                    <View style={styles.statusContainer}>
-                        <Text style={styles.statusTitle}>Status do Pagamento</Text>
-                        <Text style={styles.statusText}>
-                            ID: {paymentData.payment.id}
-                        </Text>
-                        <Text style={styles.statusText}>
-                            Status: {paymentData.payment.status}
-                        </Text>
 
-                        <TouchableOpacity
-                            style={styles.checkStatusButton}
-                            onPress={checkPaymentStatus}
-                            disabled={checkingStatus}
-                        >
-                            <Text style={styles.checkStatusButtonText}>
-                                {checkingStatus ? 'Verificando...' : 'Verificar Status'}
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
-                )}
             </ScrollView>
         </SafeAreaView>
     );

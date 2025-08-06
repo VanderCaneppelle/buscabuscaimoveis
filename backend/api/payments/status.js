@@ -25,15 +25,46 @@ export default async function handler(req, res) {
         console.log('🔍 Verificando status do pagamento:', { paymentId, preferenceId });
 
         // Buscar pagamento no banco
-        let query = supabase.from('payments').select('*');
+        let payment = null;
+        let error = null;
 
         if (paymentId) {
-            query = query.eq('id', paymentId);
-        } else if (preferenceId) {
-            query = query.eq('mercado_pago_preference_id', preferenceId);
-        }
+            // Primeiro tentar buscar por ID interno (UUID)
+            let { data, error: idError } = await supabase
+                .from('payments')
+                .select('*')
+                .eq('id', paymentId)
+                .single();
 
-        const { data: payment, error } = await query.single();
+            if (data) {
+                payment = data;
+                console.log('✅ Pagamento encontrado por ID interno');
+            } else {
+                // Se não encontrou, tentar buscar por ID do Mercado Pago
+                let { data: mpData, error: mpError } = await supabase
+                    .from('payments')
+                    .select('*')
+                    .eq('mercado_pago_payment_id', paymentId)
+                    .single();
+
+                if (mpData) {
+                    payment = mpData;
+                    console.log('✅ Pagamento encontrado por ID do Mercado Pago');
+                } else {
+                    error = mpError;
+                    console.log('❌ Pagamento não encontrado por nenhum ID');
+                }
+            }
+        } else if (preferenceId) {
+            let { data, error: prefError } = await supabase
+                .from('payments')
+                .select('*')
+                .eq('mercado_pago_preference_id', preferenceId)
+                .single();
+
+            payment = data;
+            error = prefError;
+        }
 
         if (error || !payment) {
             console.log('❌ Pagamento não encontrado');

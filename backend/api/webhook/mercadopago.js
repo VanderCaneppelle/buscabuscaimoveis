@@ -115,6 +115,11 @@ export default async function handler(req, res) {
 
         console.log('✅ Pagamento atualizado no banco:', mpPayment.status);
 
+        // Log de sucesso para pagamento aprovado
+        if (mpPayment.status === 'approved') {
+            console.log('🎉 Pagamento aprovado! WebSocket será notificado automaticamente.');
+        }
+
         // Se o pagamento foi aprovado, ativar a assinatura
         if (mpPayment.status === 'approved') {
             console.log('🎉 Pagamento aprovado! Ativando assinatura...');

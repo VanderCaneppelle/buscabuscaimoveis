@@ -2,6 +2,7 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import { AppState, Alert } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { PlanService } from '../lib/planService';
+import { PushNotificationService } from '../lib/pushNotificationService';
 import * as Linking from 'expo-linking';
 import { CONFIRM_EMAIL_URL } from '../lib/config';
 import sessionManager from '../lib/sessionManager';
@@ -200,6 +201,18 @@ export const AuthProvider = ({ children }) => {
             });
 
             if (error) throw error;
+
+            // Se o login foi bem-sucedido, configurar notificações locais
+            if (data.user) {
+                try {
+                    // Solicitar permissões para notificações locais
+                    await PushNotificationService.requestPermissions();
+                    console.log('✅ Permissões de notificação configuradas');
+                } catch (pushError) {
+                    console.log('⚠️ Erro ao configurar notificações:', pushError.message);
+                }
+            }
+
             return { data, error: null };
         } catch (error) {
             return { data: null, error };
