@@ -180,10 +180,15 @@ export default function PlansScreen({ navigation, route }) {
     };
 
     const renderPlanCard = (plan) => {
+        // Verificação de segurança para evitar erros quando userPlan ainda não foi carregado
+        if (!userPlan) {
+            return null;
+        }
+
         const isCurrentPlan = userPlan?.plan?.plan_name === plan.name;
         const isFreePlan = plan.name === 'free';
         const isPopular = plan.name === 'silver';
-        const isDowngradeToFree = isFreePlan && userPlan?.plan?.plan_name !== 'free';
+        const isDowngradeToFree = isFreePlan && userPlan?.plan?.plan_name && userPlan.plan.plan_name !== 'free';
 
         return (
             <TouchableOpacity
@@ -220,12 +225,12 @@ export default function PlansScreen({ navigation, route }) {
                 </View>
 
                 <View style={styles.planFeatures}>
-                    {plan.features.map((feature, index) => (
+                    {plan.features && plan.features.length > 0 ? plan.features.map((feature, index) => (
                         <View key={index} style={styles.featureItem}>
                             <Ionicons name="checkmark-circle" size={16} color="#2ecc71" />
                             <Text style={styles.featureText}>{feature}</Text>
                         </View>
-                    ))}
+                    )) : null}
                 </View>
 
                 <TouchableOpacity
@@ -303,7 +308,7 @@ export default function PlansScreen({ navigation, route }) {
                 <View style={styles.plansSection}>
                     <Text style={styles.sectionTitle}>Planos Disponíveis</Text>
                     <View style={styles.plansList}>
-                        {plans.map(renderPlanCard)}
+                        {plans && plans.length > 0 ? plans.map(renderPlanCard) : null}
                     </View>
                 </View>
 
