@@ -79,13 +79,13 @@ export const AuthProvider = ({ children }) => {
                 console.log('Usuário fez login - registrando sessão');
                 await sessionManager.registerSession();
 
-                // Associar plano gratuito automaticamente se for novo usuário
-                try {
-                    await PlanService.assignFreePlan(session.user.id);
-                    console.log('✅ Plano gratuito associado automaticamente');
-                } catch (error) {
-                    console.log('⚠️ Erro ao associar plano gratuito (pode já ter):', error.message);
-                }
+                // // Associar plano gratuito automaticamente se for novo usuário
+                // try {
+                //     await PlanService.assignFreePlan(session.user.id);
+                //     console.log('✅ Plano gratuito associado automaticamente');
+                // } catch (error) {
+                //     console.log('⚠️ Erro ao associar plano gratuito (pode já ter):', error.message);
+                // }
 
                 setUser(session.user);
             } else if (event === 'INITIAL_SESSION' && session?.user) {
