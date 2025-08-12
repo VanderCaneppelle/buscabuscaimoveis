@@ -9,7 +9,7 @@ import {
     SafeAreaView
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { BackendService } from '../lib/backendService';
+import BackendService from '../lib/backendService';
 import { PlanService } from '../lib/planService';
 
 import { PushNotificationService } from '../lib/pushNotificationService';

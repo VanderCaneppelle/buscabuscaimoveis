@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as WebBrowser from 'expo-web-browser';
-import { BackendService } from '../lib/backendService';
+import BackendService from '../lib/backendService';
 import { PushNotificationService } from '../lib/pushNotificationService';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase.js';
@@ -21,64 +21,6 @@ export default function PaymentDetailsScreen({ route, navigation }) {
 
     const [loading, setLoading] = useState(false);
 
-    async function checkDowngradePossibility(userId, newPlanId) {
-        try {
-            console.log('🔍 Verificando possibilidade de downgrade - FORA DO BACKEND...');
-
-            // Buscar o novo plano
-            const { data: newPlan, error: planError } = await supabase
-                .from('plans')
-                .select('*')
-                .eq('id', newPlanId)
-                .single();
-            console.log('🔍 Novo plano (create.js):', newPlan);
-
-            if (planError || !newPlan) {
-                console.error('❌ Erro ao buscar novo plano:', planError);
-                return { canDowngrade: false, message: 'Plano não encontrado' };
-            }
-
-            // Buscar anúncios ativos do usuário
-            const { data: activeAds, error: adsError } = await supabase
-                .from('properties')
-                .select('*')
-                .eq('user_id', userId)
-                .in('status', ['approved', 'pending', 'active'])
-                .order('created_at', { ascending: false });
-
-            if (adsError) {
-                console.error('❌ Erro ao buscar anúncios:', adsError);
-                return { canDowngrade: false, message: 'Erro ao verificar anúncios' };
-            }
-
-            const currentAdsCount = activeAds?.length || 0;
-            const newPlanLimit = newPlan.max_ads ?? Infinity;
-
-            console.log(`📊 Anúncios atuais: ${currentAdsCount}, Limite do novo plano: ${newPlanLimit}`);
-
-            if (currentAdsCount > newPlanLimit) {
-                const adsToDeactivate = currentAdsCount - newPlanLimit;
-                const message = `Você tem ${currentAdsCount} anúncios ativos, mas o plano ${newPlan.display_name} permite apenas ${newPlanLimit}. Você precisa desativar ${adsToDeactivate} anúncio(s) antes de fazer o downgrade.`;
-
-                console.log(`❌ Downgrade bloqueado: ${message}`);
-                return {
-                    canDowngrade: false,
-                    message,
-                    currentAds: currentAdsCount,
-                    newPlanLimit,
-                    adsToDeactivate
-                };
-            } else {
-                console.log('✅ Downgrade permitido - anúncios dentro do limite');
-                return { canDowngrade: true, message: 'Downgrade permitido' };
-            }
-        } catch (error) {
-            console.error('❌ Erro na verificação de downgrade:', error);
-            return { canDowngrade: false, message: 'Erro interno na verificação' };
-        }
-    }
-
-
     const handlePayment = async () => {
         if (!user) {
             Alert.alert('Erro', 'Usuário não autenticado');
@@ -87,33 +29,26 @@ export default function PaymentDetailsScreen({ route, navigation }) {
 
         setLoading(true);
         try {
-            console.log('🚀 Iniciando processo de pagamento...');
+            console.log('🚀 Iniciando pagamento...', {
+                plan: plan.name,
+                user: user.email
+            });
 
-            // Configurar notificações locais
+            // Configurar notificações
             await PushNotificationService.requestPermissions();
-
-            //check downgrade possibility
-            const downgradeCheck = await checkDowngradePossibility(user.id, plan.id);
-            if (!downgradeCheck.canDowngrade) {
-                Alert.alert('Erro', downgradeCheck.message);
-                return;
-            }
 
             // Criar pagamento no backend
             const result = await BackendService.createPayment(plan, user);
             console.log('✅ Pagamento criado:', result);
 
-            // Polling será ativado na PaymentConfirmationScreen
-            console.log('🚀 Polling será ativado na tela de confirmação');
-
             // Abrir Mercado Pago no navegador
             const paymentUrl = result.preference.sandbox_init_point;
-            console.log('🔗 Abrindo URL de pagamento:', paymentUrl);
+            console.log('🔗 Abrindo URL:', paymentUrl);
 
             const result_browser = await WebBrowser.openBrowserAsync(paymentUrl);
             console.log('🔙 Navegador fechado:', result_browser.type);
 
-            // Redirecionar para a tela de confirmação
+            // Redirecionar para confirmação
             navigation.navigate('PaymentConfirmation', {
                 paymentData: result,
                 plan: plan
@@ -123,8 +58,7 @@ export default function PaymentDetailsScreen({ route, navigation }) {
             console.error('❌ Erro no pagamento:', error);
             Alert.alert(
                 'Erro',
-                'Não foi possível processar o pagamento. Tente novamente.',
-                [{ text: 'OK' }]
+                'Não foi possível processar o pagamento. Tente novamente.'
             );
         } finally {
             setLoading(false);
@@ -132,22 +66,44 @@ export default function PaymentDetailsScreen({ route, navigation }) {
     };
 
     const getPlanFeatures = () => {
+        // Se o plano tem features definidas, usar elas
+        if (plan.features && Array.isArray(plan.features)) {
+            return plan.features;
+        }
+
+        // Caso contrário, usar features padrão baseadas no nome do plano
         switch (plan.name) {
-            case 'premium':
+            case 'gold':
                 return [
                     'Anúncios ilimitados',
                     'Destaque nos resultados',
                     'Estatísticas avançadas',
                     'Suporte prioritário'
                 ];
-            case 'basic':
+            case 'silver':
+                return [
+                    'Até 10 anúncios',
+                    'Destaque nos resultados',
+                    'Estatísticas básicas',
+                    'Suporte por email'
+                ];
+            case 'bronze':
                 return [
                     'Até 5 anúncios',
                     'Destaque básico',
                     'Estatísticas básicas'
                 ];
+            case 'essential':
+                return [
+                    '1 anúncio ativo',
+                    'Destaque básico',
+                    'Suporte por email'
+                ];
             default:
-                return [];
+                return [
+                    'Recursos básicos',
+                    'Suporte por email'
+                ];
         }
     };
 
@@ -188,14 +144,14 @@ export default function PaymentDetailsScreen({ route, navigation }) {
                 <View style={styles.planCard}>
                     <View style={styles.planHeader}>
                         <Ionicons name="star" size={24} color="#f39c12" />
-                        <Text style={styles.planName}>{plan.display_name}</Text>
+                        <Text style={styles.planName}>{plan.display_name || plan.name || 'Plano'}</Text>
                     </View>
 
                     <View style={styles.priceSection}>
                         <Text style={styles.priceValue}>
-                            R$ {plan.price?.toFixed(2).replace('.', ',')}
+                            R$ {plan.price ? plan.price.toFixed(2).replace('.', ',') : '0,00'}
                         </Text>
-                        <Text style={styles.pricePeriod}>por mês</Text>
+                        <Text style={styles.pricePeriod}>pagamento único</Text>
                     </View>
 
                     <View style={styles.divider} />

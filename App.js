@@ -9,7 +9,7 @@ import MainNavigator from './components/MainNavigator';
 import PlansScreen from './components/PlansScreen';
 import CreateAdScreen from './components/CreateAdScreen';
 import PropertyDetailsScreen from './components/PropertyDetailsScreen';
-import PaymentScreen from './components/PaymentScreen';
+// import PaymentScreen from './components/PaymentScreen';
 import PaymentDetailsScreen from './components/PaymentDetailsScreen';
 import PaymentConfirmationScreen from './components/PaymentConfirmationScreen';
 
@@ -105,13 +105,13 @@ function AppContent() {
             },
           }}
         />
-        <Stack.Screen
+        {/* <Stack.Screen
           name="Payment"
           component={PaymentScreen}
           options={{
             headerShown: false
           }}
-        />
+        /> */}
         <Stack.Screen
           name="PaymentDetails"
           component={PaymentDetailsScreen}

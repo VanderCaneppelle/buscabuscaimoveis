@@ -4,119 +4,59 @@ import { supabase } from '../../lib/supabase.js';
 export default async function handler(req, res) {
     // Configurar CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
     }
 
-    if (req.method !== 'GET' && req.method !== 'POST') {
+    if (req.method !== 'GET') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
     try {
-        const { paymentId, preferenceId } = req.method === 'GET' ? req.query : req.body;
+        const { paymentId } = req.query;
 
-        if (!paymentId && !preferenceId) {
-            return res.status(400).json({ error: 'Payment ID or Preference ID is required' });
+        if (!paymentId) {
+            return res.status(400).json({ error: 'Payment ID is required' });
         }
 
-        console.log('🔍 Verificando status do pagamento:', { paymentId, preferenceId });
+        console.log('🔍 Verificando status do pagamento:', paymentId);
 
-        // Buscar pagamento no banco
-        let payment = null;
-        let error = null;
+        // Buscar pagamento no Mercado Pago
+        const MERCADO_PAGO_ACCESS_TOKEN = process.env.EXPO_PUBLIC_MERCADO_PAGO_ACCESS_TOKEN;
 
-        if (paymentId) {
-            // Primeiro tentar buscar por ID interno (UUID)
-            let { data, error: idError } = await supabase
-                .from('payments')
-                .select('*')
-                .eq('id', paymentId)
-                .single();
+        if (!MERCADO_PAGO_ACCESS_TOKEN) {
+            throw new Error('Token do Mercado Pago não configurado');
+        }
 
-            if (data) {
-                payment = data;
-                console.log('✅ Pagamento encontrado por ID interno');
-            } else {
-                // Se não encontrou, tentar buscar por ID do Mercado Pago
-                let { data: mpData, error: mpError } = await supabase
-                    .from('payments')
-                    .select('*')
-                    .eq('mercado_pago_payment_id', paymentId)
-                    .single();
-
-                if (mpData) {
-                    payment = mpData;
-                    console.log('✅ Pagamento encontrado por ID do Mercado Pago');
-                } else {
-                    error = mpError;
-                    console.log('❌ Pagamento não encontrado por nenhum ID');
-                }
+        const response = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
+            headers: {
+                'Authorization': `Bearer ${MERCADO_PAGO_ACCESS_TOKEN}`,
+                'Content-Type': 'application/json'
             }
-        } else if (preferenceId) {
-            let { data, error: prefError } = await supabase
-                .from('payments')
-                .select('*')
-                .eq('mercado_pago_preference_id', preferenceId)
-                .single();
+        });
 
-            payment = data;
-            error = prefError;
+        if (!response.ok) {
+            throw new Error(`Erro ao buscar pagamento: ${response.status}`);
         }
 
-        if (error || !payment) {
-            console.log('❌ Pagamento não encontrado');
-            return res.status(404).json({ error: 'Payment not found' });
-        }
-
-        console.log('📊 Status atual no banco:', payment.status);
-
-        // Se o pagamento já tem payment_id do Mercado Pago, verificar status lá
-        if (payment.mercado_pago_payment_id) {
-            try {
-                const mpPayment = await getPaymentStatus(payment.mercado_pago_payment_id);
-                console.log('📊 Status no Mercado Pago:', mpPayment.status);
-
-                // Se o status mudou, atualizar no banco
-                if (mpPayment.status !== payment.status) {
-                    const { error: updateError } = await supabase
-                        .from('payments')
-                        .update({
-                            status: mpPayment.status,
-                            updated_at: new Date().toISOString()
-                        })
-                        .eq('id', payment.id);
-
-                    if (updateError) {
-                        console.error('❌ Erro ao atualizar status:', updateError);
-                    } else {
-                        console.log('✅ Status atualizado no banco:', mpPayment.status);
-                        payment.status = mpPayment.status;
-                    }
-                }
-            } catch (mpError) {
-                console.log('⚠️ Erro ao verificar no Mercado Pago:', mpError.message);
-            }
-        }
+        const payment = await response.json();
+        console.log('📊 Status do pagamento:', payment.status);
 
         return res.status(200).json({
             success: true,
             payment: {
                 id: payment.id,
                 status: payment.status,
-                preference_id: payment.mercado_pago_preference_id,
-                payment_id: payment.mercado_pago_payment_id,
-                amount: payment.amount,
-                description: payment.description,
-                created_at: payment.created_at,
-                updated_at: payment.updated_at
+                preference_id: payment.preference_id,
+                external_reference: payment.external_reference
             }
         });
 
     } catch (error) {
-        console.error('❌ Erro no endpoint status:', error);
+        console.error('❌ Erro ao verificar status:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
 } 
