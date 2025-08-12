@@ -4,6 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { LoadingProvider } from './contexts/LoadingContext';
 import LoginScreen from './components/LoginScreen';
 import MainNavigator from './components/MainNavigator';
 import PlansScreen from './components/PlansScreen';
@@ -136,7 +137,9 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <AppContent />
+        <LoadingProvider>
+          <AppContent />
+        </LoadingProvider>
       </AuthProvider>
     </SafeAreaProvider>
   );
