@@ -21,6 +21,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
+import StoriesComponent from './StoriesComponent';
 
 const { width } = Dimensions.get('window');
 
@@ -680,18 +681,8 @@ export default function HomeScreen({ navigation }) {
                 }
                 ListHeaderComponent={
                     <>
-                        {/* Stories */}
-                        <View style={styles.storiesSection}>
-                            <Text style={styles.sectionTitle}>Destaques</Text>
-                            <FlatList
-                                data={stories}
-                                renderItem={renderStory}
-                                keyExtractor={(item) => item.id}
-                                horizontal
-                                showsHorizontalScrollIndicator={false}
-                                contentContainerStyle={styles.storiesList}
-                            />
-                        </View>
+                        {/* Stories Component */}
+                        <StoriesComponent navigation={navigation} />
 
                         {/* Properties Section */}
                         <View style={styles.propertiesSection}>
