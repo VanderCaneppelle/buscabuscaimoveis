@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -20,6 +20,78 @@ export default function PaymentDetailsScreen({ route, navigation }) {
     const { user } = useAuth();
 
     const [loading, setLoading] = useState(false);
+    const [currentPlan, setCurrentPlan] = useState(null);
+    const [currentAdsCount, setCurrentAdsCount] = useState(0);
+
+    // Função para verificar se pode fazer downgrade
+    const checkDowngradePossibility = async () => {
+        try {
+            // Buscar plano atual do usuário
+            const { data: currentSubscription, error: subError } = await supabase
+                .from('user_subscriptions')
+                .select(`
+                    *,
+                    plans:plan_id (
+                        id,
+                        name,
+                        display_name,
+                        max_ads
+                    )
+                `)
+                .eq('user_id', user.id)
+                .eq('status', 'active')
+                .single();
+
+            if (subError && subError.code !== 'PGRST116') {
+                console.error('Erro ao buscar assinatura atual:', subError);
+                return { canDowngrade: true, message: '' };
+            }
+
+            if (currentSubscription) {
+                setCurrentPlan(currentSubscription.plans);
+
+                // Contar anúncios ativos do usuário
+                const { count: adsCount, error: adsError } = await supabase
+                    .from('properties')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('user_id', user.id)
+                    .in('status', ['pending', 'approved']);
+
+                if (adsError) {
+                    console.error('Erro ao contar anúncios:', adsError);
+                    return { canDowngrade: true, message: '' };
+                }
+
+                setCurrentAdsCount(adsCount || 0);
+
+                // Verificar se o novo plano tem menos anúncios que os atuais
+                if (plan.max_ads < currentSubscription.plans.max_ads) {
+                    if (adsCount > plan.max_ads) {
+                        return {
+                            canDowngrade: false,
+                            message: `Você tem ${adsCount} anúncios ativos, mas o plano ${plan.display_name} permite apenas ${plan.max_ads}. Remova alguns anúncios antes de fazer o downgrade.`
+                        };
+                    }
+                }
+            }
+
+            return { canDowngrade: true, message: '' };
+        } catch (error) {
+            console.error('Erro na verificação de downgrade:', error);
+            return { canDowngrade: true, message: '' };
+        }
+    };
+
+    // Carregar informações do plano atual quando a tela abrir
+    useEffect(() => {
+        const loadCurrentPlanInfo = async () => {
+            if (user) {
+                await checkDowngradePossibility();
+            }
+        };
+
+        loadCurrentPlanInfo();
+    }, [user]);
 
     const handlePayment = async () => {
         if (!user) {
@@ -33,6 +105,14 @@ export default function PaymentDetailsScreen({ route, navigation }) {
                 plan: plan.name,
                 user: user.email
             });
+
+            // Verificar se pode fazer downgrade
+            const downgradeCheck = await checkDowngradePossibility();
+            if (!downgradeCheck.canDowngrade) {
+                Alert.alert('Downgrade Bloqueado', downgradeCheck.message);
+                setLoading(false);
+                return;
+            }
 
             // Configurar notificações
             await PushNotificationService.requestPermissions();
@@ -206,6 +286,33 @@ export default function PaymentDetailsScreen({ route, navigation }) {
                         </View>
                     </View>
                 </View>
+
+                {/* Downgrade Warning */}
+                {currentPlan && plan.max_ads < currentPlan.max_ads && (
+                    <View style={styles.downgradeCard}>
+                        <View style={styles.downgradeHeader}>
+                            <Ionicons name="warning" size={24} color="#f39c12" />
+                            <Text style={styles.downgradeTitle}>Atenção: Downgrade de Plano</Text>
+                        </View>
+                        <View style={styles.downgradeContent}>
+                            <Text style={styles.downgradeText}>
+                                Você está fazendo downgrade do plano <Text style={styles.planHighlight}>{currentPlan.display_name}</Text>
+                                para o plano <Text style={styles.planHighlight}>{plan.display_name}</Text>.
+                            </Text>
+                            <Text style={styles.downgradeText}>
+                                Anúncios ativos: <Text style={styles.adsHighlight}>{currentAdsCount}</Text>
+                            </Text>
+                            <Text style={styles.downgradeText}>
+                                Limite do novo plano: <Text style={styles.adsHighlight}>{plan.max_ads}</Text>
+                            </Text>
+                            {currentAdsCount > plan.max_ads && (
+                                <Text style={styles.downgradeWarning}>
+                                    ⚠️ Você precisa remover {currentAdsCount - plan.max_ads} anúncio(s) antes de fazer o downgrade.
+                                </Text>
+                            )}
+                        </View>
+                    </View>
+                )}
 
                 {/* Payment Button */}
                 <TouchableOpacity
@@ -429,6 +536,54 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#7f8c8d',
         marginLeft: 8,
+    },
+    downgradeCard: {
+        backgroundColor: '#fff3cd',
+        marginHorizontal: 20,
+        marginBottom: 20,
+        borderRadius: 12,
+        padding: 20,
+        borderWidth: 1,
+        borderColor: '#ffeaa7',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 3.84,
+        elevation: 5,
+    },
+    downgradeHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 16,
+    },
+    downgradeTitle: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#856404',
+        marginLeft: 12,
+    },
+    downgradeContent: {
+        gap: 8,
+    },
+    downgradeText: {
+        fontSize: 14,
+        color: '#856404',
+        lineHeight: 20,
+    },
+    planHighlight: {
+        fontWeight: 'bold',
+        color: '#2c3e50',
+    },
+    adsHighlight: {
+        fontWeight: 'bold',
+        color: '#e74c3c',
+    },
+    downgradeWarning: {
+        fontSize: 14,
+        color: '#e74c3c',
+        fontWeight: 'bold',
+        lineHeight: 20,
+        marginTop: 8,
     },
     paymentButton: {
         backgroundColor: '#27ae60',
