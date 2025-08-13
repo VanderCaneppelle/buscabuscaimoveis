@@ -19,13 +19,10 @@ export const AdminProvider = ({ children }) => {
 
     const checkAdminStatus = async () => {
         if (!user) {
-            console.log('🔍 AdminContext: Usuário não logado');
             setIsAdmin(false);
             setLoading(false);
             return;
         }
-
-        console.log('🔍 AdminContext: Verificando admin para usuário:', user.email);
 
         try {
             const { data, error } = await supabase
@@ -35,15 +32,13 @@ export const AdminProvider = ({ children }) => {
                 .single();
 
             if (error) {
-                console.error('❌ Erro ao verificar status de admin:', error);
+                console.error('Erro ao verificar status de admin:', error);
                 setIsAdmin(false);
             } else {
-                console.log('✅ AdminContext: Dados do perfil:', data);
-                console.log('✅ AdminContext: is_admin =', data?.is_admin);
                 setIsAdmin(data?.is_admin || false);
             }
         } catch (error) {
-            console.error('❌ Erro ao verificar admin:', error);
+            console.error('Erro ao verificar admin:', error);
             setIsAdmin(false);
         } finally {
             setLoading(false);

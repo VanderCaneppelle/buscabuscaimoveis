@@ -7,9 +7,11 @@ import {
     TouchableOpacity,
     Image,
     Dimensions,
-    Alert
+    Alert,
+    RefreshControl
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import { useAdmin } from '../contexts/AdminContext';
 import { supabase } from '../lib/supabase';
 
@@ -20,24 +22,38 @@ export default function StoriesComponent({ navigation }) {
     const { isAdmin } = useAdmin();
     const [stories, setStories] = useState([]);
     const [loading, setLoading] = useState(true);
-
-    console.log('🎬 StoriesComponent: isAdmin =', isAdmin);
+    const [refreshing, setRefreshing] = useState(false);
 
     useEffect(() => {
         loadStories();
     }, []);
 
+    // Recarregar stories quando voltar para a tela
+    useFocusEffect(
+        React.useCallback(() => {
+            loadStories();
+        }, [])
+    );
+
+    const onRefresh = React.useCallback(() => {
+        setRefreshing(true);
+        loadStories().finally(() => setRefreshing(false));
+    }, []);
+
     const loadStories = async () => {
         try {
+            console.log('Carregando stories...');
             const { data, error } = await supabase
                 .from('stories')
                 .select('*')
-                .order('created_at', { ascending: false })
+                .eq('status', 'active')
+                .order('order_index', { ascending: true })
                 .limit(10);
 
             if (error) {
                 console.error('Erro ao carregar stories:', error);
             } else {
+                console.log('Stories carregados:', data?.length || 0, 'stories');
                 setStories(data || []);
             }
         } catch (error) {
@@ -53,13 +69,13 @@ export default function StoriesComponent({ navigation }) {
             return;
         }
 
-        // TODO: Navegar para tela de criação de story
-        Alert.alert('Criar Story', 'Funcionalidade em desenvolvimento!');
+        navigation.navigate('CreateStory');
     };
 
     const handleStoryPress = (story) => {
-        // TODO: Abrir visualizador de story
-        Alert.alert('Story', `Visualizando: ${story.title}`);
+        // Encontrar o índice do story clicado
+        const storyIndex = stories.findIndex(s => s.id === story.id);
+        navigation.navigate('StoryViewer', { initialStoryIndex: storyIndex });
     };
 
     const renderStoryItem = (story, index) => (
@@ -81,22 +97,19 @@ export default function StoriesComponent({ navigation }) {
         </TouchableOpacity>
     );
 
-    const renderCreateStoryButton = () => {
-        console.log('🎬 StoriesComponent: Renderizando botão de criar story');
-        return (
-            <TouchableOpacity
-                style={styles.storyItem}
-                onPress={handleCreateStory}
-            >
-                <View style={[styles.storyCircle, styles.createStoryCircle]}>
-                    <Ionicons name="add" size={30} color="#fff" />
-                </View>
-                <Text style={styles.storyTitle} numberOfLines={1}>
-                    Criar
-                </Text>
-            </TouchableOpacity>
-        );
-    };
+    const renderCreateStoryButton = () => (
+        <TouchableOpacity
+            style={styles.storyItem}
+            onPress={handleCreateStory}
+        >
+            <View style={[styles.storyCircle, styles.createStoryCircle]}>
+                <Ionicons name="add" size={30} color="#fff" />
+            </View>
+            <Text style={styles.storyTitle} numberOfLines={1}>
+                Criar
+            </Text>
+        </TouchableOpacity>
+    );
 
     if (loading) {
         return (
@@ -113,12 +126,12 @@ export default function StoriesComponent({ navigation }) {
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.storiesContainer}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                }
             >
                 {/* Botão de criar story (apenas para admins) */}
-                {(() => {
-                    console.log('🎬 StoriesComponent: Verificando se deve renderizar botão. isAdmin =', isAdmin);
-                    return isAdmin && renderCreateStoryButton();
-                })()}
+                {isAdmin && renderCreateStoryButton()}
 
                 {/* Stories existentes */}
                 {stories.map((story, index) => renderStoryItem(story, index))}
