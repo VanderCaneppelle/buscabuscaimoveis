@@ -667,6 +667,14 @@ export default function HomeScreen({ navigation }) {
                             <Ionicons name="swap-vertical" size={18} color="#fff" />
                             <Text style={styles.actionButtonText}>Ordenar</Text>
                         </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={[styles.actionButton, { backgroundColor: '#dc2626' }]}
+                            onPress={() => navigation.navigate('VideoUploadTest')}
+                        >
+                            <Ionicons name="videocam" size={18} color="#fff" />
+                            <Text style={styles.actionButtonText}>Teste</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
             </View>

@@ -16,6 +16,7 @@ import PaymentDetailsScreen from './components/PaymentDetailsScreen';
 import PaymentConfirmationScreen from './components/PaymentConfirmationScreen';
 import CreateStoryScreen from './components/CreateStoryScreen';
 import StoryViewerScreen from './components/StoryViewerScreen';
+import VideoUploadTestScreen from './components/VideoUploadTestScreen';
 
 import ResetPasswordScreen from './components/ResetPasswordScreen';
 import TermsAcceptanceCheck from './components/TermsAcceptanceCheck';
@@ -140,6 +141,13 @@ function AppContent() {
         <Stack.Screen
           name="StoryViewer"
           component={StoryViewerScreen}
+          options={{
+            headerShown: false
+          }}
+        />
+        <Stack.Screen
+          name="VideoUploadTest"
+          component={VideoUploadTestScreen}
           options={{
             headerShown: false
           }}
