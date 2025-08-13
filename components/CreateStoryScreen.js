@@ -22,6 +22,7 @@ import { Platform } from 'react-native';
 import { MediaServiceOptimized as MediaService } from '../lib/mediaServiceOptimized';
 
 
+
 const { width, height } = Dimensions.get('window');
 
 export default function CreateStoryScreen({ navigation }) {
@@ -46,7 +47,27 @@ export default function CreateStoryScreen({ navigation }) {
         const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
         setHasPermission(imagePickerStatus === 'granted' && cameraStatus === 'granted');
     };
+    function getMimeType(ext) {
+        switch (ext.toLowerCase()) {
+            case 'jpg':
+            case 'jpeg': return 'image/jpeg';
+            case 'png': return 'image/png';
+            case 'gif': return 'image/gif';
+            case 'mp4': return 'video/mp4';
+            case 'mov': return 'video/quicktime';
+            default: return 'application/octet-stream';
+        }
+    }
 
+    function base64ToUint8Array(base64) {
+        const binaryString = atob(base64);
+        const len = binaryString.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        return bytes;
+    }
 
     const takePicture = async () => {
         try {
@@ -118,14 +139,40 @@ export default function CreateStoryScreen({ navigation }) {
         setUploading(true);
 
         try {
-            // Usar a nova função uploadStory do MediaServiceOptimized
-            const publicUrl = await MediaService.uploadStory(
-                capturedMedia.uri,
-                storyTitle,
-                (progress) => {
-                    console.log(`📤 Progresso do upload: ${progress}%`);
-                }
-            );
+            const fileExtension = capturedMedia.uri.split('.').pop() ||
+                (capturedMedia.type === 'video' ? 'mp4' : 'jpg');
+            const mimeType = getMimeType(fileExtension);
+            const fileName = `stories/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExtension}`;
+
+            const fileInfo = await FileSystem.getInfoAsync(capturedMedia.uri);
+            const maxSize = 50 * 1024 * 1024;
+            if (fileInfo.size > maxSize) {
+                throw new Error(`Arquivo muito grande. Máximo permitido: 50MB`);
+            }
+
+            // Lê arquivo como base64
+            const base64Data = await FileSystem.readAsStringAsync(capturedMedia.uri, {
+                encoding: FileSystem.EncodingType.Base64,
+            });
+
+            // Converte usando sua função
+            const fileBytes = base64ToUint8Array(base64Data);
+
+            // Upload no Supabase
+            const { error: storageError } = await supabase.storage
+                .from('stories')
+                .upload(fileName, fileBytes, {
+                    contentType: mimeType,
+                    upsert: false,
+                });
+
+            if (storageError) throw storageError;
+
+            const { data: publicData } = supabase.storage
+                .from('stories')
+                .getPublicUrl(fileName);
+
+            const publicUrl = publicData?.publicUrl;
 
             // Busca próximo order_index
             const { data: maxOrderData } = await supabase
@@ -207,7 +254,7 @@ export default function CreateStoryScreen({ navigation }) {
 
                     <TouchableOpacity
                         style={[styles.uploadButton, uploading && styles.uploadingButton]}
-                        onPress={uploadStory}
+                        onPress={() => MediaService.uploadStory(capturedMedia.uri, storyTitle)}
                         disabled={uploading}
                     >
                         {uploading ? (
