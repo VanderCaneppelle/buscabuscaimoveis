@@ -1,3 +1,4 @@
+import { MediaServiceOptimized as MediaService } from '../lib/mediaServiceOptimized';
 import React, { useState } from 'react';
 import {
     View,
@@ -41,32 +42,19 @@ export default function VideoUploadTestScreen({ navigation }) {
         try {
             setUploadResult('⏳ Iniciando upload...');
 
-            const fileName = `test-video-${Date.now()}.mp4`;
+            // Usar a nova função uploadStory do MediaServiceOptimized
+            const publicUrl = await MediaService.uploadStory(
+                uri,
+                'Teste de Vídeo',
+                (progress) => {
+                    setUploadResult(`⏳ Upload em progresso: ${progress}%`);
+                }
+            );
 
-            // Pega o blob correto do arquivo local
-            const response = await fetch(uri);
-            const blob = await response.blob();
-
-            const { data, error } = await supabase.storage
-                .from('stories')
-                .upload(fileName, blob, {
-                    contentType: 'video/mp4',
-                    cacheControl: '3600'
-                });
-
-            if (error) {
-                setUploadResult(`❌ Erro no upload: ${error.message}`);
-                return null;
-            }
-
-            setUploadResult(`✅ Upload concluído: ${data.path}`);
-
-
-
-
-            return data.path;
+            setUploadResult(`✅ Upload concluído: ${publicUrl}`);
+            return publicUrl;
         } catch (error) {
-            setUploadResult(`❌ Erro inesperado: ${error.message}`);
+            setUploadResult(`❌ Erro no upload: ${error.message}`);
             return null;
         }
     };

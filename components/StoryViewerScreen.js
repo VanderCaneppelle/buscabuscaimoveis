@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, Image, TouchableWithoutFeedback, Dimensions, StyleSheet, Animated, Text } from "react-native";
+import { View, Image, TouchableWithoutFeedback, Dimensions, StyleSheet, Animated, Text, SafeAreaView, Platform } from "react-native";
 import { Video } from "expo-av";
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../lib/supabase";
@@ -7,18 +7,51 @@ import { supabase } from "../lib/supabase";
 const { width, height } = Dimensions.get("window");
 const IMAGE_DURATION = 5000; // 5 segundos para imagens
 
-export default function ViewerScreen({ navigation }) {
+export default function ViewerScreen({ navigation, route }) {
     const [stories, setStories] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const progress = useRef(new Animated.Value(0)).current;
     const videoRef = useRef(null);
+    const [videoDuration, setVideoDuration] = useState(0);
+    const safetyTimeoutRef = useRef(null);
 
     useEffect(() => {
         fetchStories();
     }, []);
 
+    // Definir índice inicial baseado no parâmetro da rota
     useEffect(() => {
-        if (stories.length > 0) startProgress();
+        if (route.params?.initialStoryIndex !== undefined) {
+            setCurrentIndex(route.params.initialStoryIndex);
+        }
+    }, [route.params?.initialStoryIndex]);
+
+    useEffect(() => {
+        if (stories.length > 0 && currentIndex < stories.length) {
+            const currentStory = stories[currentIndex];
+            console.log('🔄 Story mudou, iniciando progresso para:', currentStory?.title);
+            startProgress();
+        }
+    }, [currentIndex, stories]);
+
+    // Forçar reprodução do vídeo quando o story mudar
+    useEffect(() => {
+        if (stories.length > 0 && currentIndex < stories.length) {
+            const currentStory = stories[currentIndex];
+            if (currentStory && currentStory.media_type === 'video' && videoRef.current) {
+                console.log('🎬 Story de vídeo detectado, forçando reprodução...');
+                // Resetar duração do vídeo
+                setVideoDuration(0);
+                // Resetar progresso
+                progress.setValue(0);
+                // Pequeno delay para garantir que o componente está montado
+                setTimeout(() => {
+                    if (videoRef.current) {
+                        videoRef.current.playAsync();
+                    }
+                }, 300);
+            }
+        }
     }, [currentIndex, stories]);
 
     const fetchStories = async () => {
@@ -39,18 +72,70 @@ export default function ViewerScreen({ navigation }) {
 
     const startProgress = () => {
         progress.setValue(0);
-        Animated.timing(progress, {
-            toValue: 1,
-            duration: stories[currentIndex]?.media_type === "image" ? IMAGE_DURATION : 0,
-            useNativeDriver: false,
-        }).start(({ finished }) => {
-            if (finished && stories[currentIndex]?.media_type === "image") {
-                goNext();
-            }
+        const currentStory = stories[currentIndex];
+
+        if (!currentStory) {
+            console.log('❌ Nenhum story encontrado para o índice:', currentIndex);
+            return;
+        }
+
+        console.log('🎯 Iniciando progresso:', {
+            mediaType: currentStory.media_type,
+            title: currentStory.title,
+            isVideo: currentStory.media_type === "video"
         });
+
+        // Para imagens, usar animação automática
+        if (currentStory.media_type === "image") {
+            console.log('🖼️ Iniciando progresso para imagem (5 segundos)');
+
+            // Limpar timeout anterior se existir
+            if (safetyTimeoutRef.current) {
+                clearTimeout(safetyTimeoutRef.current);
+            }
+
+            // Timeout de segurança para garantir que a imagem avance
+            safetyTimeoutRef.current = setTimeout(() => {
+                console.log('🖼️ Timeout de segurança ativado, avançando imagem');
+                goNext();
+            }, IMAGE_DURATION + 1000); // 6 segundos total
+
+            Animated.timing(progress, {
+                toValue: 1,
+                duration: IMAGE_DURATION,
+                useNativeDriver: false,
+            }).start(({ finished }) => {
+                if (safetyTimeoutRef.current) {
+                    clearTimeout(safetyTimeoutRef.current);
+                    safetyTimeoutRef.current = null;
+                }
+                if (finished) {
+                    console.log('🖼️ Imagem terminou, indo para próximo');
+                    goNext();
+                }
+            });
+        } else if (currentStory.media_type === "video") {
+            console.log('🎬 Story de vídeo - progresso será controlado pelo vídeo');
+        }
+        // Para vídeos, o progresso será controlado pelo onPlaybackStatusUpdate
     };
 
     const goNext = () => {
+        // Limpar timeout de segurança
+        if (safetyTimeoutRef.current) {
+            clearTimeout(safetyTimeoutRef.current);
+            safetyTimeoutRef.current = null;
+        }
+
+        // Resetar progresso e duração do vídeo
+        progress.setValue(0);
+        setVideoDuration(0);
+
+        // Parar vídeo atual se existir
+        if (videoRef.current) {
+            videoRef.current.stopAsync();
+        }
+
         if (currentIndex < stories.length - 1) {
             setCurrentIndex(currentIndex + 1);
         } else {
@@ -59,6 +144,21 @@ export default function ViewerScreen({ navigation }) {
     };
 
     const goPrev = () => {
+        // Limpar timeout de segurança
+        if (safetyTimeoutRef.current) {
+            clearTimeout(safetyTimeoutRef.current);
+            safetyTimeoutRef.current = null;
+        }
+
+        // Resetar progresso e duração do vídeo
+        progress.setValue(0);
+        setVideoDuration(0);
+
+        // Parar vídeo atual se existir
+        if (videoRef.current) {
+            videoRef.current.stopAsync();
+        }
+
         if (currentIndex > 0) {
             setCurrentIndex(currentIndex - 1);
         }
@@ -78,81 +178,144 @@ export default function ViewerScreen({ navigation }) {
 
     return (
         <View style={styles.container}>
-            {/* Barra de progresso */}
-            <View style={styles.progressBarContainer}>
-                {stories.map((_, index) => (
-                    <View key={index} style={styles.progressBarBackground}>
-                        <Animated.View
-                            style={[
-                                styles.progressBarFill,
-                                index === currentIndex && { flex: progress },
-                                index < currentIndex && { flex: 1 },
-                                index > currentIndex && { flex: 0 },
-                            ]}
-                        />
-                    </View>
-                ))}
-            </View>
-
-            {/* Conteúdo do story */}
-            <TouchableWithoutFeedback onPress={(e) => {
-                const touchX = e.nativeEvent.locationX;
-                if (touchX < width / 2) goPrev();
-                else goNext();
-            }}>
-                <View style={styles.storyContainer}>
-                    {currentStory.media_type === "image" ? (
-                        <View style={styles.mediaContainer}>
-                            <Image
-                                source={{ uri: currentStory.image_url }}
-                                style={styles.media}
-                                resizeMode="cover"
-                                onError={(error) => {
-                                    console.error('Erro ao carregar imagem:', error);
-                                }}
+            <SafeAreaView style={styles.safeArea}>
+                {/* Barra de progresso */}
+                <View style={styles.progressBarContainer}>
+                    {stories.map((_, index) => (
+                        <View key={index} style={styles.progressBarBackground}>
+                            <Animated.View
+                                style={[
+                                    styles.progressBarFill,
+                                    index === currentIndex && {
+                                        width: progress.interpolate({
+                                            inputRange: [0, 1],
+                                            outputRange: ['0%', '100%']
+                                        })
+                                    },
+                                    index < currentIndex && { width: '100%' },
+                                    index > currentIndex && { width: '0%' },
+                                ]}
                             />
-                            <View style={styles.mediaTypeIndicator}>
-                                <Ionicons name="image" size={20} color="#fff" />
-                            </View>
                         </View>
-                    ) : (
-                        <View style={styles.mediaContainer}>
-                            <Video
-                                ref={videoRef}
-                                source={{ uri: currentStory.image_url }}
-                                style={styles.media}
-                                resizeMode="cover"
-                                shouldPlay
-                                onError={(error) => {
-                                    console.error('Erro ao carregar vídeo:', error);
-                                }}
-                                onPlaybackStatusUpdate={(status) => {
-                                    console.log('Status do vídeo:', status);
-                                    if (status.didJustFinish) goNext();
-                                }}
-                            />
-                            <View style={styles.mediaTypeIndicator}>
-                                <Ionicons name="videocam" size={20} color="#fff" />
-                            </View>
-                        </View>
-                    )}
-
-                    {/* Título do story */}
-                    <View style={styles.storyTitleContainer}>
-                        <Text style={styles.storyTitle}>{currentStory.title}</Text>
-                    </View>
+                    ))}
                 </View>
-            </TouchableWithoutFeedback>
+
+                {/* Conteúdo do story */}
+                <TouchableWithoutFeedback onPress={(e) => {
+                    const touchX = e.nativeEvent.locationX;
+                    if (touchX < width / 2) goPrev();
+                    else goNext();
+                }}>
+                    <View style={styles.storyContainer}>
+                        {currentStory.media_type === "image" ? (
+                            <View style={styles.mediaContainer}>
+                                <Image
+                                    source={{ uri: currentStory.image_url }}
+                                    style={styles.media}
+                                    resizeMode="cover"
+                                    onLoad={() => {
+                                        console.log('🖼️ Imagem carregada com sucesso');
+                                    }}
+                                    onError={(error) => {
+                                        console.error('Erro ao carregar imagem:', error);
+                                        // Se der erro, avançar automaticamente após 2 segundos
+                                        setTimeout(() => {
+                                            console.log('🖼️ Erro na imagem, avançando automaticamente');
+                                            goNext();
+                                        }, 2000);
+                                    }}
+                                />
+                                <View style={styles.mediaTypeIndicator}>
+                                    <Ionicons name="image" size={20} color="#fff" />
+                                </View>
+                            </View>
+                        ) : (
+                            <View style={styles.mediaContainer}>
+                                <Video
+                                    ref={videoRef}
+                                    source={{ uri: currentStory.image_url }}
+                                    style={styles.media}
+                                    resizeMode="cover"
+                                    shouldPlay={true}
+                                    isLooping={false}
+                                    useNativeControls={false}
+                                    volume={1.0}
+                                    isMuted={false}
+                                    shouldCorrectPitch={true}
+                                    {...(Platform.OS === 'ios' && {
+                                        audioMode: 'playback',
+                                        allowsAirPlay: true,
+                                        staysActiveInBackground: false,
+                                    })}
+                                    onLoadStart={() => {
+                                        console.log('🎬 Iniciando carregamento do vídeo');
+                                    }}
+                                    onLoad={(data) => {
+                                        console.log('✅ Vídeo carregado, iniciando reprodução...');
+                                        console.log('📏 Duração do vídeo:', data.durationMillis);
+                                        // Definir duração do vídeo para a barra de progresso
+                                        setVideoDuration(data.durationMillis || 0);
+                                        // Forçar início da reprodução
+                                        if (videoRef.current) {
+                                            videoRef.current.playAsync();
+                                        }
+                                    }}
+                                    onError={(error) => {
+                                        console.error('❌ Erro ao carregar vídeo:', error);
+                                    }}
+                                    onPlaybackStatusUpdate={(status) => {
+                                        console.log('📺 Status do vídeo:', {
+                                            isPlaying: status.isPlaying,
+                                            position: status.positionMillis,
+                                            duration: status.durationMillis,
+                                            didJustFinish: status.didJustFinish
+                                        });
+
+                                        // Atualizar progresso da barra baseado na posição do vídeo
+                                        if (status.isLoaded && status.durationMillis > 0) {
+                                            const progressValue = status.positionMillis / status.durationMillis;
+                                            // Só atualizar a cada 100ms para evitar pulos
+                                            if (status.positionMillis % 100 < 50) {
+                                                console.log('📊 Progresso:', progressValue, '(', status.positionMillis, '/', status.durationMillis, ')');
+                                                // Usar animação suave para evitar pulos
+                                                Animated.timing(progress, {
+                                                    toValue: progressValue,
+                                                    duration: 100,
+                                                    useNativeDriver: false,
+                                                }).start();
+                                            }
+                                        }
+
+                                        if (status.didJustFinish) {
+                                            console.log('🎬 Vídeo terminou, indo para próximo');
+                                            goNext();
+                                        }
+                                    }}
+                                />
+                                <View style={styles.mediaTypeIndicator}>
+                                    <Ionicons name="videocam" size={20} color="#fff" />
+                                </View>
+                            </View>
+                        )}
+
+                        {/* Título do story */}
+                        <View style={styles.storyTitleContainer}>
+                            <Text style={styles.storyTitle}>{currentStory.title}</Text>
+                        </View>
+                    </View>
+                </TouchableWithoutFeedback>
+            </SafeAreaView>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: "black" },
+    safeArea: { flex: 1 },
     progressBarContainer: {
         flexDirection: "row",
         position: "absolute",
-        top: 40,
+        top: Platform.OS === 'ios' ? 50 : 20,
         left: 10,
         right: 10,
         zIndex: 1,
@@ -165,9 +328,14 @@ const styles = StyleSheet.create({
         borderRadius: 2,
     },
     progressBarFill: {
-        height: 3,
-        backgroundColor: "white",
-        borderRadius: 2,
+        height: 6,
+        backgroundColor: "#ff0000",
+        borderRadius: 3,
+        shadowColor: "#ff0000",
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.8,
+        shadowRadius: 3,
+        elevation: 5,
     },
     storyContainer: {
         flex: 1,
@@ -206,4 +374,5 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         textAlign: "center",
     },
+
 });

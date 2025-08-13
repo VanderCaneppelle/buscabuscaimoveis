@@ -21,7 +21,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PlanService } from '../lib/planService';
 import { PropertyService } from '../lib/propertyService';
-import { MediaService } from '../lib/mediaService';
+import { MediaServiceOptimized } from '../lib/mediaServiceOptimized';
 import { useAuth } from '../contexts/AuthContext';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -217,11 +217,11 @@ export default function CreateAdScreen({ navigation, route }) {
             let result = null;
 
             if (type === 'camera') {
-                result = await MediaService.takePhoto();
+                result = await MediaServiceOptimized.takePhoto();
             } else if (type === 'gallery') {
-                result = await MediaService.pickImage();
+                result = await MediaServiceOptimized.pickImage();
             } else if (type === 'video') {
-                result = await MediaService.pickVideo();
+                result = await MediaServiceOptimized.pickVideo();
             }
 
             if (result) {
