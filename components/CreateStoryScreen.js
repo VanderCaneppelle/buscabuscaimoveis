@@ -32,6 +32,7 @@ export default function CreateStoryScreen({ navigation }) {
     const [showPreview, setShowPreview] = useState(false);
     const [storyTitle, setStoryTitle] = useState('');
     const [uploading, setUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
 
     useEffect(() => {
         if (!isAdmin) {
@@ -130,7 +131,7 @@ export default function CreateStoryScreen({ navigation }) {
         }
     };
 
-    const uploadStory = async () => {
+    const handleUploadStory = async () => {
         if (!capturedMedia || !storyTitle.trim()) {
             Alert.alert('Erro', 'Por favor, adicione um título ao story');
             return;
@@ -139,72 +140,52 @@ export default function CreateStoryScreen({ navigation }) {
         setUploading(true);
 
         try {
-            const fileExtension = capturedMedia.uri.split('.').pop() ||
-                (capturedMedia.type === 'video' ? 'mp4' : 'jpg');
-            const mimeType = getMimeType(fileExtension);
-            const fileName = `stories/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExtension}`;
+            console.log('🚀 Iniciando upload do story...');
 
-            const fileInfo = await FileSystem.getInfoAsync(capturedMedia.uri);
-            const maxSize = 50 * 1024 * 1024;
-            if (fileInfo.size > maxSize) {
-                throw new Error(`Arquivo muito grande. Máximo permitido: 50MB`);
+            // Usar o MediaServiceOptimized para upload
+            const result = await MediaService.uploadStory(
+                capturedMedia.uri,
+                storyTitle,
+                capturedMedia.type,
+                (progress) => {
+                    console.log(`📤 Progresso do upload: ${progress}%`);
+                    setUploadProgress(progress);
+                }
+            );
+
+            console.log('✅ Upload concluído:', result);
+
+            if (result.success) {
+                // Mostrar sucesso e voltar para a tela anterior
+                Alert.alert(
+                    '🎉 Sucesso!',
+                    'Story criado e publicado com sucesso!',
+                    [
+                        {
+                            text: 'OK',
+                            onPress: () => {
+                                setShowPreview(false);
+                                setCapturedMedia(null);
+                                setStoryTitle('');
+                                navigation.goBack();
+                            }
+                        }
+                    ]
+                );
+            } else {
+                throw new Error('Falha no upload do story');
             }
 
-            // Lê arquivo como base64
-            const base64Data = await FileSystem.readAsStringAsync(capturedMedia.uri, {
-                encoding: FileSystem.EncodingType.Base64,
-            });
-
-            // Converte usando sua função
-            const fileBytes = base64ToUint8Array(base64Data);
-
-            // Upload no Supabase
-            const { error: storageError } = await supabase.storage
-                .from('stories')
-                .upload(fileName, fileBytes, {
-                    contentType: mimeType,
-                    upsert: false,
-                });
-
-            if (storageError) throw storageError;
-
-            const { data: publicData } = supabase.storage
-                .from('stories')
-                .getPublicUrl(fileName);
-
-            const publicUrl = publicData?.publicUrl;
-
-            // Busca próximo order_index
-            const { data: maxOrderData } = await supabase
-                .from('stories')
-                .select('order_index')
-                .order('order_index', { ascending: false })
-                .limit(1);
-
-            const nextOrderIndex = (maxOrderData?.[0]?.order_index || 0) + 1;
-
-            // Salva no banco
-            const { error: dbError } = await supabase
-                .from('stories')
-                .insert({
-                    title: storyTitle,
-                    image_url: publicUrl,
-                    media_type: capturedMedia.type === 'video' ? 'video' : 'image',
-                    status: 'active',
-                    order_index: nextOrderIndex,
-                });
-
-            if (dbError) throw dbError;
-
-            Alert.alert('Sucesso!', 'Story criado com sucesso!', [
-                { text: 'OK', onPress: () => navigation.goBack() }
-            ]);
-
         } catch (error) {
-            console.error('Erro no upload:', error);
-            Alert.alert('Erro', error.message);
+            console.error('❌ Erro no upload do story:', error);
+            Alert.alert(
+                '❌ Erro',
+                `Não foi possível publicar o story: ${error.message}`,
+                [{ text: 'OK' }]
+            );
         } finally {
             setUploading(false);
+            setUploadProgress(0);
         }
     };
 
@@ -254,11 +235,16 @@ export default function CreateStoryScreen({ navigation }) {
 
                     <TouchableOpacity
                         style={[styles.uploadButton, uploading && styles.uploadingButton]}
-                        onPress={() => MediaService.uploadStory(capturedMedia.uri, storyTitle)}
+                        onPress={handleUploadStory}
                         disabled={uploading}
                     >
                         {uploading ? (
-                            <ActivityIndicator color="#fff" />
+                            <View style={styles.uploadingContainer}>
+                                <ActivityIndicator color="#fff" size="small" />
+                                <Text style={styles.uploadingText}>
+                                    {uploadProgress > 0 ? `Enviando... ${uploadProgress}%` : 'Enviando...'}
+                                </Text>
+                            </View>
                         ) : (
                             <Text style={styles.uploadButtonText}>Publicar Story</Text>
                         )}
@@ -512,6 +498,17 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 16,
         fontWeight: 'bold',
+    },
+    uploadingContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 10,
+    },
+    uploadingText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: '500',
     },
 });
 
