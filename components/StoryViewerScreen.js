@@ -3,6 +3,7 @@ import { View, Image, TouchableWithoutFeedback, Dimensions, StyleSheet, Animated
 import { Video } from "expo-av";
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../lib/supabase";
+import { getOptimizedUrl } from "../lib/mediaCacheService";
 
 const { width, height } = Dimensions.get("window");
 const IMAGE_DURATION = 5000; // 5 segundos para imagens
@@ -10,6 +11,7 @@ const IMAGE_DURATION = 5000; // 5 segundos para imagens
 export default function ViewerScreen({ navigation, route }) {
     const [stories, setStories] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [optimizedUrls, setOptimizedUrls] = useState({});
     const progress = useRef(new Animated.Value(0)).current;
     const videoRef = useRef(null);
     const [videoDuration, setVideoDuration] = useState(0);
@@ -68,8 +70,35 @@ export default function ViewerScreen({ navigation, route }) {
             console.log('Stories carregados:', data.length, 'stories');
             console.log('Stories:', data.map(s => ({ id: s.id, title: s.title, media_type: s.media_type, order_index: s.order_index })));
             setStories(data);
+
+            // Otimizar URLs dos stories
+            optimizeStoryUrls(data);
         } else {
             console.error('Erro ao carregar stories:', error);
+        }
+    };
+
+    // Otimizar URLs dos stories para cache
+    const optimizeStoryUrls = async (stories) => {
+        try {
+            console.log('🔄 Otimizando URLs dos stories...');
+
+            const optimizedUrlsMap = {};
+
+            for (const story of stories) {
+                const mediaUrl = story.image_url;
+                if (mediaUrl) {
+                    const fileType = story.media_type === 'video' ? 'video' : 'image';
+                    const optimizedUrl = await getOptimizedUrl(mediaUrl, fileType);
+                    optimizedUrlsMap[story.id] = optimizedUrl;
+                }
+            }
+
+            setOptimizedUrls(optimizedUrlsMap);
+            console.log('✅ URLs otimizadas carregadas', optimizedUrlsMap);
+
+        } catch (error) {
+            console.error('❌ Erro ao otimizar URLs:', error);
         }
     };
 
@@ -213,7 +242,7 @@ export default function ViewerScreen({ navigation, route }) {
                         {currentStory.media_type === "image" ? (
                             <View style={styles.mediaContainer}>
                                 <Image
-                                    source={{ uri: currentStory.image_url }}
+                                    source={{ uri: optimizedUrls[currentStory.id] || currentStory.image_url }}
                                     style={styles.media}
                                     resizeMode="cover"
                                     onLoad={() => {
@@ -236,7 +265,7 @@ export default function ViewerScreen({ navigation, route }) {
                             <View style={styles.mediaContainer}>
                                 <Video
                                     ref={videoRef}
-                                    source={{ uri: currentStory.image_url }}
+                                    source={{ uri: optimizedUrls[currentStory.id] || currentStory.image_url }}
                                     style={styles.media}
                                     resizeMode="cover"
                                     shouldPlay={true}
