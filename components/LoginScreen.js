@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -12,7 +12,9 @@ import {
     TouchableWithoutFeedback,
     Keyboard,
     Image,
+    ActivityIndicator,
 } from 'react-native';
+import { Video } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { useLoading } from '../contexts/LoadingContext';
@@ -25,9 +27,23 @@ export default function LoginScreen() {
     const [password, setPassword] = useState('');
     const [isSignUp, setIsSignUp] = useState(false);
     const [isForgotPassword, setIsForgotPassword] = useState(false);
+    const [videoLoaded, setVideoLoaded] = useState(false);
+    const [videoError, setVideoError] = useState(false);
 
     const { signIn, signUp } = useAuth();
     const { withLoading } = useLoading();
+
+    // Forçar o vídeo a carregar após um pequeno delay
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (!videoLoaded && !videoError) {
+                console.log('🎬 Tentando recarregar vídeo...');
+                setVideoError(false);
+            }
+        }, 1000);
+
+        return () => clearTimeout(timer);
+    }, [videoLoaded, videoError]);
 
     const handleAuth = () => {
         if (!email || !password) {
@@ -109,13 +125,22 @@ export default function LoginScreen() {
                 >
                     <View style={styles.content}>
                         <View style={styles.logoContainer}>
-                            <Image
-                                source={require('../assets/logo_bb.jpg')}
+                            <Video
+                                source={require('../assets/oficial_bb.mp4')}
                                 style={styles.logo}
-                                resizeMode="contain"
+                                resizeMode="cover"
+                                shouldPlay={true}
+                                isLooping={true}
+                                isMuted={true}
+                                onLoadStart={() => console.log('🎬 Vídeo: Iniciando carregamento')}
+                                onLoad={() => {
+                                    console.log('🎬 Vídeo: Carregado com sucesso');
+                                    setVideoLoaded(true);
+                                }}
+                                onError={(error) => console.log('❌ Erro no vídeo:', error)}
                             />
                         </View>
-                        <Text style={styles.title}>BuscaBusca Imóveis</Text>
+                        <Text style={styles.title}>Busca Busca Imóveis</Text>
                         <Text style={styles.subtitle}>
                             {isForgotPassword
                                 ? 'Recuperar senha'
@@ -207,7 +232,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f8f9fa',
+        backgroundColor: '#ffcc1e', // Nova cor amarela
     },
     scrollContainer: {
         flexGrow: 1,
@@ -222,29 +247,31 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         alignItems: 'center',
         justifyContent: 'center',
+        width: '100%',
+        height: 200,
     },
     logo: {
-        width: 120,
-        height: 120,
-        borderRadius: 60,
+        width: '100%',
+        height: 200,
+        borderRadius: 0,
         shadowColor: '#000',
         shadowOffset: {
             width: 0,
-            height: 2,
+            height: 0,
         },
-        shadowOpacity: 0.1,
-        shadowRadius: 3.84,
-        elevation: 5,
+        shadowOpacity: 0.0,
+        shadowRadius: 0,
+        elevation: 0,
     },
     title: {
         fontSize: 28,
         fontWeight: 'bold',
-        color: '#1e3a8a',
+        color: '#00335e', // Novo azul escuro
         marginBottom: 10,
     },
     subtitle: {
         fontSize: 16,
-        color: '#64748b',
+        color: '#00335e', // Novo azul escuro
         marginBottom: 40,
         textAlign: 'center',
     },
@@ -259,7 +286,7 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         marginBottom: 15,
         borderWidth: 1,
-        borderColor: '#e2e8f0',
+        borderColor: '#00335e', // Novo azul escuro
         paddingHorizontal: 15,
     },
     inputIcon: {
@@ -272,7 +299,7 @@ const styles = StyleSheet.create({
         color: '#000', // Cor do texto para ser visível
     },
     button: {
-        backgroundColor: '#1e3a8a',
+        backgroundColor: '#00335e',
         borderRadius: 10,
         padding: 15,
         flexDirection: 'row',
@@ -301,7 +328,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     switchText: {
-        color: '#1e3a8a',
+        color: '#00335e',
         fontSize: 14,
     },
     forgotButton: {

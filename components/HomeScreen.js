@@ -52,9 +52,9 @@ export default function HomeScreen({ navigation }) {
     const colors = {
         headerBg: '#ffffff', // Header sempre branco
         headerBorder: '#e2e8f0',
-        textPrimary: '#1e3a8a',
+        textPrimary: '#00335e',
         textSecondary: '#64748b',
-        buttonBg: '#1e3a8a',
+        buttonBg: '#00335e',
         buttonText: '#ffffff',
     };
 
@@ -555,21 +555,26 @@ export default function HomeScreen({ navigation }) {
 
     return (
         <SafeAreaView style={styles.container}>
+            {/* Stories Component - Acima do Header */}
+            <View style={styles.storiesContainer}>
+                <View style={styles.titleContainer}>
+                    <Image
+                        source={require('../assets/logo_bb.jpg')}
+                        style={styles.titleLogo}
+                        resizeMode="contain"
+                    />
+                    <Text style={styles.storiesTitle}>Busca Busca Imóveis</Text>
+                </View>
+                <StoriesComponent navigation={navigation} />
+            </View>
+
             {/* Header */}
             <View style={styles.header}>
                 {/* Nome do app - pequeno e acima da barra de pesquisa */}
-                <Text style={styles.appTitle}>BuscaBusca Imóveis</Text>
 
-                {/* Primeira linha: Logo + Barra de Pesquisa */}
+
+                {/* Primeira linha: Barra de Pesquisa */}
                 <View style={styles.headerTop}>
-                    <View style={styles.headerLogo}>
-                        <Image
-                            source={require('../assets/logo_bb.jpg')}
-                            style={styles.logo}
-                            resizeMode="contain"
-                        />
-                    </View>
-
                     {/* Barra de Pesquisa */}
                     <View style={styles.searchBar}>
                         <Ionicons name="search" size={20} color="#7f8c8d" style={styles.searchIcon} />
@@ -612,13 +617,7 @@ export default function HomeScreen({ navigation }) {
                             <Text style={styles.actionButtonText}>Ordenar</Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity
-                            style={[styles.actionButton, { backgroundColor: '#dc2626' }]}
-                            onPress={() => navigation.navigate('VideoUploadTest')}
-                        >
-                            <Ionicons name="videocam" size={18} color="#fff" />
-                            <Text style={styles.actionButtonText}>Teste</Text>
-                        </TouchableOpacity>
+
                     </View>
                 </View>
             </View>
@@ -633,9 +632,6 @@ export default function HomeScreen({ navigation }) {
                 }
                 ListHeaderComponent={
                     <>
-                        {/* Stories Component */}
-                        <StoriesComponent navigation={navigation} />
-
                         {/* Properties Section */}
                         <View style={styles.propertiesSection}>
                             <Text style={styles.sectionTitle}>
@@ -668,25 +664,60 @@ export default function HomeScreen({ navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f8f9fa',
+        backgroundColor: '#ffcc1e',
+    },
+    storiesContainer: {
+        paddingTop: 50,
+        paddingBottom: 5,
+        backgroundColor: '#ffcc1e',
+    },
+    titleContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 5,
+        paddingHorizontal: 20,
+    },
+    titleLogo: {
+        width: 30,
+        height: 30,
+        borderRadius: 15,
+        marginRight: 10,
+    },
+    storiesTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#00335e',
+        textAlign: 'center',
     },
     header: {
-        padding: 20,
-        paddingTop: 40,
-        paddingBottom: 20,
+        padding: 15,
+        paddingTop: 20,
+        paddingBottom: 10,
+        backgroundColor: '#fff',
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 0,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 3.84,
+        elevation: 5,
     },
     headerTop: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 15,
+        justifyContent: 'center',
     },
     headerLogo: {
         alignItems: 'center',
         justifyContent: 'center',
     },
     logo: {
-        width: 40,
-        height: 40,
+        width: 60,
+        height: 60,
         borderRadius: 20,
     },
     filterButton: {
@@ -696,7 +727,7 @@ const styles = StyleSheet.create({
         height: 40,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#1e3a8a',
+        backgroundColor: '#00335e',
     },
 
     loadingContainer: {
@@ -710,6 +741,7 @@ const styles = StyleSheet.create({
     },
     listContainer: {
         paddingBottom: 80,
+        backgroundColor: '#fff',
     },
     storiesSection: {
         marginTop: 5,
@@ -719,7 +751,7 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#1e3a8a',
+        color: '#00335e',
         marginBottom: 5,
         paddingHorizontal: 20,
     },
@@ -771,12 +803,12 @@ const styles = StyleSheet.create({
         bottom: -2,
         borderRadius: 37,
         borderWidth: 2,
-        borderColor: '#1e3a8a',
+        borderColor: '#00335e',
         backgroundColor: 'transparent',
     },
     storyTitle: {
         fontSize: 12,
-        color: '#1e3a8a',
+        color: '#00335e',
         textAlign: 'center',
         fontWeight: '500',
     },
@@ -865,7 +897,7 @@ const styles = StyleSheet.create({
     propertyTitle: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#1e3a8a',
+        color: '#00335e',
         marginBottom: 5,
     },
     propertyLocation: {
@@ -940,7 +972,7 @@ const styles = StyleSheet.create({
     modalTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#1e3a8a',
+        color: '#00335e',
     },
     filtersContainer: {
         padding: 20,
@@ -952,7 +984,7 @@ const styles = StyleSheet.create({
     filterLabel: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#1e3a8a',
+        color: '#00335e',
         marginBottom: 8,
     },
     filterInput: {
@@ -973,19 +1005,19 @@ const styles = StyleSheet.create({
     clearButton: {
         flex: 1,
         borderWidth: 1,
-        borderColor: '#1e3a8a',
+        borderColor: '#00335e',
         borderRadius: 8,
         paddingVertical: 12,
         alignItems: 'center',
     },
     clearButtonText: {
-        color: '#1e3a8a',
+        color: '#00335e',
         fontSize: 16,
         fontWeight: '600',
     },
     applyButton: {
         flex: 1,
-        backgroundColor: '#1e3a8a',
+        backgroundColor: '#00335e',
         borderRadius: 8,
         paddingVertical: 12,
         alignItems: 'center',
@@ -998,7 +1030,8 @@ const styles = StyleSheet.create({
 
 
     searchBar: {
-        flex: 1,
+        width: '100%',
+        maxWidth: 400,
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: '#fff',
@@ -1020,7 +1053,7 @@ const styles = StyleSheet.create({
     searchInput: {
         flex: 1,
         fontSize: 16,
-        color: '#1e3a8a',
+        color: '#00335e',
     },
     clearSearchButton: {
         padding: 5,
@@ -1031,7 +1064,7 @@ const styles = StyleSheet.create({
         fontWeight: 'normal',
         textAlign: 'center',
         marginBottom: 10,
-        color: '#1e3a8a',
+        color: '#00335e',
     },
     headerBottom: {
         flexDirection: 'row',
@@ -1055,7 +1088,7 @@ const styles = StyleSheet.create({
         paddingVertical: 10,
         paddingHorizontal: 10,
         gap: 5,
-        backgroundColor: '#1e3a8a',
+        backgroundColor: '#00335e',
     },
     actionButtonText: {
         fontSize: 14,
@@ -1069,7 +1102,7 @@ const styles = StyleSheet.create({
     clearFiltersText: {
         fontSize: 14,
         fontWeight: '500',
-        color: '#1e3a8a',
+        color: '#00335e',
     },
 
     // Story Modal Styles

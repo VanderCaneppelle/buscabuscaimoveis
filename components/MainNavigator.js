@@ -34,7 +34,7 @@ export default function MainNavigator() {
 
                     return <Ionicons name={iconName} size={size} color={color} />;
                 },
-                tabBarActiveTintColor: '#1e3a8a',
+                tabBarActiveTintColor: '#00335e',
                 tabBarInactiveTintColor: '#64748b',
                 tabBarStyle: {
                     backgroundColor: '#fff',

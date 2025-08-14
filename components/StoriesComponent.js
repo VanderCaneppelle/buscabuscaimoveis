@@ -201,7 +201,6 @@ export default function StoriesComponent({ navigation }) {
     return (
         <View style={styles.container}>
             <View style={styles.headerContainer}>
-                <Text style={styles.sectionTitle}>Stories</Text>
                 {isAdmin && (
                     <View style={styles.adminButtons}>
                         <TouchableOpacity
@@ -321,7 +320,7 @@ const styles = StyleSheet.create({
         height: STORY_SIZE,
         borderRadius: STORY_SIZE / 2,
         borderWidth: 3,
-        borderColor: '#e74c3c',
+        borderColor: '#00335e',
         overflow: 'hidden',
         marginBottom: 8,
     },

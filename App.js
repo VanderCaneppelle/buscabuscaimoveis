@@ -102,7 +102,7 @@ function AppContent() {
             headerShown: true,
             title: 'Detalhes do Imóvel',
             headerStyle: {
-              backgroundColor: '#1e3a8a',
+              backgroundColor: '#00335e',
             },
             headerTintColor: '#fff',
             headerTitleStyle: {
