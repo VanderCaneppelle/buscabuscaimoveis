@@ -396,17 +396,17 @@ export default function HomeScreen({ navigation }) {
                         <View style={styles.propertyFeatures}>
                             {item.bedrooms && (
                                 <Text style={styles.propertyFeature}>
-                                    {item.bedrooms} quartos
+                                    {`${item.bedrooms} quartos`}
                                 </Text>
                             )}
                             {item.bathrooms && (
                                 <Text style={styles.propertyFeature}>
-                                    {item.bathrooms} banheiros
+                                    {`${item.bathrooms} banheiros`}
                                 </Text>
                             )}
                             {item.area && (
                                 <Text style={styles.propertyFeature}>
-                                    {item.area}m²
+                                    {`${item.area}m²`}
                                 </Text>
                             )}
                         </View>
@@ -639,7 +639,7 @@ export default function HomeScreen({ navigation }) {
                         {/* Properties Section */}
                         <View style={styles.propertiesSection}>
                             <Text style={styles.sectionTitle}>
-                                Anúncios ({properties.length})
+                                {`Anúncios (${properties.length})`}
                             </Text>
                         </View>
                     </>
