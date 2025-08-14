@@ -26,22 +26,10 @@ export default function StoriesComponent({ navigation }) {
     const [stories, setStories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
-    const [cacheStats, setCacheStats] = useState({ totalFiles: 0, totalSizeMB: '0.00' });
 
     useEffect(() => {
         loadStories();
-        updateCacheStats();
     }, []);
-
-    // Atualizar estatísticas do cache
-    const updateCacheStats = async () => {
-        try {
-            const stats = await getCacheStats();
-            setCacheStats(stats);
-        } catch (error) {
-            console.error('❌ Erro ao atualizar estatísticas do cache:', error);
-        }
-    };
 
     // Recarregar stories quando voltar para a tela
     useFocusEffect(
@@ -213,19 +201,7 @@ export default function StoriesComponent({ navigation }) {
     return (
         <View style={styles.container}>
             <View style={styles.headerContainer}>
-                <View style={styles.titleContainer}>
-                    <Text style={styles.sectionTitle}>Stories</Text>
-                    <View style={styles.cacheStatusContainer}>
-                        <Ionicons
-                            name="cloud-download"
-                            size={14}
-                            color={cacheStats.totalFiles > 0 ? "#27ae60" : "#95a5a6"}
-                        />
-                        <Text style={[styles.cacheStatusText, { color: cacheStats.totalFiles > 0 ? "#27ae60" : "#95a5a6" }]}>
-                            {cacheStats.totalFiles} arquivos ({cacheStats.totalSizeMB} MB)
-                        </Text>
-                    </View>
-                </View>
+                <Text style={styles.sectionTitle}>Stories</Text>
                 {isAdmin && (
                     <View style={styles.adminButtons}>
                         <TouchableOpacity
@@ -241,7 +217,6 @@ export default function StoriesComponent({ navigation }) {
                             style={styles.cacheStatsButton}
                             onPress={async () => {
                                 const stats = await getCacheStats();
-                                setCacheStats(stats);
                                 Alert.alert(
                                     'Estatísticas do Cache',
                                     `Arquivos: ${stats.totalFiles}\nTamanho: ${stats.totalSizeMB} MB`
@@ -254,7 +229,6 @@ export default function StoriesComponent({ navigation }) {
                             style={styles.clearMediaCacheButton}
                             onPress={async () => {
                                 await clearAllCache();
-                                setCacheStats({ totalFiles: 0, totalSizeMB: '0.00' });
                                 Alert.alert('Cache Limpo', 'Todo o cache de mídia foi limpo');
                             }}
                         >
@@ -265,7 +239,6 @@ export default function StoriesComponent({ navigation }) {
                             onPress={async () => {
                                 await verifyCacheIntegrity();
                                 const stats = await getCacheStats();
-                                setCacheStats(stats);
                                 Alert.alert(
                                     'Verificação do Cache',
                                     `Arquivos: ${stats.totalFiles}\nTamanho: ${stats.totalSizeMB} MB\n\nVerifique os logs para detalhes.`
@@ -309,19 +282,6 @@ const styles = StyleSheet.create({
         marginHorizontal: 20
     },
     sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#2c3e50' },
-    titleContainer: {
-        flex: 1,
-    },
-    cacheStatusContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginTop: 2,
-        gap: 4,
-    },
-    cacheStatusText: {
-        fontSize: 11,
-        fontWeight: '500',
-    },
     adminButtons: {
         flexDirection: 'row',
         gap: 8,
@@ -376,33 +336,12 @@ const styles = StyleSheet.create({
     loadingText: { textAlign: 'center', color: '#7f8c8d', marginVertical: 20 },
     emptyState: { alignItems: 'center', justifyContent: 'center', paddingVertical: 20 },
     emptyText: { color: '#7f8c8d', fontSize: 14 },
-    cacheIndicator: {
-        position: 'absolute',
-        top: 5,
-        right: 5,
-        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-        borderRadius: 10,
-        padding: 2,
-        borderWidth: 1,
-        borderColor: '#27ae60',
-    },
-    loadingIndicator: {
-        position: 'absolute',
-        top: 5,
-        right: 5,
-        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-        borderRadius: 10,
-        padding: 2,
-        borderWidth: 1,
-        borderColor: '#3498db',
-    },
 });
 
 // Componente separado para o item do story
 const StoryItem = ({ story, onPress }) => {
     const [optimizedImageUrl, setOptimizedImageUrl] = useState(null);
     const [imageLoading, setImageLoading] = useState(true);
-    const [isFromCache, setIsFromCache] = useState(false);
 
     const displayImage = story.media_type === 'video'
         ? story.thumbnail_url   // usa thumbnail para vídeo
@@ -415,17 +354,13 @@ const StoryItem = ({ story, onPress }) => {
                 .then(url => {
                     setOptimizedImageUrl(url);
                     setImageLoading(false);
-                    // Verificar se é do cache (file://) ou da internet (http/https)
-                    setIsFromCache(url.startsWith('file://'));
                 })
                 .catch(() => {
                     setOptimizedImageUrl(displayImage); // Fallback
                     setImageLoading(false);
-                    setIsFromCache(false);
                 });
         } else {
             setImageLoading(false);
-            setIsFromCache(false);
         }
     }, [displayImage]);
 
@@ -436,25 +371,11 @@ const StoryItem = ({ story, onPress }) => {
         >
             <View style={styles.storyCircle}>
                 {displayImage && optimizedImageUrl ? (
-                    <>
-                        <Image
-                            source={{ uri: optimizedImageUrl }}
-                            style={styles.storyImage}
-                            resizeMode="cover"
-                        />
-                        {/* Indicador de cache */}
-                        {isFromCache && (
-                            <View style={styles.cacheIndicator}>
-                                <Ionicons name="cloud-download" size={12} color="#27ae60" />
-                            </View>
-                        )}
-                        {/* Indicador de carregamento */}
-                        {imageLoading && (
-                            <View style={styles.loadingIndicator}>
-                                <Ionicons name="cloud-download-outline" size={12} color="#3498db" />
-                            </View>
-                        )}
-                    </>
+                    <Image
+                        source={{ uri: optimizedImageUrl }}
+                        style={styles.storyImage}
+                        resizeMode="cover"
+                    />
                 ) : (
                     <View style={[styles.storyCircle, { backgroundColor: '#ccc' }]} />
                 )}

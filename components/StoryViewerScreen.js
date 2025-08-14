@@ -103,6 +103,12 @@ export default function ViewerScreen({ navigation, route }) {
     };
 
     const startProgress = () => {
+        // Limpar timeout anterior se existir
+        if (safetyTimeoutRef.current) {
+            clearTimeout(safetyTimeoutRef.current);
+            safetyTimeoutRef.current = null;
+        }
+
         progress.setValue(0);
         const currentStory = stories[currentIndex];
 
@@ -121,31 +127,25 @@ export default function ViewerScreen({ navigation, route }) {
         if (currentStory.media_type === "image") {
             console.log('🖼️ Iniciando progresso para imagem (5 segundos)');
 
-            // Limpar timeout anterior se existir
-            if (safetyTimeoutRef.current) {
-                clearTimeout(safetyTimeoutRef.current);
-            }
+            // Pequeno delay para garantir que a imagem carregou
+            setTimeout(() => {
+                Animated.timing(progress, {
+                    toValue: 1,
+                    duration: IMAGE_DURATION,
+                    useNativeDriver: false,
+                }).start(({ finished }) => {
+                    if (finished) {
+                        console.log('🖼️ Imagem terminou, indo para próximo');
+                        goNext();
+                    }
+                });
+            }, 100);
 
             // Timeout de segurança para garantir que a imagem avance
             safetyTimeoutRef.current = setTimeout(() => {
                 console.log('🖼️ Timeout de segurança ativado, avançando imagem');
                 goNext();
-            }, IMAGE_DURATION + 1000); // 6 segundos total
-
-            Animated.timing(progress, {
-                toValue: 1,
-                duration: IMAGE_DURATION,
-                useNativeDriver: false,
-            }).start(({ finished }) => {
-                if (safetyTimeoutRef.current) {
-                    clearTimeout(safetyTimeoutRef.current);
-                    safetyTimeoutRef.current = null;
-                }
-                if (finished) {
-                    console.log('🖼️ Imagem terminou, indo para próximo');
-                    goNext();
-                }
-            });
+            }, IMAGE_DURATION + 2000); // 7 segundos total (mais tempo de segurança)
         } else if (currentStory.media_type === "video") {
             console.log('🎬 Story de vídeo - progresso será controlado pelo vídeo');
         }
@@ -153,6 +153,8 @@ export default function ViewerScreen({ navigation, route }) {
     };
 
     const goNext = () => {
+        console.log('🔄 Indo para próximo story...');
+
         // Limpar timeout de segurança
         if (safetyTimeoutRef.current) {
             clearTimeout(safetyTimeoutRef.current);
@@ -171,11 +173,14 @@ export default function ViewerScreen({ navigation, route }) {
         if (currentIndex < stories.length - 1) {
             setCurrentIndex(currentIndex + 1);
         } else {
+            console.log('🏁 Último story, voltando para tela anterior');
             navigation.goBack();
         }
     };
 
     const goPrev = () => {
+        console.log('🔄 Indo para story anterior...');
+
         // Limpar timeout de segurança
         if (safetyTimeoutRef.current) {
             clearTimeout(safetyTimeoutRef.current);
@@ -247,6 +252,12 @@ export default function ViewerScreen({ navigation, route }) {
                                     resizeMode="cover"
                                     onLoad={() => {
                                         console.log('🖼️ Imagem carregada com sucesso');
+                                        // Garantir que o progresso seja iniciado quando a imagem carregar
+                                        if (currentStory.media_type === 'image') {
+                                            setTimeout(() => {
+                                                startProgress();
+                                            }, 50);
+                                        }
                                     }}
                                     onError={(error) => {
                                         console.error('Erro ao carregar imagem:', error);
