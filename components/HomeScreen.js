@@ -32,7 +32,6 @@ export default function HomeScreen({ navigation }) {
     const colorScheme = useColorScheme();
     const [profile, setProfile] = useState(null);
     const [properties, setProperties] = useState([]);
-    const [stories, setStories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [showFilters, setShowFilters] = useState(false);
@@ -63,7 +62,6 @@ export default function HomeScreen({ navigation }) {
         if (user?.id) {
             fetchProfile();
             fetchProperties();
-            fetchStories();
             fetchFavorites();
         }
     }, [user?.id]);
@@ -139,66 +137,12 @@ export default function HomeScreen({ navigation }) {
         }
     };
 
-    const fetchStories = async () => {
-        try {
-            const { data, error } = await supabase
-                .from('stories')
-                .select('*')
-                .eq('status', 'active')
-                .order('order_index', { ascending: true });
 
-            if (error) {
-                console.error('❌ Erro ao buscar stories:', error);
-            } else {
-                // Se não há stories no banco, usar dados de exemplo
-                if (!data || data.length === 0) {
-                    const sampleStories = [
-                        {
-                            id: '1',
-                            title: 'Novos Lançamentos',
-                            image_url: 'https://via.placeholder.com/80x80/1e3a8a/ffffff?text=NL',
-                            description: 'Confira os novos lançamentos exclusivos'
-                        },
-                        {
-                            id: '2',
-                            title: 'Ofertas Especiais',
-                            image_url: 'https://via.placeholder.com/80x80/f59e0b/ffffff?text=OE',
-                            description: 'Ofertas imperdíveis para você'
-                        },
-                        {
-                            id: '3',
-                            title: 'Área Premium',
-                            image_url: 'https://via.placeholder.com/80x80/059669/ffffff?text=AP',
-                            description: 'Imóveis em áreas nobres da cidade'
-                        },
-                        {
-                            id: '4',
-                            title: 'Financiamento',
-                            image_url: 'https://via.placeholder.com/80x80/dc2626/ffffff?text=FIN',
-                            description: 'Condições especiais de financiamento'
-                        },
-                        {
-                            id: '5',
-                            title: 'Plantão',
-                            image_url: 'https://via.placeholder.com/80x80/7c3aed/ffffff?text=PL',
-                            description: 'Plantão de vendas 24h'
-                        }
-                    ];
-                    setStories(sampleStories);
-                } else {
-                    setStories(data);
-                }
-            }
-        } catch (error) {
-            console.error('❌ Erro ao buscar stories:', error);
-        }
-    };
 
     const onRefresh = async () => {
         setRefreshing(true);
         await Promise.all([
             fetchProperties(),
-            fetchStories(),
             fetchProfile(),
             fetchFavorites()
         ]);

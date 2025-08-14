@@ -33,36 +33,40 @@ export default function StoriesComponent({ navigation }) {
     // Recarregar stories quando voltar para a tela
     useFocusEffect(
         React.useCallback(() => {
-            loadStories();
+            // Sempre verificar se há novos stories quando voltar para a tela
+            loadStories(false); // false = não force reload, mas sempre verifica
         }, [])
     );
 
     const onRefresh = React.useCallback(() => {
         setRefreshing(true);
-        loadStories(true).finally(() => setRefreshing(false));
+        // Limpar cache e recarregar
+        clearCache().then(() => {
+            loadStories(true).finally(() => setRefreshing(false));
+        });
     }, []);
+
+    // Função para limpar cache manualmente
+    const clearCache = async () => {
+        try {
+            await AsyncStorage.removeItem(CACHE_KEY);
+            console.log('🗑️ Cache de stories limpo');
+        } catch (error) {
+            console.error('❌ Erro ao limpar cache:', error);
+        }
+    };
 
     const loadStories = async (forceReload = false) => {
         try {
             setLoading(true);
+            console.log('🚀 Iniciando loadStories, forceReload:', forceReload);
 
-            // Tentar carregar do cache
-            if (!forceReload) {
-                const cached = await AsyncStorage.getItem(CACHE_KEY);
-                if (cached) {
-                    const cachedStories = JSON.parse(cached);
-                    console.log('📦 Stories carregados do cache:', cachedStories.length);
-                    setStories(cachedStories);
-                    setLoading(false);
-                    return;
-                }
-            }
-
-            console.log('🌐 Carregando stories do Supabase...');
-
+            // Sempre verificar se há novos stories, mesmo com cache
             const cutoffDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+            console.log('📅 Cutoff date:', cutoffDate);
 
-            const { data, error } = await supabase
+            // Buscar stories do Supabase primeiro
+            const { data: supabaseStories, error } = await supabase
                 .from('stories')
                 .select('*')
                 .eq('status', 'active')
@@ -71,18 +75,50 @@ export default function StoriesComponent({ navigation }) {
                 .limit(10);
 
             if (error) {
-                console.error('❌ Erro ao carregar stories:', error);
+                console.error('❌ Erro ao carregar stories do Supabase:', error);
                 return;
             }
 
-            const loadedStories = data || [];
-            console.log('✅ Stories carregados do Supabase:', loadedStories.length);
+            const currentStories = supabaseStories || [];
+            console.log('✅ Stories atuais do Supabase:', currentStories.length);
+            console.log('✅ Supabase stories:', currentStories.map(s => ({ id: s.id, title: s.title, created_at: s.created_at, status: s.status })));
 
-            setStories(loadedStories);
+            // Se não for forceReload, verificar se o cache está atualizado
+            if (!forceReload) {
+                const cached = await AsyncStorage.getItem(CACHE_KEY);
+                if (cached) {
+                    const cachedStories = JSON.parse(cached);
+                    console.log('📦 Stories do cache:', cachedStories.length);
+                    console.log('📦 Cache stories:', cachedStories.map(s => ({ id: s.id, title: s.title, created_at: s.created_at })));
+
+                    // Verificar se o cache está sincronizado com o Supabase
+                    const cachedIds = cachedStories.map(s => s.id).sort();
+                    const currentIds = currentStories.map(s => s.id).sort();
+
+                    const isCacheValid = JSON.stringify(cachedIds) === JSON.stringify(currentIds);
+
+                    if (isCacheValid && cachedStories.length === currentStories.length) {
+                        console.log('✅ Cache está sincronizado, usando cache');
+                        setStories(cachedStories);
+                        setLoading(false);
+                        return;
+                    } else {
+                        console.log('🔄 Cache desatualizado, atualizando...');
+                        console.log('📊 Cache IDs:', cachedIds);
+                        console.log('📊 Current IDs:', currentIds);
+                    }
+                } else {
+                    console.log('📦 Nenhum cache encontrado');
+                }
+            }
+
+            // Atualizar o estado e o cache com os stories atuais
+            setStories(currentStories);
 
             // Salvar no cache
-            await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(loadedStories));
-            console.log('💾 Stories salvos no cache');
+            await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(currentStories));
+            console.log('💾 Stories salvos no cache:', currentStories.length);
+            console.log('💾 Cache content:', currentStories.map(s => ({ id: s.id, title: s.title, created_at: s.created_at })));
 
         } catch (error) {
             console.error('❌ Erro ao carregar stories:', error);
@@ -90,6 +126,8 @@ export default function StoriesComponent({ navigation }) {
             setLoading(false);
         }
     };
+
+
 
     const handleCreateStory = () => {
         if (!isAdmin) {
@@ -154,7 +192,20 @@ export default function StoriesComponent({ navigation }) {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.sectionTitle}>Stories</Text>
+            <View style={styles.headerContainer}>
+                <Text style={styles.sectionTitle}>Stories</Text>
+                {isAdmin && (
+                    <TouchableOpacity
+                        style={styles.clearCacheButton}
+                        onPress={() => {
+                            clearCache();
+                            loadStories(true);
+                        }}
+                    >
+                        <Ionicons name="refresh" size={20} color="#e74c3c" />
+                    </TouchableOpacity>
+                )}
+            </View>
             <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
@@ -179,7 +230,21 @@ export default function StoriesComponent({ navigation }) {
 
 const styles = StyleSheet.create({
     container: { marginVertical: 10 },
-    sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#2c3e50', marginBottom: 15, marginLeft: 20 },
+    headerContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 15,
+        marginHorizontal: 20
+    },
+    sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#2c3e50' },
+    clearCacheButton: {
+        padding: 8,
+        borderRadius: 20,
+        backgroundColor: '#f8f9fa',
+        borderWidth: 1,
+        borderColor: '#e74c3c',
+    },
     storiesContainer: { paddingHorizontal: 20, gap: 15 },
     storyItem: { alignItems: 'center', width: STORY_SIZE + 20 },
     storyCircle: {

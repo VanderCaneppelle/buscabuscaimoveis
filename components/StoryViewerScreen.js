@@ -55,10 +55,13 @@ export default function ViewerScreen({ navigation, route }) {
     }, [currentIndex, stories]);
 
     const fetchStories = async () => {
+        const cutoffDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
         const { data, error } = await supabase
             .from("stories")
             .select("*")
             .eq("status", "active")
+            .gte("created_at", cutoffDate)
             .order("order_index", { ascending: true });
 
         if (!error && data) {
