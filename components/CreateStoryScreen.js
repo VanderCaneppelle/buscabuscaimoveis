@@ -34,8 +34,6 @@ export default function CreateStoryScreen({ navigation }) {
     const [storyTitle, setStoryTitle] = useState('');
     const [uploading, setUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
-    const [showSuccess, setShowSuccess] = useState(false);
-    const successAnimation = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
         if (!isAdmin) {
@@ -44,9 +42,6 @@ export default function CreateStoryScreen({ navigation }) {
             return;
         }
         requestPermissions();
-
-        // Resetar animação quando componente montar
-        successAnimation.setValue(0);
     }, []);
 
     const requestPermissions = async () => {
@@ -162,44 +157,28 @@ export default function CreateStoryScreen({ navigation }) {
             console.log('✅ Upload concluído:', result);
 
             if (result.success) {
-                console.log('🎉 Mostrando animação de sucesso...');
+                console.log('🎉 Story publicado com sucesso!');
 
-                // Resetar animação primeiro
-                successAnimation.setValue(0);
+                // Fechar o modal de preview primeiro
+                setShowPreview(false);
 
-                // Mostrar animação de sucesso
-                setShowSuccess(true);
-
-                // Pequeno delay para garantir que o modal está visível
+                // Pequeno delay para garantir que o modal fechou
                 setTimeout(() => {
-                    console.log('🎬 Iniciando animação de entrada...');
-                    // Animar entrada
-                    Animated.spring(successAnimation, {
-                        toValue: 1,
-                        useNativeDriver: true,
-                        tension: 100,
-                        friction: 8,
-                    }).start(() => {
-                        console.log('✅ Animação de entrada concluída');
-                    });
-                }, 100);
-
-                // Voltar para a tela inicial após 2 segundos
-                setTimeout(() => {
-                    console.log('🔄 Iniciando animação de saída...');
-                    Animated.timing(successAnimation, {
-                        toValue: 0,
-                        duration: 300,
-                        useNativeDriver: true,
-                    }).start(() => {
-                        console.log('✅ Animação de saída concluída, voltando para tela inicial...');
-                        setShowSuccess(false);
-                        setShowPreview(false);
-                        setCapturedMedia(null);
-                        setStoryTitle('');
-                        navigation.goBack();
-                    });
-                }, 2000);
+                    Alert.alert(
+                        '🎉 Sucesso!',
+                        'Story publicado com sucesso!',
+                        [
+                            {
+                                text: 'OK',
+                                onPress: () => {
+                                    setCapturedMedia(null);
+                                    setStoryTitle('');
+                                    navigation.goBack();
+                                }
+                            }
+                        ]
+                    );
+                }, 500);
             } else {
                 throw new Error('Falha no upload do story');
             }
@@ -219,43 +198,7 @@ export default function CreateStoryScreen({ navigation }) {
 
 
 
-    const renderSuccessAnimation = () => {
-        console.log('🎨 Renderizando animação de sucesso, showSuccess:', showSuccess);
-        return (
-            <Modal visible={showSuccess} transparent animationType="fade">
-                <View style={styles.successOverlay}>
-                    <Animated.View
-                        style={[
-                            styles.successContainer,
-                            {
-                                transform: [
-                                    {
-                                        scale: successAnimation.interpolate({
-                                            inputRange: [0, 1],
-                                            outputRange: [0.3, 1],
-                                        }),
-                                    },
-                                    {
-                                        translateY: successAnimation.interpolate({
-                                            inputRange: [0, 1],
-                                            outputRange: [50, 0],
-                                        }),
-                                    },
-                                ],
-                                opacity: successAnimation,
-                            },
-                        ]}
-                    >
-                        <View style={styles.successIconContainer}>
-                            <Ionicons name="checkmark-circle" size={120} color="#10b981" />
-                        </View>
-                        <Text style={styles.successTitle}>🎉 Sucesso!</Text>
-                        <Text style={styles.successMessage}>Story publicado com sucesso!</Text>
-                    </Animated.View>
-                </View>
-            </Modal>
-        );
-    };
+
 
     const renderPreview = () => (
         <Modal visible={showPreview} animationType="slide">
@@ -398,10 +341,11 @@ export default function CreateStoryScreen({ navigation }) {
             </View>
 
             {renderPreview()}
-            {renderSuccessAnimation()}
         </SafeAreaView>
     );
 }
+
+
 
 const styles = StyleSheet.create({
     container: {
@@ -577,41 +521,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '500',
     },
-    successOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    successContainer: {
-        backgroundColor: '#fff',
-        borderRadius: 20,
-        padding: 40,
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.3,
-        shadowRadius: 20,
-        elevation: 10,
-        maxWidth: 300,
-    },
-    successIconContainer: {
-        marginBottom: 20,
-        transform: [{ scale: 1.2 }],
-    },
-    successTitle: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#10b981',
-        marginBottom: 10,
-        textAlign: 'center',
-    },
-    successMessage: {
-        fontSize: 16,
-        color: '#374151',
-        textAlign: 'center',
-        lineHeight: 22,
-    },
+
 });
 
 // Funções auxiliares baseadas no MediaService
