@@ -13,6 +13,7 @@ import { checkTermsAcceptance, saveTermsAcceptance } from '../lib/termsConfig';
 import TermsAndPrivacyScreen from './TermsAndPrivacyScreen';
 
 export default function TermsAcceptanceCheck({ user, onTermsAccepted }) {
+    console.log('Rendered TermsAcceptanceCheck');
     const [showTermsModal, setShowTermsModal] = useState(false);
     const [showTermsScreen, setShowTermsScreen] = useState(false);
     const [termsType, setTermsType] = useState('terms');
@@ -28,7 +29,7 @@ export default function TermsAcceptanceCheck({ user, onTermsAccepted }) {
     const checkUserTermsAcceptance = async () => {
         try {
             const needsAcceptance = await checkTermsAcceptance(supabase, user.id);
-            
+
             if (needsAcceptance) {
                 console.log('⚠️ Usuário precisa aceitar os termos novamente');
                 setShowTermsModal(true);
@@ -101,11 +102,11 @@ export default function TermsAcceptanceCheck({ user, onTermsAccepted }) {
                         <View style={styles.iconContainer}>
                             <Ionicons name="document-text" size={60} color="#3498db" />
                         </View>
-                        
+
                         <Text style={styles.title}>Atualização dos Termos</Text>
-                        
+
                         <Text style={styles.message}>
-                            Os Termos de Uso e Política de Privacidade foram atualizados. 
+                            Os Termos de Uso e Política de Privacidade foram atualizados.
                             Para continuar usando o aplicativo, você precisa aceitar as novas versões.
                         </Text>
 
@@ -153,7 +154,7 @@ export default function TermsAcceptanceCheck({ user, onTermsAccepted }) {
                             >
                                 <Text style={styles.declineButtonText}>Recusar</Text>
                             </TouchableOpacity>
-                            
+
                             <TouchableOpacity
                                 style={[styles.button, styles.acceptButton, (!acceptedTerms || isLoading) && styles.buttonDisabled]}
                                 onPress={handleAcceptTerms}

@@ -16,6 +16,8 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function FavoritesScreen({ navigation }) {
+    console.log('Rendered FavoritesScreen');
+
     const { user } = useAuth();
     const [favorites, setFavorites] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -23,6 +25,7 @@ export default function FavoritesScreen({ navigation }) {
 
     useEffect(() => {
         if (user?.id) {
+
             fetchFavorites();
         }
     }, [user?.id]);
@@ -31,6 +34,7 @@ export default function FavoritesScreen({ navigation }) {
     useFocusEffect(
         React.useCallback(() => {
             if (user?.id) {
+
                 fetchFavorites();
             }
         }, [user?.id])
@@ -144,13 +148,13 @@ export default function FavoritesScreen({ navigation }) {
                         R$ {property.price?.toLocaleString('pt-BR')}
                     </Text>
                     <View style={styles.propertyFeatures}>
-                        {property.bedrooms && (
+                        {property.bedrooms && property.bedrooms != null && (
                             <Text style={styles.propertyFeature}>{property.bedrooms} quartos</Text>
                         )}
-                        {property.bathrooms && (
+                        {property.bathrooms && property.bathrooms != null && (
                             <Text style={styles.propertyFeature}>{property.bathrooms} banheiros</Text>
                         )}
-                        {property.area && (
+                        {property.area && property.area != null && (
                             <Text style={styles.propertyFeature}>{property.area}m²</Text>
                         )}
                     </View>

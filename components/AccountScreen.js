@@ -17,6 +17,8 @@ import PropertyCacheService from '../lib/propertyCacheService';
 import { useFocusEffect } from '@react-navigation/native';
 
 export default function AccountScreen({ navigation }) {
+    console.log('Rendered AccountScreen');
+
     const { user, signOut } = useAuth();
     const [profile, setProfile] = useState(null);
     const [userPlanInfo, setUserPlanInfo] = useState(null);

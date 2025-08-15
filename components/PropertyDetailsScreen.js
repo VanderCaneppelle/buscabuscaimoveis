@@ -21,6 +21,8 @@ import { supabase } from '../lib/supabase';
 const { width, height } = Dimensions.get('window');
 
 export default function PropertyDetailsScreen({ route, navigation }) {
+    console.log('Rendered PropertyDetailsScreen');
+
     const { property } = route.params;
     const { user } = useAuth();
     const [currentImageIndex, setCurrentImageIndex] = useState(0);

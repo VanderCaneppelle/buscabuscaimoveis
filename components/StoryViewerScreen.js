@@ -9,6 +9,7 @@ const { width, height } = Dimensions.get("window");
 const IMAGE_DURATION = 5000; // 5 segundos
 
 export default function ViewerScreen({ navigation, route }) {
+    console.log('Rendered StoryViewerScreen');
     const [stories, setStories] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [optimizedUrls, setOptimizedUrls] = useState({});

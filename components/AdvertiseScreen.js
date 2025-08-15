@@ -15,6 +15,8 @@ import { PlanService } from '../lib/planService';
 import { useFocusEffect } from '@react-navigation/native';
 
 export default function AdvertiseScreen({ navigation }) {
+    console.log('Rendered AdvertiseScreen');
+
     const { user } = useAuth();
     const [userPlanInfo, setUserPlanInfo] = useState(null);
     const [loading, setLoading] = useState(true);

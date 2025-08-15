@@ -29,7 +29,7 @@ const { width } = Dimensions.get('window');
 
 
 export default function HomeScreen({ navigation }) {
-    console.log('🎉🎉🎉 HomeScreen: COMPONENTE RENDERIZADO 🎉🎉🎉');
+    console.log('Rendere HomeScreen');
 
     const { user, signOut } = useAuth();
     const colorScheme = useColorScheme();
@@ -152,7 +152,6 @@ export default function HomeScreen({ navigation }) {
                 setProperties(result.data);
             } else {
                 // Páginas subsequentes - adicionar dados
-                console.log(`➕ HomeScreen: Adicionando ${result.data.length} propriedades à página ${page}`);
                 setProperties(prev => [...prev, ...result.data]);
             }
 
@@ -323,31 +322,7 @@ export default function HomeScreen({ navigation }) {
     };
 
 
-    const renderStory = ({ item }) => (
-        <TouchableOpacity
-            style={styles.storyCard}
-            onPress={() => openStoryModal(item)}
-            activeOpacity={0.7}
-        >
-            <View style={styles.storyImageContainer}>
-                <Image
-                    source={{ uri: item.image_url || 'https://via.placeholder.com/80x80?text=Story' }}
-                    style={styles.storyImage}
-                    resizeMode="cover"
-                />
-                {!item.image_url && (
-                    <View style={styles.storyPlaceholder}>
-                        <Ionicons name="image-outline" size={24} color="#1e3a8a" />
-                    </View>
-                )}
-                {/* Borda colorida ao redor da bolha */}
-                <View style={styles.storyBorder} />
-            </View>
-            <Text style={styles.storyTitle} numberOfLines={2}>
-                {item.title || 'Story em Destaque'}
-            </Text>
-        </TouchableOpacity>
-    );
+
 
     // Componente otimizado para renderizar propriedades
     const PropertyItem = React.memo(({ item, index, currentImageIndex, setCurrentImageIndex, favorites, toggleFavorite, navigation }) => {
@@ -459,27 +434,28 @@ export default function HomeScreen({ navigation }) {
                     delayLongPress={500}
                 >
                     <Text style={styles.propertyTitle} numberOfLines={2}>
-                        {item.title}
+                        {item.title ?? 'Título indisponível'}
                     </Text>
+
                     <Text style={styles.propertyLocation}>
-                        {item.neighborhood}, {item.city}
+                        {item.neighborhood ?? 'Bairro indisponível'}, {item.city ?? 'Cidade indisponível'}
                     </Text>
                     <View style={styles.propertyDetails}>
                         <Text style={styles.propertyPrice}>
-                            R$ {item.price?.toLocaleString('pt-BR')}
+                            R$ {item.price?.toLocaleString('pt-BR') ?? 'Preço indisponível'}
                         </Text>
                         <View style={styles.propertyFeatures}>
-                            {item.bedrooms && (
+                            {item.bedrooms != null && (
                                 <Text style={styles.propertyFeature}>
                                     {`${item.bedrooms} quartos`}
                                 </Text>
                             )}
-                            {item.bathrooms && (
+                            {item.bathrooms != null && (
                                 <Text style={styles.propertyFeature}>
                                     {`${item.bathrooms} banheiros`}
                                 </Text>
                             )}
-                            {item.area && (
+                            {item.area != null && (
                                 <Text style={styles.propertyFeature}>
                                     {`${item.area}m²`}
                                 </Text>
@@ -487,8 +463,10 @@ export default function HomeScreen({ navigation }) {
                         </View>
                     </View>
                     <Text style={styles.propertyType}>
-                        {item.property_type} • {item.transaction_type}
+                        {(item.property_type ?? '') + ' • ' + (item.transaction_type ?? '')}
                     </Text>
+                    {console.log(typeof item.property_type, item.property_type)}
+
                 </TouchableOpacity>
             </View>
         );
@@ -644,7 +622,6 @@ export default function HomeScreen({ navigation }) {
 
     return (
         <SafeAreaView style={styles.container}>
-            {/* Stories Component - Acima do Header */}
             <View style={styles.storiesContainer}>
                 <View style={styles.titleContainer}>
                     <Image

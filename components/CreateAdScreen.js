@@ -28,6 +28,8 @@ import { useFocusEffect } from '@react-navigation/native';
 const { width } = Dimensions.get('window');
 
 export default function CreateAdScreen({ navigation, route }) {
+    console.log('Rendered CreateAdScreen');
+
     const { user } = useAuth();
     const [userPlanInfo, setUserPlanInfo] = useState(null);
     const [loading, setLoading] = useState(true);

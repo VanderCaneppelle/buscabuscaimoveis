@@ -23,6 +23,8 @@ import { RESET_PASSWORD_URL } from '../lib/config';
 import SignUpForm from './SignUpForm';
 
 export default function LoginScreen() {
+    console.log('Rendered LoginScreen');
+
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isSignUp, setIsSignUp] = useState(false);

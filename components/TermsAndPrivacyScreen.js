@@ -12,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { getTermsInfo } from '../lib/termsConfig';
 
 export default function TermsAndPrivacyScreen({ visible, onClose, type = 'terms' }) {
+    console.log('Rendered TermsAndPrivacyScreen');
     const [activeTab, setActiveTab] = useState(type); // 'terms' ou 'privacy'
     const termsInfo = getTermsInfo();
 
@@ -123,7 +124,7 @@ Para dúvidas ou solicitações, entre em contato pelo WhatsApp disponível no a
                     );
                 }
             });
-        
+
         return <>{elements}</>;
     };
 

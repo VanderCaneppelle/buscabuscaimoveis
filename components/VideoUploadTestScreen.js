@@ -14,6 +14,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '../lib/supabase';
 
 export default function VideoUploadTestScreen({ navigation }) {
+    console.log('Rendered VideoUploadTestScreen');
     const [uploading, setUploading] = useState(false);
     const [uploadResult, setUploadResult] = useState('');
 

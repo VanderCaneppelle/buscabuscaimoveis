@@ -16,6 +16,8 @@ import { PushNotificationService } from '../lib/pushNotificationService';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function PaymentConfirmationScreen({ route, navigation }) {
+    console.log('Rendered PaymentConfirmationScreen');
+
     const { paymentData, plan } = route.params;
     const { user } = useAuth();
 

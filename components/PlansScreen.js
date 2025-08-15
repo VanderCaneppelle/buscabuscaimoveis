@@ -1,3 +1,5 @@
+console.log('Rendered PlansScreen');
+
 import React, { useState, useEffect } from 'react';
 import {
     View,
@@ -17,6 +19,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useFocusEffect } from '@react-navigation/native';
 
 export default function PlansScreen({ navigation, route }) {
+    console.log('Rendered PlansScreen');
+
     const { user } = useAuth();
     const [plans, setPlans] = useState([]);
     const [userPlan, setUserPlan] = useState(null);
@@ -33,6 +37,8 @@ export default function PlansScreen({ navigation, route }) {
     useFocusEffect(
         React.useCallback(() => {
             console.log('🔄 PlansScreen: Atualizando dados...');
+            console.log('Rendered PlansScreen');
+
             loadPlansAndUserInfo();
         }, [])
     );
