@@ -187,7 +187,6 @@ export default function PropertyDetailsScreen({ route, navigation }) {
 
     return (
         <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="light-content" backgroundColor="#1e3a8a" />
 
             {/* Galeria de Imagens */}
             <View style={styles.imageContainer}>
@@ -340,7 +339,7 @@ export default function PropertyDetailsScreen({ route, navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f8f9fa',
+        backgroundColor: '#fff',
     },
     imageContainer: {
         height: 300,
@@ -393,7 +392,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: '#1e3a8a',
+        color: '#00335e',
         marginBottom: 8,
     },
     location: {
@@ -417,7 +416,7 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 20,
         fontWeight: 'bold',
-        color: '#1e3a8a',
+        color: '#00335e',
         marginBottom: 15,
     },
     characteristics: {
@@ -467,7 +466,7 @@ const styles = StyleSheet.create({
     },
     infoValue: {
         fontSize: 16,
-        color: '#1e3a8a',
+        color: '#00335e',
         fontWeight: '600',
     },
     contactSection: {
@@ -490,7 +489,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#25d366',
     },
     phoneButton: {
-        backgroundColor: '#1e3a8a',
+        backgroundColor: '#00335e',
     },
     contactButtonText: {
         fontSize: 16,

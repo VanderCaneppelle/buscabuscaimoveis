@@ -267,86 +267,97 @@ export default function PlansScreen({ navigation, route }) {
     }
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color="#2c3e50" />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>Escolha seu Plano</Text>
-                <View style={styles.placeholder} />
+        <View style={styles.container}>
+            {/* Header Amarelo com Título */}
+            <View style={styles.headerContainer}>
+                <View style={styles.titleContainer}>
+                    <TouchableOpacity
+                        style={styles.backButton}
+                        onPress={() => navigation.goBack()}>
+                        <Ionicons name="arrow-back" size={24} color="#00335e" />
+                    </TouchableOpacity>
+                    <Text style={styles.headerTitle}>Escolha seu Plano</Text>
+                    <View style={styles.placeholder} />
+
+                </View>
             </View>
 
-            <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-                {/* Info Card */}
-                <View style={styles.infoCard}>
-                    <Ionicons name="information-circle" size={24} color="#3498db" />
-                    <View style={styles.infoContent}>
-                        <Text style={styles.infoTitle}>Como funciona?</Text>
-                        <Text style={styles.infoText}>
-                            Escolha um plano que se adapte às suas necessidades. Você pode alterar seu plano a qualquer momento.
-                        </Text>
-                    </View>
-                </View>
 
-                {/* Current Plan Info */}
-                {userPlan?.plan && (
-                    <View style={styles.currentPlanInfo}>
-                        <Text style={styles.currentPlanTitle}>Seu Plano Atual</Text>
-                        <View style={styles.currentPlanDetails}>
-                            <Text style={styles.currentPlanName}>{userPlan.plan.display_name}</Text>
-                            <Text style={styles.currentPlanStatus}>
-                                {userPlan.canCreate.can_create
-                                    ? `${userPlan.canCreate.current_ads}/${userPlan.canCreate.max_ads} anúncios ativos`
-                                    : userPlan.canCreate.reason
-                                }
-                            </Text>
-                        </View>
-                    </View>
-                )}
+            {/* Conteúdo Principal */}
+            <View style={styles.contentContainer}>
 
-                {/* Plans List */}
-                <View style={styles.plansSection}>
-                    <Text style={styles.sectionTitle}>Planos Disponíveis</Text>
-                    <View style={styles.plansList}>
-                        {plans && plans.length > 0 ? plans.map(renderPlanCard) : null}
+                <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+                    {/* Info Card */}
+                    <View style={styles.infoCard}>
+                        <Ionicons name="information-circle" size={24} color="#3498db" />
+                        <View style={styles.infoContent}>
+                            <Text style={styles.infoTitle}>Como funciona?</Text>
+                            <Text style={styles.infoText}>
+                                Escolha um plano que se adapte às suas necessidades. Você pode alterar seu plano a qualquer momento.
+                            </Text>
+                        </View>
                     </View>
-                </View>
 
-                {/* Features Comparison */}
-                <View style={styles.featuresSection}>
-                    <Text style={styles.sectionTitle}>Recursos Inclusos</Text>
-                    <View style={styles.featuresGrid}>
-                        <View style={styles.featureCard}>
-                            <Ionicons name="camera" size={24} color="#3498db" />
-                            <Text style={styles.featureCardTitle}>Fotos Ilimitadas</Text>
-                            <Text style={styles.featureCardText}>
-                                Adicione quantas fotos quiser aos seus anúncios
-                            </Text>
+                    {/* Current Plan Info */}
+                    {userPlan?.plan && (
+                        <View style={styles.currentPlanInfo}>
+                            <Text style={styles.currentPlanTitle}>Seu Plano Atual</Text>
+                            <View style={styles.currentPlanDetails}>
+                                <Text style={styles.currentPlanName}>{userPlan.plan.display_name}</Text>
+                                <Text style={styles.currentPlanStatus}>
+                                    {userPlan.canCreate.can_create
+                                        ? `${userPlan.canCreate.current_ads}/${userPlan.canCreate.max_ads} anúncios ativos`
+                                        : userPlan.canCreate.reason
+                                    }
+                                </Text>
+                            </View>
                         </View>
-                        <View style={styles.featureCard}>
-                            <Ionicons name="analytics" size={24} color="#e74c3c" />
-                            <Text style={styles.featureCardTitle}>Relatórios</Text>
-                            <Text style={styles.featureCardText}>
-                                Acompanhe o desempenho dos seus anúncios
-                            </Text>
-                        </View>
-                        <View style={styles.featureCard}>
-                            <Ionicons name="headset" size={24} color="#2ecc71" />
-                            <Text style={styles.featureCardTitle}>Suporte</Text>
-                            <Text style={styles.featureCardText}>
-                                Suporte especializado para corretores
-                            </Text>
-                        </View>
-                        <View style={styles.featureCard}>
-                            <Ionicons name="trending-up" size={24} color="#f39c12" />
-                            <Text style={styles.featureCardTitle}>Destaque</Text>
-                            <Text style={styles.featureCardText}>
-                                Seus anúncios aparecem em destaque
-                            </Text>
+                    )}
+
+                    {/* Plans List */}
+                    <View style={styles.plansSection}>
+                        <Text style={styles.sectionTitle}>Planos Disponíveis</Text>
+                        <View style={styles.plansList}>
+                            {plans && plans.length > 0 ? plans.map(renderPlanCard) : null}
                         </View>
                     </View>
-                </View>
-            </ScrollView>
+
+                    {/* Features Comparison */}
+                    <View style={styles.featuresSection}>
+                        <Text style={styles.sectionTitle}>Recursos Inclusos</Text>
+                        <View style={styles.featuresGrid}>
+                            <View style={styles.featureCard}>
+                                <Ionicons name="camera" size={24} color="#3498db" />
+                                <Text style={styles.featureCardTitle}>Fotos Ilimitadas</Text>
+                                <Text style={styles.featureCardText}>
+                                    Adicione quantas fotos quiser aos seus anúncios
+                                </Text>
+                            </View>
+                            <View style={styles.featureCard}>
+                                <Ionicons name="analytics" size={24} color="#e74c3c" />
+                                <Text style={styles.featureCardTitle}>Relatórios</Text>
+                                <Text style={styles.featureCardText}>
+                                    Acompanhe o desempenho dos seus anúncios
+                                </Text>
+                            </View>
+                            <View style={styles.featureCard}>
+                                <Ionicons name="headset" size={24} color="#2ecc71" />
+                                <Text style={styles.featureCardTitle}>Suporte</Text>
+                                <Text style={styles.featureCardText}>
+                                    Suporte especializado para corretores
+                                </Text>
+                            </View>
+                            <View style={styles.featureCard}>
+                                <Ionicons name="trending-up" size={24} color="#f39c12" />
+                                <Text style={styles.featureCardTitle}>Destaque</Text>
+                                <Text style={styles.featureCardText}>
+                                    Seus anúncios aparecem em destaque
+                                </Text>
+                            </View>
+                        </View>
+                    </View>
+                </ScrollView>
+            </View>
 
             {/* Confirmation Modal */}
             <Modal
@@ -396,38 +407,61 @@ export default function PlansScreen({ navigation, route }) {
                     </View>
                 </View>
             </Modal>
-        </SafeAreaView>
+        </View >
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f5f5f5',
+        backgroundColor: '#ffcc1e',
     },
-    header: {
-        backgroundColor: '#fff',
+
+    headerContainer: {
+        paddingTop: 60,
+        paddingBottom: 15,
+        backgroundColor: '#ffcc1e',
+        paddingHorizontal: 20,
+    },
+
+    titleContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: 20,
-        paddingVertical: 15,
-        borderBottomWidth: 1,
-        borderBottomColor: '#e0e0e0',
-    },
-    backButton: {
-        padding: 5,
+        justifyContent: 'center',
+        position: 'relative',
     },
     headerTitle: {
-        fontSize: 18,
+        fontSize: 20,
         fontWeight: 'bold',
-        color: '#2c3e50',
+        color: '#00335e',
+    },
+    backButton: {
+        position: 'absolute',
+        left: 0,
+        padding: 10,
     },
     placeholder: {
-        width: 34,
+        width: 40, // Adjust as needed to center the title
     },
+
+    contentContainer: {
+        flex: 1,
+        backgroundColor: '#fff',
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: -2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 3.84,
+        elevation: 5,
+    },
+
     content: {
         flex: 1,
+        paddingTop: 5,
     },
     loadingContainer: {
         flex: 1,
@@ -454,7 +488,7 @@ const styles = StyleSheet.create({
     infoTitle: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#2c3e50',
+        color: '#00335e',
         marginBottom: 5,
     },
     infoText: {
@@ -477,7 +511,7 @@ const styles = StyleSheet.create({
     currentPlanTitle: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#2c3e50',
+        color: '#00335e',
         marginBottom: 10,
     },
     currentPlanDetails: {
@@ -495,7 +529,7 @@ const styles = StyleSheet.create({
         color: '#7f8c8d',
     },
     plansSection: {
-        marginBottom: 30,
+        marginBottom: 10,
     },
     sectionTitle: {
         fontSize: 18,

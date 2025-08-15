@@ -175,171 +175,183 @@ export default function AccountScreen({ navigation }) {
 
     return (
         <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <Text style={styles.headerTitle}>Minha Conta</Text>
+            {/* Header Amarelo com Título */}
+            <View style={styles.headerContainer}>
+                <View style={styles.titleContainer}>
+                    <Image
+                        source={require('../assets/logo_bb.jpg')}
+                        style={styles.titleLogo}
+                        resizeMode="contain"
+                    />
+                    <Text style={styles.headerTitle}>Minha Conta</Text>
+                </View>
                 <Text style={styles.headerSubtitle}>Gerencie seu perfil e configurações</Text>
             </View>
 
-            <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-                {/* User Info Card */}
-                <View style={styles.userCard}>
-                    <View style={styles.userInfo}>
-                        <View style={styles.avatarContainer}>
-                            {profile?.avatar_url ? (
-                                <Image source={{ uri: profile.avatar_url }} style={styles.avatar} />
-                            ) : (
-                                <View style={styles.avatarPlaceholder}>
-                                    <Ionicons name="person" size={40} color="#fff" />
-                                </View>
+            {/* Conteúdo Principal */}
+            <View style={styles.contentContainer}>
+
+                <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+                    {/* User Info Card */}
+                    <View style={styles.userCard}>
+                        <View style={styles.userInfo}>
+                            <View style={styles.avatarContainer}>
+                                {profile?.avatar_url ? (
+                                    <Image source={{ uri: profile.avatar_url }} style={styles.avatar} />
+                                ) : (
+                                    <View style={styles.avatarPlaceholder}>
+                                        <Ionicons name="person" size={40} color="#fff" />
+                                    </View>
+                                )}
+                            </View>
+                            <View style={styles.userDetails}>
+                                <Text style={styles.userName}>
+                                    {profile?.full_name || user?.email || 'Usuário'}
+                                </Text>
+                                <Text style={styles.userEmail}>{user?.email}</Text>
+                                <Text style={styles.userType}>
+                                    {profile?.is_realtor ? 'Corretor' : 'Cliente'}
+                                </Text>
+                            </View>
+                        </View>
+                    </View>
+
+                    {/* Quick Stats */}
+                    <View style={styles.statsSection}>
+                        <Text style={styles.sectionTitle}>Resumo</Text>
+                        <View style={styles.statsGrid}>
+                            {renderStatsCard(
+                                'Anúncios Aprovados',
+                                userPlanInfo?.stats?.approvedAds || 0,
+                                'home',
+                                '#3498db'
+                            )}
+                            {renderStatsCard(
+                                'Favoritos',
+                                userPlanInfo?.stats?.favorites || 0,
+                                'heart',
+                                '#e74c3c'
+                            )}
+                            {renderStatsCard(
+                                'Visualizações',
+                                userPlanInfo?.stats?.views || 0,
+                                'eye',
+                                '#2ecc71'
                             )}
                         </View>
-                        <View style={styles.userDetails}>
-                            <Text style={styles.userName}>
-                                {profile?.full_name || user?.email || 'Usuário'}
-                            </Text>
-                            <Text style={styles.userEmail}>{user?.email}</Text>
-                            <Text style={styles.userType}>
-                                {profile?.is_realtor ? 'Corretor' : 'Cliente'}
-                            </Text>
+                    </View>
+
+                    {/* Plan Info */}
+                    <View style={styles.planSection}>
+                        <Text style={styles.sectionTitle}>Plano Atual</Text>
+                        <View style={styles.planCard}>
+                            {userPlanInfo?.plan ? (
+                                <>
+                                    <View style={styles.planHeader}>
+                                        <Ionicons name="card" size={24} color="#3498db" />
+                                        <Text style={styles.planName}>{userPlanInfo.plan.display_name}</Text>
+                                    </View>
+                                    <Text style={styles.planStatus}>
+                                        {userPlanInfo.canCreate.can_create
+                                            ? `${userPlanInfo.canCreate.current_ads}/${userPlanInfo.canCreate.max_ads} anúncios aprovados`
+                                            : `Limite atingido: ${userPlanInfo.canCreate.current_ads}/${userPlanInfo.canCreate.max_ads} anúncios`
+                                        }
+                                    </Text>
+                                    <TouchableOpacity
+                                        style={styles.upgradeButton}
+                                        onPress={() => navigation.navigate('Plans')}
+                                    >
+                                        <Text style={styles.upgradeButtonText}>Alterar Plano</Text>
+                                    </TouchableOpacity>
+                                </>
+                            ) : (
+                                <>
+                                    <View style={styles.planHeader}>
+                                        <Ionicons name="card" size={24} color="#95a5a6" />
+                                        <Text style={styles.planName}>Plano Gratuito</Text>
+                                    </View>
+                                    <Text style={styles.planStatus}>
+                                        {userPlanInfo?.canCreate?.current_ads || 0} anúncios aprovados
+                                    </Text>
+                                    <TouchableOpacity
+                                        style={styles.upgradeButton}
+                                        onPress={() => navigation.navigate('Plans')}
+                                    >
+                                        <Text style={styles.upgradeButtonText}>Ver Planos</Text>
+                                    </TouchableOpacity>
+                                </>
+                            )}
                         </View>
                     </View>
-                </View>
 
-                {/* Quick Stats */}
-                <View style={styles.statsSection}>
-                    <Text style={styles.sectionTitle}>Resumo</Text>
-                    <View style={styles.statsGrid}>
-                        {renderStatsCard(
-                            'Anúncios Aprovados',
-                            userPlanInfo?.stats?.approvedAds || 0,
-                            'home',
-                            '#3498db'
-                        )}
-                        {renderStatsCard(
-                            'Favoritos',
-                            userPlanInfo?.stats?.favorites || 0,
-                            'heart',
-                            '#e74c3c'
-                        )}
-                        {renderStatsCard(
-                            'Visualizações',
-                            userPlanInfo?.stats?.views || 0,
-                            'eye',
-                            '#2ecc71'
-                        )}
-                    </View>
-                </View>
+                    {/* Menu Items */}
+                    <View style={styles.menuSection}>
+                        <Text style={styles.sectionTitle}>Configurações</Text>
 
-                {/* Plan Info */}
-                <View style={styles.planSection}>
-                    <Text style={styles.sectionTitle}>Plano Atual</Text>
-                    <View style={styles.planCard}>
-                        {userPlanInfo?.plan ? (
-                            <>
-                                <View style={styles.planHeader}>
-                                    <Ionicons name="card" size={24} color="#3498db" />
-                                    <Text style={styles.planName}>{userPlanInfo.plan.display_name}</Text>
-                                </View>
-                                <Text style={styles.planStatus}>
-                                    {userPlanInfo.canCreate.can_create
-                                        ? `${userPlanInfo.canCreate.current_ads}/${userPlanInfo.canCreate.max_ads} anúncios aprovados`
-                                        : `Limite atingido: ${userPlanInfo.canCreate.current_ads}/${userPlanInfo.canCreate.max_ads} anúncios`
-                                    }
-                                </Text>
-                                <TouchableOpacity
-                                    style={styles.upgradeButton}
-                                    onPress={() => navigation.navigate('Plans')}
-                                >
-                                    <Text style={styles.upgradeButtonText}>Alterar Plano</Text>
-                                </TouchableOpacity>
-                            </>
-                        ) : (
-                            <>
-                                <View style={styles.planHeader}>
-                                    <Ionicons name="card" size={24} color="#95a5a6" />
-                                    <Text style={styles.planName}>Plano Gratuito</Text>
-                                </View>
-                                <Text style={styles.planStatus}>
-                                    {userPlanInfo?.canCreate?.current_ads || 0} anúncios aprovados
-                                </Text>
-                                <TouchableOpacity
-                                    style={styles.upgradeButton}
-                                    onPress={() => navigation.navigate('Plans')}
-                                >
-                                    <Text style={styles.upgradeButtonText}>Ver Planos</Text>
-                                </TouchableOpacity>
-                            </>
+                        {renderMenuItem(
+                            'Editar Perfil',
+                            'Atualize suas informações pessoais',
+                            'person',
+                            '#3498db',
+                            () => Alert.alert('Em breve', 'Funcionalidade em desenvolvimento')
+                        )}
+
+                        {renderMenuItem(
+                            'Meus Anúncios',
+                            'Gerencie seus anúncios publicados',
+                            'list',
+                            '#2ecc71',
+                            () => Alert.alert('Em breve', 'Funcionalidade em desenvolvimento')
+                        )}
+
+                        {renderMenuItem(
+                            'Histórico de Planos',
+                            'Veja suas assinaturas anteriores',
+                            'time',
+                            '#f39c12',
+                            () => Alert.alert('Em breve', 'Funcionalidade em desenvolvimento')
+                        )}
+
+                        {renderMenuItem(
+                            'Notificações',
+                            'Configure suas preferências',
+                            'notifications',
+                            '#9b59b6',
+                            () => Alert.alert('Em breve', 'Funcionalidade em desenvolvimento')
+                        )}
+
+                        {renderMenuItem(
+                            'Privacidade',
+                            'Gerencie sua privacidade',
+                            'shield-checkmark',
+                            '#e67e22',
+                            () => Alert.alert('Em breve', 'Funcionalidade em desenvolvimento')
+                        )}
+
+                        {renderMenuItem(
+                            'Ajuda e Suporte',
+                            'Entre em contato conosco',
+                            'help-circle',
+                            '#34495e',
+                            () => Alert.alert('Em breve', 'Funcionalidade em desenvolvimento')
+                        )}
+
+                        {renderMenuItem(
+                            'Sobre o App',
+                            'Versão 1.0.0',
+                            'information-circle',
+                            '#7f8c8d',
+                            () => Alert.alert('Sobre', 'BuscaBusca Imóveis v1.0.0\n\nEncontre o imóvel dos seus sonhos!')
                         )}
                     </View>
-                </View>
 
-                {/* Menu Items */}
-                <View style={styles.menuSection}>
-                    <Text style={styles.sectionTitle}>Configurações</Text>
-
-                    {renderMenuItem(
-                        'Editar Perfil',
-                        'Atualize suas informações pessoais',
-                        'person',
-                        '#3498db',
-                        () => Alert.alert('Em breve', 'Funcionalidade em desenvolvimento')
-                    )}
-
-                    {renderMenuItem(
-                        'Meus Anúncios',
-                        'Gerencie seus anúncios publicados',
-                        'list',
-                        '#2ecc71',
-                        () => Alert.alert('Em breve', 'Funcionalidade em desenvolvimento')
-                    )}
-
-                    {renderMenuItem(
-                        'Histórico de Planos',
-                        'Veja suas assinaturas anteriores',
-                        'time',
-                        '#f39c12',
-                        () => Alert.alert('Em breve', 'Funcionalidade em desenvolvimento')
-                    )}
-
-                    {renderMenuItem(
-                        'Notificações',
-                        'Configure suas preferências',
-                        'notifications',
-                        '#9b59b6',
-                        () => Alert.alert('Em breve', 'Funcionalidade em desenvolvimento')
-                    )}
-
-                    {renderMenuItem(
-                        'Privacidade',
-                        'Gerencie sua privacidade',
-                        'shield-checkmark',
-                        '#e67e22',
-                        () => Alert.alert('Em breve', 'Funcionalidade em desenvolvimento')
-                    )}
-
-                    {renderMenuItem(
-                        'Ajuda e Suporte',
-                        'Entre em contato conosco',
-                        'help-circle',
-                        '#34495e',
-                        () => Alert.alert('Em breve', 'Funcionalidade em desenvolvimento')
-                    )}
-
-                    {renderMenuItem(
-                        'Sobre o App',
-                        'Versão 1.0.0',
-                        'information-circle',
-                        '#7f8c8d',
-                        () => Alert.alert('Sobre', 'BuscaBusca Imóveis v1.0.0\n\nEncontre o imóvel dos seus sonhos!')
-                    )}
-                </View>
-
-                {/* Logout Button */}
-                <TouchableOpacity style={styles.logoutButton} onPress={handleSignOut}>
-                    <Ionicons name="log-out-outline" size={20} color="#fff" />
-                    <Text style={styles.logoutButtonText}>Sair do App</Text>
-                </TouchableOpacity>
-            </ScrollView>
+                    {/* Logout Button */}
+                    <TouchableOpacity style={styles.logoutButton} onPress={handleSignOut}>
+                        <Ionicons name="log-out-outline" size={20} color="#fff" />
+                        <Text style={styles.logoutButtonText}>Sair do App</Text>
+                    </TouchableOpacity>
+                </ScrollView>
+            </View>
         </SafeAreaView>
     );
 }
@@ -347,23 +359,51 @@ export default function AccountScreen({ navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f5f5f5',
+        backgroundColor: '#ffcc1e',
     },
-    header: {
-        backgroundColor: '#9b59b6',
-        padding: 20,
-        paddingTop: 20,
+    headerContainer: {
+        paddingTop: 50,
+        paddingBottom: 15,
+        backgroundColor: '#ffcc1e',
+        paddingHorizontal: 20,
+    },
+    titleContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 10,
+    },
+    titleLogo: {
+        width: 30,
+        height: 30,
+        borderRadius: 15,
+        marginRight: 10,
     },
     headerTitle: {
-        fontSize: 24,
+        fontSize: 20,
         fontWeight: 'bold',
-        color: '#fff',
-        marginBottom: 5,
+        color: '#00335e',
+        textAlign: 'center',
     },
     headerSubtitle: {
         fontSize: 16,
-        color: '#fff',
-        opacity: 0.9,
+        color: '#00335e',
+        textAlign: 'center',
+        opacity: 0.8,
+    },
+    contentContainer: {
+        flex: 1,
+        backgroundColor: '#fff',
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: -2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 3.84,
+        elevation: 5,
     },
     content: {
         flex: 1,
@@ -408,7 +448,7 @@ const styles = StyleSheet.create({
     userName: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#2c3e50',
+        color: '#00335e',
         marginBottom: 4,
     },
     userEmail: {
@@ -427,7 +467,7 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#2c3e50',
+        color: '#00335e',
         marginBottom: 15,
         paddingHorizontal: 20,
     },

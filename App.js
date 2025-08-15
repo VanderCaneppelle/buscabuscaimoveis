@@ -8,15 +8,6 @@ import { LoadingProvider } from './contexts/LoadingContext';
 import { AdminProvider } from './contexts/AdminContext';
 import LoginScreen from './components/LoginScreen';
 import MainNavigator from './components/MainNavigator';
-import PlansScreen from './components/PlansScreen';
-import CreateAdScreen from './components/CreateAdScreen';
-import PropertyDetailsScreen from './components/PropertyDetailsScreen';
-// import PaymentScreen from './components/PaymentScreen';
-import PaymentDetailsScreen from './components/PaymentDetailsScreen';
-import PaymentConfirmationScreen from './components/PaymentConfirmationScreen';
-import CreateStoryScreen from './components/CreateStoryScreen';
-import StoryViewerScreen from './components/StoryViewerScreen';
-import VideoUploadTestScreen from './components/VideoUploadTestScreen';
 
 import ResetPasswordScreen from './components/ResetPasswordScreen';
 import TermsAcceptanceCheck from './components/TermsAcceptanceCheck';
@@ -93,66 +84,6 @@ function AppContent() {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Main" component={MainNavigator} />
-        <Stack.Screen name="Plans" component={PlansScreen} />
-        <Stack.Screen name="CreateAd" component={CreateAdScreen} />
-        <Stack.Screen
-          name="PropertyDetails"
-          component={PropertyDetailsScreen}
-          options={{
-            headerShown: true,
-            title: 'Detalhes do Imóvel',
-            headerStyle: {
-              backgroundColor: '#00335e',
-            },
-            headerTintColor: '#fff',
-            headerTitleStyle: {
-              fontWeight: 'bold',
-            },
-          }}
-        />
-        {/* <Stack.Screen
-          name="Payment"
-          component={PaymentScreen}
-          options={{
-            headerShown: false
-          }}
-        /> */}
-        <Stack.Screen
-          name="PaymentDetails"
-          component={PaymentDetailsScreen}
-          options={{
-            headerShown: false
-          }}
-        />
-        <Stack.Screen
-          name="PaymentConfirmation"
-          component={PaymentConfirmationScreen}
-          options={{
-            headerShown: false
-          }}
-        />
-        <Stack.Screen
-          name="CreateStory"
-          component={CreateStoryScreen}
-          options={{
-            headerShown: false
-          }}
-        />
-        <Stack.Screen
-          name="StoryViewer"
-          component={StoryViewerScreen}
-          options={{
-            headerShown: false
-          }}
-        />
-        <Stack.Screen
-          name="VideoUploadTest"
-          component={VideoUploadTestScreen}
-          options={{
-            headerShown: false
-          }}
-        />
-
       </Stack.Navigator>
     </NavigationContainer>
   ) : <LoginScreen />;

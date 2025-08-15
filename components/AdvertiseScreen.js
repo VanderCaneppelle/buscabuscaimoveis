@@ -7,6 +7,7 @@ import {
     SafeAreaView,
     ScrollView,
     Alert,
+    Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
@@ -118,104 +119,116 @@ export default function AdvertiseScreen({ navigation }) {
 
     return (
         <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <Text style={styles.headerTitle}>Anunciar</Text>
+            {/* Header Amarelo com Título */}
+            <View style={styles.headerContainer}>
+                <View style={styles.titleContainer}>
+                    <Image
+                        source={require('../assets/logo_bb.jpg')}
+                        style={styles.titleLogo}
+                        resizeMode="contain"
+                    />
+                    <Text style={styles.headerTitle}>Anunciar</Text>
+                </View>
                 <Text style={styles.headerSubtitle}>Gerencie seus anúncios</Text>
             </View>
 
-            <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-                {/* Plan Info */}
-                {renderPlanInfoCard()}
+            {/* Conteúdo Principal */}
+            <View style={styles.contentContainer}>
 
-                {/* Quick Stats */}
-                <View style={styles.statsSection}>
-                    <Text style={styles.sectionTitle}>Resumo</Text>
-                    <View style={styles.statsGrid}>
-                        {renderStatsCard(
-                            'Anúncios Ativos',
-                            userPlanInfo?.canCreate.current_ads || 0,
-                            'home',
-                            '#3498db'
-                        )}
-                        {renderStatsCard(
-                            'Limite',
-                            userPlanInfo?.canCreate.max_ads || 0,
-                            'trending-up',
-                            '#2ecc71'
-                        )}
-                        {renderStatsCard(
-                            'Disponíveis',
-                            Math.max(0, (userPlanInfo?.canCreate.max_ads || 0) - (userPlanInfo?.canCreate.current_ads || 0)),
+                <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+                    {/* Plan Info */}
+                    {renderPlanInfoCard()}
+
+                    {/* Quick Stats */}
+                    <View style={styles.statsSection}>
+                        <Text style={styles.sectionTitle}>Resumo</Text>
+                        <View style={styles.statsGrid}>
+                            {renderStatsCard(
+                                'Anúncios Ativos',
+                                userPlanInfo?.canCreate.current_ads || 0,
+                                'home',
+                                '#3498db'
+                            )}
+                            {renderStatsCard(
+                                'Limite',
+                                userPlanInfo?.canCreate.max_ads || 0,
+                                'trending-up',
+                                '#2ecc71'
+                            )}
+                            {renderStatsCard(
+                                'Disponíveis',
+                                Math.max(0, (userPlanInfo?.canCreate.max_ads || 0) - (userPlanInfo?.canCreate.current_ads || 0)),
+                                'add-circle',
+                                '#f39c12'
+                            )}
+                        </View>
+                    </View>
+
+                    {/* Actions */}
+                    <View style={styles.actionsSection}>
+                        <Text style={styles.sectionTitle}>Ações</Text>
+
+                        {renderActionCard(
+                            'Criar Novo Anúncio',
+                            'Publique um novo imóvel',
                             'add-circle',
-                            '#f39c12'
+                            '#3498db',
+                            handleCreateAd,
+                            !userPlanInfo?.canCreate.can_create
+                        )}
+
+                        {renderActionCard(
+                            'Gerenciar Anúncios',
+                            'Veja e edite seus anúncios',
+                            'list',
+                            '#2ecc71',
+                            () => Alert.alert('Em breve', 'Funcionalidade em desenvolvimento'),
+                            false
+                        )}
+
+                        {renderActionCard(
+                            'Ver Planos',
+                            'Contrate ou altere seu plano',
+                            'card',
+                            '#f39c12',
+                            handleViewPlans,
+                            false
+                        )}
+
+                        {renderActionCard(
+                            'Relatórios',
+                            'Acompanhe o desempenho',
+                            'analytics',
+                            '#9b59b6',
+                            () => Alert.alert('Em breve', 'Funcionalidade em desenvolvimento'),
+                            false
                         )}
                     </View>
-                </View>
 
-                {/* Actions */}
-                <View style={styles.actionsSection}>
-                    <Text style={styles.sectionTitle}>Ações</Text>
-
-                    {renderActionCard(
-                        'Criar Novo Anúncio',
-                        'Publique um novo imóvel',
-                        'add-circle',
-                        '#3498db',
-                        handleCreateAd,
-                        !userPlanInfo?.canCreate.can_create
-                    )}
-
-                    {renderActionCard(
-                        'Gerenciar Anúncios',
-                        'Veja e edite seus anúncios',
-                        'list',
-                        '#2ecc71',
-                        () => Alert.alert('Em breve', 'Funcionalidade em desenvolvimento'),
-                        false
-                    )}
-
-                    {renderActionCard(
-                        'Ver Planos',
-                        'Contrate ou altere seu plano',
-                        'card',
-                        '#f39c12',
-                        handleViewPlans,
-                        false
-                    )}
-
-                    {renderActionCard(
-                        'Relatórios',
-                        'Acompanhe o desempenho',
-                        'analytics',
-                        '#9b59b6',
-                        () => Alert.alert('Em breve', 'Funcionalidade em desenvolvimento'),
-                        false
-                    )}
-                </View>
-
-                {/* Tips */}
-                <View style={styles.tipsSection}>
-                    <Text style={styles.sectionTitle}>Dicas</Text>
-                    <View style={styles.tipCard}>
-                        <Ionicons name="bulb" size={20} color="#f39c12" />
-                        <Text style={styles.tipText}>
-                            Adicione fotos de qualidade para aumentar as visualizações do seu anúncio
-                        </Text>
+                    {/* Tips */}
+                    <View style={styles.tipsSection}>
+                        <Text style={styles.sectionTitle}>Dicas</Text>
+                        <View style={styles.tipCard}>
+                            <Ionicons name="bulb" size={20} color="#f39c12" />
+                            <Text style={styles.tipText}>
+                                Adicione fotos de qualidade para aumentar as visualizações do seu anúncio
+                            </Text>
+                        </View>
+                        <View style={styles.tipCard}>
+                            <Ionicons name="time" size={20} color="#3498db" />
+                            <Text style={styles.tipText}>
+                                Mantenha seus anúncios sempre atualizados com informações precisas
+                            </Text>
+                        </View>
+                        <View style={styles.tipCard}>
+                            <Ionicons name="star" size={20} color="#e74c3c" />
+                            <Text style={styles.tipText}>
+                                Responda rapidamente aos interessados para aumentar as chances de venda
+                            </Text>
+                        </View>
                     </View>
-                    <View style={styles.tipCard}>
-                        <Ionicons name="time" size={20} color="#3498db" />
-                        <Text style={styles.tipText}>
-                            Mantenha seus anúncios sempre atualizados com informações precisas
-                        </Text>
-                    </View>
-                    <View style={styles.tipCard}>
-                        <Ionicons name="star" size={20} color="#e74c3c" />
-                        <Text style={styles.tipText}>
-                            Responda rapidamente aos interessados para aumentar as chances de venda
-                        </Text>
-                    </View>
-                </View>
-            </ScrollView>
+                </ScrollView>
+            </View>
         </SafeAreaView>
     );
 }
@@ -223,23 +236,51 @@ export default function AdvertiseScreen({ navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f5f5f5',
+        backgroundColor: '#ffcc1e',
     },
-    header: {
-        backgroundColor: '#f39c12',
-        padding: 20,
-        paddingTop: 20,
+    headerContainer: {
+        paddingTop: 50,
+        paddingBottom: 15,
+        backgroundColor: '#ffcc1e',
+        paddingHorizontal: 20,
+    },
+    titleContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 10,
+    },
+    titleLogo: {
+        width: 30,
+        height: 30,
+        borderRadius: 15,
+        marginRight: 10,
     },
     headerTitle: {
-        fontSize: 24,
+        fontSize: 20,
         fontWeight: 'bold',
-        color: '#fff',
-        marginBottom: 5,
+        color: '#00335e',
+        textAlign: 'center',
     },
     headerSubtitle: {
         fontSize: 16,
-        color: '#fff',
-        opacity: 0.9,
+        color: '#00335e',
+        textAlign: 'center',
+        opacity: 0.8,
+    },
+    contentContainer: {
+        flex: 1,
+        backgroundColor: '#fff',
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: -2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 3.84,
+        elevation: 5,
     },
     content: {
         flex: 1,
@@ -266,7 +307,7 @@ const styles = StyleSheet.create({
     planInfoTitle: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#2c3e50',
+        color: '#00335e',
         marginLeft: 10,
     },
     planName: {
@@ -285,7 +326,7 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#2c3e50',
+        color: '#00335e',
         marginBottom: 15,
         paddingHorizontal: 20,
     },

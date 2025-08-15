@@ -164,37 +164,49 @@ export default function FavoritesScreen({ navigation }) {
 
     return (
         <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <Text style={styles.headerTitle}>Favoritos</Text>
+            {/* Header Amarelo com Título */}
+            <View style={styles.headerContainer}>
+                <View style={styles.titleContainer}>
+                    <Image
+                        source={require('../assets/logo_bb.jpg')}
+                        style={styles.titleLogo}
+                        resizeMode="contain"
+                    />
+                    <Text style={styles.headerTitle}>Favoritos</Text>
+                </View>
                 <Text style={styles.headerSubtitle}>
                     {favorites.length} imóvel{favorites.length !== 1 ? 'eis' : ''} favoritado{favorites.length !== 1 ? 's' : ''}
                 </Text>
             </View>
 
-            <FlatList
-                data={favorites}
-                renderItem={renderFavorite}
-                keyExtractor={(item) => item.id}
-                refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                }
-                ListEmptyComponent={
-                    <View style={styles.emptyContainer}>
-                        <Ionicons name="heart-outline" size={64} color="#bdc3c7" />
-                        <Text style={styles.emptyText}>Nenhum favorito ainda</Text>
-                        <Text style={styles.emptySubtext}>
-                            Adicione imóveis aos favoritos para vê-los aqui
-                        </Text>
-                        <TouchableOpacity
-                            style={styles.browseButton}
-                            onPress={() => navigation.navigate('Busca')}
-                        >
-                            <Text style={styles.browseButtonText}>Procurar Imóveis</Text>
-                        </TouchableOpacity>
-                    </View>
-                }
-                contentContainerStyle={styles.listContainer}
-            />
+            {/* Conteúdo Principal */}
+            <View style={styles.contentContainer}>
+
+                <FlatList
+                    data={favorites}
+                    renderItem={renderFavorite}
+                    keyExtractor={(item) => item.id}
+                    refreshControl={
+                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                    }
+                    ListEmptyComponent={
+                        <View style={styles.emptyContainer}>
+                            <Ionicons name="heart-outline" size={64} color="#bdc3c7" />
+                            <Text style={styles.emptyText}>Nenhum favorito ainda</Text>
+                            <Text style={styles.emptySubtext}>
+                                Adicione imóveis aos favoritos para vê-los aqui
+                            </Text>
+                            <TouchableOpacity
+                                style={styles.browseButton}
+                                onPress={() => navigation.navigate('Busca')}
+                            >
+                                <Text style={styles.browseButtonText}>Procurar Imóveis</Text>
+                            </TouchableOpacity>
+                        </View>
+                    }
+                    contentContainerStyle={styles.listContainer}
+                />
+            </View>
         </SafeAreaView>
     );
 }
@@ -202,23 +214,51 @@ export default function FavoritesScreen({ navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f5f5f5',
+        backgroundColor: '#ffcc1e',
     },
-    header: {
-        backgroundColor: '#e74c3c',
-        padding: 20,
-        paddingTop: 20,
+    headerContainer: {
+        paddingTop: 50,
+        paddingBottom: 15,
+        backgroundColor: '#ffcc1e',
+        paddingHorizontal: 20,
+    },
+    titleContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 10,
+    },
+    titleLogo: {
+        width: 30,
+        height: 30,
+        borderRadius: 15,
+        marginRight: 10,
     },
     headerTitle: {
-        fontSize: 24,
+        fontSize: 20,
         fontWeight: 'bold',
-        color: '#fff',
-        marginBottom: 5,
+        color: '#00335e',
+        textAlign: 'center',
     },
     headerSubtitle: {
         fontSize: 16,
-        color: '#fff',
-        opacity: 0.9,
+        color: '#00335e',
+        textAlign: 'center',
+        opacity: 0.8,
+    },
+    contentContainer: {
+        flex: 1,
+        backgroundColor: '#fff',
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: -2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 3.84,
+        elevation: 5,
     },
     listContainer: {
         paddingBottom: 20,
@@ -255,7 +295,7 @@ const styles = StyleSheet.create({
     propertyTitle: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#2c3e50',
+        color: '#00335e',
         flex: 1,
         marginRight: 10,
     },
@@ -270,7 +310,7 @@ const styles = StyleSheet.create({
     propertyPrice: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#3498db',
+        color: '#059669',
         marginBottom: 8,
     },
     propertyFeatures: {
@@ -309,7 +349,7 @@ const styles = StyleSheet.create({
         marginBottom: 30,
     },
     browseButton: {
-        backgroundColor: '#e74c3c',
+        backgroundColor: '#00335e',
         paddingHorizontal: 30,
         paddingVertical: 12,
         borderRadius: 25,

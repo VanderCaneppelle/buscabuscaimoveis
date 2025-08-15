@@ -127,50 +127,61 @@ export default function DiscoverScreen({ navigation }) {
 
     return (
         <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <Text style={styles.headerTitle}>Descobrir</Text>
-                <Text style={styles.headerSubtitle}>Encontre o imóvel dos seus sonhos</Text>
+            {/* Header Amarelo com Título */}
+            <View style={styles.headerContainer}>
+                <View style={styles.titleContainer}>
+                    <Image
+                        source={require('../assets/logo_bb.jpg')}
+                        style={styles.titleLogo}
+                        resizeMode="contain"
+                    />
+                    <Text style={styles.headerTitle}>Descobrir</Text>
+                </View>
             </View>
 
-            <FlatList
-                data={featuredProperties}
-                renderItem={renderFeaturedProperty}
-                keyExtractor={(item) => item.id}
-                refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                }
-                ListHeaderComponent={
-                    <>
-                        {/* Categories */}
-                        <View style={styles.section}>
-                            <Text style={styles.sectionTitle}>Categorias</Text>
-                            <FlatList
-                                data={categories}
-                                renderItem={renderCategory}
-                                keyExtractor={(item) => item.id.toString()}
-                                horizontal
-                                showsHorizontalScrollIndicator={false}
-                                contentContainerStyle={styles.categoriesList}
-                            />
-                        </View>
+            {/* Conteúdo Principal */}
+            <View style={styles.contentContainer}>
 
-                        {/* Featured Properties */}
-                        <View style={styles.section}>
-                            <Text style={styles.sectionTitle}>Destaques</Text>
+                <FlatList
+                    data={featuredProperties}
+                    renderItem={renderFeaturedProperty}
+                    keyExtractor={(item) => item.id}
+                    refreshControl={
+                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                    }
+                    ListHeaderComponent={
+                        <>
+                            {/* Categories */}
+                            <View style={styles.section}>
+                                <Text style={styles.sectionTitle}>Categorias</Text>
+                                <FlatList
+                                    data={categories}
+                                    renderItem={renderCategory}
+                                    keyExtractor={(item) => item.id.toString()}
+                                    horizontal
+                                    showsHorizontalScrollIndicator={false}
+                                    contentContainerStyle={styles.categoriesList}
+                                />
+                            </View>
+
+                            {/* Featured Properties */}
+                            <View style={styles.section}>
+                                <Text style={styles.sectionTitle}>Destaques</Text>
+                            </View>
+                        </>
+                    }
+                    ListEmptyComponent={
+                        <View style={styles.emptyContainer}>
+                            <Ionicons name="star-outline" size={64} color="#bdc3c7" />
+                            <Text style={styles.emptyText}>Nenhum destaque encontrado</Text>
+                            <Text style={styles.emptySubtext}>
+                                Volte mais tarde para ver novos destaques
+                            </Text>
                         </View>
-                    </>
-                }
-                ListEmptyComponent={
-                    <View style={styles.emptyContainer}>
-                        <Ionicons name="star-outline" size={64} color="#bdc3c7" />
-                        <Text style={styles.emptyText}>Nenhum destaque encontrado</Text>
-                        <Text style={styles.emptySubtext}>
-                            Volte mais tarde para ver novos destaques
-                        </Text>
-                    </View>
-                }
-                contentContainerStyle={styles.listContainer}
-            />
+                    }
+                    contentContainerStyle={styles.listContainer}
+                />
+            </View>
         </SafeAreaView>
     );
 }
@@ -178,23 +189,44 @@ export default function DiscoverScreen({ navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f5f5f5',
+        backgroundColor: '#ffcc1e',
     },
-    header: {
-        backgroundColor: '#3498db',
-        padding: 20,
-        paddingTop: 20,
+    headerContainer: {
+        paddingTop: 50,
+        paddingBottom: 15,
+        backgroundColor: '#ffcc1e',
+    },
+    titleContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 20,
+    },
+    titleLogo: {
+        width: 30,
+        height: 30,
+        borderRadius: 15,
+        marginRight: 10,
     },
     headerTitle: {
-        fontSize: 24,
+        fontSize: 20,
         fontWeight: 'bold',
-        color: '#fff',
-        marginBottom: 5,
+        color: '#00335e',
+        textAlign: 'center',
     },
-    headerSubtitle: {
-        fontSize: 16,
-        color: '#fff',
-        opacity: 0.9,
+    contentContainer: {
+        flex: 1,
+        backgroundColor: '#fff',
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: -2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 3.84,
+        elevation: 5,
     },
     listContainer: {
         paddingBottom: 20,
@@ -205,7 +237,7 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#2c3e50',
+        color: '#00335e',
         marginBottom: 15,
         paddingHorizontal: 20,
     },
@@ -239,7 +271,7 @@ const styles = StyleSheet.create({
     categoryName: {
         fontSize: 14,
         fontWeight: '600',
-        color: '#2c3e50',
+        color: '#00335e',
         textAlign: 'center',
         marginBottom: 5,
     },
@@ -274,7 +306,7 @@ const styles = StyleSheet.create({
     propertyTitle: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#2c3e50',
+        color: '#00335e',
         marginBottom: 5,
     },
     propertyLocation: {
@@ -285,7 +317,7 @@ const styles = StyleSheet.create({
     propertyPrice: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#3498db',
+        color: '#059669',
         marginBottom: 8,
     },
     propertyFeatures: {

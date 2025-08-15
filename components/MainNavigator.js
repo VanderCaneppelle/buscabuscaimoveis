@@ -1,5 +1,6 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -8,8 +9,199 @@ import DiscoverScreen from './DiscoverScreen';
 import FavoritesScreen from './FavoritesScreen';
 import AdvertiseScreen from './AdvertiseScreen';
 import AccountScreen from './AccountScreen';
+import PlansScreen from './PlansScreen';
+import CreateAdScreen from './CreateAdScreen';
+import PropertyDetailsScreen from './PropertyDetailsScreen';
+import PaymentDetailsScreen from './PaymentDetailsScreen';
+import PaymentConfirmationScreen from './PaymentConfirmationScreen';
+import CreateStoryScreen from './CreateStoryScreen';
+import StoryViewerScreen from './StoryViewerScreen';
+import VideoUploadTestScreen from './VideoUploadTestScreen';
 
 const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
+
+// Stack Navigator para cada tab que pode ter telas aninhadas
+function HomeStack() {
+    return (
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="HomeMain" component={HomeScreen} />
+            <Stack.Screen
+                name="PropertyDetails"
+                component={PropertyDetailsScreen}
+                options={{
+                    headerShown: true,
+                    title: 'Detalhes do Imóvel',
+                    headerStyle: {
+                        backgroundColor: '#00335e',
+                    },
+                    headerTintColor: '#fff',
+                    headerTitleStyle: {
+                        fontWeight: 'bold',
+                    },
+                }}
+            />
+            <Stack.Screen
+                name="CreateStory"
+                component={CreateStoryScreen}
+                options={{
+                    headerShown: true,
+                    title: 'Criar Story',
+                    headerStyle: {
+                        backgroundColor: '#00335e',
+                    },
+                    headerTintColor: '#fff',
+                    headerTitleStyle: {
+                        fontWeight: 'bold',
+                    },
+                }}
+            />
+            <Stack.Screen
+                name="StoryViewer"
+                component={StoryViewerScreen}
+                options={{
+                    headerShown: true,
+                    title: 'Stories',
+                    headerStyle: {
+                        backgroundColor: '#00335e',
+                    },
+                    headerTintColor: '#fff',
+                    headerTitleStyle: {
+                        fontWeight: 'bold',
+                    },
+                }}
+            />
+        </Stack.Navigator>
+    );
+}
+
+function AdvertiseStack() {
+    return (
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="AdvertiseMain" component={AdvertiseScreen} />
+            <Stack.Screen
+                name="CreateAd"
+                component={CreateAdScreen}
+                options={{
+                    headerShown: false,
+                }}
+            />
+            <Stack.Screen
+                name="Plans"
+                component={PlansScreen}
+                options={{
+                    headerShown: false,
+                }}
+            />
+            <Stack.Screen
+                name="PaymentDetails"
+                component={PaymentDetailsScreen}
+                options={{
+                    headerShown: true,
+                    title: 'Pagamento',
+                    headerStyle: {
+                        backgroundColor: '#00335e',
+                    },
+                    headerTintColor: '#fff',
+                    headerTitleStyle: {
+                        fontWeight: 'bold',
+                    },
+                }}
+            />
+            <Stack.Screen
+                name="PaymentConfirmation"
+                component={PaymentConfirmationScreen}
+                options={{
+                    headerShown: true,
+                    title: 'Confirmação',
+                    headerStyle: {
+                        backgroundColor: '#00335e',
+                    },
+                    headerTintColor: '#fff',
+                    headerTitleStyle: {
+                        fontWeight: 'bold',
+                    },
+                }}
+            />
+            <Stack.Screen
+                name="VideoUploadTest"
+                component={VideoUploadTestScreen}
+                options={{
+                    headerShown: true,
+                    title: 'Teste de Upload',
+                    headerStyle: {
+                        backgroundColor: '#00335e',
+                    },
+                    headerTintColor: '#fff',
+                    headerTitleStyle: {
+                        fontWeight: 'bold',
+                    },
+                }}
+            />
+        </Stack.Navigator>
+    );
+}
+
+function DiscoverStack() {
+    return (
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="DiscoverMain" component={DiscoverScreen} />
+            <Stack.Screen
+                name="PropertyDetails"
+                component={PropertyDetailsScreen}
+                options={{
+                    headerShown: true,
+                    title: 'Detalhes do Imóvel',
+                    headerStyle: {
+                        backgroundColor: '#00335e',
+                    },
+                    headerTintColor: '#fff',
+                    headerTitleStyle: {
+                        fontWeight: 'bold',
+                    },
+                }}
+            />
+        </Stack.Navigator>
+    );
+}
+
+function FavoritesStack() {
+    return (
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="FavoritesMain" component={FavoritesScreen} />
+            <Stack.Screen
+                name="PropertyDetails"
+                component={PropertyDetailsScreen}
+                options={{
+                    headerShown: true,
+                    title: 'Detalhes do Imóvel',
+                    headerStyle: {
+                        backgroundColor: '#00335e',
+                    },
+                    headerTintColor: '#fff',
+                    headerTitleStyle: {
+                        fontWeight: 'bold',
+                    },
+                }}
+            />
+        </Stack.Navigator>
+    );
+}
+
+function AccountStack() {
+    return (
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="AccountMain" component={AccountScreen} />
+            <Stack.Screen
+                name="Plans"
+                component={PlansScreen}
+                options={{
+                    headerShown: false,
+                }}
+            />
+        </Stack.Navigator>
+    );
+}
 
 export default function MainNavigator() {
     const insets = useSafeAreaInsets();
@@ -62,35 +254,35 @@ export default function MainNavigator() {
         >
             <Tab.Screen
                 name="Busca"
-                component={HomeScreen}
+                component={HomeStack}
                 options={{
                     tabBarLabel: 'Busca'
                 }}
             />
             <Tab.Screen
                 name="Destaques"
-                component={DiscoverScreen}
+                component={DiscoverStack}
                 options={{
                     tabBarLabel: 'Destaques'
                 }}
             />
             <Tab.Screen
                 name="Favoritos"
-                component={FavoritesScreen}
+                component={FavoritesStack}
                 options={{
                     tabBarLabel: 'Favoritos'
                 }}
             />
             <Tab.Screen
                 name="Anuncie"
-                component={AdvertiseScreen}
+                component={AdvertiseStack}
                 options={{
                     tabBarLabel: 'Anuncie'
                 }}
             />
             <Tab.Screen
                 name="Conta"
-                component={AccountScreen}
+                component={AccountStack}
                 options={{
                     tabBarLabel: 'Conta'
                 }}
