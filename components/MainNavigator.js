@@ -20,7 +20,7 @@ import VideoUploadTestScreen from './VideoUploadTestScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
-console.log('Rendered MainNavigator');
+
 
 // Stack Navigator para cada tab que pode ter telas aninhadas
 function HomeStack() {

@@ -36,7 +36,6 @@ export default function DiscoverScreen({ navigation }) {
             setLoading(true);
             await Promise.all([
                 fetchFeaturedProperties(),
-                fetchCategories()
             ]);
         } catch (error) {
             console.error('Erro ao carregar dados:', error);
@@ -64,18 +63,7 @@ export default function DiscoverScreen({ navigation }) {
         }
     };
 
-    const fetchCategories = async () => {
-        // Dados mockados para categorias
-        const mockCategories = [
-            { id: 1, name: 'Casas', icon: 'home', count: 45, color: '#3498db' },
-            { id: 2, name: 'Apartamentos', icon: 'business', count: 32, color: '#e74c3c' },
-            { id: 3, name: 'Terrenos', icon: 'map', count: 18, color: '#2ecc71' },
-            { id: 4, name: 'Comercial', icon: 'storefront', count: 25, color: '#f39c12' },
-            { id: 5, name: 'Rural', icon: 'leaf', count: 12, color: '#8e44ad' },
-            { id: 6, name: 'Luxo', icon: 'diamond', count: 8, color: '#e67e22' },
-        ];
-        setCategories(mockCategories);
-    };
+
 
     const onRefresh = async () => {
         setRefreshing(true);
@@ -105,19 +93,19 @@ export default function DiscoverScreen({ navigation }) {
                     {item.title}
                 </Text>
                 <Text style={styles.propertyLocation}>
-                    {item.neighborhood}, {item.city}
+                    {(item.neighborhood ?? '')}{(item.neighborhood && item.city ? ', ' : '')}{(item.city ?? '')}
                 </Text>
                 <Text style={styles.propertyPrice}>
                     R$ {item.price?.toLocaleString('pt-BR')}
                 </Text>
                 <View style={styles.propertyFeatures}>
-                    {item.bedrooms && (
+                    {item.bedrooms != null && (
                         <Text style={styles.propertyFeature}>{item.bedrooms} quartos</Text>
                     )}
-                    {item.bathrooms && (
+                    {item.bathrooms != null && (
                         <Text style={styles.propertyFeature}>{item.bathrooms} banheiros</Text>
                     )}
-                    {item.area && (
+                    {item.area != null && (
                         <Text style={styles.propertyFeature}>{item.area}m²</Text>
                     )}
                 </View>

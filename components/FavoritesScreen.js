@@ -141,21 +141,28 @@ export default function FavoritesScreen({ navigation }) {
                             <Ionicons name="heart-dislike" size={20} color="#e74c3c" />
                         </TouchableOpacity>
                     </View>
-                    <Text style={styles.propertyLocation}>
-                        {property.neighborhood}, {property.city}
+                    <Text>
+                        {(property.neighborhood ?? '')}{(property.neighborhood && property.city ? ', ' : '')}{(property.city ?? '')}
                     </Text>
+
                     <Text style={styles.propertyPrice}>
                         R$ {property.price?.toLocaleString('pt-BR')}
                     </Text>
                     <View style={styles.propertyFeatures}>
-                        {property.bedrooms && property.bedrooms != null && (
-                            <Text style={styles.propertyFeature}>{property.bedrooms} quartos</Text>
+                        {item.bedrooms != null && (
+                            <Text style={styles.propertyFeature}>
+                                {`${item.bedrooms} quartos`}
+                            </Text>
                         )}
-                        {property.bathrooms && property.bathrooms != null && (
-                            <Text style={styles.propertyFeature}>{property.bathrooms} banheiros</Text>
+                        {item.bathrooms != null && (
+                            <Text style={styles.propertyFeature}>
+                                {`${item.bathrooms} banheiros`}
+                            </Text>
                         )}
-                        {property.area && property.area != null && (
-                            <Text style={styles.propertyFeature}>{property.area}m²</Text>
+                        {item.area != null && (
+                            <Text style={styles.propertyFeature}>
+                                {`${item.area}m²`}
+                            </Text>
                         )}
                     </View>
                     <Text style={styles.propertyType}>
