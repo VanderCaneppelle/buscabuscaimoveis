@@ -905,7 +905,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                     <Text style={styles.mediaOptionText}>Galeria</Text>
                                 </TouchableOpacity>
 
-                                <TouchableOpacity
+                                {/* <TouchableOpacity
                                     style={styles.mediaOption}
                                     onPress={() => handleAddMedia('video')}
                                 >
@@ -913,7 +913,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                         <Ionicons name="videocam" size={32} color="#fff" />
                                     </View>
                                     <Text style={styles.mediaOptionText}>Vídeo</Text>
-                                </TouchableOpacity>
+                                </TouchableOpacity> */}
                             </View>
                         </View>
                     </View>

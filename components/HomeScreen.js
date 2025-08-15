@@ -704,12 +704,6 @@ export default function HomeScreen({ navigation }) {
                                 <Text style={styles.sectionTitle}>
                                     {`Anúncios (${totalCount})`}
                                 </Text>
-                                {cacheStats && (
-                                    <Text style={styles.cacheInfo}>
-                                        {cacheStats.fromCache ? '📦 Cache' : '🌐 Servidor'} • {cacheStats.itemCount} itens
-                                        {cacheStats.cacheAge && ` • ${Math.floor(cacheStats.cacheAge / 60)}min`}
-                                    </Text>
-                                )}
                             </View>
                         </View>
                     </>
