@@ -199,6 +199,36 @@ function AccountStack() {
                     headerShown: false,
                 }}
             />
+            <Stack.Screen
+                name="PaymentDetails"
+                component={PaymentDetailsScreen}
+                options={{
+                    headerShown: true,
+                    title: 'Pagamento',
+                    headerStyle: {
+                        backgroundColor: '#00335e',
+                    },
+                    headerTintColor: '#fff',
+                    headerTitleStyle: {
+                        fontWeight: 'bold',
+                    },
+                }}
+            />
+            <Stack.Screen
+                name="PaymentConfirmation"
+                component={PaymentConfirmationScreen}
+                options={{
+                    headerShown: true,
+                    title: 'Confirmação',
+                    headerStyle: {
+                        backgroundColor: '#00335e',
+                    },
+                    headerTintColor: '#fff',
+                    headerTitleStyle: {
+                        fontWeight: 'bold',
+                    },
+                }}
+            />
         </Stack.Navigator>
     );
 }

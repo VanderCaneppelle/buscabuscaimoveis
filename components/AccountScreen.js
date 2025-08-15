@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { PlanService } from '../lib/planService';
+import PropertyCacheService from '../lib/propertyCacheService';
 import { useFocusEffect } from '@react-navigation/native';
 
 export default function AccountScreen({ navigation }) {
@@ -145,6 +146,29 @@ export default function AccountScreen({ navigation }) {
             [
                 { text: 'Cancelar', style: 'cancel' },
                 { text: 'Sair', onPress: () => signOut(true), style: 'destructive' }
+            ]
+        );
+    };
+
+    const handleClearCache = async () => {
+        Alert.alert(
+            'Limpar Cache',
+            'Isso irá limpar o cache local de propriedades. Os dados serão recarregados na próxima vez que você abrir a tela inicial.',
+            [
+                { text: 'Cancelar', style: 'cancel' },
+                {
+                    text: 'Limpar',
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            await PropertyCacheService.clearCache();
+                            Alert.alert('Sucesso', 'Cache limpo com sucesso!');
+                        } catch (error) {
+                            console.error('Erro ao limpar cache:', error);
+                            Alert.alert('Erro', 'Não foi possível limpar o cache');
+                        }
+                    }
+                }
             ]
         );
     };
@@ -342,6 +366,14 @@ export default function AccountScreen({ navigation }) {
                             'information-circle',
                             '#7f8c8d',
                             () => Alert.alert('Sobre', 'BuscaBusca Imóveis v1.0.0\n\nEncontre o imóvel dos seus sonhos!')
+                        )}
+
+                        {renderMenuItem(
+                            'Limpar Cache',
+                            'Limpe o cache local de propriedades',
+                            'trash-outline',
+                            '#c0392b',
+                            handleClearCache
                         )}
                     </View>
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
     View,
     Text,
@@ -21,6 +21,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
+import PropertyCacheService from '../lib/propertyCacheService';
 import StoriesComponent from './StoriesComponent';
 
 const { width } = Dimensions.get('window');
@@ -28,12 +29,15 @@ const { width } = Dimensions.get('window');
 
 
 export default function HomeScreen({ navigation }) {
+    console.log('🎉🎉🎉 HomeScreen: COMPONENTE RENDERIZADO 🎉🎉🎉');
+
     const { user, signOut } = useAuth();
     const colorScheme = useColorScheme();
     const [profile, setProfile] = useState(null);
     const [properties, setProperties] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [loadingMore, setLoadingMore] = useState(false);
     const [showFilters, setShowFilters] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [filters, setFilters] = useState({
@@ -48,6 +52,12 @@ export default function HomeScreen({ navigation }) {
     const [selectedStory, setSelectedStory] = useState(null);
     const [favorites, setFavorites] = useState({});
 
+    // Estados para lazy loading
+    const [currentPage, setCurrentPage] = useState(0);
+    const [hasMore, setHasMore] = useState(true);
+    const [totalCount, setTotalCount] = useState(0);
+    const [cacheStats, setCacheStats] = useState(null);
+
     // Cores dinâmicas baseadas no tema do dispositivo
     const colors = {
         headerBg: '#ffffff', // Header sempre branco
@@ -60,6 +70,7 @@ export default function HomeScreen({ navigation }) {
 
     useEffect(() => {
         if (user?.id) {
+            console.log('👤👤👤 HomeScreen: USUÁRIO DETECTADO, CARREGANDO DADOS INICIAIS 👤👤👤');
             fetchProfile();
             fetchProperties();
             fetchFavorites();
@@ -70,6 +81,7 @@ export default function HomeScreen({ navigation }) {
     useFocusEffect(
         React.useCallback(() => {
             if (user?.id) {
+                console.log('🎯🎯🎯 HomeScreen: TELA RECEBEU FOCO, SINCRONIZANDO FAVORITOS 🎯🎯🎯');
                 fetchFavorites();
             }
         }, [user?.id])
@@ -93,73 +105,107 @@ export default function HomeScreen({ navigation }) {
         }
     };
 
-    const fetchProperties = async (customFilters = null, searchQuery = null) => {
-        try {
-            let query = supabase
-                .from('properties')
-                .select('*, images')
-                .eq('status', 'approved')
-                .order('created_at', { ascending: false });
+    const fetchProperties = async (customFilters = null, searchQuery = null, page = 0, forceRefresh = false) => {
+        console.log('🏠🏠🏠 HomeScreen: INICIANDO FETCHPROPERTIES 🏠🏠🏠');
+        console.log('📋 Parâmetros:', { customFilters, searchQuery, page, forceRefresh });
 
+        try {
             const activeFilters = customFilters || filters;
             const activeSearch = searchQuery !== null ? searchQuery : searchTerm;
 
-            // Aplicar pesquisa
-            if (activeSearch) {
-                query = query.or(`title.ilike.%${activeSearch}%,city.ilike.%${activeSearch}%,neighborhood.ilike.%${activeSearch}%`);
-            }
+            console.log('🔍 HomeScreen: Chamando PropertyCacheService.getProperties');
+            const result = await PropertyCacheService.getProperties({
+                page,
+                filters: activeFilters,
+                searchTerm: activeSearch,
+                forceRefresh
+            });
 
-            if (activeFilters.city) {
-                query = query.ilike('city', `%${activeFilters.city}%`);
-            }
-            if (activeFilters.propertyType) {
-                query = query.eq('property_type', activeFilters.propertyType);
-            }
-            if (activeFilters.minPrice) {
-                query = query.gte('price', parseFloat(activeFilters.minPrice));
-            }
-            if (activeFilters.maxPrice) {
-                query = query.lte('price', parseFloat(activeFilters.maxPrice));
-            }
+            console.log('✅✅✅ HomeScreen: RESULTADO RECEBIDO DO PropertyCacheService ✅✅✅');
+            console.log('📊 Dados:', {
+                fromCache: result.fromCache,
+                totalCount: result.totalCount,
+                hasMore: result.hasMore,
+                dataLength: result.data.length,
+                page: page
+            });
 
-            const { data, error } = await query;
-
-            if (error) {
-                console.error('❌ Erro ao buscar imóveis:', error);
-                Alert.alert('Erro', 'Não foi possível carregar os anúncios');
+            if (result.fromCache) {
+                console.log('📦📦📦 HomeScreen: DADOS CARREGADOS DO CACHE 📦📦📦');
+                if (result.cacheInfo) {
+                    console.log('📦 Cache Info:', result.cacheInfo);
+                }
             } else {
-                setProperties(data || []);
+                console.log('🌐🌐🌐 HomeScreen: DADOS CARREGADOS DO SERVIDOR 🌐🌐🌐');
+                if (result.serverInfo) {
+                    console.log('🌐 Server Info:', result.serverInfo);
+                }
             }
+
+            if (result.error) {
+                console.log('⚠️ HomeScreen: Aviso - usando cache como fallback:', result.error);
+            }
+
+            if (page === 0) {
+                // Primeira página - substituir dados
+                console.log('🔄 HomeScreen: Substituindo dados (página 0)');
+                setProperties(result.data);
+            } else {
+                // Páginas subsequentes - adicionar dados
+                console.log(`➕ HomeScreen: Adicionando ${result.data.length} propriedades à página ${page}`);
+                setProperties(prev => [...prev, ...result.data]);
+            }
+
+            setCurrentPage(page);
+            setHasMore(result.hasMore);
+            setTotalCount(result.totalCount);
+
+            // Atualizar estatísticas do cache
+            const stats = await PropertyCacheService.getCacheStats();
+            setCacheStats(stats);
+            console.log('📊 HomeScreen: Estatísticas do cache atualizadas:', stats);
+
         } catch (error) {
-            console.error('❌ Erro ao buscar imóveis:', error);
+            console.error('❌❌❌ HomeScreen: ERRO AO BUSCAR IMÓVEIS ❌❌❌', error);
+            Alert.alert('Erro', 'Não foi possível carregar os anúncios');
         } finally {
             setLoading(false);
+            setLoadingMore(false);
+            console.log('🏁🏁🏁 HomeScreen: FETCHPROPERTIES FINALIZADO 🏁🏁🏁');
         }
     };
 
 
 
     const onRefresh = async () => {
+        console.log('🔄🔄🔄 HomeScreen: INICIANDO REFRESH MANUAL 🔄🔄🔄');
         setRefreshing(true);
+        setCurrentPage(0);
         await Promise.all([
-            fetchProperties(),
+            fetchProperties(filters, searchTerm, 0, true), // Forçar refresh
             fetchProfile(),
             fetchFavorites()
         ]);
         setRefreshing(false);
+        console.log('✅✅✅ HomeScreen: REFRESH MANUAL FINALIZADO ✅✅✅');
     };
 
     const handleSearch = (text) => {
+        console.log(`🔍🔍🔍 HomeScreen: BUSCA INICIADA: "${text}" 🔍🔍🔍`);
         setSearchTerm(text);
-        fetchProperties(filters, text);
+        setCurrentPage(0);
+        fetchProperties(filters, text, 0);
     };
 
     const clearSearch = () => {
+        console.log('🧹🧹🧹 HomeScreen: LIMPANDO BUSCA 🧹🧹🧹');
         setSearchTerm('');
-        fetchProperties(filters, '');
+        setCurrentPage(0);
+        fetchProperties(filters, '', 0);
     };
 
     const clearFilters = () => {
+        console.log('🧹🧹🧹 HomeScreen: LIMPANDO FILTROS 🧹🧹🧹');
         const clearedFilters = {
             city: '',
             propertyType: '',
@@ -167,11 +213,14 @@ export default function HomeScreen({ navigation }) {
             maxPrice: '',
         };
         setFilters(clearedFilters);
-        fetchProperties(clearedFilters, searchTerm);
+        setCurrentPage(0);
+        fetchProperties(clearedFilters, searchTerm, 0);
     };
 
     const applyFilters = () => {
-        fetchProperties(filters, searchTerm);
+        console.log('🔧🔧🔧 HomeScreen: APLICANDO FILTROS 🔧🔧🔧', filters);
+        setCurrentPage(0);
+        fetchProperties(filters, searchTerm, 0);
         setShowFilters(false);
     };
 
@@ -251,6 +300,27 @@ export default function HomeScreen({ navigation }) {
         }
     };
 
+    const loadMoreProperties = async () => {
+        if (loadingMore || !hasMore) {
+            console.log('⏸️⏸️⏸️ HomeScreen: LOADMORE IGNORADO ⏸️⏸️⏸️ - loadingMore:', loadingMore, 'hasMore:', hasMore);
+            return;
+        }
+
+        console.log(`📄📄📄 HomeScreen: CARREGANDO MAIS PROPRIEDADES - PÁGINA ${currentPage + 1} 📄📄📄`);
+        setLoadingMore(true);
+        const nextPage = currentPage + 1;
+        await fetchProperties(filters, searchTerm, nextPage);
+    };
+
+    const renderFooter = () => {
+        if (!loadingMore) return null;
+
+        return (
+            <View style={styles.loadingMoreContainer}>
+                <Text style={styles.loadingMoreText}>Carregando mais anúncios...</Text>
+            </View>
+        );
+    };
 
 
     const renderStory = ({ item }) => (
@@ -279,18 +349,19 @@ export default function HomeScreen({ navigation }) {
         </TouchableOpacity>
     );
 
-    const renderProperty = ({ item, index }) => {
+    // Componente otimizado para renderizar propriedades
+    const PropertyItem = React.memo(({ item, index, currentImageIndex, setCurrentImageIndex, favorites, toggleFavorite, navigation }) => {
         const mediaFiles = item.images || [];
         const currentIndex = currentImageIndex[index] || 0;
 
         // Filtrar apenas imagens (excluir vídeos)
-        const imageFiles = mediaFiles.filter(file =>
+        const imageFiles = useMemo(() => mediaFiles.filter(file =>
             !file.includes('.mp4') &&
             !file.includes('.mov') &&
             !file.includes('.avi') &&
             !file.includes('.mkv') &&
             !file.includes('.webm')
-        );
+        ), [mediaFiles]);
 
         const hasMultipleMedia = imageFiles.length > 1;
 
@@ -298,16 +369,16 @@ export default function HomeScreen({ navigation }) {
         const defaultImage = 'https://via.placeholder.com/300x200?text=Sem+Imagem';
         const displayMediaFiles = imageFiles.length > 0 ? imageFiles : [defaultImage];
 
-        const handleImageScroll = (event) => {
+        const handleImageScroll = useCallback((event) => {
             const contentOffset = event.nativeEvent.contentOffset.x;
             const imageIndex = Math.round(contentOffset / (width - 40)); // 40 é o padding
             setCurrentImageIndex(prev => ({
                 ...prev,
                 [index]: imageIndex
             }));
-        };
+        }, [index, setCurrentImageIndex]);
 
-        const renderMediaItem = ({ item: mediaItem, mediaIndex }) => {
+        const renderMediaItem = useCallback(({ item: mediaItem, mediaIndex }) => {
             return (
                 <Image
                     source={{ uri: mediaItem }}
@@ -315,7 +386,7 @@ export default function HomeScreen({ navigation }) {
                     resizeMode="cover"
                 />
             );
-        };
+        }, []);
 
         return (
             <View style={styles.propertyCard}>
@@ -334,6 +405,10 @@ export default function HomeScreen({ navigation }) {
                         scrollEnabled={true}
                         bounces={false}
                         decelerationRate="fast"
+                        removeClippedSubviews={true}
+                        maxToRenderPerBatch={3}
+                        windowSize={5}
+                        initialNumToRender={1}
                     />
 
                     {/* Indicadores de múltiplas imagens */}
@@ -417,7 +492,21 @@ export default function HomeScreen({ navigation }) {
                 </TouchableOpacity>
             </View>
         );
-    };
+    });
+
+    const renderProperty = useCallback(({ item, index }) => {
+        return (
+            <PropertyItem
+                item={item}
+                index={index}
+                currentImageIndex={currentImageIndex}
+                setCurrentImageIndex={setCurrentImageIndex}
+                favorites={favorites}
+                toggleFavorite={toggleFavorite}
+                navigation={navigation}
+            />
+        );
+    }, [currentImageIndex, favorites, toggleFavorite, navigation]);
 
     const renderStoryModal = () => (
         <Modal
@@ -634,9 +723,17 @@ export default function HomeScreen({ navigation }) {
                     <>
                         {/* Properties Section */}
                         <View style={styles.propertiesSection}>
-                            <Text style={styles.sectionTitle}>
-                                {`Anúncios (${properties.length})`}
-                            </Text>
+                            <View style={styles.sectionHeader}>
+                                <Text style={styles.sectionTitle}>
+                                    {`Anúncios (${totalCount})`}
+                                </Text>
+                                {cacheStats && (
+                                    <Text style={styles.cacheInfo}>
+                                        {cacheStats.fromCache ? '📦 Cache' : '🌐 Servidor'} • {cacheStats.itemCount} itens
+                                        {cacheStats.cacheAge && ` • ${Math.floor(cacheStats.cacheAge / 60)}min`}
+                                    </Text>
+                                )}
+                            </View>
                         </View>
                     </>
                 }
@@ -650,6 +747,18 @@ export default function HomeScreen({ navigation }) {
                     </View>
                 }
                 contentContainerStyle={styles.listContainer}
+                removeClippedSubviews={true}
+                maxToRenderPerBatch={5}
+                windowSize={10}
+                initialNumToRender={5}
+                getItemLayout={(data, index) => ({
+                    length: 300, // altura estimada de cada item
+                    offset: 300 * index,
+                    index,
+                })}
+                onEndReached={loadMoreProperties}
+                onEndReachedThreshold={0.5}
+                ListFooterComponent={renderFooter}
             />
 
             {/* Filter Modal */}
@@ -1149,6 +1258,26 @@ const styles = StyleSheet.create({
         color: '#e2e8f0',
         textAlign: 'center',
         lineHeight: 24,
+    },
+
+    loadingMoreContainer: {
+        paddingVertical: 20,
+        alignItems: 'center',
+    },
+    loadingMoreText: {
+        fontSize: 14,
+        color: '#7f8c8d',
+    },
+    sectionHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        paddingBottom: 10,
+    },
+    cacheInfo: {
+        fontSize: 12,
+        color: '#7f8c8d',
     },
 
 }); 
