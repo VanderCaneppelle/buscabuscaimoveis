@@ -227,47 +227,52 @@ export default function CreateAdScreen({ navigation, route }) {
             }
 
             if (result) {
-                // Verificar tamanho do arquivo
-                const fileSizeMB = (result.fileSize / 1024 / 1024).toFixed(2);
-                const maxSizeMB = 50;
+                // Se result for um array (múltiplas imagens), processar cada uma
+                const results = Array.isArray(result) ? result : [result];
 
-                // Bloquear arquivos maiores que 50MB
-                if (result.fileSize > maxSizeMB * 1024 * 1024) {
-                    Alert.alert(
-                        'Arquivo Muito Grande',
-                        `Este arquivo tem ${fileSizeMB}MB e excede o limite de ${maxSizeMB}MB. Por favor, escolha um arquivo menor ou reduza a qualidade.`,
-                        [{ text: 'OK' }]
-                    );
-                    return; // Não adicionar o arquivo
-                }
+                for (const mediaResult of results) {
+                    // Verificar tamanho do arquivo
+                    const fileSizeMB = (mediaResult.fileSize / 1024 / 1024).toFixed(2);
+                    const maxSizeMB = 50;
 
-                // Se arquivo for maior que 25MB, mostrar aviso mas permitir
-                if (result.fileSize > 25 * 1024 * 1024) {
-                    Alert.alert(
-                        'Arquivo Grande',
-                        `Este arquivo tem ${fileSizeMB}MB. Arquivos grandes podem demorar mais para fazer upload. Deseja continuar?`,
-                        [
-                            { text: 'Cancelar', style: 'cancel' },
-                            {
-                                text: 'Continuar',
-                                onPress: () => {
-                                    setMediaFiles(prev => [...prev, {
-                                        uri: result.uri,
-                                        type: result.type || 'image',
-                                        fileName: result.fileName || `media_${Date.now()}`,
-                                        fileSize: result.fileSize || 0
-                                    }]);
+                    // Bloquear arquivos maiores que 50MB
+                    if (mediaResult.fileSize > maxSizeMB * 1024 * 1024) {
+                        Alert.alert(
+                            'Arquivo Muito Grande',
+                            `O arquivo ${mediaResult.fileName} tem ${fileSizeMB}MB e excede o limite de ${maxSizeMB}MB. Por favor, escolha um arquivo menor ou reduza a qualidade.`,
+                            [{ text: 'OK' }]
+                        );
+                        continue; // Pular este arquivo
+                    }
+
+                    // Se arquivo for maior que 25MB, mostrar aviso mas permitir
+                    if (mediaResult.fileSize > 25 * 1024 * 1024) {
+                        Alert.alert(
+                            'Arquivo Grande',
+                            `O arquivo ${mediaResult.fileName} tem ${fileSizeMB}MB. Arquivos grandes podem demorar mais para fazer upload. Deseja continuar?`,
+                            [
+                                { text: 'Cancelar', style: 'cancel' },
+                                {
+                                    text: 'Continuar',
+                                    onPress: () => {
+                                        setMediaFiles(prev => [...prev, {
+                                            uri: mediaResult.uri,
+                                            type: mediaResult.type || 'image',
+                                            fileName: mediaResult.fileName || `media_${Date.now()}`,
+                                            fileSize: mediaResult.fileSize || 0
+                                        }]);
+                                    }
                                 }
-                            }
-                        ]
-                    );
-                } else {
-                    setMediaFiles(prev => [...prev, {
-                        uri: result.uri,
-                        type: result.type || 'image',
-                        fileName: result.fileName || `media_${Date.now()}`,
-                        fileSize: result.fileSize || 0
-                    }]);
+                            ]
+                        );
+                    } else {
+                        setMediaFiles(prev => [...prev, {
+                            uri: mediaResult.uri,
+                            type: mediaResult.type || 'image',
+                            fileName: mediaResult.fileName || `media_${Date.now()}`,
+                            fileSize: mediaResult.fileSize || 0
+                        }]);
+                    }
                 }
             }
         } catch (error) {
