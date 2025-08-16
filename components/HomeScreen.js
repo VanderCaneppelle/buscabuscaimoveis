@@ -465,7 +465,6 @@ export default function HomeScreen({ navigation }) {
                     <Text style={styles.propertyType}>
                         {(item.property_type ?? '') + ' • ' + (item.transaction_type ?? '')}
                     </Text>
-                    {console.log(typeof item.property_type, item.property_type)}
 
                 </TouchableOpacity>
             </View>

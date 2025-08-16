@@ -15,9 +15,27 @@ import { useFocusEffect } from '@react-navigation/native';
 
 export default function DiscoverScreen({ navigation }) {
     const [featuredProperties, setFeaturedProperties] = useState([]);
-    const [categories, setCategories] = useState([]);
+    // const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [selectedCategories, setSelectedCategories] = useState([]);
+    const [filteredProperties, setFilteredProperties] = useState([]);
+    const [properties, setProperties] = useState([]);
+
+    const categories = [
+        { id: 1, name: 'Casa', icon: 'home', color: '#FF6B6B', count: 12 },
+        { id: 2, name: 'Apartamento', icon: 'business', color: '#4ECDC4', count: 8 },
+        { id: 3, name: 'Cobertura', icon: 'home', color: '#1A535C', count: 5 },
+        { id: 4, name: 'Studio', icon: 'cube', color: '#FFB347', count: 3 },
+        { id: 5, name: 'Loft', icon: 'aperture', color: '#6A5ACD', count: 2 },
+        { id: 6, name: 'Sobrado', icon: 'home', color: '#20B2AA', count: 4 },
+        { id: 7, name: 'Casa de Condomínio', icon: 'home', color: '#FF6347', count: 6 },
+        { id: 8, name: 'Kitnet', icon: 'bed', color: '#32CD32', count: 1 },
+        { id: 9, name: 'Flat', icon: 'business', color: '#FFD700', count: 7 },
+        { id: 10, name: 'Terreno', icon: 'leaf', color: '#8B4513', count: 9 },
+        { id: 11, name: 'Comercial', icon: 'briefcase', color: '#4682B4', count: 10 },
+        { id: 12, name: 'Rural', icon: 'sunny', color: '#2E8B57', count: 2 },
+    ];
 
     useEffect(() => {
         loadData();
@@ -35,7 +53,7 @@ export default function DiscoverScreen({ navigation }) {
         try {
             setLoading(true);
             await Promise.all([
-                fetchFeaturedProperties(),
+                fetchRecentProperties(),
             ]);
         } catch (error) {
             console.error('Erro ao carregar dados:', error);
@@ -44,22 +62,56 @@ export default function DiscoverScreen({ navigation }) {
         }
     };
 
-    const fetchFeaturedProperties = async () => {
+    const fetchRecentProperties = async () => {
         try {
-            const { data, error } = await supabase
+            const twoDaysAgo = new Date();
+            twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+
+            let query = supabase
                 .from('properties')
                 .select('*')
                 .eq('status', 'approved')
-                .order('created_at', { ascending: false })
-                .limit(10);
+                .gte('created_at', twoDaysAgo.toISOString())
+                .order('created_at', { ascending: false });
+
+
+            const { data, error } = await query;
 
             if (error) {
-                console.error('Erro ao buscar propriedades em destaque:', error);
+                console.error('Erro ao buscar propriedades:', error);
             } else {
-                setFeaturedProperties(data || []);
+                setProperties(data || []); // atualiza o estado principal de properties
             }
         } catch (error) {
-            console.error('Erro ao buscar propriedades em destaque:', error);
+            console.error('Erro ao buscar propriedades:', error);
+        }
+    };
+    // Busca imóveis filtrando pelas categorias selecionadas e últimos 2 dias
+    const fetchPropertiesByCategories = async (categories) => {
+        try {
+            const twoDaysAgo = new Date();
+            twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+
+            let query = supabase
+                .from('properties')
+                .select('*')
+                .eq('status', 'approved')
+                .gte('created_at', twoDaysAgo.toISOString())
+                .order('created_at', { ascending: false });
+
+            if (categories.length > 0) {
+                query = query.in('property_type', categories); // filtra múltiplas categorias
+            }
+
+            const { data, error } = await query;
+
+            if (error) {
+                console.error('Erro ao buscar propriedades:', error);
+            } else {
+                setFilteredProperties(data || []);
+            }
+        } catch (err) {
+            console.error('Erro na busca de propriedades:', err);
         }
     };
 
@@ -70,16 +122,40 @@ export default function DiscoverScreen({ navigation }) {
         await loadData();
         setRefreshing(false);
     };
+    // Quando clica em uma categoria
+    const handleCategoryToggle = (categoryName) => {
+        setSelectedCategories(prev => {
+            let updated;
+            if (prev.includes(categoryName)) {
+                // se já estava selecionada, remove
+                updated = prev.filter(c => c !== categoryName);
+            } else {
+                // adiciona nova seleção
+                updated = [...prev, categoryName];
+            }
+
+            // Atualiza imóveis após alterar categorias
+            fetchPropertiesByCategories(updated);
+
+            return updated;
+        });
+    };
 
     const renderCategory = ({ item }) => (
-        <TouchableOpacity style={styles.categoryCard}>
+        <TouchableOpacity
+            style={[
+                styles.categoryCard,
+                selectedCategories === item.name && { borderWidth: 2, borderColor: '#000' }, // destaque
+            ]}
+            onPress={() => handleCategoryToggle(item.name)}
+        >
             <View style={[styles.categoryIcon, { backgroundColor: item.color }]}>
                 <Ionicons name={item.icon} size={24} color="#fff" />
             </View>
             <Text style={styles.categoryName}>{item.name}</Text>
-            <Text style={styles.categoryCount}>{`${item.count} imóveis`}</Text>
         </TouchableOpacity>
     );
+
 
     const renderFeaturedProperty = ({ item }) => (
         <TouchableOpacity style={styles.propertyCard}>
@@ -113,6 +189,7 @@ export default function DiscoverScreen({ navigation }) {
         </TouchableOpacity>
     );
 
+
     return (
         <SafeAreaView style={styles.container}>
             {/* Header Amarelo com Título */}
@@ -123,7 +200,7 @@ export default function DiscoverScreen({ navigation }) {
                         style={styles.titleLogo}
                         resizeMode="contain"
                     />
-                    <Text style={styles.headerTitle}>Descobrir</Text>
+                    <Text style={styles.headerTitle}>Melhores Oportunidades</Text>
                 </View>
             </View>
 
@@ -131,17 +208,16 @@ export default function DiscoverScreen({ navigation }) {
             <View style={styles.contentContainer}>
 
                 <FlatList
-                    data={featuredProperties}
+                    data={filteredProperties}
                     renderItem={renderFeaturedProperty}
-                    keyExtractor={(item) => item.id}
-                    refreshControl={
-                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                    }
+                    keyExtractor={(item) => item.id.toString()}
+
+
                     ListHeaderComponent={
                         <>
                             {/* Categories */}
                             <View style={styles.section}>
-                                <Text style={styles.sectionTitle}>Categorias</Text>
+                                <Text style={styles.sectionTitle}>Escolha o tipo de imóvel que procura:</Text>
                                 <FlatList
                                     data={categories}
                                     renderItem={renderCategory}
@@ -151,10 +227,17 @@ export default function DiscoverScreen({ navigation }) {
                                     contentContainerStyle={styles.categoriesList}
                                 />
                             </View>
-
-                            {/* Featured Properties */}
+                            {/* Lista de imóveis filtrados */}
                             <View style={styles.section}>
-                                <Text style={styles.sectionTitle}>Destaques</Text>
+                                <Text style={styles.sectionTitle}>
+                                    {selectedCategories.length > 0 ? `Mostrando: ${selectedCategories.join(', ')}` : 'Todos os imóveis'}
+                                </Text>
+
+                                <FlatList
+                                    data={filteredProperties}
+                                    renderItem={renderFeaturedProperty} // sua função de renderizar imóvel
+                                    keyExtractor={(item) => item.id.toString()}
+                                />
                             </View>
                         </>
                     }
