@@ -141,18 +141,26 @@ export default function DiscoverScreen({ navigation }) {
         });
     };
 
+    // Limpar todas as seleções
+    const clearAllSelections = () => {
+        setSelectedCategories([]);
+        fetchPropertiesByCategories([]);
+    };
+
     const renderCategory = ({ item }) => (
         <TouchableOpacity
             style={[
                 styles.categoryCard,
-                selectedCategories === item.name && { borderWidth: 2, borderColor: '#000' }, // destaque
+                selectedCategories.includes(item.name) && styles.categoryCardSelected,
             ]}
             onPress={() => handleCategoryToggle(item.name)}
         >
-            <View style={[styles.categoryIcon, { backgroundColor: item.color }]}>
-                <Ionicons name={item.icon} size={24} color="#fff" />
-            </View>
-            <Text style={styles.categoryName}>{item.name}</Text>
+            <Text style={[
+                styles.categoryName,
+                selectedCategories.includes(item.name) && styles.categoryNameSelected
+            ]}>
+                {item.name}
+            </Text>
         </TouchableOpacity>
     );
 
@@ -206,18 +214,29 @@ export default function DiscoverScreen({ navigation }) {
 
             {/* Conteúdo Principal */}
             <View style={styles.contentContainer}>
-
                 <FlatList
                     data={filteredProperties}
                     renderItem={renderFeaturedProperty}
                     keyExtractor={(item) => item.id.toString()}
-
-
                     ListHeaderComponent={
                         <>
                             {/* Categories */}
                             <View style={styles.section}>
-                                <Text style={styles.sectionTitle}>Escolha o tipo de imóvel que procura:</Text>
+                                <View style={styles.sectionHeader}>
+                                    <View style={styles.titleContainer}>
+                                        <Text style={styles.sectionTitle}>Escolha o tipo de imóvel que procura:</Text>
+                                        {selectedCategories.length > 0 && (
+                                            <Text style={styles.selectedCount}>
+                                                ({selectedCategories.length})
+                                            </Text>
+                                        )}
+                                    </View>
+                                    {selectedCategories.length > 0 && (
+                                        <TouchableOpacity onPress={clearAllSelections} style={styles.clearButton}>
+                                            <Text style={styles.clearButtonText}>Limpar</Text>
+                                        </TouchableOpacity>
+                                    )}
+                                </View>
                                 <FlatList
                                     data={categories}
                                     renderItem={renderCategory}
@@ -227,17 +246,14 @@ export default function DiscoverScreen({ navigation }) {
                                     contentContainerStyle={styles.categoriesList}
                                 />
                             </View>
-                            {/* Lista de imóveis filtrados */}
+                            {/* Título da seção de imóveis */}
                             <View style={styles.section}>
                                 <Text style={styles.sectionTitle}>
-                                    {selectedCategories.length > 0 ? `Mostrando: ${selectedCategories.join(', ')}` : 'Todos os imóveis'}
+                                    {selectedCategories.length > 0
+                                        ? `Mostrando: ${selectedCategories.join(', ')}`
+                                        : 'Todos os imóveis'
+                                    }
                                 </Text>
-
-                                <FlatList
-                                    data={filteredProperties}
-                                    renderItem={renderFeaturedProperty} // sua função de renderizar imóvel
-                                    keyExtractor={(item) => item.id.toString()}
-                                />
                             </View>
                         </>
                     }
@@ -251,6 +267,9 @@ export default function DiscoverScreen({ navigation }) {
                         </View>
                     }
                     contentContainerStyle={styles.listContainer}
+                    refreshControl={
+                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                    }
                 />
             </View>
         </SafeAreaView>
@@ -304,47 +323,70 @@ const styles = StyleSheet.create({
     },
     section: {
         marginTop: 20,
+        marginLeft: 10,
+    },
+    sectionHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 15,
+        paddingHorizontal: 20,
+    },
+    titleContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1,
     },
     sectionTitle: {
         fontSize: 18,
         fontWeight: 'bold',
         color: '#00335e',
-        marginBottom: 15,
-        paddingHorizontal: 20,
+        marginLeft: 10,
+    },
+    selectedCount: {
+        fontSize: 16,
+        color: '#00335e',
+        fontWeight: '600',
+        marginLeft: 5,
     },
     categoriesList: {
         paddingHorizontal: 20,
     },
     categoryCard: {
-        width: 100,
-        marginRight: 15,
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        marginRight: 10,
         backgroundColor: '#fff',
-        borderRadius: 12,
-        padding: 15,
+        borderRadius: 20,
         alignItems: 'center',
+        justifyContent: 'center',
         shadowColor: '#000',
         shadowOffset: {
             width: 0,
-            height: 2,
+            height: 1,
         },
         shadowOpacity: 0.1,
-        shadowRadius: 3.84,
-        elevation: 3,
+        shadowRadius: 2,
+        elevation: 2,
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
     },
-    categoryIcon: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 10,
+    categoryCardSelected: {
+        backgroundColor: '#00335e',
+        borderColor: '#00335e',
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 4,
     },
     categoryName: {
         fontSize: 14,
-        fontWeight: '600',
-        color: '#00335e',
+        fontWeight: '500',
+        color: '#64748b',
         textAlign: 'center',
-        marginBottom: 5,
+    },
+    categoryNameSelected: {
+        color: '#ffffff',
+        fontWeight: '600',
     },
     categoryCount: {
         fontSize: 12,
@@ -418,5 +460,17 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#bdc3c7',
         textAlign: 'center',
+    },
+    clearButton: {
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        backgroundColor: '#e74c3c',
+        borderRadius: 12,
+        marginLeft: 10,
+    },
+    clearButtonText: {
+        color: '#fff',
+        fontSize: 12,
+        fontWeight: '600',
     },
 }); 
