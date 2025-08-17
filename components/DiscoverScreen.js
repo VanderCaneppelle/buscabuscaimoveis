@@ -23,17 +23,17 @@ export default function DiscoverScreen({ navigation }) {
     const [properties, setProperties] = useState([]);
 
     const categories = [
+        { id: 0, name: 'Todos', icon: 'home', color: '#FF6B6B', count: 12 },
         { id: 1, name: 'Casa', icon: 'home', color: '#FF6B6B', count: 12 },
         { id: 2, name: 'Apartamento', icon: 'business', color: '#4ECDC4', count: 8 },
         { id: 3, name: 'Cobertura', icon: 'home', color: '#1A535C', count: 5 },
         { id: 4, name: 'Studio', icon: 'cube', color: '#FFB347', count: 3 },
         { id: 5, name: 'Loft', icon: 'aperture', color: '#6A5ACD', count: 2 },
         { id: 6, name: 'Sobrado', icon: 'home', color: '#20B2AA', count: 4 },
-        { id: 7, name: 'Casa de Condomínio', icon: 'home', color: '#FF6347', count: 6 },
-        { id: 8, name: 'Kitnet', icon: 'bed', color: '#32CD32', count: 1 },
-        { id: 9, name: 'Flat', icon: 'business', color: '#FFD700', count: 7 },
-        { id: 10, name: 'Terreno', icon: 'leaf', color: '#8B4513', count: 9 },
-        { id: 11, name: 'Comercial', icon: 'briefcase', color: '#4682B4', count: 10 },
+        { id: 7, name: 'Kitnet', icon: 'bed', color: '#32CD32', count: 1 },
+        { id: 8, name: 'Flat', icon: 'business', color: '#FFD700', count: 7 },
+        { id: 9, name: 'Terreno', icon: 'leaf', color: '#8B4513', count: 9 },
+        { id: 10, name: 'Comercial', icon: 'briefcase', color: '#4682B4', count: 10 },
         { id: 12, name: 'Rural', icon: 'sunny', color: '#2E8B57', count: 2 },
     ];
 
@@ -147,24 +147,6 @@ export default function DiscoverScreen({ navigation }) {
         fetchPropertiesByCategories([]);
     };
 
-    const renderCategory = ({ item }) => (
-        <TouchableOpacity
-            style={[
-                styles.categoryCard,
-                selectedCategories.includes(item.name) && styles.categoryCardSelected,
-            ]}
-            onPress={() => handleCategoryToggle(item.name)}
-        >
-            <Text style={[
-                styles.categoryName,
-                selectedCategories.includes(item.name) && styles.categoryNameSelected
-            ]}>
-                {item.name}
-            </Text>
-        </TouchableOpacity>
-    );
-
-
     const renderFeaturedProperty = ({ item }) => (
         <TouchableOpacity style={styles.propertyCard}>
             <Image
@@ -237,14 +219,25 @@ export default function DiscoverScreen({ navigation }) {
                                         </TouchableOpacity>
                                     )}
                                 </View>
-                                <FlatList
-                                    data={categories}
-                                    renderItem={renderCategory}
-                                    keyExtractor={(item) => item.id.toString()}
-                                    horizontal
-                                    showsHorizontalScrollIndicator={false}
-                                    contentContainerStyle={styles.categoriesList}
-                                />
+                                <View style={styles.categoriesGrid}>
+                                    {categories.map((item) => (
+                                        <TouchableOpacity
+                                            key={item.id}
+                                            style={[
+                                                styles.categoryCard,
+                                                selectedCategories.includes(item.name) && styles.categoryCardSelected,
+                                            ]}
+                                            onPress={() => handleCategoryToggle(item.name)}
+                                        >
+                                            <Text style={[
+                                                styles.categoryName,
+                                                selectedCategories.includes(item.name) && styles.categoryNameSelected
+                                            ]}>
+                                                {item.name}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
                             </View>
                             {/* Título da seção de imóveis */}
                             <View style={styles.section}>
@@ -349,13 +342,16 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         marginLeft: 5,
     },
-    categoriesList: {
-        paddingHorizontal: 20,
+    categoriesGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
+        paddingHorizontal: 10,
+        gap: 0,
     },
     categoryCard: {
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        marginRight: 10,
+        paddingHorizontal: 5,
+        paddingVertical: 6,
         backgroundColor: '#fff',
         borderRadius: 20,
         alignItems: 'center',
@@ -370,6 +366,8 @@ const styles = StyleSheet.create({
         elevation: 2,
         borderWidth: 1,
         borderColor: '#e2e8f0',
+        width: '31%',
+        marginBottom: 8,
     },
     categoryCardSelected: {
         backgroundColor: '#00335e',
@@ -379,7 +377,7 @@ const styles = StyleSheet.create({
         elevation: 4,
     },
     categoryName: {
-        fontSize: 14,
+        fontSize: 12,
         fontWeight: '500',
         color: '#64748b',
         textAlign: 'center',
