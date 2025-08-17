@@ -49,27 +49,27 @@ export default function CreateStoryScreen({ navigation }) {
         const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
         setHasPermission(imagePickerStatus === 'granted' && cameraStatus === 'granted');
     };
-    function getMimeType(ext) {
-        switch (ext.toLowerCase()) {
-            case 'jpg':
-            case 'jpeg': return 'image/jpeg';
-            case 'png': return 'image/png';
-            case 'gif': return 'image/gif';
-            case 'mp4': return 'video/mp4';
-            case 'mov': return 'video/quicktime';
-            default: return 'application/octet-stream';
-        }
-    }
+    // function getMimeType(ext) {
+    //     switch (ext.toLowerCase()) {
+    //         case 'jpg':
+    //         case 'jpeg': return 'image/jpeg';
+    //         case 'png': return 'image/png';
+    //         case 'gif': return 'image/gif';
+    //         case 'mp4': return 'video/mp4';
+    //         case 'mov': return 'video/quicktime';
+    //         default: return 'application/octet-stream';
+    //     }
+    // }
 
-    function base64ToUint8Array(base64) {
-        const binaryString = atob(base64);
-        const len = binaryString.length;
-        const bytes = new Uint8Array(len);
-        for (let i = 0; i < len; i++) {
-            bytes[i] = binaryString.charCodeAt(i);
-        }
-        return bytes;
-    }
+    // function base64ToUint8Array(base64) {
+    //     const binaryString = atob(base64);
+    //     const len = binaryString.length;
+    //     const bytes = new Uint8Array(len);
+    //     for (let i = 0; i < len; i++) {
+    //         bytes[i] = binaryString.charCodeAt(i);
+    //     }
+    //     return bytes;
+    // }
 
     const takePicture = async () => {
         try {
