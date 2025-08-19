@@ -9,6 +9,9 @@
         },
         "api/payments/status.js": {
             "maxDuration": 30
+        },
+        "api/delete-cloudinary.js": {
+            "maxDuration": 30
         }
     }
 }

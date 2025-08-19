@@ -1,16 +1,19 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, Image, TouchableWithoutFeedback, Dimensions, StyleSheet, Animated, Text, SafeAreaView, StatusBar, Platform } from "react-native";
+import { View, Image, TouchableWithoutFeedback, Dimensions, StyleSheet, Animated, Text, SafeAreaView, StatusBar, Platform, TouchableOpacity, Alert } from "react-native";
 import { Video } from "expo-av";
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../lib/supabase";
 import { getOptimizedUrl } from "../lib/mediaCacheService";
 import StoryLinkOverlay from "./StoryLinkOverlay";
+import { useAuth } from "../contexts/AuthContext";
+import { StoryService } from "../lib/storyService";
 
 const { width, height } = Dimensions.get("window");
 const IMAGE_DURATION = 5000; // 5 segundos
 
 export default function ViewerScreen({ navigation, route }) {
     console.log('Rendered StoryViewerScreen');
+    const { user } = useAuth();
     const [stories, setStories] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [optimizedUrls, setOptimizedUrls] = useState({});
@@ -123,6 +126,58 @@ export default function ViewerScreen({ navigation, route }) {
 
     if (!stories.length) return null;
     const currentStory = stories[currentIndex];
+
+    // Verificar se o usuário atual é o criador do story
+    const canDeleteStory = user?.id && currentStory?.user_id === user.id;
+
+    // Função para excluir story
+    const handleDeleteStory = async () => {
+        if (!canDeleteStory) {
+            Alert.alert('Erro', 'Você não tem permissão para excluir este story.');
+            return;
+        }
+
+        Alert.alert(
+            'Excluir Story',
+            'Tem certeza que deseja excluir este story? Esta ação não pode ser desfeita.',
+            [
+                { text: 'Cancelar', style: 'cancel' },
+                {
+                    text: 'Excluir',
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            console.log('🗑️ Iniciando exclusão do story:', currentStory.id);
+
+                            // Usar o StoryService para excluir
+                            await StoryService.deleteStory(currentStory.id, user.id);
+
+                            // Atualizar lista local
+                            const updatedStories = stories.filter(story => story.id !== currentStory.id);
+                            setStories(updatedStories);
+
+                            // Ajustar índice atual se necessário
+                            if (currentIndex >= updatedStories.length && updatedStories.length > 0) {
+                                setCurrentIndex(updatedStories.length - 1);
+                            } else if (updatedStories.length === 0) {
+                                // Se não há mais stories, voltar para a tela anterior
+                                navigation.goBack();
+                                return;
+                            }
+
+                            Alert.alert('✅ Sucesso', 'Story excluído com sucesso!');
+
+                        } catch (error) {
+                            console.error('❌ Erro ao excluir story:', error);
+                            Alert.alert('❌ Erro', `Erro ao excluir story: ${error.message}`);
+                        }
+                    }
+                }
+            ]
+        );
+    };
+
+
 
     // Debug: verificar se o story atual tem link
     if (currentStory.link_url) {
@@ -258,6 +313,17 @@ export default function ViewerScreen({ navigation, route }) {
                                 />
                             </>
                         )}
+
+                        {/* Botão de Exclusão */}
+                        {canDeleteStory && (
+                            <TouchableOpacity
+                                style={styles.deleteButton}
+                                onPress={handleDeleteStory}
+                                activeOpacity={0.8}
+                            >
+                                <Ionicons name="trash-outline" size={24} color="#fff" />
+                            </TouchableOpacity>
+                        )}
                     </View>
                 </TouchableWithoutFeedback>
             </SafeAreaView>
@@ -326,5 +392,22 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: "bold",
         textAlign: "center",
+    },
+    deleteButton: {
+        position: "absolute",
+        top: Platform.OS === 'ios' ? 100 : 80,
+        right: 20,
+        backgroundColor: "rgba(255, 0, 0, 0.8)",
+        borderRadius: 25,
+        width: 50,
+        height: 50,
+        alignItems: "center",
+        justifyContent: "center",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+        elevation: 10,
+        zIndex: 10000,
     },
 });

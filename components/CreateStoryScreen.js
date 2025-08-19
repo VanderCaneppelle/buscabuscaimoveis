@@ -23,6 +23,7 @@ import { useAdmin } from '../contexts/AdminContext';
 import { supabase } from '../lib/supabase';
 import { Platform } from 'react-native';
 import { MediaServiceOptimized as MediaService } from '../lib/mediaServiceOptimized';
+import { useAuth } from '../contexts/AuthContext';
 
 // Componente DraggableTitle
 const DraggableTitle = ({ title, coordinates, onCoordinatesChange, onEdit, onDelete, onDragToTrash, scale = 1.0, onScaleChange }) => {
@@ -340,6 +341,7 @@ const getInitialPositions = () => {
 
 export default function CreateStoryScreen({ navigation }) {
     const { isAdmin } = useAdmin();
+    const { user } = useAuth();
     const [hasPermission, setHasPermission] = useState(null);
     const [capturedMedia, setCapturedMedia] = useState(null);
     const [showPreview, setShowPreview] = useState(false);
@@ -657,7 +659,8 @@ export default function CreateStoryScreen({ navigation }) {
                 titleCoordinates,
                 titleLayout,
                 titleScale,
-                linkScale
+                linkScale,
+                user?.id // Passar o ID do usuário
             );
 
             console.log('✅ Upload concluído:', result);
