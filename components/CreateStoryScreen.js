@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Animated } from 'react-native';
+import { Animated, PanResponder } from 'react-native';
 import { CameraView, Camera } from 'expo-camera';
 import {
     View,
@@ -12,7 +12,8 @@ import {
     Dimensions,
     ActivityIndicator,
     Image,
-    TextInput
+    TextInput,
+    ScrollView
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -23,9 +24,319 @@ import { supabase } from '../lib/supabase';
 import { Platform } from 'react-native';
 import { MediaServiceOptimized as MediaService } from '../lib/mediaServiceOptimized';
 
+// Componente DraggableTitle
+const DraggableTitle = ({ title, coordinates, onCoordinatesChange, onEdit, onDelete, onDragToTrash, scale = 1.0, onScaleChange }) => {
+    const [isDragging, setIsDragging] = useState(false);
+    const [showDeleteIcon, setShowDeleteIcon] = useState(false);
+    const [showControls, setShowControls] = useState(false);
+
+    const getTitleSizeStyle = () => {
+        const baseFontSize = 16;
+        const basePadding = 16;
+        return {
+            fontSize: baseFontSize * scale,
+            paddingHorizontal: basePadding * scale,
+            paddingVertical: (basePadding * 0.5) * scale
+        };
+    };
+
+    const panResponder = useRef(
+        PanResponder.create({
+            onStartShouldSetPanResponder: () => true,
+            onMoveShouldSetPanResponder: () => true,
+            onPanResponderGrant: () => {
+                setIsDragging(true);
+                setShowDeleteIcon(true);
+            },
+            onPanResponderMove: (evt, gestureState) => {
+                console.log('🎯 DraggableTitle - PanResponder Move', { dx: gestureState.dx, dy: gestureState.dy });
+                // Limites para tela cheia
+                const newX = Math.max(0, Math.min(width - 200, coordinates.x + gestureState.dx));
+                const newY = Math.max(100, Math.min(height - 150, coordinates.y + gestureState.dy));
+                onCoordinatesChange({ x: newX, y: newY });
+
+                // Verificar se está próximo da lixeira
+                const trashX = width - 60;
+                const trashY = 100;
+                const distance = Math.sqrt(
+                    Math.pow(newX - trashX, 2) + Math.pow(newY - trashY, 2)
+                );
+
+                if (distance < 50) {
+                    setShowDeleteIcon(true);
+                    onDragToTrash(true);
+                } else {
+                    setShowDeleteIcon(false);
+                    onDragToTrash(false);
+                }
+            },
+            onPanResponderRelease: (evt, gestureState) => {
+                setIsDragging(false);
+
+                // Verificar se soltou na lixeira
+                const trashX = width - 60;
+                const trashY = 100;
+                const distance = Math.sqrt(
+                    Math.pow(coordinates.x - trashX, 2) + Math.pow(coordinates.y - trashY, 2)
+                );
+
+                if (distance < 50) {
+                    onDelete();
+                }
+
+                setShowDeleteIcon(false);
+            },
+        })
+    ).current;
+
+    return (
+        <>
+            <Animated.View
+                {...panResponder.panHandlers}
+                style={[
+                    styles.draggableTitle,
+                    getTitleSizeStyle(),
+                    {
+                        left: coordinates.x,
+                        top: coordinates.y,
+                        transform: [{ scale: isDragging ? 1.1 : 1 }],
+                        opacity: isDragging ? 0.8 : 1,
+                    }
+                ]}
+            >
+                <View style={styles.draggableContent}>
+                    <Text style={[styles.draggableTitleText, { fontSize: getTitleSizeStyle().fontSize }]}>{title}</Text>
+                </View>
+            </Animated.View>
+
+            {/* Controles de redimensionamento - FORA do PanResponder */}
+            {showControls && (
+                <View style={[
+                    styles.controlsContainer,
+                    {
+                        left: coordinates.x - 20,
+                        top: coordinates.y - 30,
+                    }
+                ]}>
+                    <TouchableOpacity
+                        onPress={() => onScaleChange && onScaleChange(Math.max(0.5, scale - 0.1))}
+                        style={styles.controlButton}
+                        activeOpacity={0.7}
+                    >
+                        <Ionicons name="remove" size={16} color="#fff" />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={onEdit}
+                        style={styles.controlButton}
+                        activeOpacity={0.7}
+                    >
+                        <Ionicons name="create" size={16} color="#fff" />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={() => onScaleChange && onScaleChange(Math.min(2.0, scale + 0.1))}
+                        style={styles.controlButton}
+                        activeOpacity={0.7}
+                    >
+                        <Ionicons name="add" size={16} color="#fff" />
+                    </TouchableOpacity>
+                </View>
+            )}
+
+            {/* Botão para mostrar controles */}
+            <TouchableOpacity
+                style={[
+                    styles.showControlsButton,
+                    {
+                        left: coordinates.x + 10,
+                        top: coordinates.y + 10,
+                    }
+                ]}
+                onPress={() => setShowControls(!showControls)}
+                activeOpacity={0.7}
+            >
+                <Ionicons name="settings" size={12} color="#fff" />
+            </TouchableOpacity>
+
+            {/* Ícone de lixeira que aparece durante o arrasto */}
+            {showDeleteIcon && (
+                <View style={styles.trashIcon}>
+                    <Ionicons name="trash" size={24} color="#e74c3c" />
+                </View>
+            )}
+        </>
+    );
+};
+
+// Componente DraggableLink
+const DraggableLink = ({ linkData, coordinates, onCoordinatesChange, onEdit, onDelete, onDragToTrash, scale = 1.0, onScaleChange }) => {
+    const [isDragging, setIsDragging] = useState(false);
+    const [showDeleteIcon, setShowDeleteIcon] = useState(false);
+    const [showControls, setShowControls] = useState(false);
+
+    const panResponder = useRef(
+        PanResponder.create({
+            onStartShouldSetPanResponder: () => true,
+            onMoveShouldSetPanResponder: () => true,
+            onPanResponderGrant: () => {
+                setIsDragging(true);
+                setShowDeleteIcon(true);
+            },
+            onPanResponderMove: (evt, gestureState) => {
+                console.log('🔗 DraggableLink - PanResponder Move', { dx: gestureState.dx, dy: gestureState.dy });
+                // Limites para tela cheia
+                const newX = Math.max(0, Math.min(width - 150, coordinates.x + gestureState.dx));
+                const newY = Math.max(100, Math.min(height - 120, coordinates.y + gestureState.dy));
+                onCoordinatesChange({ x: newX, y: newY });
+
+                // Verificar se está próximo da lixeira
+                const trashX = width - 60;
+                const trashY = 100;
+                const distance = Math.sqrt(
+                    Math.pow(newX - trashX, 2) + Math.pow(newY - trashY, 2)
+                );
+
+                if (distance < 50) {
+                    setShowDeleteIcon(true);
+                    onDragToTrash(true);
+                } else {
+                    setShowDeleteIcon(false);
+                    onDragToTrash(false);
+                }
+            },
+            onPanResponderRelease: (evt, gestureState) => {
+                setIsDragging(false);
+
+                // Verificar se soltou na lixeira
+                const trashX = width - 60;
+                const trashY = 100;
+                const distance = Math.sqrt(
+                    Math.pow(coordinates.x - trashX, 2) + Math.pow(coordinates.y - trashY, 2)
+                );
+
+                if (distance < 50) {
+                    onDelete();
+                }
+
+                setShowDeleteIcon(false);
+            },
+        })
+    ).current;
+
+    const getLinkStyle = (type) => {
+        switch (type) {
+            case 'whatsapp':
+                return { backgroundColor: 'rgba(37, 211, 102, 0.9)' };
+            case 'phone':
+                return { backgroundColor: 'rgba(0, 0, 0, 0.8)' };
+            case 'email':
+                return { backgroundColor: 'rgba(0, 0, 0, 0.8)' };
+            case 'website':
+                return { backgroundColor: 'rgba(0, 0, 0, 0.8)' };
+            default:
+                return { backgroundColor: 'rgba(0, 0, 0, 0.8)' };
+        }
+    };
+
+    return (
+        <>
+            <Animated.View
+                {...panResponder.panHandlers}
+                style={[
+                    styles.draggableLink,
+                    getLinkStyle(linkData.type),
+                    {
+                        left: coordinates.x,
+                        top: coordinates.y,
+                        transform: [{ scale: isDragging ? 1.1 : 1 }],
+                        opacity: isDragging ? 0.8 : 1,
+                    }
+                ]}
+            >
+                <View style={styles.draggableContent}>
+                    <Ionicons
+                        name={linkData.type === 'whatsapp' ? 'logo-whatsapp' : 'link'}
+                        size={16 * scale}
+                        color="#fff"
+                    />
+                    <Text style={[styles.draggableLinkText, { fontSize: 14 * scale }]}>{linkData.text}</Text>
+                </View>
+            </Animated.View>
+
+            {/* Controles de redimensionamento - FORA do PanResponder */}
+            {showControls && (
+                <View style={[
+                    styles.controlsContainer,
+                    {
+                        left: coordinates.x - 20,
+                        top: coordinates.y - 30,
+                    }
+                ]}>
+                    <TouchableOpacity
+                        onPress={() => onScaleChange && onScaleChange(Math.max(0.5, scale - 0.1))}
+                        style={styles.controlButton}
+                        activeOpacity={0.7}
+                    >
+                        <Ionicons name="remove" size={16} color="#fff" />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={onEdit}
+                        style={styles.controlButton}
+                        activeOpacity={0.7}
+                    >
+                        <Ionicons name="create" size={16} color="#fff" />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={() => onScaleChange && onScaleChange(Math.min(2.0, scale + 0.1))}
+                        style={styles.controlButton}
+                        activeOpacity={0.7}
+                    >
+                        <Ionicons name="add" size={16} color="#fff" />
+                    </TouchableOpacity>
+                </View>
+            )}
+
+            {/* Botão para mostrar controles */}
+            <TouchableOpacity
+                style={[
+                    styles.showControlsButton,
+                    {
+                        left: coordinates.x + 10,
+                        top: coordinates.y + 10,
+                    }
+                ]}
+                onPress={() => setShowControls(!showControls)}
+                activeOpacity={0.7}
+            >
+                <Ionicons name="settings" size={12} color="#fff" />
+            </TouchableOpacity>
+
+            {/* Ícone de lixeira que aparece durante o arrasto */}
+            {showDeleteIcon && (
+                <View style={styles.trashIcon}>
+                    <Ionicons name="trash" size={24} color="#e74c3c" />
+                </View>
+            )}
+        </>
+    );
+};
+
 
 
 const { width, height } = Dimensions.get('window');
+
+// Função para calcular posições iniciais no centro da preview
+const getInitialPositions = () => {
+    return {
+        title: {
+            x: width * 0.5 - 80, // 50% da tela - metade da largura do título
+            y: height * 0.35 // 35% da altura da tela
+        },
+        link: {
+            x: width * 0.5 - 60, // 50% da tela - metade da largura do link
+            y: height * 0.65 // 65% da altura da tela
+        }
+    };
+};
 
 export default function CreateStoryScreen({ navigation }) {
     const { isAdmin } = useAdmin();
@@ -36,8 +347,74 @@ export default function CreateStoryScreen({ navigation }) {
     const [storyLink, setStoryLink] = useState('');
     const [linkText, setLinkText] = useState('Fale conosco');
     const [linkType, setLinkType] = useState('whatsapp');
+
+    const initialPositions = getInitialPositions();
+    const [linkCoordinates, setLinkCoordinates] = useState(initialPositions.link);
+    const [titleCoordinates, setTitleCoordinates] = useState(initialPositions.title);
     const [uploading, setUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
+    const [showTitleModal, setShowTitleModal] = useState(false);
+    const [showLinkModal, setShowLinkModal] = useState(false);
+    const [isDraggingToTrash, setIsDraggingToTrash] = useState(false);
+
+    // Estados para layout e tamanho do título
+    const [titleLayout, setTitleLayout] = useState('center'); // center, left, right
+    const [titleSize, setTitleSize] = useState('medium'); // small, medium, large
+
+    // Estados para redimensionamento direto
+    const [titleScale, setTitleScale] = useState(1.0); // Escala do título (0.5 a 2.0)
+    const [linkScale, setLinkScale] = useState(1.0); // Escala do link (0.5 a 2.0)
+
+    // Funções para editar e excluir elementos
+    const handleEditTitle = () => {
+        setShowTitleModal(true);
+    };
+
+    const handleEditLink = () => {
+        setShowLinkModal(true);
+    };
+
+    const handleDeleteTitle = () => {
+        setStoryTitle('');
+        setTitleCoordinates(initialPositions.title);
+    };
+
+    const handleDeleteLink = () => {
+        setStoryLink('');
+        setLinkText('Fale conosco');
+        setLinkCoordinates(initialPositions.link);
+    };
+
+    // Função para aplicar layout automático
+    const applyTitleLayout = (layout) => {
+        setTitleLayout(layout);
+
+        switch (layout) {
+            case 'center':
+                setTitleCoordinates({
+                    x: width * 0.5 - 100,
+                    y: height * 0.4
+                });
+                break;
+            case 'left':
+                setTitleCoordinates({
+                    x: width * 0.1,
+                    y: height * 0.3
+                });
+                break;
+            case 'right':
+                setTitleCoordinates({
+                    x: width * 0.7,
+                    y: height * 0.3
+                });
+                break;
+        }
+    };
+
+    // Função para aplicar tamanho
+    const applyTitleSize = (size) => {
+        setTitleSize(size);
+    };
 
 
     const cameraRef = useRef(null);
@@ -84,7 +461,7 @@ export default function CreateStoryScreen({ navigation }) {
 
             if (!result.canceled && result.assets[0]) {
                 setCapturedMedia(result.assets[0]);
-                setShowPreview(true);
+                setShowPreview(true); // Abrir modal automaticamente
             }
         } catch (error) {
             console.error('Erro ao tirar foto:', error);
@@ -105,7 +482,7 @@ export default function CreateStoryScreen({ navigation }) {
 
             if (!result.canceled && result.assets[0]) {
                 setCapturedMedia(result.assets[0]);
-                setShowPreview(true);
+                setShowPreview(true); // Abrir modal automaticamente
             }
         } catch (error) {
             console.error('Erro ao gravar vídeo:', error);
@@ -134,7 +511,7 @@ export default function CreateStoryScreen({ navigation }) {
             const info = await FileSystem.getInfoAsync(video.uri);
             setCapturedMedia({ uri: video.uri, type: 'video', fileName: `video_${Date.now()}.mp4`, fileSize: info.size || 0 });
             setShowRecorder(false);
-            setShowPreview(true);
+            setShowPreview(true); // Abrir modal automaticamente
         } catch (e) {
             console.warn('Erro ao gravar:', e);
         } finally {
@@ -221,7 +598,7 @@ export default function CreateStoryScreen({ navigation }) {
 
             if (!result.canceled && result.assets[0]) {
                 setCapturedMedia(result.assets[0]);
-                setShowPreview(true);
+                setShowPreview(true); // Abrir modal automaticamente
             }
         } catch (error) {
             console.error('Erro ao selecionar da galeria:', error);
@@ -230,8 +607,14 @@ export default function CreateStoryScreen({ navigation }) {
     };
 
     const handleUploadStory = async () => {
-        if (!capturedMedia || !storyTitle.trim()) {
-            Alert.alert('Erro', 'Por favor, adicione um título ao story');
+        console.log('🔍 DEBUG - handleUploadStory iniciado');
+        console.log('🔍 DEBUG - capturedMedia:', capturedMedia);
+        console.log('🔍 DEBUG - storyTitle:', storyTitle);
+        console.log('🔍 DEBUG - storyTitle type:', typeof storyTitle);
+        console.log('🔍 DEBUG - storyTitle length:', storyTitle?.length);
+
+        if (!capturedMedia) {
+            Alert.alert('Erro', 'Nenhuma mídia capturada');
             return;
         }
 
@@ -248,7 +631,8 @@ export default function CreateStoryScreen({ navigation }) {
                     linkData = {
                         type: linkType,
                         url: formattedUrl,
-                        text: linkText.trim() || 'Saiba mais'
+                        text: linkText.trim() || 'Saiba mais',
+                        coordinates: linkCoordinates
                     };
                     console.log('🔗 Dados do link preparados:', linkData);
                 }
@@ -256,16 +640,24 @@ export default function CreateStoryScreen({ navigation }) {
                 console.log('🔗 Nenhum link fornecido');
             }
 
+            console.log('🔍 DEBUG - Antes do upload, storyTitle:', storyTitle);
+            console.log('🔍 DEBUG - storyTitle || null:', storyTitle || null);
+
             // Usar o MediaServiceOptimized para upload
             const result = await MediaService.uploadStory(
                 capturedMedia.uri,
-                storyTitle,
+                storyTitle || null, // Permitir título vazio
                 capturedMedia.type,
                 (progress) => {
                     console.log(`📤 Progresso do upload handleUploadStory: ${progress}%`);
                     setUploadProgress(progress);
                 },
-                linkData
+                linkData,
+                'custom',
+                titleCoordinates,
+                titleLayout,
+                titleScale,
+                linkScale
             );
 
             console.log('✅ Upload concluído:', result);
@@ -317,6 +709,7 @@ export default function CreateStoryScreen({ navigation }) {
     const renderPreview = () => (
         <Modal visible={showPreview} animationType="slide">
             <SafeAreaView style={styles.previewContainer}>
+                {/* Header com botões de ação */}
                 <View style={styles.previewHeader}>
                     <TouchableOpacity
                         style={styles.closeButton}
@@ -324,16 +717,40 @@ export default function CreateStoryScreen({ navigation }) {
                     >
                         <Ionicons name="close" size={30} color="#fff" />
                     </TouchableOpacity>
-                    <Text style={styles.previewTitle}>Prévia do Story</Text>
+
+                    <View style={styles.headerActions}>
+                        <TouchableOpacity
+                            style={styles.headerActionButton}
+                            onPress={() => setShowLinkModal(true)}
+                        >
+                            <Ionicons name="link" size={24} color="#fff" />
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={styles.headerActionButton}
+                            onPress={() => setShowTitleModal(true)}
+                        >
+                            <Ionicons name="text" size={24} color="#fff" />
+                        </TouchableOpacity>
+
+                        {/* Lixeira permanente */}
+                        <View style={[
+                            styles.permanentTrash,
+                            isDraggingToTrash && styles.permanentTrashActive
+                        ]}>
+                            <Ionicons name="trash" size={20} color="#e74c3c" />
+                        </View>
+                    </View>
                 </View>
 
+                {/* Preview da Mídia em tela cheia */}
                 <View style={styles.previewContent}>
                     {capturedMedia?.type === 'video' ? (
                         <Video
                             source={{ uri: capturedMedia.uri }}
                             style={styles.previewMedia}
                             useNativeControls
-                            resizeMode="contain"
+                            resizeMode="cover"
                             shouldPlay
                             isLooping
                         />
@@ -341,84 +758,216 @@ export default function CreateStoryScreen({ navigation }) {
                         <Image
                             source={{ uri: capturedMedia?.uri }}
                             style={styles.previewMedia}
-                            resizeMode="contain"
+                            resizeMode="cover"
+                        />
+                    )}
+
+                    {/* Título Draggable */}
+                    {storyTitle && storyTitle.trim() !== '' && (
+                        <DraggableTitle
+                            title={storyTitle}
+                            coordinates={titleCoordinates}
+                            onCoordinatesChange={setTitleCoordinates}
+                            onEdit={handleEditTitle}
+                            onDelete={handleDeleteTitle}
+                            onDragToTrash={setIsDraggingToTrash}
+                            scale={titleScale}
+                            onScaleChange={setTitleScale}
+                        />
+                    )}
+
+                    {/* Link Draggable */}
+                    {storyLink.trim() && (
+                        <DraggableLink
+                            linkData={{
+                                type: linkType,
+                                text: linkText.trim() || 'Saiba mais'
+                            }}
+                            coordinates={linkCoordinates}
+                            onCoordinatesChange={setLinkCoordinates}
+                            onEdit={handleEditLink}
+                            onDelete={handleDeleteLink}
+                            onDragToTrash={setIsDraggingToTrash}
+                            scale={linkScale}
+                            onScaleChange={setLinkScale}
                         />
                     )}
                 </View>
 
-                <View style={styles.previewForm}>
-                    <TextInput
-                        style={styles.titleInput}
-                        placeholder="Título do story..."
-                        placeholderTextColor="#666"
-                        value={storyTitle}
-                        onChangeText={setStoryTitle}
-                        maxLength={50}
-                    />
-
-                    {/* Seção de Link */}
-                    <View style={styles.linkSection}>
-                        <Text style={styles.sectionLabel}>Link (opcional)</Text>
-
-                        <View style={styles.linkTypeContainer}>
-                            <Text style={styles.linkTypeLabel}>Tipo:</Text>
-                            <View style={styles.linkTypeButtons}>
-                                {['whatsapp', 'phone', 'email', 'website'].map((type) => (
-                                    <TouchableOpacity
-                                        key={type}
-                                        style={[
-                                            styles.linkTypeButton,
-                                            linkType === type && styles.linkTypeButtonActive
-                                        ]}
-                                        onPress={() => setLinkType(type)}
-                                    >
-                                        <Text style={[
-                                            styles.linkTypeButtonText,
-                                            linkType === type && styles.linkTypeButtonTextActive
-                                        ]}>
-                                            {type.charAt(0).toUpperCase() + type.slice(1)}
-                                        </Text>
-                                    </TouchableOpacity>
-                                ))}
-                            </View>
-                        </View>
-
-                        <TextInput
-                            style={styles.linkInput}
-                            placeholder={getLinkPlaceholder(linkType)}
-                            placeholderTextColor="#666"
-                            value={storyLink}
-                            onChangeText={setStoryLink}
-                            keyboardType={linkType === 'phone' ? 'phone-pad' : 'url'}
-                        />
-
-                        <TextInput
-                            style={styles.linkInput}
-                            placeholder="Texto do botão (ex: Fale conosco)"
-                            placeholderTextColor="#666"
-                            value={linkText}
-                            onChangeText={setLinkText}
-                            maxLength={20}
-                        />
-                    </View>
+                {/* Botões flutuantes na parte inferior */}
+                <View style={styles.floatingButtons}>
+                    <TouchableOpacity
+                        style={styles.floatingButton}
+                        onPress={() => setShowTitleModal(true)}
+                    >
+                        <Ionicons name="text" size={24} color="#fff" />
+                        <Text style={styles.floatingButtonText}>Título</Text>
+                    </TouchableOpacity>
 
                     <TouchableOpacity
-                        style={[styles.uploadButton, uploading && styles.uploadingButton]}
+                        style={styles.floatingButton}
+                        onPress={() => setShowLinkModal(true)}
+                    >
+                        <Ionicons name="link" size={24} color="#fff" />
+                        <Text style={styles.floatingButtonText}>Link</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={[styles.publishButton, uploading && styles.uploadingButton]}
                         onPress={handleUploadStory}
                         disabled={uploading}
                     >
                         {uploading ? (
-                            <View style={styles.uploadingContainer}>
-                                <ActivityIndicator color="#fff" size="small" />
-                                <Text style={styles.uploadingText}>
-                                    {uploadProgress > 0 ? `Enviando... ${uploadProgress}%` : 'Enviando...'}
-                                </Text>
-                            </View>
+                            <ActivityIndicator color="#fff" size="small" />
                         ) : (
-                            <Text style={styles.uploadButtonText}>Publicar Story</Text>
+                            <Ionicons name="send" size={24} color="#fff" />
                         )}
                     </TouchableOpacity>
                 </View>
+
+                {/* Modal para adicionar título */}
+                <Modal visible={showTitleModal} transparent animationType="fade">
+                    <View style={styles.modalOverlay}>
+                        <View style={styles.modalContent}>
+                            <View style={styles.modalHeader}>
+                                <Text style={styles.modalTitle}>Adicionar Título</Text>
+                                <TouchableOpacity onPress={() => setShowTitleModal(false)}>
+                                    <Ionicons name="close" size={24} color="#333" />
+                                </TouchableOpacity>
+                            </View>
+
+                            <TextInput
+                                style={styles.modalInput}
+                                placeholder="Digite o título do story..."
+                                placeholderTextColor="#666"
+                                value={storyTitle}
+                                onChangeText={setStoryTitle}
+                                maxLength={50}
+                                autoFocus
+                            />
+
+                            {/* Opções de Layout */}
+                            <View style={styles.layoutSection}>
+                                <Text style={styles.modalLabel}>Layout:</Text>
+                                <View style={styles.layoutButtons}>
+                                    {[
+                                        { key: 'center', label: 'Centro', icon: 'center' },
+                                        { key: 'left', label: 'Esquerda', icon: 'arrow-back' },
+                                        { key: 'right', label: 'Direita', icon: 'arrow-forward' }
+                                    ].map((layout) => (
+                                        <TouchableOpacity
+                                            key={layout.key}
+                                            style={[
+                                                styles.layoutButton,
+                                                titleLayout === layout.key && styles.layoutButtonActive
+                                            ]}
+                                            onPress={() => applyTitleLayout(layout.key)}
+                                        >
+                                            <Ionicons
+                                                name={layout.icon}
+                                                size={16}
+                                                color={titleLayout === layout.key ? '#fff' : '#666'}
+                                            />
+                                            <Text style={[
+                                                styles.layoutButtonText,
+                                                titleLayout === layout.key && styles.layoutButtonTextActive
+                                            ]}>
+                                                {layout.label}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+                            </View>
+
+
+
+                            <View style={styles.modalActions}>
+                                <TouchableOpacity
+                                    style={styles.modalButton}
+                                    onPress={() => setShowTitleModal(false)}
+                                >
+                                    <Text style={styles.modalButtonText}>Cancelar</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={[styles.modalButton, styles.modalButtonPrimary]}
+                                    onPress={() => setShowTitleModal(false)}
+                                >
+                                    <Text style={[styles.modalButtonText, styles.modalButtonTextPrimary]}>Salvar</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </View>
+                </Modal>
+
+                {/* Modal para adicionar link */}
+                <Modal visible={showLinkModal} transparent animationType="fade">
+                    <View style={styles.modalOverlay}>
+                        <View style={styles.modalContent}>
+                            <View style={styles.modalHeader}>
+                                <Text style={styles.modalTitle}>Adicionar Link</Text>
+                                <TouchableOpacity onPress={() => setShowLinkModal(false)}>
+                                    <Ionicons name="close" size={24} color="#333" />
+                                </TouchableOpacity>
+                            </View>
+
+                            <View style={styles.linkTypeContainer}>
+                                <Text style={styles.modalLabel}>Tipo de link:</Text>
+                                <View style={styles.linkTypeButtons}>
+                                    {['whatsapp', 'phone', 'email', 'website'].map((type) => (
+                                        <TouchableOpacity
+                                            key={type}
+                                            style={[
+                                                styles.linkTypeButton,
+                                                linkType === type && styles.linkTypeButtonActive
+                                            ]}
+                                            onPress={() => setLinkType(type)}
+                                        >
+                                            <Text style={[
+                                                styles.linkTypeButtonText,
+                                                linkType === type && styles.linkTypeButtonTextActive
+                                            ]}>
+                                                {type.charAt(0).toUpperCase() + type.slice(1)}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+                            </View>
+
+                            <TextInput
+                                style={styles.modalInput}
+                                placeholder={getLinkPlaceholder(linkType)}
+                                placeholderTextColor="#666"
+                                value={storyLink}
+                                onChangeText={setStoryLink}
+                                keyboardType={linkType === 'phone' ? 'phone-pad' : 'url'}
+                            />
+
+                            <TextInput
+                                style={styles.modalInput}
+                                placeholder="Texto do botão (ex: Fale conosco)"
+                                placeholderTextColor="#666"
+                                value={linkText}
+                                onChangeText={setLinkText}
+                                maxLength={20}
+                            />
+
+                            <View style={styles.modalActions}>
+                                <TouchableOpacity
+                                    style={styles.modalButton}
+                                    onPress={() => setShowLinkModal(false)}
+                                >
+                                    <Text style={styles.modalButtonText}>Cancelar</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={[styles.modalButton, styles.modalButtonPrimary]}
+                                    onPress={() => setShowLinkModal(false)}
+                                >
+                                    <Text style={[styles.modalButtonText, styles.modalButtonTextPrimary]}>Salvar</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </View>
+                </Modal>
             </SafeAreaView>
         </Modal>
     );
@@ -502,6 +1051,8 @@ export default function CreateStoryScreen({ navigation }) {
                         <Text style={styles.optionSubtext}>Selecionar mídia</Text>
                     </TouchableOpacity>
                 </View>
+
+
 
                 <View style={styles.infoContainer}>
                     <Ionicons name="information-circle" size={20} color="#1e3a8a" />
@@ -771,28 +1322,228 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: 20,
-        paddingTop: 50,
+        padding: 15,
+        paddingTop: 40,
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 1000,
     },
-    previewTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#fff',
+    headerActions: {
+        flexDirection: 'row',
+        gap: 15,
+    },
+    headerActionButton: {
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        borderRadius: 20,
+        padding: 10,
+    },
+    permanentTrash: {
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        borderRadius: 20,
+        padding: 10,
+        borderWidth: 2,
+        borderColor: '#e74c3c',
+    },
+    permanentTrashActive: {
+        backgroundColor: '#e74c3c',
+        transform: [{ scale: 1.2 }],
     },
     previewContent: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
+        position: 'relative',
     },
     previewMedia: {
-        width: width * 0.8,
-        height: height * 0.5,
-        borderRadius: 10,
+        width: '100%',
+        height: '100%',
     },
-    previewForm: {
+    floatingButtons: {
+        position: 'absolute',
+        bottom: 30,
+        left: 20,
+        right: 20,
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        alignItems: 'center',
+        zIndex: 1000,
+    },
+    floatingButton: {
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        borderRadius: 25,
+        padding: 15,
+        alignItems: 'center',
+        minWidth: 80,
+    },
+    floatingButtonText: {
+        color: '#fff',
+        fontSize: 12,
+        marginTop: 5,
+        fontWeight: '600',
+    },
+    publishButton: {
+        backgroundColor: '#1e3a8a',
+        borderRadius: 30,
         padding: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+    },
+    modalContent: {
+        backgroundColor: '#fff',
+        borderRadius: 15,
+        padding: 20,
+        width: '100%',
+        maxWidth: 400,
+    },
+    modalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#333',
+    },
+    modalInput: {
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
+        borderRadius: 8,
+        padding: 15,
+        fontSize: 16,
+        marginBottom: 15,
         backgroundColor: '#fff',
     },
+    modalLabel: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#333',
+        marginBottom: 10,
+    },
+    linkTypeContainer: {
+        marginBottom: 15,
+    },
+    linkTypeButtons: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+    },
+    linkTypeButton: {
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 15,
+        backgroundColor: '#f1f5f9',
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
+    },
+    linkTypeButtonActive: {
+        backgroundColor: '#1e3a8a',
+        borderColor: '#1e3a8a',
+    },
+    linkTypeButtonText: {
+        fontSize: 12,
+        color: '#64748b',
+        fontWeight: '500',
+    },
+    linkTypeButtonTextActive: {
+        color: '#fff',
+    },
+    modalActions: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        gap: 15,
+        marginTop: 10,
+    },
+    modalButton: {
+        flex: 1,
+        padding: 15,
+        borderRadius: 8,
+        backgroundColor: '#f1f5f9',
+        alignItems: 'center',
+    },
+    modalButtonPrimary: {
+        backgroundColor: '#1e3a8a',
+    },
+    modalButtonText: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#64748b',
+    },
+    modalButtonTextPrimary: {
+        color: '#fff',
+    },
+    layoutSection: {
+        marginBottom: 15,
+    },
+    layoutButtons: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        gap: 8,
+    },
+    layoutButton: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 10,
+        paddingHorizontal: 12,
+        borderRadius: 8,
+        backgroundColor: '#f1f5f9',
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
+        gap: 6,
+    },
+    layoutButtonActive: {
+        backgroundColor: '#1e3a8a',
+        borderColor: '#1e3a8a',
+    },
+    layoutButtonText: {
+        fontSize: 12,
+        color: '#64748b',
+        fontWeight: '500',
+    },
+    layoutButtonTextActive: {
+        color: '#fff',
+    },
+    sizeSection: {
+        marginBottom: 15,
+    },
+    sizeButtons: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        gap: 8,
+    },
+    sizeButton: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 10,
+        paddingHorizontal: 12,
+        borderRadius: 8,
+        backgroundColor: '#f1f5f9',
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
+    },
+    sizeButtonActive: {
+        backgroundColor: '#1e3a8a',
+        borderColor: '#1e3a8a',
+    },
+    sizeButtonText: {
+        color: '#64748b',
+        fontWeight: '500',
+    },
+    sizeButtonTextActive: {
+        color: '#fff',
+    },
+
     titleInput: {
         borderWidth: 1,
         borderColor: '#e2e8f0',
@@ -908,7 +1659,112 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
     },
 
+    draggableTitle: {
+        position: 'absolute',
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 20,
+        zIndex: 9999,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+        elevation: 10,
+    },
+    draggableContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+
+    controlsContainer: {
+        position: 'absolute',
+        flexDirection: 'row',
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        borderRadius: 20,
+        padding: 8,
+        gap: 8,
+        zIndex: 10000,
+    },
+    controlButton: {
+        width: 28,
+        height: 28,
+        borderRadius: 14,
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    showControlsButton: {
+        position: 'absolute',
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 9999,
+    },
+    editButton: {
+        marginLeft: 4,
+        padding: 2,
+    },
+    trashIcon: {
+        position: 'absolute',
+        top: 100,
+        right: 20,
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        borderRadius: 25,
+        padding: 15,
+        zIndex: 10000,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+        elevation: 10,
+    },
+    draggableTitleText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
+        textAlign: 'center',
+    },
+    draggableLink: {
+        position: 'absolute',
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 20,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        zIndex: 9999,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+        elevation: 10,
+        minWidth: 100,
+    },
+    draggableLinkText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: '600',
+    },
+    editForm: {
+        backgroundColor: '#fff',
+        padding: 20,
+        marginTop: 20,
+        borderRadius: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 5,
+    },
+
 });
+
+
 
 
 

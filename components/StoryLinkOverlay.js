@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 const LINK_TYPES = {
     whatsapp: {
         icon: 'logo-whatsapp',
-        color: '#25D366',
+        color: '#ffffff',
         backgroundColor: 'rgba(37, 211, 102, 0.9)',
     },
     phone: {
@@ -31,7 +31,7 @@ const LINK_TYPES = {
     },
 };
 
-export default function StoryLinkOverlay({ linkData, onPress, style }) {
+export default function StoryLinkOverlay({ linkData, onPress, style, position = 'bottom-right', coordinates = null, scale = 1.0 }) {
     console.log('🔗 StoryLinkOverlay recebeu:', linkData);
 
     if (!linkData || !linkData.url) {
@@ -74,11 +74,33 @@ export default function StoryLinkOverlay({ linkData, onPress, style }) {
         }
     };
 
+    // Função para obter o estilo de posicionamento
+    const getPositionStyle = (pos) => {
+        // Se tem coordenadas personalizadas, usar elas
+        if (coordinates) {
+            return { left: coordinates.x, top: coordinates.y };
+        }
+
+        // Senão, usar posições predefinidas
+        switch (pos) {
+            case 'top-left':
+                return { top: 80, left: 20 };
+            case 'top-right':
+                return { top: 80, right: 20 };
+            case 'bottom-left':
+                return { bottom: 80, left: 20 };
+            case 'bottom-right':
+            default:
+                return { bottom: 80, right: 20 };
+        }
+    };
+
     return (
         <TouchableOpacity
             style={[
                 styles.linkOverlay,
                 { backgroundColor },
+                getPositionStyle(position),
                 style
             ]}
             onPress={handlePress}
@@ -86,10 +108,10 @@ export default function StoryLinkOverlay({ linkData, onPress, style }) {
         >
             <Ionicons
                 name={iconName}
-                size={20}
+                size={20 * scale}
                 color={textColor}
             />
-            <Text style={[styles.linkText, { color: textColor }]}>
+            <Text style={[styles.linkText, { color: textColor, fontSize: 14 * scale }]}>
                 {linkData.text || 'Saiba mais'}
             </Text>
         </TouchableOpacity>
@@ -99,26 +121,23 @@ export default function StoryLinkOverlay({ linkData, onPress, style }) {
 const styles = StyleSheet.create({
     linkOverlay: {
         position: 'absolute',
-        bottom: 80,
-        right: 20,
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        borderRadius: 25,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 20,
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 8,
+        gap: 6,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.3,
         shadowRadius: 4,
-        elevation: 5,
-        minWidth: 120,
-        justifyContent: 'center',
+        elevation: 10,
+        minWidth: 100,
+        zIndex: 9999,
     },
     linkText: {
         fontSize: 14,
         fontWeight: '600',
-        textAlign: 'center',
     },
 });
 

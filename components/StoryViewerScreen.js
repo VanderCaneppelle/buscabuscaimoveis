@@ -133,6 +133,30 @@ export default function ViewerScreen({ navigation, route }) {
         });
     }
 
+    // Função para obter o estilo de posicionamento do título
+    const getTitlePositionStyle = (position, coordinates = null) => {
+        // Se tem coordenadas personalizadas, usar elas
+        if (coordinates) {
+            try {
+                const coords = typeof coordinates === 'string' ? JSON.parse(coordinates) : coordinates;
+                return { left: coords.x, top: coords.y };
+            } catch (error) {
+                console.warn('Erro ao parsear coordenadas do título:', error);
+            }
+        }
+
+        // Senão, usar posições predefinidas
+        switch (position) {
+            case 'top-center':
+                return { top: 100, bottom: 'auto' };
+            case 'center':
+                return { top: '50%', bottom: 'auto', transform: [{ translateY: -25 }] };
+            case 'bottom-center':
+            default:
+                return { bottom: 100, top: 'auto' };
+        }
+    };
+
     return (
         <View style={styles.container}>
             <SafeAreaView style={styles.safeArea}>
@@ -201,9 +225,20 @@ export default function ViewerScreen({ navigation, route }) {
                                 </View>
                             </View>
                         )}
-                        <View style={styles.storyTitleContainer}>
-                            <Text style={styles.storyTitle}>{currentStory.title}</Text>
-                        </View>
+                        {/* Título do Story */}
+                        {currentStory.title && currentStory.title.trim() !== '' && (
+                            <View style={[
+                                styles.storyTitleContainer,
+                                getTitlePositionStyle(currentStory.title_position || 'bottom-center', currentStory.title_coordinates)
+                            ]}>
+                                <Text style={[
+                                    styles.storyTitle,
+                                    { fontSize: 16 * (currentStory.title_scale || 1.0) }
+                                ]}>
+                                    {currentStory.title}
+                                </Text>
+                            </View>
+                        )}
 
                         {/* Story Link Overlay */}
                         {currentStory.link_url && (
@@ -217,6 +252,9 @@ export default function ViewerScreen({ navigation, route }) {
                                         url: currentStory.link_url,
                                         text: currentStory.link_text || 'Saiba mais'
                                     }}
+                                    position={currentStory.link_position || 'bottom-right'}
+                                    coordinates={currentStory.link_coordinates ? JSON.parse(currentStory.link_coordinates) : null}
+                                    scale={currentStory.link_scale || 1.0}
                                 />
                             </>
                         )}
@@ -272,12 +310,16 @@ const styles = StyleSheet.create({
     },
     storyTitleContainer: {
         position: "absolute",
-        bottom: 100,
-        left: 20,
-        right: 20,
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
-        padding: 10,
-        borderRadius: 8,
+        backgroundColor: "rgba(0, 0, 0, 0.7)",
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+        elevation: 10,
+        zIndex: 9999,
     },
     storyTitle: {
         color: "white",
