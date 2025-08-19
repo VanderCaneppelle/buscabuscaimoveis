@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Animated } from 'react-native';
+import { CameraView, Camera } from 'expo-camera';
 import {
     View,
     Text,
@@ -35,6 +36,14 @@ export default function CreateStoryScreen({ navigation }) {
     const [uploading, setUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
 
+
+    const cameraRef = useRef(null);
+    const [showRecorder, setShowRecorder] = useState(false);
+    const [isRecording, setIsRecording] = useState(false);
+    const [hasCamPerm, setHasCamPerm] = useState(null);
+    const [hasMicPerm, setHasMicPerm] = useState(null);
+    const [isCamReady, setIsCamReady] = useState(false);
+
     useEffect(() => {
         if (!isAdmin) {
             Alert.alert('Acesso Negado', 'Apenas administradores podem criar stories.');
@@ -46,30 +55,14 @@ export default function CreateStoryScreen({ navigation }) {
 
     const requestPermissions = async () => {
         const { status: imagePickerStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
-        setHasPermission(imagePickerStatus === 'granted' && cameraStatus === 'granted');
-    };
-    // function getMimeType(ext) {
-    //     switch (ext.toLowerCase()) {
-    //         case 'jpg':
-    //         case 'jpeg': return 'image/jpeg';
-    //         case 'png': return 'image/png';
-    //         case 'gif': return 'image/gif';
-    //         case 'mp4': return 'video/mp4';
-    //         case 'mov': return 'video/quicktime';
-    //         default: return 'application/octet-stream';
-    //     }
-    // }
+        const { status: expCam } = await Camera.requestCameraPermissionsAsync();
+        const { status: expMic } = await Camera.requestMicrophonePermissionsAsync();
 
-    // function base64ToUint8Array(base64) {
-    //     const binaryString = atob(base64);
-    //     const len = binaryString.length;
-    //     const bytes = new Uint8Array(len);
-    //     for (let i = 0; i < len; i++) {
-    //         bytes[i] = binaryString.charCodeAt(i);
-    //     }
-    //     return bytes;
-    // }
+        setHasCamPerm(expCam === 'granted');
+        setHasMicPerm(expMic === 'granted');
+        setHasPermission(imagePickerStatus === 'granted' && expCam === 'granted');
+    };
+
 
     const takePicture = async () => {
         try {
@@ -110,6 +103,26 @@ export default function CreateStoryScreen({ navigation }) {
             console.error('Erro ao gravar vídeo:', error);
             Alert.alert('Erro', 'Não foi possível gravar o vídeo');
         }
+    };
+
+    const startRecording = async () => {
+        if (!cameraRef.current || !isCamReady || isRecording) return;
+        setIsRecording(true);
+        try {
+            const video = await cameraRef.current.recordAsync({ maxDuration: 15 });
+            const info = await FileSystem.getInfoAsync(video.uri);
+            setCapturedMedia({ uri: video.uri, type: 'video', fileName: `video_${Date.now()}.mp4`, fileSize: info.size || 0 });
+            setShowRecorder(false);
+            setShowPreview(true);
+        } catch (e) {
+            console.warn('Erro ao gravar:', e);
+        } finally {
+            setIsRecording(false);
+        }
+    };
+
+    const stopRecording = () => {
+        if (cameraRef.current && isRecording) cameraRef.current.stopRecording();
     };
 
     const pickFromGallery = async () => {
@@ -285,6 +298,7 @@ export default function CreateStoryScreen({ navigation }) {
     }
 
     return (
+
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -319,6 +333,16 @@ export default function CreateStoryScreen({ navigation }) {
                         <Text style={styles.optionText}>Vídeo</Text>
                         <Text style={styles.optionSubtext}>Gravar vídeo</Text>
                     </TouchableOpacity>
+                    <TouchableOpacity
+                        style={styles.optionButton}
+                        onPress={() => setShowRecorder(true)}
+                    >
+                        <View style={styles.optionIcon}>
+                            <Ionicons name="videocam" size={40} color="#1e3a8a" />
+                        </View>
+                        <Text style={styles.optionText}>Vídeo - expo camera</Text>
+                        <Text style={styles.optionSubtext}>Gravar vídeo</Text>
+                    </TouchableOpacity>
 
                     <TouchableOpacity
                         style={styles.optionButton}
@@ -340,11 +364,42 @@ export default function CreateStoryScreen({ navigation }) {
                 </View>
             </View>
 
+            {showRecorder && hasCamPerm && hasMicPerm && (
+                <Modal visible animationType="slide" transparent={false}>
+                    <View style={{ flex: 1, backgroundColor: '#000' }}>
+                        <CameraView
+                            ref={cameraRef}
+                            style={{ flex: 1 }}
+                            facing="back"
+                            mode="video"
+                            enableAudio={true}
+                            onCameraReady={() => {
+                                console.log('📷 CameraView pronta');
+                                setIsCamReady(true);
+                            }}
+                        />
+                        <View style={{ position: 'absolute', bottom: 30, width: '100%', alignItems: 'center' }}>
+                            {!isRecording ? (
+                                <TouchableOpacity onPress={startRecording} disabled={!isCamReady} style={{ backgroundColor: isCamReady ? '#e11d48' : '#64748b', padding: 16, borderRadius: 999 }}>
+                                    <Text style={{ color: '#fff', fontWeight: 'bold' }}>Gravar (máx. 15s)</Text>
+                                </TouchableOpacity>
+                            ) : (
+                                <TouchableOpacity onPress={stopRecording} style={{ backgroundColor: '#1e3a8a', padding: 16, borderRadius: 999 }}>
+                                    <Text style={{ color: '#fff', fontWeight: 'bold' }}>Parar</Text>
+                                </TouchableOpacity>
+                            )}
+                            <TouchableOpacity onPress={() => setShowRecorder(false)} style={{ marginTop: 12 }}>
+                                <Text style={{ color: '#fff' }}>Cancelar</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </Modal>
+            )}
+
             {renderPreview()}
         </SafeAreaView>
     );
 }
-
 
 
 const styles = StyleSheet.create({
