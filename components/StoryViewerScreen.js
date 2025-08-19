@@ -4,6 +4,7 @@ import { Video } from "expo-av";
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../lib/supabase";
 import { getOptimizedUrl } from "../lib/mediaCacheService";
+import StoryLinkOverlay from "./StoryLinkOverlay";
 
 const { width, height } = Dimensions.get("window");
 const IMAGE_DURATION = 5000; // 5 segundos
@@ -123,6 +124,15 @@ export default function ViewerScreen({ navigation, route }) {
     if (!stories.length) return null;
     const currentStory = stories[currentIndex];
 
+    // Debug: verificar se o story atual tem link
+    if (currentStory.link_url) {
+        console.log('🔗 Story com link encontrado:', {
+            title: currentStory.title,
+            link_url: currentStory.link_url,
+            link_text: currentStory.link_text
+        });
+    }
+
     return (
         <View style={styles.container}>
             <SafeAreaView style={styles.safeArea}>
@@ -194,6 +204,22 @@ export default function ViewerScreen({ navigation, route }) {
                         <View style={styles.storyTitleContainer}>
                             <Text style={styles.storyTitle}>{currentStory.title}</Text>
                         </View>
+
+                        {/* Story Link Overlay */}
+                        {currentStory.link_url && (
+                            <>
+                                {console.log('🔗 Renderizando StoryLinkOverlay:', currentStory.link_url)}
+                                <StoryLinkOverlay
+                                    linkData={{
+                                        type: currentStory.link_url.includes('wa.me') ? 'whatsapp' :
+                                            currentStory.link_url.includes('tel:') ? 'phone' :
+                                                currentStory.link_url.includes('mailto:') ? 'email' : 'website',
+                                        url: currentStory.link_url,
+                                        text: currentStory.link_text || 'Saiba mais'
+                                    }}
+                                />
+                            </>
+                        )}
                     </View>
                 </TouchableWithoutFeedback>
             </SafeAreaView>

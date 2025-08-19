@@ -16,6 +16,7 @@ import { useAdmin } from '../contexts/AdminContext';
 import { supabase } from '../lib/supabase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getOptimizedUrl, cleanupOldCache, clearAllCache, getCacheStats, verifyCacheIntegrity } from '../lib/mediaCacheService';
+import StoryLinkOverlay from './StoryLinkOverlay';
 
 const { width } = Dimensions.get('window');
 const STORY_SIZE = 70;

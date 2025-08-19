@@ -33,6 +33,9 @@ export default function CreateStoryScreen({ navigation }) {
     const [capturedMedia, setCapturedMedia] = useState(null);
     const [showPreview, setShowPreview] = useState(false);
     const [storyTitle, setStoryTitle] = useState('');
+    const [storyLink, setStoryLink] = useState('');
+    const [linkText, setLinkText] = useState('Fale conosco');
+    const [linkType, setLinkType] = useState('whatsapp');
     const [uploading, setUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
 
@@ -171,6 +174,41 @@ export default function CreateStoryScreen({ navigation }) {
         setZoom(prev => Math.max(0, prev - 0.1));
     };
 
+    // Função helper para placeholders dos links
+    const getLinkPlaceholder = (type) => {
+        switch (type) {
+            case 'whatsapp':
+                return 'Número do WhatsApp (ex: 5511999999999)';
+            case 'phone':
+                return 'Número do telefone (ex: +5511999999999)';
+            case 'email':
+                return 'Email (ex: contato@seusite.com.br)';
+            case 'website':
+                return 'URL do site (ex: https://seusite.com.br)';
+            default:
+                return 'Digite o link...';
+        }
+    };
+
+    // Função para formatar URL baseada no tipo
+    const formatLinkUrl = (type, value) => {
+        if (!value.trim()) return null;
+
+        switch (type) {
+            case 'whatsapp':
+                const phone = value.replace(/\D/g, '');
+                return `https://wa.me/${phone}?text=Olá! Vi seu story sobre imóveis`;
+            case 'phone':
+                return `tel:${value}`;
+            case 'email':
+                return `mailto:${value}?subject=Interesse em imóvel`;
+            case 'website':
+                return value.startsWith('http') ? value : `https://${value}`;
+            default:
+                return value;
+        }
+    };
+
     const pickFromGallery = async () => {
         try {
             const result = await ImagePicker.launchImageLibraryAsync({
@@ -202,6 +240,22 @@ export default function CreateStoryScreen({ navigation }) {
         try {
             console.log('🚀 Iniciando upload do story...');
 
+            // Preparar dados do link se fornecido
+            let linkData = null;
+            if (storyLink.trim()) {
+                const formattedUrl = formatLinkUrl(linkType, storyLink);
+                if (formattedUrl) {
+                    linkData = {
+                        type: linkType,
+                        url: formattedUrl,
+                        text: linkText.trim() || 'Saiba mais'
+                    };
+                    console.log('🔗 Dados do link preparados:', linkData);
+                }
+            } else {
+                console.log('🔗 Nenhum link fornecido');
+            }
+
             // Usar o MediaServiceOptimized para upload
             const result = await MediaService.uploadStory(
                 capturedMedia.uri,
@@ -210,7 +264,8 @@ export default function CreateStoryScreen({ navigation }) {
                 (progress) => {
                     console.log(`📤 Progresso do upload handleUploadStory: ${progress}%`);
                     setUploadProgress(progress);
-                }
+                },
+                linkData
             );
 
             console.log('✅ Upload concluído:', result);
@@ -300,6 +355,52 @@ export default function CreateStoryScreen({ navigation }) {
                         onChangeText={setStoryTitle}
                         maxLength={50}
                     />
+
+                    {/* Seção de Link */}
+                    <View style={styles.linkSection}>
+                        <Text style={styles.sectionLabel}>Link (opcional)</Text>
+
+                        <View style={styles.linkTypeContainer}>
+                            <Text style={styles.linkTypeLabel}>Tipo:</Text>
+                            <View style={styles.linkTypeButtons}>
+                                {['whatsapp', 'phone', 'email', 'website'].map((type) => (
+                                    <TouchableOpacity
+                                        key={type}
+                                        style={[
+                                            styles.linkTypeButton,
+                                            linkType === type && styles.linkTypeButtonActive
+                                        ]}
+                                        onPress={() => setLinkType(type)}
+                                    >
+                                        <Text style={[
+                                            styles.linkTypeButtonText,
+                                            linkType === type && styles.linkTypeButtonTextActive
+                                        ]}>
+                                            {type.charAt(0).toUpperCase() + type.slice(1)}
+                                        </Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                        </View>
+
+                        <TextInput
+                            style={styles.linkInput}
+                            placeholder={getLinkPlaceholder(linkType)}
+                            placeholderTextColor="#666"
+                            value={storyLink}
+                            onChangeText={setStoryLink}
+                            keyboardType={linkType === 'phone' ? 'phone-pad' : 'url'}
+                        />
+
+                        <TextInput
+                            style={styles.linkInput}
+                            placeholder="Texto do botão (ex: Fale conosco)"
+                            placeholderTextColor="#666"
+                            value={linkText}
+                            onChangeText={setLinkText}
+                            maxLength={20}
+                        />
+                    </View>
 
                     <TouchableOpacity
                         style={[styles.uploadButton, uploading && styles.uploadingButton]}
@@ -749,6 +850,62 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 14,
         fontWeight: '500',
+    },
+    linkSection: {
+        marginBottom: 20,
+        padding: 15,
+        backgroundColor: '#f8f9fa',
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
+    },
+    sectionLabel: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#2c3e50',
+        marginBottom: 10,
+    },
+    linkTypeContainer: {
+        marginBottom: 15,
+    },
+    linkTypeLabel: {
+        fontSize: 14,
+        color: '#64748b',
+        marginBottom: 8,
+    },
+    linkTypeButtons: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+    },
+    linkTypeButton: {
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 15,
+        backgroundColor: '#e2e8f0',
+        borderWidth: 1,
+        borderColor: '#cbd5e1',
+    },
+    linkTypeButtonActive: {
+        backgroundColor: '#1e3a8a',
+        borderColor: '#1e3a8a',
+    },
+    linkTypeButtonText: {
+        fontSize: 12,
+        color: '#64748b',
+        fontWeight: '500',
+    },
+    linkTypeButtonTextActive: {
+        color: '#fff',
+    },
+    linkInput: {
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
+        borderRadius: 8,
+        padding: 12,
+        fontSize: 14,
+        marginBottom: 10,
+        backgroundColor: '#fff',
     },
 
 });
