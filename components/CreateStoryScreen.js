@@ -43,6 +43,11 @@ export default function CreateStoryScreen({ navigation }) {
     const [hasCamPerm, setHasCamPerm] = useState(null);
     const [hasMicPerm, setHasMicPerm] = useState(null);
     const [isCamReady, setIsCamReady] = useState(false);
+    const [facing, setFacing] = useState('back');
+    const [zoom, setZoom] = useState(0); // Começa em 0 (sem zoom)
+    const [elapsedMs, setElapsedMs] = useState(0);
+    const timerRef = useRef(null);
+    const zoomBarHeight = 200; // Altura da barra de zoom
 
     useEffect(() => {
         if (!isAdmin) {
@@ -108,6 +113,19 @@ export default function CreateStoryScreen({ navigation }) {
     const startRecording = async () => {
         if (!cameraRef.current || !isCamReady || isRecording) return;
         setIsRecording(true);
+        setElapsedMs(0); // Reset timer to 0
+        if (timerRef.current) clearInterval(timerRef.current);
+        timerRef.current = setInterval(() => {
+            setElapsedMs((ms) => {
+                const newMs = ms + 100;
+                if (newMs >= 15000) {
+                    // Auto stop at 15 seconds
+                    stopRecording();
+                    return 15000;
+                }
+                return newMs;
+            });
+        }, 100);
         try {
             const video = await cameraRef.current.recordAsync({ maxDuration: 15 });
             const info = await FileSystem.getInfoAsync(video.uri);
@@ -118,11 +136,39 @@ export default function CreateStoryScreen({ navigation }) {
             console.warn('Erro ao gravar:', e);
         } finally {
             setIsRecording(false);
+            if (timerRef.current) {
+                clearInterval(timerRef.current);
+                timerRef.current = null;
+            }
         }
     };
 
     const stopRecording = () => {
         if (cameraRef.current && isRecording) cameraRef.current.stopRecording();
+        setIsRecording(false);
+        if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+        }
+    };
+
+    const formatTime = (ms) => {
+        const seconds = Math.floor(ms / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+    };
+
+    const handleZoomChange = (newZoom) => {
+        setZoom(Math.max(0, Math.min(1, newZoom)));
+    };
+
+    const increaseZoom = () => {
+        setZoom(prev => Math.min(1, prev + 0.1));
+    };
+
+    const decreaseZoom = () => {
+        setZoom(prev => Math.max(0, prev - 0.1));
     };
 
     const pickFromGallery = async () => {
@@ -370,27 +416,155 @@ export default function CreateStoryScreen({ navigation }) {
                         <CameraView
                             ref={cameraRef}
                             style={{ flex: 1 }}
-                            facing="back"
+                            facing={facing}
                             mode="video"
                             enableAudio={true}
+                            zoom={zoom}
                             onCameraReady={() => {
                                 console.log('📷 CameraView pronta');
                                 setIsCamReady(true);
                             }}
                         />
-                        <View style={{ position: 'absolute', bottom: 30, width: '100%', alignItems: 'center' }}>
-                            {!isRecording ? (
-                                <TouchableOpacity onPress={startRecording} disabled={!isCamReady} style={{ backgroundColor: isCamReady ? '#e11d48' : '#64748b', padding: 16, borderRadius: 999 }}>
-                                    <Text style={{ color: '#fff', fontWeight: 'bold' }}>Gravar (máx. 15s)</Text>
+                        <View style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 }}>
+                            {/* Topo: barra de progresso e tempos */}
+                            <View style={{ paddingTop: 40, paddingHorizontal: 16 }}>
+                                <View style={{ height: 4, backgroundColor: 'rgba(255,255,255,0.25)', borderRadius: 2, overflow: 'hidden' }}>
+                                    <View style={{ width: `${Math.round((elapsedMs / 15000) * 100)}%`, height: '100%', backgroundColor: '#e11d48' }} />
+                                </View>
+                                <View style={{ marginTop: 8, flexDirection: 'row', justifyContent: 'space-between' }}>
+                                    <Text style={{ color: '#fff', fontWeight: 'bold' }}>{formatTime(elapsedMs)}</Text>
+                                    <Text style={{ color: '#fff' }}>{formatTime(15000 - elapsedMs)}</Text>
+                                </View>
+                            </View>
+
+                            {/* Lateral: apenas flip da câmera */}
+                            <View style={{ position: 'absolute', right: 16, top: 100, alignItems: 'center' }}>
+                                <TouchableOpacity
+                                    onPress={() => setFacing((f) => (f === 'back' ? 'front' : 'back'))}
+                                    style={{ backgroundColor: 'rgba(0,0,0,0.5)', padding: 10, borderRadius: 999 }}
+                                >
+                                    <Ionicons name="camera-reverse" size={22} color="#fff" />
                                 </TouchableOpacity>
-                            ) : (
-                                <TouchableOpacity onPress={stopRecording} style={{ backgroundColor: '#1e3a8a', padding: 16, borderRadius: 999 }}>
-                                    <Text style={{ color: '#fff', fontWeight: 'bold' }}>Parar</Text>
+                            </View>
+
+                            {/* Rodapé: barra de zoom, botão de gravar e cancelar */}
+                            <View style={{ position: 'absolute', bottom: 24, width: '100%', alignItems: 'center' }}>
+                                {/* Barra de zoom horizontal */}
+                                <View style={{ alignItems: 'center', marginBottom: 20 }}>
+                                    <Text style={{ color: '#fff', fontSize: 12, marginBottom: 8 }}>Zoom</Text>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                                        {/* Botão - */}
+                                        <TouchableOpacity
+                                            onPress={decreaseZoom}
+                                            style={{
+                                                width: 40,
+                                                height: 40,
+                                                backgroundColor: 'rgba(0,0,0,0.5)',
+                                                borderRadius: 20,
+                                                justifyContent: 'center',
+                                                alignItems: 'center'
+                                            }}
+                                        >
+                                            <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold' }}>-</Text>
+                                        </TouchableOpacity>
+
+                                        {/* Barra de zoom (apenas visual) */}
+                                        <View style={{
+                                            width: 200,
+                                            height: 30,
+                                            backgroundColor: 'rgba(0,0,0,0.3)',
+                                            borderRadius: 15,
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                            position: 'relative'
+                                        }}>
+                                            {/* Barra de progresso do zoom */}
+                                            <View style={{
+                                                position: 'absolute',
+                                                left: 0,
+                                                top: 0,
+                                                width: `${zoom * 100}%`,
+                                                height: '100%',
+                                                backgroundColor: '#e11d48',
+                                                borderRadius: 15
+                                            }} />
+
+                                            {/* Indicador de zoom */}
+                                            <View style={{
+                                                width: 20,
+                                                height: 20,
+                                                borderRadius: 10,
+                                                backgroundColor: '#fff',
+                                                position: 'absolute',
+                                                left: `${zoom * 100}%`,
+                                                transform: [{ translateX: -10 }]
+                                            }} />
+
+                                            {/* Marcadores de zoom */}
+                                            <View style={{ position: 'absolute', width: '100%', flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 10 }}>
+                                                <Text style={{ color: '#fff', fontSize: 10 }}>1x</Text>
+                                                <Text style={{ color: '#fff', fontSize: 10 }}>2x</Text>
+                                            </View>
+                                        </View>
+
+                                        {/* Botão + */}
+                                        <TouchableOpacity
+                                            onPress={increaseZoom}
+                                            style={{
+                                                width: 40,
+                                                height: 40,
+                                                backgroundColor: 'rgba(0,0,0,0.5)',
+                                                borderRadius: 20,
+                                                justifyContent: 'center',
+                                                alignItems: 'center'
+                                            }}
+                                        >
+                                            <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold' }}>+</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                    <Text style={{ color: '#fff', fontSize: 10, marginTop: 4 }}>{(zoom + 1).toFixed(1)}x</Text>
+                                </View>
+
+                                {/* Botão de gravar */}
+                                <TouchableOpacity
+                                    disabled={!isCamReady}
+                                    onPress={() => {
+                                        if (isCamReady) {
+                                            if (isRecording) {
+                                                stopRecording();
+                                            } else {
+                                                startRecording();
+                                            }
+                                        }
+                                    }}
+                                    activeOpacity={1}
+                                    style={{ opacity: isCamReady ? 1 : 0.6 }}
+                                >
+                                    {/* Outer ring */}
+                                    <View style={{
+                                        width: 84,
+                                        height: 84,
+                                        borderRadius: 42,
+                                        borderWidth: 4,
+                                        borderColor: '#fff',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        backgroundColor: 'transparent'
+                                    }}>
+                                        {/* Inner fill */}
+                                        <View style={{
+                                            width: isRecording ? 64 : 68,
+                                            height: isRecording ? 64 : 68,
+                                            borderRadius: 999,
+                                            backgroundColor: isRecording ? '#e11d48' : 'rgba(255,255,255,0.9)'
+                                        }} />
+                                    </View>
                                 </TouchableOpacity>
-                            )}
-                            <TouchableOpacity onPress={() => setShowRecorder(false)} style={{ marginTop: 12 }}>
-                                <Text style={{ color: '#fff' }}>Cancelar</Text>
-                            </TouchableOpacity>
+
+                                <TouchableOpacity onPress={() => { setShowRecorder(false); if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; } }} style={{ marginTop: 14 }}>
+                                    <Text style={{ color: '#fff' }}>Cancelar</Text>
+                                </TouchableOpacity>
+                            </View>
                         </View>
                     </View>
                 </Modal>
