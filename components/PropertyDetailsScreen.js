@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
     View,
     Text,
@@ -13,6 +13,7 @@ import {
     ScrollView,
     StatusBar,
 } from 'react-native';
+import { Video } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext';
@@ -21,24 +22,44 @@ import { supabase } from '../lib/supabase';
 const { width, height } = Dimensions.get('window');
 
 export default function PropertyDetailsScreen({ route, navigation }) {
-    console.log('Rendered PropertyDetailsScreen');
-
     const { property } = route.params;
     const { user } = useAuth();
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isFavorite, setIsFavorite] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [videoRefs, setVideoRefs] = useState({});
 
-    // Filtrar apenas imagens (excluir vídeos)
-    const imageFiles = (property.images || []).filter(file =>
-        !file.includes('.mp4') &&
-        !file.includes('.mov') &&
-        !file.includes('.avi') &&
-        !file.includes('.mkv') &&
-        !file.includes('.webm')
-    );
+    // Separar imagens e vídeos usando useMemo para evitar re-cálculos
+    // Função para verificar se é vídeo
+    const isVideoFile = useCallback((url) => {
+        return url.includes('.mp4') ||
+            url.includes('.mov') ||
+            url.includes('.avi') ||
+            url.includes('.mkv') ||
+            url.includes('.webm');
+    }, []);
 
-    const displayImages = imageFiles.length > 0 ? imageFiles : ['https://via.placeholder.com/400x300?text=Sem+Imagem'];
+    const { imageFiles, videoFiles, finalDisplayMedia } = useMemo(() => {
+        const mediaFiles = property.images || [];
+        const imageFiles = mediaFiles.filter(file => !isVideoFile(file));
+        const videoFiles = mediaFiles.filter(file => isVideoFile(file));
+
+        // Combinar imagens e vídeos para exibição
+        const displayMedia = [...imageFiles, ...videoFiles];
+        const finalDisplayMedia = displayMedia.length > 0 ? displayMedia : ['https://via.placeholder.com/400x300?text=Sem+Imagem'];
+
+        return { imageFiles, videoFiles, finalDisplayMedia };
+    }, [property.images, isVideoFile]);
+
+
+
+    // Cleanup quando a tela for desmontada
+    useEffect(() => {
+        return () => {
+            // Limpar referências
+            setVideoRefs({});
+        };
+    }, []);
 
     useEffect(() => {
         checkFavoriteStatus();
@@ -67,6 +88,8 @@ export default function PropertyDetailsScreen({ route, navigation }) {
             }
         }, [user?.id, property?.id])
     );
+
+
 
     const checkFavoriteStatus = async () => {
         if (!user?.id) return;
@@ -135,19 +158,45 @@ export default function PropertyDetailsScreen({ route, navigation }) {
         }
     };
 
-    const handleImageScroll = (event) => {
+
+
+    const handleImageScroll = useCallback((event) => {
         const contentOffset = event.nativeEvent.contentOffset.x;
         const imageIndex = Math.round(contentOffset / width);
         setCurrentImageIndex(imageIndex);
-    };
+    }, [width]);
 
-    const renderImage = ({ item, index }) => (
-        <Image
-            source={{ uri: item }}
-            style={styles.image}
-            resizeMode="cover"
-        />
-    );
+    const renderMedia = useCallback(({ item, index }) => {
+        const isVideo = isVideoFile(item);
+
+        if (isVideo) {
+            return (
+                <View style={styles.mediaContainer}>
+                    <Video
+                        source={{ uri: item }}
+                        style={styles.video}
+                        useNativeControls={true}
+                        resizeMode="cover"
+                        shouldPlay={false}
+                        isLooping={false}
+                        isMuted={false}
+                        volume={1.0}
+                        onError={(error) => {
+                            console.error(`❌ Erro no vídeo ${index}:`, error);
+                        }}
+                    />
+                </View>
+            );
+        }
+
+        return (
+            <Image
+                source={{ uri: item }}
+                style={styles.image}
+                resizeMode="cover"
+            />
+        );
+    }, [isVideoFile]);
 
     const formatPrice = (price) => {
         return new Intl.NumberFormat('pt-BR', {
@@ -190,23 +239,26 @@ export default function PropertyDetailsScreen({ route, navigation }) {
     return (
         <SafeAreaView style={styles.container}>
 
-            {/* Galeria de Imagens */}
+            {/* Galeria de Mídia */}
             <View style={styles.imageContainer}>
                 <FlatList
-                    data={displayImages}
-                    renderItem={renderImage}
-                    keyExtractor={(item, index) => index.toString()}
+                    data={finalDisplayMedia}
+                    renderItem={renderMedia}
+                    keyExtractor={(item, index) => `media-${index}-${item.substring(0, 20)}`}
                     horizontal
                     pagingEnabled
                     showsHorizontalScrollIndicator={false}
                     onScroll={handleImageScroll}
                     scrollEventThrottle={16}
+                    nestedScrollEnabled={true}
+                    removeClippedSubviews={false}
+
                 />
 
-                {/* Indicadores de imagem */}
-                {displayImages.length > 1 && (
+                {/* Indicadores de mídia */}
+                {finalDisplayMedia.length > 1 && (
                     <View style={styles.imageIndicators}>
-                        {displayImages.map((_, index) => (
+                        {finalDisplayMedia.map((_, index) => (
                             <View
                                 key={index}
                                 style={[
@@ -218,12 +270,30 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                     </View>
                 )}
 
-                {/* Contador de imagens */}
-                {displayImages.length > 1 && (
+                {/* Contador de mídia */}
+                {finalDisplayMedia.length > 1 && (
                     <View style={styles.imageCounter}>
                         <Text style={styles.imageCounterText}>
-                            {currentImageIndex + 1}/{displayImages.length}
+                            {currentImageIndex + 1}/{finalDisplayMedia.length}
                         </Text>
+                    </View>
+                )}
+
+                {/* Indicadores de tipo de mídia */}
+                {finalDisplayMedia.length > 1 && (
+                    <View style={styles.mediaTypeIndicators}>
+                        {finalDisplayMedia.map((item, index) => {
+                            const isVideo = isVideoFile(item);
+                            return (
+                                <View key={index} style={styles.mediaTypeIndicator}>
+                                    <Ionicons
+                                        name={isVideo ? "videocam" : "image"}
+                                        size={12}
+                                        color={index === currentImageIndex ? "#1e3a8a" : "#64748b"}
+                                    />
+                                </View>
+                            );
+                        })}
                     </View>
                 )}
             </View>
@@ -351,6 +421,37 @@ const styles = StyleSheet.create({
         width: width,
         height: 300,
     },
+    video: {
+        width: width,
+        height: 300,
+    },
+    mediaContainer: {
+        width: width,
+        height: 300,
+        position: 'relative',
+        zIndex: 0,
+    },
+
+
+
+    mediaTypeIndicators: {
+        position: 'absolute',
+        bottom: 60,
+        left: 0,
+        right: 0,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        gap: 8,
+        zIndex: 1,
+    },
+    mediaTypeIndicator: {
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     imageIndicators: {
         position: 'absolute',
         bottom: 20,
@@ -359,6 +460,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'center',
         gap: 8,
+        zIndex: 1,
     },
     imageIndicator: {
         width: 8,
@@ -378,6 +480,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 12,
         paddingVertical: 6,
         borderRadius: 15,
+        zIndex: 1,
     },
     imageCounterText: {
         color: '#fff',

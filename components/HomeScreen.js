@@ -329,7 +329,7 @@ export default function HomeScreen({ navigation }) {
         const mediaFiles = item.images || [];
         const currentIndex = currentImageIndex[index] || 0;
 
-        // Filtrar apenas imagens (excluir vídeos)
+        // Separar imagens e vídeos
         const imageFiles = useMemo(() => mediaFiles.filter(file =>
             !file.includes('.mp4') &&
             !file.includes('.mov') &&
@@ -338,7 +338,16 @@ export default function HomeScreen({ navigation }) {
             !file.includes('.webm')
         ), [mediaFiles]);
 
+        const videoFiles = useMemo(() => mediaFiles.filter(file =>
+            file.includes('.mp4') ||
+            file.includes('.mov') ||
+            file.includes('.avi') ||
+            file.includes('.mkv') ||
+            file.includes('.webm')
+        ), [mediaFiles]);
+
         const hasMultipleMedia = imageFiles.length > 1;
+        const hasVideos = videoFiles.length > 0;
 
         // Fallback para quando não há imagens
         const defaultImage = 'https://via.placeholder.com/300x200?text=Sem+Imagem';
@@ -407,6 +416,24 @@ export default function HomeScreen({ navigation }) {
                             <Text style={styles.mediaCountText}>
                                 {currentIndex + 1}/{displayMediaFiles.length}
                             </Text>
+                        </View>
+                    )}
+
+                    {/* Ícones de tipo de mídia */}
+                    {(imageFiles.length > 0 || videoFiles.length > 0) && (
+                        <View style={styles.mediaTypeBadge}>
+                            {imageFiles.length > 0 && (
+                                <View style={styles.mediaTypeItem}>
+                                    <Ionicons name="image" size={14} color="#fff" />
+                                    <Text style={styles.mediaTypeText}>{imageFiles.length}</Text>
+                                </View>
+                            )}
+                            {videoFiles.length > 0 && (
+                                <View style={styles.mediaTypeItem}>
+                                    <Ionicons name="videocam" size={14} color="#fff" />
+                                    <Text style={styles.mediaTypeText}>{videoFiles.length}</Text>
+                                </View>
+                            )}
                         </View>
                     )}
 
@@ -957,6 +984,27 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 12,
         fontWeight: '600',
+    },
+    mediaTypeBadge: {
+        position: 'absolute',
+        top: 10,
+        right: 10,
+        flexDirection: 'row',
+        gap: 8,
+    },
+    mediaTypeItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        borderRadius: 12,
+        paddingHorizontal: 6,
+        paddingVertical: 3,
+        gap: 3,
+    },
+    mediaTypeText: {
+        fontSize: 11,
+        fontWeight: '600',
+        color: '#fff',
     },
     favoriteButton: {
         position: 'absolute',

@@ -277,7 +277,7 @@ function renderProperties() {
                 <div class="col-md-4">
                     <div class="property-images">
                         ${renderPropertyImages(property.images)}
-                        ${property.images && property.images.length > 1 ?
+                        ${property.images && Array.isArray(property.images) && property.images.length > 1 ?
             `<div class="image-counter">1/${property.images.length}</div>` : ''}
                     </div>
                 </div>
@@ -351,14 +351,20 @@ function renderPropertyImages(images) {
         return '<img src="https://via.placeholder.com/400x200?text=Sem+Imagem" alt="Sem imagem">';
     }
 
-    // Filtrar apenas imagens (excluir vídeos)
-    const imageFiles = images.filter(img =>
-        !img.includes('.mp4') &&
-        !img.includes('.mov') &&
-        !img.includes('.avi') &&
-        !img.includes('.mkv') &&
-        !img.includes('.webm')
-    );
+    // Filtrar apenas imagens (excluir vídeos) e garantir que img não seja null/undefined
+    const imageFiles = images.filter(img => {
+        // Verificar se img existe e é uma string
+        if (!img || typeof img !== 'string') {
+            return false;
+        }
+
+        // Verificar se não é vídeo
+        return !img.includes('.mp4') &&
+            !img.includes('.mov') &&
+            !img.includes('.avi') &&
+            !img.includes('.mkv') &&
+            !img.includes('.webm');
+    });
 
     if (imageFiles.length === 0) {
         return '<img src="https://via.placeholder.com/400x200?text=Sem+Imagem" alt="Sem imagem">';
