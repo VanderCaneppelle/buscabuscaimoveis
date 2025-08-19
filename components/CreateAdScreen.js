@@ -199,7 +199,7 @@ export default function CreateAdScreen({ navigation, route }) {
         }
 
         // Verificar se há arquivos muito grandes
-        const maxSizeMB = 50;
+        const maxSizeMB = 200;
         const largeFiles = mediaFiles.filter(file => file.fileSize > maxSizeMB * 1024 * 1024);
 
         if (largeFiles.length > 0) {
@@ -233,9 +233,9 @@ export default function CreateAdScreen({ navigation, route }) {
                 for (const mediaResult of results) {
                     // Verificar tamanho do arquivo
                     const fileSizeMB = (mediaResult.fileSize / 1024 / 1024).toFixed(2);
-                    const maxSizeMB = 50;
+                    const maxSizeMB = 200;
 
-                    // Bloquear arquivos maiores que 50MB
+                    // Bloquear arquivos maiores que 200MB
                     if (mediaResult.fileSize > maxSizeMB * 1024 * 1024) {
                         Alert.alert(
                             'Arquivo Muito Grande',
@@ -245,8 +245,8 @@ export default function CreateAdScreen({ navigation, route }) {
                         continue; // Pular este arquivo
                     }
 
-                    // Se arquivo for maior que 25MB, mostrar aviso mas permitir
-                    if (mediaResult.fileSize > 25 * 1024 * 1024) {
+                    // Se arquivo for maior que 50MB, mostrar aviso mas permitir
+                    if (mediaResult.fileSize > 50 * 1024 * 1024) {
                         Alert.alert(
                             'Arquivo Grande',
                             `O arquivo ${mediaResult.fileName} tem ${fileSizeMB}MB. Arquivos grandes podem demorar mais para fazer upload. Deseja continuar?`,
@@ -905,7 +905,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                     <Text style={styles.mediaOptionText}>Galeria</Text>
                                 </TouchableOpacity>
 
-                                {/* <TouchableOpacity
+                                <TouchableOpacity
                                     style={styles.mediaOption}
                                     onPress={() => handleAddMedia('video')}
                                 >
@@ -913,7 +913,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                         <Ionicons name="videocam" size={32} color="#fff" />
                                     </View>
                                     <Text style={styles.mediaOptionText}>Vídeo</Text>
-                                </TouchableOpacity> */}
+                                </TouchableOpacity>
                             </View>
                         </View>
                     </View>
