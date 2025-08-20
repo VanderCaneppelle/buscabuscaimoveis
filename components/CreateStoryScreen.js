@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Animated, PanResponder } from 'react-native';
-import { CameraView, Camera } from 'expo-camera';
+
 import {
     View,
     Text,
@@ -342,7 +342,7 @@ const getInitialPositions = () => {
 export default function CreateStoryScreen({ navigation }) {
     const { isAdmin } = useAdmin();
     const { user } = useAuth();
-    const [hasPermission, setHasPermission] = useState(null);
+
     const [capturedMedia, setCapturedMedia] = useState(null);
     const [showPreview, setShowPreview] = useState(false);
     const [storyTitle, setStoryTitle] = useState('');
@@ -419,36 +419,22 @@ export default function CreateStoryScreen({ navigation }) {
     };
 
 
-    const cameraRef = useRef(null);
-    const [showRecorder, setShowRecorder] = useState(false);
-    const [isRecording, setIsRecording] = useState(false);
-    const [hasCamPerm, setHasCamPerm] = useState(null);
-    const [hasMicPerm, setHasMicPerm] = useState(null);
-    const [isCamReady, setIsCamReady] = useState(false);
-    const [facing, setFacing] = useState('back');
-    const [zoom, setZoom] = useState(0); // Começa em 0 (sem zoom)
-    const [elapsedMs, setElapsedMs] = useState(0);
-    const timerRef = useRef(null);
-    const zoomBarHeight = 200; // Altura da barra de zoom
+
+
 
     useEffect(() => {
+        console.log('🔍 Verificando admin:', { isAdmin });
         if (!isAdmin) {
             Alert.alert('Acesso Negado', 'Apenas administradores podem criar stories.');
             navigation.goBack();
             return;
         }
-        requestPermissions();
-    }, []);
+        console.log('✅ Admin verificado, tela carregada');
+    }, [isAdmin]);
 
-    const requestPermissions = async () => {
-        const { status: imagePickerStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        const { status: expCam } = await Camera.requestCameraPermissionsAsync();
-        const { status: expMic } = await Camera.requestMicrophonePermissionsAsync();
 
-        setHasCamPerm(expCam === 'granted');
-        setHasMicPerm(expMic === 'granted');
-        setHasPermission(imagePickerStatus === 'granted' && expCam === 'granted');
-    };
+
+
 
 
     const takePicture = async () => {
@@ -492,66 +478,11 @@ export default function CreateStoryScreen({ navigation }) {
         }
     };
 
-    const startRecording = async () => {
-        if (!cameraRef.current || !isCamReady || isRecording) return;
-        setIsRecording(true);
-        setElapsedMs(0); // Reset timer to 0
-        if (timerRef.current) clearInterval(timerRef.current);
-        timerRef.current = setInterval(() => {
-            setElapsedMs((ms) => {
-                const newMs = ms + 100;
-                if (newMs >= 15000) {
-                    // Auto stop at 15 seconds
-                    stopRecording();
-                    return 15000;
-                }
-                return newMs;
-            });
-        }, 100);
-        try {
-            const video = await cameraRef.current.recordAsync({ maxDuration: 15 });
-            const info = await FileSystem.getInfoAsync(video.uri);
-            setCapturedMedia({ uri: video.uri, type: 'video', fileName: `video_${Date.now()}.mp4`, fileSize: info.size || 0 });
-            setShowRecorder(false);
-            setShowPreview(true); // Abrir modal automaticamente
-        } catch (e) {
-            console.warn('Erro ao gravar:', e);
-        } finally {
-            setIsRecording(false);
-            if (timerRef.current) {
-                clearInterval(timerRef.current);
-                timerRef.current = null;
-            }
-        }
-    };
 
-    const stopRecording = () => {
-        if (cameraRef.current && isRecording) cameraRef.current.stopRecording();
-        setIsRecording(false);
-        if (timerRef.current) {
-            clearInterval(timerRef.current);
-            timerRef.current = null;
-        }
-    };
 
-    const formatTime = (ms) => {
-        const seconds = Math.floor(ms / 1000);
-        const minutes = Math.floor(seconds / 60);
-        const remainingSeconds = seconds % 60;
-        return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
-    };
 
-    const handleZoomChange = (newZoom) => {
-        setZoom(Math.max(0, Math.min(1, newZoom)));
-    };
 
-    const increaseZoom = () => {
-        setZoom(prev => Math.min(1, prev + 0.1));
-    };
 
-    const decreaseZoom = () => {
-        setZoom(prev => Math.max(0, prev - 0.1));
-    };
 
     // Função helper para placeholders dos links
     const getLinkPlaceholder = (type) => {
@@ -975,26 +906,7 @@ export default function CreateStoryScreen({ navigation }) {
         </Modal>
     );
 
-    if (hasPermission === null) {
-        return (
-            <View style={styles.container}>
-                <ActivityIndicator size="large" color="#1e3a8a" />
-                <Text style={styles.loadingText}>Solicitando permissões...</Text>
-            </View>
-        );
-    }
 
-    if (hasPermission === false) {
-        return (
-            <View style={styles.container}>
-                <Ionicons name="camera-off" size={64} color="#e74c3c" />
-                <Text style={styles.errorText}>Permissão de câmera negada</Text>
-                <TouchableOpacity style={styles.retryButton} onPress={requestPermissions}>
-                    <Text style={styles.retryButtonText}>Tentar Novamente</Text>
-                </TouchableOpacity>
-            </View>
-        );
-    }
 
     return (
 
@@ -1032,16 +944,7 @@ export default function CreateStoryScreen({ navigation }) {
                         <Text style={styles.optionText}>Vídeo</Text>
                         <Text style={styles.optionSubtext}>Gravar vídeo</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity
-                        style={styles.optionButton}
-                        onPress={() => setShowRecorder(true)}
-                    >
-                        <View style={styles.optionIcon}>
-                            <Ionicons name="videocam" size={40} color="#1e3a8a" />
-                        </View>
-                        <Text style={styles.optionText}>Vídeo - expo camera</Text>
-                        <Text style={styles.optionSubtext}>Gravar vídeo</Text>
-                    </TouchableOpacity>
+
 
                     <TouchableOpacity
                         style={styles.optionButton}
@@ -1065,165 +968,7 @@ export default function CreateStoryScreen({ navigation }) {
                 </View>
             </View>
 
-            {showRecorder && hasCamPerm && hasMicPerm && (
-                <Modal visible animationType="slide" transparent={false}>
-                    <View style={{ flex: 1, backgroundColor: '#000' }}>
-                        <CameraView
-                            ref={cameraRef}
-                            style={{ flex: 1 }}
-                            facing={facing}
-                            mode="video"
-                            enableAudio={true}
-                            zoom={zoom}
-                            onCameraReady={() => {
-                                console.log('📷 CameraView pronta');
-                                setIsCamReady(true);
-                            }}
-                        />
-                        <View style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 }}>
-                            {/* Topo: barra de progresso e tempos */}
-                            <View style={{ paddingTop: 40, paddingHorizontal: 16 }}>
-                                <View style={{ height: 4, backgroundColor: 'rgba(255,255,255,0.25)', borderRadius: 2, overflow: 'hidden' }}>
-                                    <View style={{ width: `${Math.round((elapsedMs / 15000) * 100)}%`, height: '100%', backgroundColor: '#e11d48' }} />
-                                </View>
-                                <View style={{ marginTop: 8, flexDirection: 'row', justifyContent: 'space-between' }}>
-                                    <Text style={{ color: '#fff', fontWeight: 'bold' }}>{formatTime(elapsedMs)}</Text>
-                                    <Text style={{ color: '#fff' }}>{formatTime(15000 - elapsedMs)}</Text>
-                                </View>
-                            </View>
 
-                            {/* Lateral: apenas flip da câmera */}
-                            <View style={{ position: 'absolute', right: 16, top: 100, alignItems: 'center' }}>
-                                <TouchableOpacity
-                                    onPress={() => setFacing((f) => (f === 'back' ? 'front' : 'back'))}
-                                    style={{ backgroundColor: 'rgba(0,0,0,0.5)', padding: 10, borderRadius: 999 }}
-                                >
-                                    <Ionicons name="camera-reverse" size={22} color="#fff" />
-                                </TouchableOpacity>
-                            </View>
-
-                            {/* Rodapé: barra de zoom, botão de gravar e cancelar */}
-                            <View style={{ position: 'absolute', bottom: 24, width: '100%', alignItems: 'center' }}>
-                                {/* Barra de zoom horizontal */}
-                                <View style={{ alignItems: 'center', marginBottom: 20 }}>
-                                    <Text style={{ color: '#fff', fontSize: 12, marginBottom: 8 }}>Zoom</Text>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                                        {/* Botão - */}
-                                        <TouchableOpacity
-                                            onPress={decreaseZoom}
-                                            style={{
-                                                width: 40,
-                                                height: 40,
-                                                backgroundColor: 'rgba(0,0,0,0.5)',
-                                                borderRadius: 20,
-                                                justifyContent: 'center',
-                                                alignItems: 'center'
-                                            }}
-                                        >
-                                            <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold' }}>-</Text>
-                                        </TouchableOpacity>
-
-                                        {/* Barra de zoom (apenas visual) */}
-                                        <View style={{
-                                            width: 200,
-                                            height: 30,
-                                            backgroundColor: 'rgba(0,0,0,0.3)',
-                                            borderRadius: 15,
-                                            justifyContent: 'center',
-                                            alignItems: 'center',
-                                            position: 'relative'
-                                        }}>
-                                            {/* Barra de progresso do zoom */}
-                                            <View style={{
-                                                position: 'absolute',
-                                                left: 0,
-                                                top: 0,
-                                                width: `${zoom * 100}%`,
-                                                height: '100%',
-                                                backgroundColor: '#e11d48',
-                                                borderRadius: 15
-                                            }} />
-
-                                            {/* Indicador de zoom */}
-                                            <View style={{
-                                                width: 20,
-                                                height: 20,
-                                                borderRadius: 10,
-                                                backgroundColor: '#fff',
-                                                position: 'absolute',
-                                                left: `${zoom * 100}%`,
-                                                transform: [{ translateX: -10 }]
-                                            }} />
-
-                                            {/* Marcadores de zoom */}
-                                            <View style={{ position: 'absolute', width: '100%', flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 10 }}>
-                                                <Text style={{ color: '#fff', fontSize: 10 }}>1x</Text>
-                                                <Text style={{ color: '#fff', fontSize: 10 }}>2x</Text>
-                                            </View>
-                                        </View>
-
-                                        {/* Botão + */}
-                                        <TouchableOpacity
-                                            onPress={increaseZoom}
-                                            style={{
-                                                width: 40,
-                                                height: 40,
-                                                backgroundColor: 'rgba(0,0,0,0.5)',
-                                                borderRadius: 20,
-                                                justifyContent: 'center',
-                                                alignItems: 'center'
-                                            }}
-                                        >
-                                            <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold' }}>+</Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                    <Text style={{ color: '#fff', fontSize: 10, marginTop: 4 }}>{(zoom + 1).toFixed(1)}x</Text>
-                                </View>
-
-                                {/* Botão de gravar */}
-                                <TouchableOpacity
-                                    disabled={!isCamReady}
-                                    onPress={() => {
-                                        if (isCamReady) {
-                                            if (isRecording) {
-                                                stopRecording();
-                                            } else {
-                                                startRecording();
-                                            }
-                                        }
-                                    }}
-                                    activeOpacity={1}
-                                    style={{ opacity: isCamReady ? 1 : 0.6 }}
-                                >
-                                    {/* Outer ring */}
-                                    <View style={{
-                                        width: 84,
-                                        height: 84,
-                                        borderRadius: 42,
-                                        borderWidth: 4,
-                                        borderColor: '#fff',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        backgroundColor: 'transparent'
-                                    }}>
-                                        {/* Inner fill */}
-                                        <View style={{
-                                            width: isRecording ? 64 : 68,
-                                            height: isRecording ? 64 : 68,
-                                            borderRadius: 999,
-                                            backgroundColor: isRecording ? '#e11d48' : 'rgba(255,255,255,0.9)'
-                                        }} />
-                                    </View>
-                                </TouchableOpacity>
-
-                                <TouchableOpacity onPress={() => { setShowRecorder(false); if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; } }} style={{ marginTop: 14 }}>
-                                    <Text style={{ color: '#fff' }}>Cancelar</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                    </View>
-                </Modal>
-            )}
 
             {renderPreview()}
         </SafeAreaView>
