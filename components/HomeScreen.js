@@ -48,7 +48,6 @@ export default function HomeScreen({ navigation }) {
         maxPrice: '',
     });
     const [selectedPropertyIndex, setSelectedPropertyIndex] = useState(null);
-    const [currentImageIndex, setCurrentImageIndex] = useState({});
     const [showStoryModal, setShowStoryModal] = useState(false);
     const [selectedStory, setSelectedStory] = useState(null);
     const [favorites, setFavorites] = useState({});
@@ -326,9 +325,9 @@ export default function HomeScreen({ navigation }) {
 
 
     // Componente otimizado para renderizar propriedades
-    const PropertyItem = React.memo(({ item, index, currentImageIndex, setCurrentImageIndex, favorites, toggleFavorite, navigation }) => {
+    const PropertyItem = React.memo(({ item, index, favorites, toggleFavorite, navigation }) => {
         const mediaFiles = item.images || [];
-        const currentIndex = currentImageIndex[index] || 0;
+        const [currentIndex, setCurrentIndex] = useState(0);
 
         // Separar imagens e vídeos
         const imageFiles = useMemo(() => mediaFiles.filter(file =>
@@ -357,11 +356,8 @@ export default function HomeScreen({ navigation }) {
         const handleImageScroll = useCallback((event) => {
             const contentOffset = event.nativeEvent.contentOffset.x;
             const imageIndex = Math.round(contentOffset / (width - 40)); // 40 é o padding
-            setCurrentImageIndex(prev => ({
-                ...prev,
-                [index]: imageIndex
-            }));
-        }, [index, setCurrentImageIndex]);
+            setCurrentIndex(imageIndex);
+        }, []);
 
         const renderMediaItem = useCallback(({ item: mediaItem, mediaIndex }) => {
             return (
@@ -452,15 +448,7 @@ export default function HomeScreen({ navigation }) {
                     </TouchableOpacity>
                 </View>
 
-                <TouchableOpacity
-                    style={styles.propertyInfo}
-                    onPress={() => {
-                        navigation.navigate('PropertyDetails', { property: item });
-                    }}
-                    activeOpacity={0.7}
-                    delayPressIn={150}
-                    delayLongPress={500}
-                >
+                <View style={styles.propertyInfo}>
                     <Text style={styles.propertyTitle} numberOfLines={2}>
                         {item.title ?? 'Título indisponível'}
                     </Text>
@@ -493,8 +481,18 @@ export default function HomeScreen({ navigation }) {
                     <Text style={styles.propertyType}>
                         {(item.property_type ?? '') + ' • ' + (item.transaction_type ?? '')}
                     </Text>
+                </View>
 
-                </TouchableOpacity>
+                {/* Botão invisível para navegação - posicionado sobre a área de informações */}
+                <TouchableOpacity
+                    style={styles.propertyInfoTouchable}
+                    onPress={() => {
+                        navigation.navigate('PropertyDetails', { property: item });
+                    }}
+                    activeOpacity={0.7}
+                    delayPressIn={150}
+                    delayLongPress={500}
+                />
             </View>
         );
     });
@@ -504,14 +502,12 @@ export default function HomeScreen({ navigation }) {
             <PropertyItem
                 item={item}
                 index={index}
-                currentImageIndex={currentImageIndex}
-                setCurrentImageIndex={setCurrentImageIndex}
                 favorites={favorites}
                 toggleFavorite={toggleFavorite}
                 navigation={navigation}
             />
         );
-    }, [currentImageIndex, favorites, toggleFavorite, navigation]);
+    }, [favorites, toggleFavorite, navigation]);
 
     const renderStoryModal = () => (
         <Modal
@@ -974,8 +970,8 @@ const styles = StyleSheet.create({
     },
     mediaCountBadge: {
         position: 'absolute',
-        top: 15,
-        right: 15,
+        bottom: 15,
+        left: 15,
         backgroundColor: 'rgba(0, 0, 0, 0.7)',
         paddingHorizontal: 8,
         paddingVertical: 4,
@@ -1022,6 +1018,16 @@ const styles = StyleSheet.create({
         borderBottomLeftRadius: 12,
         borderBottomRightRadius: 12,
     },
+    propertyInfoTouchable: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: 120, // Altura aproximada da área de informações
+        backgroundColor: 'transparent',
+        zIndex: 1,
+    },
+
     propertyTitle: {
         fontSize: 16,
         fontWeight: 'bold',
