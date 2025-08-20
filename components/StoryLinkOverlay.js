@@ -104,7 +104,7 @@ export default function StoryLinkOverlay({ linkData, onPress, style, position = 
                 style
             ]}
             onPress={handlePress}
-            activeOpacity={0.8}
+            activeOpacity={0.7}
         >
             <Ionicons
                 name={iconName}
