@@ -11,6 +11,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext';
 import { PropertyService } from '../lib/propertyService';
 import { supabase } from '../lib/supabase';
+import { MediaServiceOptimized } from '../lib/mediaServiceOptimized';
+import * as ImagePicker from 'expo-image-picker';
 
 const { width } = Dimensions.get('window');
 
@@ -36,6 +38,8 @@ export default function MyPropertiesScreen({ navigation }) {
         bedrooms: '', bathrooms: '', parkingSpaces: '', area: '', address: '',
         neighborhood: '', city: '', state: '', zipCode: ''
     });
+    const [editImages, setEditImages] = useState([]);
+    const [removedImages, setRemovedImages] = useState([]);
     const [editLoading, setEditLoading] = useState(false);
     const [deleteLoading, setDeleteLoading] = useState(false);
 
@@ -132,6 +136,8 @@ export default function MyPropertiesScreen({ navigation }) {
             state: property.state || '',
             zipCode: property.zip_code || ''
         });
+        setEditImages(property.images || []);
+        setRemovedImages([]);
         setEditModalVisible(true);
     };
 
@@ -163,7 +169,29 @@ export default function MyPropertiesScreen({ navigation }) {
 
         setEditLoading(true);
         try {
-            await PropertyService.updateProperty(editingProperty.id, editForm);
+            // Separar imagens existentes (URLs) de novas imagens (URIs locais)
+            const existingImages = editImages.filter(img => img.startsWith('http'));
+            const newImageUris = editImages.filter(img => !img.startsWith('http'));
+
+            // Converter URIs locais para objetos de arquivo
+            const newMediaFiles = newImageUris.map(uri => {
+                const extension = uri.split('.').pop() || 'jpg';
+                const isVideo = extension.match(/\.(mp4|mov|avi|mkv|webm)$/i);
+
+                return {
+                    uri: uri,
+                    type: isVideo ? 'video' : 'image',
+                    fileName: `media_${Date.now()}_${Math.random().toString(36).substring(7)}.${extension}`,
+                    fileSize: 0 // Será calculado durante o upload
+                };
+            });
+
+            // Preparar dados para atualização
+            const updateData = {
+                ...editForm
+            };
+
+            await PropertyService.updateProperty(editingProperty.id, updateData, newMediaFiles, removedImages);
             Alert.alert('Sucesso', 'Anúncio atualizado com sucesso!');
             setEditModalVisible(false);
             fetchProperties();
@@ -188,6 +216,45 @@ export default function MyPropertiesScreen({ navigation }) {
             Alert.alert('Erro', 'Não foi possível excluir o anúncio');
         } finally {
             setDeleteLoading(false);
+        }
+    };
+
+    // Funções para gerenciar imagens
+    const removeImage = (index) => {
+        const imageToRemove = editImages[index];
+        setEditImages(prev => prev.filter((_, i) => i !== index));
+        setRemovedImages(prev => [...prev, imageToRemove]);
+    };
+
+    const addMedia = async () => {
+        try {
+            // Solicitar permissões
+            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (status !== 'granted') {
+                Alert.alert('Permissão necessária', 'Precisamos de permissão para acessar sua galeria');
+                return;
+            }
+
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.All, // Permite imagens e vídeos
+                allowsMultipleSelection: true,
+                quality: 0.8,
+                aspect: [4, 3],
+                videoMaxDuration: 30, // Limite de 30 segundos para vídeos
+            });
+
+            if (!result.canceled && result.assets) {
+                const newMedia = result.assets.map(asset => asset.uri);
+                setEditImages(prev => [...prev, ...newMedia]);
+
+                const imageCount = result.assets.filter(asset => asset.type === 'image').length;
+                const videoCount = result.assets.filter(asset => asset.type === 'video').length;
+
+                console.log(`✅ ${imageCount} imagem(ns) e ${videoCount} vídeo(s) adicionado(s) com sucesso`);
+            }
+        } catch (error) {
+            console.error('Erro ao selecionar mídias:', error);
+            Alert.alert('Erro', 'Não foi possível selecionar as mídias');
         }
     };
 
@@ -240,11 +307,13 @@ export default function MyPropertiesScreen({ navigation }) {
     }, []);
 
     // Função para renderizar mídia (imagem ou vídeo)
-    const renderMedia = useCallback(({ item, index }) => {
+    const renderMedia = useCallback(({ item, index, customStyle }) => {
+        const mediaStyle = customStyle || styles.mediaItem;
+
         // Validação de URL
         if (!item || typeof item !== 'string' || item.trim() === '') {
             return (
-                <View style={[styles.mediaItem, { backgroundColor: '#f3f4f6', justifyContent: 'center', alignItems: 'center' }]}>
+                <View style={[mediaStyle, { backgroundColor: '#f3f4f6', justifyContent: 'center', alignItems: 'center' }]}>
                     <Ionicons name="image-outline" size={30} color="#9ca3af" />
                     <Text style={{ fontSize: 10, color: '#9ca3af', marginTop: 5 }}>Mídia inválida</Text>
                 </View>
@@ -255,7 +324,7 @@ export default function MyPropertiesScreen({ navigation }) {
         if (!isValidUrl(item)) {
             console.log(`⚠️ URL inválida detectada: ${item.substring(0, 50)}...`);
             return (
-                <View style={[styles.mediaItem, { backgroundColor: '#fef2f2', justifyContent: 'center', alignItems: 'center' }]}>
+                <View style={[mediaStyle, { backgroundColor: '#fef2f2', justifyContent: 'center', alignItems: 'center' }]}>
                     <Ionicons name="warning-outline" size={30} color="#ef4444" />
                     <Text style={{ fontSize: 10, color: '#ef4444', marginTop: 5, textAlign: 'center' }}>URL malformada</Text>
                 </View>
@@ -266,10 +335,10 @@ export default function MyPropertiesScreen({ navigation }) {
 
         if (isVideo) {
             return (
-                <View style={styles.mediaContainer}>
+                <View style={[styles.mediaContainer, { width: mediaStyle.width, height: mediaStyle.height }]}>
                     <Video
                         source={{ uri: item }}
-                        style={styles.mediaItem}
+                        style={mediaStyle}
                         useNativeControls={true}
                         resizeMode="cover"
                         shouldPlay={false}
@@ -290,7 +359,7 @@ export default function MyPropertiesScreen({ navigation }) {
         return (
             <Image
                 source={{ uri: item }}
-                style={styles.mediaItem}
+                style={mediaStyle}
                 resizeMode="cover"
                 onError={(error) => {
                     console.error(`❌ Erro na imagem ${index}:`, error);
@@ -716,6 +785,52 @@ export default function MyPropertiesScreen({ navigation }) {
                                 />
                             </View>
                         </View>
+
+                        {/* Seção de Gerenciamento de Imagens */}
+                        <View style={styles.formGroup}>
+                            <View style={styles.mediaSectionHeader}>
+                                <Text style={styles.formLabel}>Mídias (Imagens e Vídeos)</Text>
+                                <TouchableOpacity
+                                    style={styles.addMediaButton}
+                                    onPress={addMedia}
+                                >
+                                    <Ionicons name="add" size={16} color="#fff" />
+                                    <Text style={styles.addMediaButtonText}>Adicionar Mídia</Text>
+                                </TouchableOpacity>
+                            </View>
+
+                            {editImages.length > 0 ? (
+                                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                                    {editImages.map((image, index) => (
+                                        <View key={index} style={styles.editMediaItem}>
+                                            {renderMedia({ item: image, index, customStyle: styles.editMediaItemContent })}
+                                            <TouchableOpacity
+                                                style={styles.removeMediaButton}
+                                                onPress={() => removeImage(index)}
+                                            >
+                                                <Ionicons name="close-circle" size={20} color="#ef4444" />
+                                            </TouchableOpacity>
+                                            {/* Ícone indicativo de tipo de mídia */}
+                                            <View style={styles.editMediaTypeIcon}>
+                                                <Ionicons
+                                                    name={isVideoFile(image) ? "videocam" : "image"}
+                                                    size={10}
+                                                    color="#fff"
+                                                />
+                                            </View>
+                                        </View>
+                                    ))}
+                                </ScrollView>
+                            ) : (
+                                <View style={styles.noMediaContainer}>
+                                    <Ionicons name="images-outline" size={48} color="#bdc3c7" />
+                                    <Text style={styles.noMediaText}>Nenhuma mídia adicionada</Text>
+                                    <Text style={styles.noMediaSubtext}>
+                                        Toque em "Adicionar" para incluir imagens ou vídeos
+                                    </Text>
+                                </View>
+                            )}
+                        </View>
                     </ScrollView>
                 </View>
             </Modal>
@@ -1009,6 +1124,12 @@ const styles = StyleSheet.create({
         height: 100,
         borderRadius: 8,
     },
+    // Estilo específico para mídia no modal de edição
+    editMediaItemContent: {
+        width: 80,
+        height: 80,
+        borderRadius: 8,
+    },
     mediaTypeIcon: {
         position: 'absolute',
         top: 5,
@@ -1023,6 +1144,71 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 8,
         fontStyle: 'italic',
+    },
+    // Estilos para gerenciamento de mídia no modal
+    mediaSectionHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 15,
+    },
+    addMediaButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#00335e',
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 6,
+        gap: 5,
+    },
+    addMediaButtonText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: '600',
+    },
+    editMediaItem: {
+        position: 'relative',
+        marginRight: 10,
+        width: 80,
+        height: 80,
+    },
+    removeMediaButton: {
+        position: 'absolute',
+        top: -5,
+        right: -5,
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        zIndex: 1,
+    },
+    editMediaTypeIcon: {
+        position: 'absolute',
+        bottom: 5,
+        right: 5,
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        borderRadius: 8,
+        padding: 2,
+    },
+    noMediaContainer: {
+        alignItems: 'center',
+        paddingVertical: 30,
+        backgroundColor: '#f8f9fa',
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
+        borderStyle: 'dashed',
+    },
+    noMediaText: {
+        fontSize: 16,
+        color: '#64748b',
+        marginTop: 10,
+        fontWeight: '500',
+    },
+    noMediaSubtext: {
+        fontSize: 12,
+        color: '#94a3b8',
+        textAlign: 'center',
+        marginTop: 5,
+        lineHeight: 16,
     },
     expandedActions: {
         marginTop: 15,
