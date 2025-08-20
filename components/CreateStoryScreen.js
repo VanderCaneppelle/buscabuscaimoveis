@@ -24,6 +24,7 @@ import { supabase } from '../lib/supabase';
 import { Platform } from 'react-native';
 import { MediaServiceOptimized as MediaService } from '../lib/mediaServiceOptimized';
 import { useAuth } from '../contexts/AuthContext';
+import VideoTrimmerModal from './VideoTrimmer';
 
 // Componente DraggableTitle
 const DraggableTitle = ({ title, coordinates, onCoordinatesChange, onEdit, onDelete, onDragToTrash, scale = 1.0, onScaleChange }) => {
@@ -457,25 +458,141 @@ export default function CreateStoryScreen({ navigation }) {
         }
     };
 
+
+
+    // 🎯 Função para gravar vídeo com qualidade média
     const recordVideo = async () => {
         try {
-            const result = await ImagePicker.launchCameraAsync({
-                mediaTypes: ImagePicker.MediaTypeOptions.Videos,
-                allowsEditing: true,
-                aspect: [9, 16],
-                quality: 0.8,
-                videoMaxDuration: 15,
-                base64: false, // Não usar base64 para vídeos (muito pesado)
-            });
+            // Permissões via ImagePicker (irá solicitar automaticamente quando necessário)
 
-            if (!result.canceled && result.assets[0]) {
-                setCapturedMedia(result.assets[0]);
-                setShowPreview(true); // Abrir modal automaticamente
+            // 🎯 SOLUÇÃO HÍBRIDA: iOS vs Android
+            if (Platform.OS === 'ios') {
+                // ✅ iOS: videoMaxDuration funciona nativamente
+                const config = {
+                    mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+                    allowsEditing: true,
+                    aspect: [9, 16],
+                    base64: false,
+                    allowsMultipleSelection: false,
+                    exif: false,
+                    quality: 0.8,
+                    videoQuality: ImagePicker.UIImagePickerControllerQualityType.Medium,
+                    videoBitrate: 1000000, // 1Mbps
+                    videoMaxDuration: 25, // ✅ Funciona no iOS
+                    presentationStyle: 'fullScreen',
+                    cameraType: ImagePicker.CameraType.back,
+                };
+
+                const result = await ImagePicker.launchCameraAsync(config);
+                if (!result.canceled && result.assets[0]) {
+                    await checkVideoSizeAndShowTrimmer(result.assets[0].uri);
+                }
+            } else {
+                // ⚠️ Android: videoMaxDuration não funciona, usar timer visual
+                Alert.alert(
+                    'Gravar Vídeo',
+                    'Você terá 15 segundos para gravar o vídeo.\n\n' +
+                    'Toque em "Gravar" para começar.',
+                    [
+                        { text: 'Cancelar', style: 'cancel' },
+                        {
+                            text: 'Gravar',
+                            onPress: startAndroidRecording
+                        }
+                    ]
+                );
             }
         } catch (error) {
             console.error('Erro ao gravar vídeo:', error);
             Alert.alert('Erro', 'Não foi possível gravar o vídeo');
         }
+    };
+
+    // 🎯 Função específica para Android com timer visual
+    const startAndroidRecording = async () => {
+        try {
+            const config = {
+                mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+                allowsEditing: true,
+                aspect: [9, 16],
+                base64: false,
+                allowsMultipleSelection: false,
+                exif: false,
+                quality: 0.65,
+                cameraType: ImagePicker.CameraType.back,
+            };
+
+            const result = await ImagePicker.launchCameraAsync(config);
+
+            if (!result.canceled && result.assets[0]) {
+                // ✅ Validar duração do vídeo gravado (quando disponível pelo ImagePicker)
+                const asset = result.assets[0];
+                const durationSeconds = asset.duration ? Math.round(asset.duration / 1000) : null; // alguns devices retornam em ms
+
+                if (durationSeconds && durationSeconds > 20) {
+                    Alert.alert(
+                        'Vídeo muito longo',
+                        `O vídeo tem ${durationSeconds} segundos.\n\n` +
+                        'O limite é de 20 segundos. Deseja gravar novamente?',
+                        [
+                            { text: 'Cancelar', style: 'cancel' },
+                            {
+                                text: 'Gravar Novamente',
+                                onPress: startAndroidRecording
+                            },
+                            {
+                                text: 'Usar Mesmo Assim',
+                                onPress: () => checkVideoSizeAndShowTrimmer(asset.uri)
+                            }
+                        ]
+                    );
+                    return;
+                }
+
+                // ✅ Vídeo dentro do limite, continuar normalmente
+                await checkVideoSizeAndShowTrimmer(asset.uri);
+            }
+        } catch (error) {
+            console.error('Erro ao gravar vídeo no Android:', error);
+            Alert.alert('Erro', 'Não foi possível gravar o vídeo');
+        }
+    };
+
+
+    const [showVideoTrimmer, setShowVideoTrimmer] = useState(false);
+    const [videoToTrim, setVideoToTrim] = useState(null);
+
+    // Função para verificar tamanho do vídeo e mostrar trimmer se necessário
+    const checkVideoSizeAndShowTrimmer = async (videoUri) => {
+        try {
+            console.log('🔍 DEBUG - checkVideoSizeAndShowTrimmer iniciado');
+            console.log('🔍 DEBUG - videoUri:', videoUri);
+            const fileInfo = await FileSystem.getInfoAsync(videoUri);
+            const fileSizeMB = fileInfo.size / 1024 / 1024;
+            const MAX_SIZE_MB = 100; // Limite do Cloudinary
+
+            if (fileSizeMB > MAX_SIZE_MB) {
+                // Vídeo muito grande, mostrar trimmer
+                setVideoToTrim(videoUri);
+                setShowVideoTrimmer(true);
+            } else {
+                // Vídeo OK, ir direto para preview
+                setCapturedMedia({ uri: videoUri, type: 'video' });
+                setShowPreview(true);
+            }
+        } catch (error) {
+            console.error('Erro ao verificar tamanho do vídeo:', error);
+            // Em caso de erro, assume que está OK
+            setCapturedMedia({ uri: videoUri, type: 'video' });
+            setShowPreview(true);
+        }
+    };
+
+    const handleVideoTrimmed = (trimmedVideoUri) => {
+        setCapturedMedia({ uri: trimmedVideoUri, type: 'video' });
+        setShowVideoTrimmer(false);
+        setVideoToTrim(null);
+        setShowPreview(true);
     };
 
 
@@ -530,8 +647,30 @@ export default function CreateStoryScreen({ navigation }) {
             });
 
             if (!result.canceled && result.assets[0]) {
-                setCapturedMedia(result.assets[0]);
-                setShowPreview(true); // Abrir modal automaticamente
+                const mediaAsset = result.assets[0];
+
+                if (mediaAsset.type === 'video' || mediaAsset.uri.includes('.mp4') || mediaAsset.uri.includes('.mov')) {
+                    // ✅ É um vídeo, verificar duração e tamanho
+                    const videoInfo = await getVideoInfo(mediaAsset.uri);
+                    const durationSeconds = videoInfo.duration;
+
+                    if (durationSeconds > 15) {
+                        Alert.alert(
+                            'Vídeo muito longo',
+                            `O vídeo selecionado tem ${Math.round(durationSeconds)} segundos.\n\n` +
+                            'O limite é de 15 segundos. Selecione um vídeo mais curto.',
+                            [{ text: 'OK' }]
+                        );
+                        return;
+                    }
+
+                    // ✅ Vídeo dentro do limite, verificar tamanho
+                    await checkVideoSizeAndShowTrimmer(mediaAsset.uri);
+                } else {
+                    // É uma imagem, ir direto para preview
+                    setCapturedMedia(mediaAsset);
+                    setShowPreview(true);
+                }
             }
         } catch (error) {
             console.error('Erro ao selecionar da galeria:', error);
@@ -971,6 +1110,17 @@ export default function CreateStoryScreen({ navigation }) {
 
 
             {renderPreview()}
+
+            {/* Modal do VideoTrimmer */}
+            <VideoTrimmerModal
+                videoUri={videoToTrim}
+                visible={showVideoTrimmer}
+                onClose={() => {
+                    setShowVideoTrimmer(false);
+                    setVideoToTrim(null);
+                }}
+                onVideoTrimmed={handleVideoTrimmed}
+            />
         </SafeAreaView>
     );
 }
@@ -1509,7 +1659,6 @@ const styles = StyleSheet.create({
         shadowRadius: 8,
         elevation: 5,
     },
-
 });
 
 
