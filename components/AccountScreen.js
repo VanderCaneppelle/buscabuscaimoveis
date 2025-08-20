@@ -327,7 +327,7 @@ export default function AccountScreen({ navigation }) {
                             'Gerencie seus anúncios publicados',
                             'list',
                             '#2ecc71',
-                            () => Alert.alert('Em breve', 'Funcionalidade em desenvolvimento')
+                            () => navigation.navigate('MyProperties')
                         )}
 
                         {renderMenuItem(

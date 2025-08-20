@@ -17,6 +17,7 @@ import PaymentConfirmationScreen from './PaymentConfirmationScreen';
 import CreateStoryScreen from './CreateStoryScreen';
 import StoryViewerScreen from './StoryViewerScreen';
 import VideoUploadTestScreen from './VideoUploadTestScreen';
+import MyPropertiesScreen from './MyPropertiesScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -228,6 +229,13 @@ function AccountStack() {
                     headerTitleStyle: {
                         fontWeight: 'bold',
                     },
+                }}
+            />
+            <Stack.Screen
+                name="MyProperties"
+                component={MyPropertiesScreen}
+                options={{
+                    headerShown: false,
                 }}
             />
         </Stack.Navigator>
