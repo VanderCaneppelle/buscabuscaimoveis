@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 const { width, height } = Dimensions.get('window');
 
-export default function StoryVideo({ videoUrl, optimizedUrl, videoRef, onLoad, onPlaybackStatusUpdate }) {
+export default function StoryVideo({ videoUrl, optimizedUrl, videoRef, onLoad, onPlaybackStatusUpdate, onError }) {
     const videoSource = optimizedUrl || videoUrl;
 
     return (
@@ -21,6 +21,7 @@ export default function StoryVideo({ videoUrl, optimizedUrl, videoRef, onLoad, o
                 volume={1}
                 onLoad={onLoad}
                 onPlaybackStatusUpdate={onPlaybackStatusUpdate}
+                onError={onError}
             />
             <View style={styles.mediaTypeIndicator}>
                 <Ionicons name="videocam" size={20} color="#fff" />

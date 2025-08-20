@@ -3,23 +3,19 @@ import { View, TouchableWithoutFeedback, Dimensions, StyleSheet, Animated, Text,
 import { supabase } from "../lib/supabase";
 import { getOptimizedUrl } from "../lib/mediaCacheService";
 import StoryLinkOverlay from "./StoryLinkOverlay";
-import StoryImage from "./StoryImage";
-import StoryVideo from "./StoryVideo";
+import StoryItem from "./StoryItem";
 import StoryControls from "./StoryControls";
 import { useAuth } from "../contexts/AuthContext";
 import { StoryService } from "../lib/storyService";
 
 const { width, height } = Dimensions.get("window");
-const IMAGE_DURATION = 5000; // 5 segundos
 
 export default function ViewerScreen({ navigation, route }) {
     const { user } = useAuth();
     const [stories, setStories] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [optimizedUrls, setOptimizedUrls] = useState({});
-    const progress = useRef(new Animated.Value(0)).current;
-    const videoRef = useRef(null);
-    const safetyTimeoutRef = useRef(null);
+    const [currentProgress, setCurrentProgress] = useState(0);
 
     useEffect(() => {
         fetchStories();
@@ -32,30 +28,9 @@ export default function ViewerScreen({ navigation, route }) {
     }, [route.params?.initialStoryIndex]);
 
     useEffect(() => {
-        if (!stories.length || currentIndex >= stories.length) return;
-
-        const currentStory = stories[currentIndex];
-        progress.setValue(0);
-
-        if (currentStory.media_type === 'image') {
-            Animated.timing(progress, {
-                toValue: 1,
-                duration: IMAGE_DURATION,
-                useNativeDriver: false,
-            }).start(({ finished }) => finished && goNext());
-
-            safetyTimeoutRef.current = setTimeout(goNext, IMAGE_DURATION + 2000);
-        } else if (currentStory.media_type === 'video' && videoRef.current) {
-            // Aguardar onLoad do vídeo em vez de usar timeout
-        }
-
-        return () => {
-            if (safetyTimeoutRef.current) {
-                clearTimeout(safetyTimeoutRef.current);
-                safetyTimeoutRef.current = null;
-            }
-        };
-    }, [currentIndex, stories]);
+        // Reset progress quando muda de story
+        setCurrentProgress(0);
+    }, [currentIndex]);
 
     const fetchStories = async () => {
         const cutoffDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
@@ -93,26 +68,25 @@ export default function ViewerScreen({ navigation, route }) {
 
 
     const goNext = () => {
-        if (safetyTimeoutRef.current) {
-            clearTimeout(safetyTimeoutRef.current);
-            safetyTimeoutRef.current = null;
+        if (currentIndex < stories.length - 1) {
+            setCurrentIndex(currentIndex + 1);
+        } else {
+            navigation.goBack();
         }
-        progress.setValue(0);
-        videoRef.current?.stopAsync();
-
-        if (currentIndex < stories.length - 1) setCurrentIndex(currentIndex + 1);
-        else navigation.goBack();
     };
 
     const goPrev = () => {
-        if (safetyTimeoutRef.current) {
-            clearTimeout(safetyTimeoutRef.current);
-            safetyTimeoutRef.current = null;
+        if (currentIndex > 0) {
+            setCurrentIndex(currentIndex - 1);
         }
-        progress.setValue(0);
-        videoRef.current?.stopAsync();
+    };
 
-        if (currentIndex > 0) setCurrentIndex(currentIndex - 1);
+    const handleStoryComplete = () => {
+        goNext();
+    };
+
+    const handleProgressUpdate = (progressValue) => {
+        setCurrentProgress(progressValue);
     };
 
     if (!stories.length) return null;
@@ -203,27 +177,13 @@ export default function ViewerScreen({ navigation, route }) {
 
                 <TouchableWithoutFeedback onPress={(e) => e.nativeEvent.locationX < width / 2 ? goPrev() : goNext()}>
                     <View style={styles.storyContainer}>
-                        {currentStory.media_type === "image" ? (
-                            <StoryImage
-                                imageUrl={currentStory.image_url}
-                                optimizedUrl={optimizedUrls[currentStory.id]}
-                            />
-                        ) : (
-                            <StoryVideo
-                                videoUrl={currentStory.image_url}
-                                optimizedUrl={optimizedUrls[currentStory.id]}
-                                videoRef={videoRef}
-                                onLoad={(data) => {
-                                    videoRef.current?.playAsync();
-                                }}
-                                onPlaybackStatusUpdate={(status) => {
-                                    if (status.isLoaded && status.durationMillis > 0) {
-                                        progress.setValue(status.positionMillis / status.durationMillis);
-                                    }
-                                    if (status.didJustFinish) goNext();
-                                }}
-                            />
-                        )}
+                        <StoryItem
+                            story={currentStory}
+                            optimizedUrl={optimizedUrls[currentStory.id]}
+                            isActive={true}
+                            onComplete={handleStoryComplete}
+                            onProgressUpdate={handleProgressUpdate}
+                        />
                         {/* Título do Story */}
                         {currentStory.title && currentStory.title.trim() !== '' && (
                             <View style={[
@@ -259,7 +219,7 @@ export default function ViewerScreen({ navigation, route }) {
                         <StoryControls
                             stories={stories}
                             currentIndex={currentIndex}
-                            progress={progress}
+                            currentProgress={currentProgress}
                             canDeleteStory={canDeleteStory}
                             onDeletePress={handleDeleteStory}
                         />

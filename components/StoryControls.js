@@ -1,12 +1,11 @@
 import React from 'react';
-import { View, TouchableOpacity, StyleSheet, Platform, StatusBar } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Platform, StatusBar, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Animated } from 'react-native';
 
 export default function StoryControls({
     stories,
     currentIndex,
-    progress,
+    currentProgress,
     canDeleteStory,
     onDeletePress
 }) {
@@ -21,10 +20,7 @@ export default function StoryControls({
                                 style={[
                                     styles.progressBarFill,
                                     {
-                                        width: progress.interpolate({
-                                            inputRange: [0, 1],
-                                            outputRange: ['0%', '100%'],
-                                        }),
+                                        width: `${currentProgress * 100}%`,
                                     },
                                 ]}
                             />
@@ -64,15 +60,15 @@ const styles = StyleSheet.create({
         borderRadius: 2,
     },
     progressBarFill: {
-        height: 6,
-        backgroundColor: "#ff0000",
+        height: 3,
+        backgroundColor: "#ffffff",
         borderRadius: 3,
         // Otimização: remover shadow no Android para evitar overdraw
         ...(Platform.OS === 'ios' ? {
-            shadowColor: "#ff0000",
+            shadowColor: "#ffffff",
             shadowOffset: { width: 0, height: 0 },
-            shadowOpacity: 0.8,
-            shadowRadius: 3,
+            shadowOpacity: 0.3,
+            shadowRadius: 2,
         } : {
             elevation: 0,
         }),
@@ -81,7 +77,7 @@ const styles = StyleSheet.create({
         position: "absolute",
         top: Platform.OS === 'ios' ? 100 : 80,
         right: 20,
-        backgroundColor: "rgba(32, 5, 97, 0.8)",
+        backgroundColor: "rgba(160, 8, 8, 0.8)",
         borderRadius: 25,
         width: 50,
         height: 50,
