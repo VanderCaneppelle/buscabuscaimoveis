@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { TouchableOpacity, Text, StyleSheet, Linking, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -31,20 +31,18 @@ const LINK_TYPES = {
     },
 };
 
-export default function StoryLinkOverlay({ linkData, onPress, style, position = 'bottom-right', coordinates = null, scale = 1.0 }) {
-    console.log('🔗 StoryLinkOverlay recebeu:', linkData);
-
+function StoryLinkOverlay({ linkData, onPress, style, position = 'bottom-right', coordinates = null, scale = 1.0 }) {
     if (!linkData || !linkData.url) {
-        console.log('🔗 StoryLinkOverlay: dados inválidos, não renderizando');
         return null;
     }
+    console.log('🔗 StoryLinkOverlay recebeu:', linkData);
 
     const linkType = LINK_TYPES[linkData.type] || LINK_TYPES.website;
     const iconName = linkData.icon || linkType.icon;
     const backgroundColor = linkData.backgroundColor || linkType.backgroundColor;
     const textColor = linkData.textColor || linkType.color;
 
-    const handlePress = async () => {
+    const handlePress = useCallback(async () => {
         try {
             // Se tem callback customizado, usar ele
             if (onPress) {
@@ -72,7 +70,7 @@ export default function StoryLinkOverlay({ linkData, onPress, style, position = 
                 [{ text: 'OK' }]
             );
         }
-    };
+    }, [linkData, onPress]);
 
     // Função para obter o estilo de posicionamento
     const getPositionStyle = (pos) => {
@@ -143,3 +141,6 @@ const styles = StyleSheet.create({
 
 // Exportar configurações para uso externo
 export { LINK_TYPES };
+
+// Exportar componente otimizado
+export default React.memo(StoryLinkOverlay);

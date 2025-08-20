@@ -185,9 +185,6 @@ export default function StoriesComponent({ navigation }) {
             <View style={[styles.storyCircle, styles.createStoryCircle]}>
                 <Ionicons name="add" size={30} color="#fff" />
             </View>
-            <Text style={styles.storyTitle} numberOfLines={1}>
-                Criar
-            </Text>
         </TouchableOpacity>
     );
 
@@ -273,13 +270,13 @@ export default function StoriesComponent({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-    container: { marginVertical: 10 },
+    container: { marginVertical: 0 },
     headerContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 15,
-        marginHorizontal: 20
+        marginBottom: 5,
+        marginHorizontal: 10
     },
     sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#2c3e50' },
     adminButtons: {
@@ -314,8 +311,8 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#2ecc71',
     },
-    storiesContainer: { paddingHorizontal: 20, gap: 15 },
-    storyItem: { alignItems: 'center', width: STORY_SIZE + 20 },
+    storiesContainer: { paddingHorizontal: 5, gap: 5 },
+    storyItem: { alignItems: 'center', width: STORY_SIZE + 5 },
     storyCircle: {
         width: STORY_SIZE,
         height: STORY_SIZE,
@@ -326,8 +323,8 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     createStoryCircle: {
-        backgroundColor: '#27ae60',
-        borderColor: '#27ae60',
+        backgroundColor: '#00335e',
+        borderColor: '#00335e',
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -380,9 +377,9 @@ const StoryItem = ({ story, onPress }) => {
                     <View style={[styles.storyCircle, { backgroundColor: '#ccc' }]} />
                 )}
             </View>
-            <Text style={styles.storyTitle} numberOfLines={1}>
+            {/* <Text style={styles.storyTitle} numberOfLines={1}>
                 {story.title}
-            </Text>
+            </Text> */}
         </TouchableOpacity>
     );
 };

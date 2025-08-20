@@ -4,7 +4,6 @@ import {
     Text,
     StyleSheet,
     TouchableOpacity,
-    SafeAreaView,
     Alert,
     FlatList,
     Image,
@@ -17,6 +16,7 @@ import {
     Platform,
     useColorScheme,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext';
@@ -32,6 +32,7 @@ export default function HomeScreen({ navigation }) {
     console.log('Rendere HomeScreen');
 
     const { user, signOut } = useAuth();
+    const insets = useSafeAreaInsets();
     const colorScheme = useColorScheme();
     const [profile, setProfile] = useState(null);
     const [properties, setProperties] = useState([]);
@@ -638,16 +639,16 @@ export default function HomeScreen({ navigation }) {
 
     if (loading) {
         return (
-            <SafeAreaView style={styles.container}>
+            <View style={[styles.container, { paddingTop: insets.top }]}>
                 <View style={styles.loadingContainer}>
                     <Text style={styles.loadingText}>Carregando...</Text>
                 </View>
-            </SafeAreaView>
+            </View>
         );
     }
 
     return (
-        <SafeAreaView style={styles.container}>
+        <View style={[styles.container, { paddingTop: insets.top }]}>
             <View style={styles.storiesContainer}>
                 <View style={styles.titleContainer}>
                     <Image
@@ -763,7 +764,7 @@ export default function HomeScreen({ navigation }) {
 
             {/* Story Modal */}
             {renderStoryModal()}
-        </SafeAreaView>
+        </View>
     );
 }
 
@@ -773,7 +774,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#ffcc1e',
     },
     storiesContainer: {
-        paddingTop: 50,
+        paddingTop: 5,
         paddingBottom: 5,
         backgroundColor: '#ffcc1e',
     },
@@ -799,7 +800,7 @@ const styles = StyleSheet.create({
     header: {
         padding: 15,
         paddingTop: 20,
-        paddingBottom: 10,
+        paddingBottom: 5,
         backgroundColor: '#fff',
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
@@ -1163,8 +1164,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: '#fff',
         borderRadius: 15,
-        paddingHorizontal: 10,
-        paddingVertical: 5,
+        paddingHorizontal: 15,
+        paddingVertical: 0,
+        height: 48,
         shadowColor: '#000',
         shadowOffset: {
             width: 0,
@@ -1175,12 +1177,15 @@ const styles = StyleSheet.create({
         elevation: 3,
     },
     searchIcon: {
-        marginRight: 10,
+        marginRight: 5,
     },
     searchInput: {
         flex: 1,
         fontSize: 16,
         color: '#00335e',
+        paddingVertical: 0,
+        minHeight: 20,
+        textAlignVertical: Platform.OS === 'android' ? 'center' : 'auto',
     },
     clearSearchButton: {
         padding: 5,
@@ -1256,7 +1261,7 @@ const styles = StyleSheet.create({
     },
     storyModalImage: {
         width: '100%',
-        height: '70%',
+        height: '80%',
         borderRadius: 12,
     },
     storyModalInfo: {

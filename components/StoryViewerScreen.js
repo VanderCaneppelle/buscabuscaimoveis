@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { View, TouchableWithoutFeedback, Dimensions, StyleSheet, Animated, Text, SafeAreaView, StatusBar, Platform, Alert } from "react-native";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from "../lib/supabase";
 import { getOptimizedUrl } from "../lib/mediaCacheService";
-import StoryLinkOverlay from "./StoryLinkOverlay";
 import StoryItem from "./StoryItem";
 import StoryControls from "./StoryControls";
+import StoryOverlays from "./StoryOverlays";
 import { useAuth } from "../contexts/AuthContext";
 import { StoryService } from "../lib/storyService";
 
@@ -12,6 +13,7 @@ const { width, height } = Dimensions.get("window");
 
 export default function ViewerScreen({ navigation, route }) {
     const { user } = useAuth();
+    const insets = useSafeAreaInsets();
     const [stories, setStories] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [optimizedUrls, setOptimizedUrls] = useState({});
@@ -146,116 +148,45 @@ export default function ViewerScreen({ navigation, route }) {
 
 
 
-    // Função para obter o estilo de posicionamento do título
-    const getTitlePositionStyle = (position, coordinates = null) => {
-        // Se tem coordenadas personalizadas, usar elas
-        if (coordinates) {
-            try {
-                const coords = typeof coordinates === 'string' ? JSON.parse(coordinates) : coordinates;
-                return { left: coords.x, top: coords.y };
-            } catch (error) {
-                console.warn('Erro ao parsear coordenadas do título:', error);
-            }
-        }
 
-        // Senão, usar posições predefinidas
-        switch (position) {
-            case 'top-center':
-                return { top: 100, bottom: 'auto' };
-            case 'center':
-                return { top: '50%', bottom: 'auto', transform: [{ translateY: -25 }] };
-            case 'bottom-center':
-            default:
-                return { bottom: 100, top: 'auto' };
-        }
-    };
 
     return (
-        <View style={styles.container}>
-            <SafeAreaView style={styles.safeArea}>
+        <View style={[styles.container, { paddingTop: insets.top }]}>
+            <TouchableWithoutFeedback onPress={(e) => e.nativeEvent.locationX < width / 2 ? goPrev() : goNext()}>
+                <View style={styles.storyContainer}>
+                    <StoryItem
+                        story={currentStory}
+                        optimizedUrl={optimizedUrls[currentStory.id]}
+                        isActive={true}
+                        onComplete={handleStoryComplete}
+                        onProgressUpdate={handleProgressUpdate}
+                    />
 
+                    {/* Story Overlays (Título e Link) */}
+                    <StoryOverlays story={currentStory} />
 
-                <TouchableWithoutFeedback onPress={(e) => e.nativeEvent.locationX < width / 2 ? goPrev() : goNext()}>
-                    <View style={styles.storyContainer}>
-                        <StoryItem
-                            story={currentStory}
-                            optimizedUrl={optimizedUrls[currentStory.id]}
-                            isActive={true}
-                            onComplete={handleStoryComplete}
-                            onProgressUpdate={handleProgressUpdate}
-                        />
-                        {/* Título do Story */}
-                        {currentStory.title && currentStory.title.trim() !== '' && (
-                            <View style={[
-                                styles.storyTitleContainer,
-                                getTitlePositionStyle(currentStory.title_position || 'bottom-center', currentStory.title_coordinates)
-                            ]}>
-                                <Text style={[
-                                    styles.storyTitle,
-                                    { fontSize: 16 * (currentStory.title_scale || 1.0) }
-                                ]}>
-                                    {currentStory.title}
-                                </Text>
-                            </View>
-                        )}
-
-                        {/* Story Link Overlay */}
-                        {currentStory.link_url && (
-                            <StoryLinkOverlay
-                                linkData={{
-                                    type: currentStory.link_url.includes('wa.me') ? 'whatsapp' :
-                                        currentStory.link_url.includes('tel:') ? 'phone' :
-                                            currentStory.link_url.includes('mailto:') ? 'email' : 'website',
-                                    url: currentStory.link_url,
-                                    text: currentStory.link_text || 'Saiba mais'
-                                }}
-                                position={currentStory.link_position || 'bottom-right'}
-                                coordinates={currentStory.link_coordinates ? JSON.parse(currentStory.link_coordinates) : null}
-                                scale={currentStory.link_scale || 1.0}
-                            />
-                        )}
-
-                        {/* Story Controls */}
-                        <StoryControls
-                            stories={stories}
-                            currentIndex={currentIndex}
-                            currentProgress={currentProgress}
-                            canDeleteStory={canDeleteStory}
-                            onDeletePress={handleDeleteStory}
-                        />
-                    </View>
-                </TouchableWithoutFeedback>
-            </SafeAreaView>
+                    {/* Story Controls */}
+                    <StoryControls
+                        stories={stories}
+                        currentIndex={currentIndex}
+                        currentProgress={currentProgress}
+                        canDeleteStory={canDeleteStory}
+                        onDeletePress={handleDeleteStory}
+                    />
+                </View>
+            </TouchableWithoutFeedback>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    safeArea: {
+    container: {
         flex: 1,
-        backgroundColor: "black",
-        paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+        backgroundColor: "black"
     },
-    container: { flex: 1 },
-    storyContainer: { flex: 1, justifyContent: "center", position: "relative" },
-    storyTitleContainer: {
-        position: "absolute",
-        backgroundColor: "rgba(0, 0, 0, 0.7)",
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 20,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 4,
-        elevation: 10,
-        zIndex: 9999,
+    storyContainer: {
+        flex: 1,
+        justifyContent: "center",
+        position: "relative"
     },
-    storyTitle: {
-        color: "white",
-        fontSize: 16,
-        fontWeight: "bold",
-        textAlign: "center",
-    },
-
 });

@@ -24,7 +24,6 @@ import { supabase } from '../lib/supabase';
 import { Platform } from 'react-native';
 import { MediaServiceOptimized as MediaService } from '../lib/mediaServiceOptimized';
 import { useAuth } from '../contexts/AuthContext';
-import VideoTrimmerModal from './VideoTrimmer';
 
 // Componente DraggableTitle
 const DraggableTitle = ({ title, coordinates, onCoordinatesChange, onEdit, onDelete, onDragToTrash, scale = 1.0, onScaleChange }) => {
@@ -463,8 +462,6 @@ export default function CreateStoryScreen({ navigation }) {
     // 🎯 Função para gravar vídeo com qualidade média
     const recordVideo = async () => {
         try {
-            // Permissões via ImagePicker (irá solicitar automaticamente quando necessário)
-
             // 🎯 SOLUÇÃO HÍBRIDA: iOS vs Android
             if (Platform.OS === 'ios') {
                 // ✅ iOS: videoMaxDuration funciona nativamente
@@ -475,23 +472,23 @@ export default function CreateStoryScreen({ navigation }) {
                     base64: false,
                     allowsMultipleSelection: false,
                     exif: false,
-                    quality: 0.8,
+                    quality: 0.65,
                     videoQuality: ImagePicker.UIImagePickerControllerQualityType.Medium,
                     videoBitrate: 1000000, // 1Mbps
-                    videoMaxDuration: 25, // ✅ Funciona no iOS
+                    videoMaxDuration: 30, // ✅ 30 segundos no iOS
                     presentationStyle: 'fullScreen',
                     cameraType: ImagePicker.CameraType.back,
                 };
 
                 const result = await ImagePicker.launchCameraAsync(config);
                 if (!result.canceled && result.assets[0]) {
-                    await checkVideoSizeAndShowTrimmer(result.assets[0].uri);
+                    await checkVideoAndShowPreview(result.assets[0].uri);
                 }
             } else {
                 // ⚠️ Android: videoMaxDuration não funciona, usar timer visual
                 Alert.alert(
                     'Gravar Vídeo',
-                    'Você terá 15 segundos para gravar o vídeo.\n\n' +
+                    'Você terá 30 segundos para gravar o vídeo.\n\n' +
                     'Toque em "Gravar" para começar.',
                     [
                         { text: 'Cancelar', style: 'cancel' },
@@ -525,24 +522,20 @@ export default function CreateStoryScreen({ navigation }) {
             const result = await ImagePicker.launchCameraAsync(config);
 
             if (!result.canceled && result.assets[0]) {
-                // ✅ Validar duração do vídeo gravado (quando disponível pelo ImagePicker)
+                // ✅ Validar duração do vídeo gravado
                 const asset = result.assets[0];
                 const durationSeconds = asset.duration ? Math.round(asset.duration / 1000) : null; // alguns devices retornam em ms
 
-                if (durationSeconds && durationSeconds > 20) {
+                if (durationSeconds && durationSeconds > 30) {
                     Alert.alert(
                         'Vídeo muito longo',
                         `O vídeo tem ${durationSeconds} segundos.\n\n` +
-                        'O limite é de 20 segundos. Deseja gravar novamente?',
+                        'O limite é de 30 segundos. Deseja gravar novamente?',
                         [
                             { text: 'Cancelar', style: 'cancel' },
                             {
                                 text: 'Gravar Novamente',
                                 onPress: startAndroidRecording
-                            },
-                            {
-                                text: 'Usar Mesmo Assim',
-                                onPress: () => checkVideoSizeAndShowTrimmer(asset.uri)
                             }
                         ]
                     );
@@ -550,7 +543,7 @@ export default function CreateStoryScreen({ navigation }) {
                 }
 
                 // ✅ Vídeo dentro do limite, continuar normalmente
-                await checkVideoSizeAndShowTrimmer(asset.uri);
+                await checkVideoAndShowPreview(asset.uri);
             }
         } catch (error) {
             console.error('Erro ao gravar vídeo no Android:', error);
@@ -559,22 +552,23 @@ export default function CreateStoryScreen({ navigation }) {
     };
 
 
-    const [showVideoTrimmer, setShowVideoTrimmer] = useState(false);
-    const [videoToTrim, setVideoToTrim] = useState(null);
-
-    // Função para verificar tamanho do vídeo e mostrar trimmer se necessário
-    const checkVideoSizeAndShowTrimmer = async (videoUri) => {
+    // Função para verificar tamanho do vídeo e ir direto para preview
+    const checkVideoAndShowPreview = async (videoUri) => {
         try {
-            console.log('🔍 DEBUG - checkVideoSizeAndShowTrimmer iniciado');
+            console.log('🔍 DEBUG - checkVideoAndShowPreview iniciado');
             console.log('🔍 DEBUG - videoUri:', videoUri);
             const fileInfo = await FileSystem.getInfoAsync(videoUri);
             const fileSizeMB = fileInfo.size / 1024 / 1024;
             const MAX_SIZE_MB = 100; // Limite do Cloudinary
 
             if (fileSizeMB > MAX_SIZE_MB) {
-                // Vídeo muito grande, mostrar trimmer
-                setVideoToTrim(videoUri);
-                setShowVideoTrimmer(true);
+                // Vídeo muito grande, mostrar alerta
+                Alert.alert(
+                    'Vídeo Muito Grande',
+                    `Este vídeo tem ${fileSizeMB.toFixed(1)}MB e excede o limite de ${MAX_SIZE_MB}MB.\n\n` +
+                    'Grave um vídeo mais curto ou com menor qualidade.',
+                    [{ text: 'OK' }]
+                );
             } else {
                 // Vídeo OK, ir direto para preview
                 setCapturedMedia({ uri: videoUri, type: 'video' });
@@ -586,13 +580,6 @@ export default function CreateStoryScreen({ navigation }) {
             setCapturedMedia({ uri: videoUri, type: 'video' });
             setShowPreview(true);
         }
-    };
-
-    const handleVideoTrimmed = (trimmedVideoUri) => {
-        setCapturedMedia({ uri: trimmedVideoUri, type: 'video' });
-        setShowVideoTrimmer(false);
-        setVideoToTrim(null);
-        setShowPreview(true);
     };
 
 
@@ -654,18 +641,18 @@ export default function CreateStoryScreen({ navigation }) {
                     const videoInfo = await getVideoInfo(mediaAsset.uri);
                     const durationSeconds = videoInfo.duration;
 
-                    if (durationSeconds > 15) {
+                    if (durationSeconds > 30) {
                         Alert.alert(
                             'Vídeo muito longo',
                             `O vídeo selecionado tem ${Math.round(durationSeconds)} segundos.\n\n` +
-                            'O limite é de 15 segundos. Selecione um vídeo mais curto.',
+                            'O limite é de 30 segundos. Selecione um vídeo mais curto.',
                             [{ text: 'OK' }]
                         );
                         return;
                     }
 
                     // ✅ Vídeo dentro do limite, verificar tamanho
-                    await checkVideoSizeAndShowTrimmer(mediaAsset.uri);
+                    await checkVideoAndShowPreview(mediaAsset.uri);
                 } else {
                     // É uma imagem, ir direto para preview
                     setCapturedMedia(mediaAsset);
@@ -822,7 +809,7 @@ export default function CreateStoryScreen({ navigation }) {
                         <Video
                             source={{ uri: capturedMedia.uri }}
                             style={styles.previewMedia}
-                            useNativeControls
+                            useNativeControls={false}
                             resizeMode="cover"
                             shouldPlay
                             isLooping
@@ -1102,7 +1089,7 @@ export default function CreateStoryScreen({ navigation }) {
                 <View style={styles.infoContainer}>
                     <Ionicons name="information-circle" size={20} color="#1e3a8a" />
                     <Text style={styles.infoText}>
-                        Stories são exibidos por 24 horas e podem conter fotos ou vídeos de até 15 segundos.
+                        Stories são exibidos por 24 horas e podem conter fotos ou vídeos de até 30 segundos.
                     </Text>
                 </View>
             </View>
@@ -1110,17 +1097,6 @@ export default function CreateStoryScreen({ navigation }) {
 
 
             {renderPreview()}
-
-            {/* Modal do VideoTrimmer */}
-            <VideoTrimmerModal
-                videoUri={videoToTrim}
-                visible={showVideoTrimmer}
-                onClose={() => {
-                    setShowVideoTrimmer(false);
-                    setVideoToTrim(null);
-                }}
-                onVideoTrimmed={handleVideoTrimmed}
-            />
         </SafeAreaView>
     );
 }
