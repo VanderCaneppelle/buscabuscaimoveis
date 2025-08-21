@@ -1,13 +1,14 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
-    View, Text, StyleSheet, TouchableOpacity, FlatList, Image,
+    View, Text, StyleSheet, TouchableOpacity, FlatList,
     Alert, RefreshControl, Modal, ScrollView, TextInput, ActivityIndicator,
     Dimensions, Platform
 } from 'react-native';
+import { Image } from 'expo-image';
 import { Video } from 'expo-av';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext';
 import { PropertyService } from '../lib/propertyService';
 import { supabase } from '../lib/supabase';
@@ -80,11 +81,15 @@ export default function MyPropertiesScreen({ navigation }) {
         }
     }, [user?.id]);
 
-    const fetchProperties = useCallback(async () => {
+    const fetchProperties = useCallback(async (forceRefresh = false) => {
         if (!user?.id) return;
         setLoading(true);
         try {
-            const data = await PropertyService.getUserProperties(user.id, selectedFilter === 'all' ? null : selectedFilter);
+            const data = await PropertyService.getUserProperties(
+                user.id,
+                selectedFilter === 'all' ? null : selectedFilter,
+                forceRefresh
+            );
             setProperties(data);
         } catch (err) {
             console.error('Erro ao buscar propriedades:', err);
@@ -101,18 +106,22 @@ export default function MyPropertiesScreen({ navigation }) {
         }
     }, [user?.id]);
 
+    // Recarregar dados quando a tela receber foco
     useFocusEffect(
         useCallback(() => {
             if (user?.id) {
+                console.log('🔄 Tela MyPropertiesScreen recebeu foco, recarregando dados...');
                 fetchStatsAndPlan();
                 fetchProperties();
             }
         }, [user?.id])
     );
 
+
+
     const onRefresh = async () => {
         setRefreshing(true);
-        await Promise.all([fetchStatsAndPlan(), fetchProperties()]);
+        await Promise.all([fetchStatsAndPlan(), fetchProperties(true)]);
         setRefreshing(false);
     };
 
@@ -194,7 +203,9 @@ export default function MyPropertiesScreen({ navigation }) {
             await PropertyService.updateProperty(editingProperty.id, updateData, newMediaFiles, removedImages);
             Alert.alert('Sucesso', 'Anúncio atualizado com sucesso!');
             setEditModalVisible(false);
-            fetchProperties();
+            // Limpar cache e recarregar
+            await PropertyService.clearUserPropertiesCache(user.id);
+            fetchProperties(true);
         } catch (err) {
             console.error('Erro ao atualizar propriedade:', err);
             Alert.alert('Erro', 'Não foi possível atualizar o anúncio');
@@ -210,7 +221,9 @@ export default function MyPropertiesScreen({ navigation }) {
             await PropertyService.deleteProperty(selectedProperty.id);
             Alert.alert('Sucesso', 'Anúncio excluído com sucesso!');
             setDeleteModalVisible(false);
-            fetchProperties();
+            // Limpar cache e recarregar
+            await PropertyService.clearUserPropertiesCache(user.id);
+            fetchProperties(true);
         } catch (err) {
             console.error('Erro ao deletar propriedade:', err);
             Alert.alert('Erro', 'Não foi possível excluir o anúncio');
@@ -360,18 +373,21 @@ export default function MyPropertiesScreen({ navigation }) {
             <Image
                 source={{ uri: item }}
                 style={mediaStyle}
-                resizeMode="cover"
+                contentFit="cover"
+                cachePolicy="disk"
+                placeholder={require('../assets/icon.png')}
+                transition={200}
                 onError={(error) => {
                     console.error(`❌ Erro na imagem ${index}:`, error);
                 }}
-                onLoadStart={() => {
-                    console.log(`🖼️ Carregando imagem ${index}: ${item.substring(0, 50)}...`);
+                onLoad={() => {
+                    console.log(`✅ Imagem ${index} carregada do cache: ${item.substring(0, 50)}...`);
                 }}
             />
         );
     }, [isVideoFile, isValidUrl]);
 
-    const renderPropertyItem = ({ item }) => {
+    const renderPropertyItem = useCallback(({ item }) => {
         const isExpanded = expandedItems.has(item.id);
         return (
             <View style={styles.propertyCard}>
@@ -551,7 +567,7 @@ export default function MyPropertiesScreen({ navigation }) {
                 )}
             </View>
         );
-    };
+    }, [expandedItems, toggleExpanded, isValidUrl, isVideoFile, getStatusColor, getStatusText, openEditModal, openDeleteModal, navigation]);
 
     /** ------------------ MAIN RENDER ------------------ **/
 
@@ -585,6 +601,16 @@ export default function MyPropertiesScreen({ navigation }) {
                     onPress={() => navigation.navigate('CreateAd')}
                 >
                     <Ionicons name="add" size={24} color="#fff" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={[styles.addButton, { marginLeft: 10 }]}
+                    onPress={() => {
+                        // Teste manual de cache
+                        console.log('🧪 Teste manual de cache iniciado');
+                        fetchProperties(true);
+                    }}
+                >
+                    <Ionicons name="refresh" size={20} color="#fff" />
                 </TouchableOpacity>
             </View>
 
@@ -645,6 +671,15 @@ export default function MyPropertiesScreen({ navigation }) {
             {/* Lista */}
             <FlatList
                 data={properties}
+                removeClippedSubviews={true}
+                maxToRenderPerBatch={5}
+                windowSize={10}
+                initialNumToRender={5}
+                getItemLayout={(data, index) => ({
+                    length: 200, // altura estimada de cada item
+                    offset: 200 * index,
+                    index,
+                })}
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={renderPropertyItem}
                 contentContainerStyle={styles.listContainer}

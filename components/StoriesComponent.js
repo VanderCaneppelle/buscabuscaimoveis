@@ -42,17 +42,15 @@ export default function StoriesComponent({ navigation }) {
 
     const onRefresh = React.useCallback(() => {
         setRefreshing(true);
-        // Limpar cache e recarregar
-        clearCache().then(() => {
-            loadStories(true).finally(() => setRefreshing(false));
-        });
+        // Recarregar stories sem limpar cache de mídia
+        loadStories(true).finally(() => setRefreshing(false));
     }, []);
 
-    // Função para limpar cache manualmente
+    // Função para limpar cache manualmente (apenas dados, não mídia)
     const clearCache = async () => {
         try {
             await AsyncStorage.removeItem(CACHE_KEY);
-            console.log('🗑️ Cache de stories limpo');
+            console.log('🗑️ Cache de stories limpo (apenas dados)');
         } catch (error) {
             console.error('❌ Erro ao limpar cache:', error);
         }

@@ -6,13 +6,13 @@ import {
     TouchableOpacity,
     SafeAreaView,
     FlatList,
-    Image,
     Dimensions,
     Alert,
     Linking,
     ScrollView,
     StatusBar,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { Video } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
@@ -193,7 +193,10 @@ export default function PropertyDetailsScreen({ route, navigation }) {
             <Image
                 source={{ uri: item }}
                 style={styles.image}
-                resizeMode="cover"
+                contentFit="cover"
+                cachePolicy="disk"
+                placeholder={require('../assets/icon.png')}
+                transition={200}
             />
         );
     }, [isVideoFile]);

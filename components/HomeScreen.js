@@ -6,7 +6,6 @@ import {
     TouchableOpacity,
     Alert,
     FlatList,
-    Image,
     TextInput,
     Modal,
     ScrollView,
@@ -16,6 +15,7 @@ import {
     Platform,
     useColorScheme,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
@@ -364,7 +364,10 @@ export default function HomeScreen({ navigation }) {
                 <Image
                     source={{ uri: mediaItem }}
                     style={styles.mediaItem}
-                    resizeMode="cover"
+                    contentFit="cover"
+                    cachePolicy="disk"
+                    placeholder={require('../assets/icon.png')}
+                    transition={200}
                 />
             );
         }, []);
