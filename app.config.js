@@ -15,7 +15,8 @@ export default {
       "**/*"
     ],
     ios: {
-      supportsTablet: true
+      supportsTablet: true,
+      jsEngine: "hermes"
     },
     android: {
       package: "com.buscabuscaimoveis.app",

@@ -39,7 +39,6 @@ export default function HomeScreen({ navigation }) {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [loadingMore, setLoadingMore] = useState(false);
-    const [showFilters, setShowFilters] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [filters, setFilters] = useState({
         city: '',
@@ -47,16 +46,17 @@ export default function HomeScreen({ navigation }) {
         minPrice: '',
         maxPrice: '',
     });
-    const [selectedPropertyIndex, setSelectedPropertyIndex] = useState(null);
-    const [showStoryModal, setShowStoryModal] = useState(false);
-    const [selectedStory, setSelectedStory] = useState(null);
     const [favorites, setFavorites] = useState({});
 
     // Estados para lazy loading
     const [currentPage, setCurrentPage] = useState(0);
     const [hasMore, setHasMore] = useState(true);
     const [totalCount, setTotalCount] = useState(0);
-    const [cacheStats, setCacheStats] = useState(null);
+
+    // Estado para controlar renderizações durante transições
+    const [isTransitioning, setIsTransitioning] = useState(false);
+    const [shouldRenderContent, setShouldRenderContent] = useState(false);
+    const [hasInitialData, setHasInitialData] = useState(false);
 
     // Cores dinâmicas baseadas no tema do dispositivo
     const colors = {
@@ -69,23 +69,56 @@ export default function HomeScreen({ navigation }) {
     };
 
     useEffect(() => {
-        if (user?.id) {
-            console.log('👤👤👤 HomeScreen: USUÁRIO DETECTADO, CARREGANDO DADOS INICIAIS 👤👤👤');
+        if (user?.id && shouldRenderContent && !hasInitialData) {
+            console.log('👤👤👤 HomeScreen: USUÁRIO DETECTADO E CONTEÚDO LIBERADO, CARREGANDO DADOS 👤👤👤');
+            // Carregar dados apenas uma vez
             fetchProfile();
             fetchProperties();
             fetchFavorites();
+            setHasInitialData(true);
         }
-    }, [user?.id]);
+    }, [user?.id, shouldRenderContent, hasInitialData]);
 
-    // Sincronizar favoritos quando a tela receber foco
-    useFocusEffect(
-        React.useCallback(() => {
-            if (user?.id) {
-                console.log('🎯🎯🎯 HomeScreen: TELA RECEBEU FOCO, SINCRONIZANDO FAVORITOS 🎯🎯🎯');
-                fetchFavorites();
-            }
-        }, [user?.id])
-    );
+    // Listener para detectar transições de tela (iOS)
+    useEffect(() => {
+        if (Platform.OS === 'ios') {
+            const unsubscribeFocus = navigation.addListener('focus', () => {
+                console.log('🏠 HomeScreen: Tela focada - iniciando carregamento completo');
+                setIsTransitioning(false);
+                // Aguardar carregamento completo antes de mostrar conteúdo
+                setTimeout(() => {
+                    setShouldRenderContent(true);
+                }, 200); // Reduzido para 200ms para iOS
+            });
+
+            const unsubscribeBlur = navigation.addListener('blur', () => {
+                console.log('🏠 HomeScreen: Tela desfocada - pausando renderizações pesadas');
+                setIsTransitioning(true);
+                setShouldRenderContent(false); // Parar renderização imediatamente
+                // Não resetar hasInitialData no blur para iOS - manter dados em cache
+            });
+
+            // Listener para detectar quando está prestes a navegar
+            const unsubscribeBeforeRemove = navigation.addListener('beforeRemove', () => {
+                console.log('🏠 HomeScreen: Antes de navegar - pausando tudo');
+                setIsTransitioning(true);
+                setShouldRenderContent(false); // Parar renderização imediatamente
+                // Não resetar hasInitialData no beforeRemove para iOS
+            });
+
+            return () => {
+                unsubscribeFocus();
+                unsubscribeBlur();
+                unsubscribeBeforeRemove();
+            };
+        } else {
+            // Android: renderizar imediatamente
+            setShouldRenderContent(true);
+        }
+    }, [navigation]);
+
+    // Removido useFocusEffect para evitar recarregamento desnecessário
+    // Os favoritos são carregados apenas na primeira montagem
 
     const fetchProfile = async () => {
         try {
@@ -106,52 +139,30 @@ export default function HomeScreen({ navigation }) {
     };
 
     const fetchProperties = async (customFilters = null, searchQuery = null, page = 0, forceRefresh = false) => {
-        console.log('🏠🏠🏠 HomeScreen: INICIANDO FETCHPROPERTIES 🏠🏠🏠');
-        console.log('📋 Parâmetros:', { customFilters, searchQuery, page, forceRefresh });
+        // Evitar recarregamento se já temos dados e não é forceRefresh
+        if (page === 0 && properties.length > 0 && !forceRefresh && shouldRenderContent && hasInitialData) {
+            console.log('🏠 HomeScreen: Dados já carregados, pulando fetchProperties');
+            return;
+        }
+
+        console.log('🏠 HomeScreen: Carregando propriedades...');
+        setLoading(true);
 
         try {
             const activeFilters = customFilters || filters;
             const activeSearch = searchQuery !== null ? searchQuery : searchTerm;
 
-            console.log('🔍 HomeScreen: Chamando PropertyCacheService.getProperties');
             const result = await PropertyCacheService.getProperties({
                 page,
                 filters: activeFilters,
                 searchTerm: activeSearch,
-                forceRefresh
+                forceRefresh,
+                enableParallelUpdate: false // Desabilitar atualização em background
             });
-
-            console.log('✅✅✅ HomeScreen: RESULTADO RECEBIDO DO PropertyCacheService ✅✅✅');
-            console.log('📊 Dados:', {
-                fromCache: result.fromCache,
-                totalCount: result.totalCount,
-                hasMore: result.hasMore,
-                dataLength: result.data.length,
-                page: page
-            });
-
-            if (result.fromCache) {
-                console.log('📦📦📦 HomeScreen: DADOS CARREGADOS DO CACHE 📦📦📦');
-                if (result.cacheInfo) {
-                    console.log('📦 Cache Info:', result.cacheInfo);
-                }
-            } else {
-                console.log('🌐🌐🌐 HomeScreen: DADOS CARREGADOS DO SERVIDOR 🌐🌐🌐');
-                if (result.serverInfo) {
-                    console.log('🌐 Server Info:', result.serverInfo);
-                }
-            }
-
-            if (result.error) {
-                console.log('⚠️ HomeScreen: Aviso - usando cache como fallback:', result.error);
-            }
 
             if (page === 0) {
-                // Primeira página - substituir dados
-                console.log('🔄 HomeScreen: Substituindo dados (página 0)');
                 setProperties(result.data);
             } else {
-                // Páginas subsequentes - adicionar dados
                 setProperties(prev => [...prev, ...result.data]);
             }
 
@@ -159,18 +170,12 @@ export default function HomeScreen({ navigation }) {
             setHasMore(result.hasMore);
             setTotalCount(result.totalCount);
 
-            // Atualizar estatísticas do cache
-            const stats = await PropertyCacheService.getCacheStats();
-            setCacheStats(stats);
-            console.log('📊 HomeScreen: Estatísticas do cache atualizadas:', stats);
-
         } catch (error) {
-            console.error('❌❌❌ HomeScreen: ERRO AO BUSCAR IMÓVEIS ❌❌❌', error);
+            console.error('❌ Erro ao carregar propriedades:', error);
             Alert.alert('Erro', 'Não foi possível carregar os anúncios');
         } finally {
             setLoading(false);
             setLoadingMore(false);
-            console.log('🏁🏁🏁 HomeScreen: FETCHPROPERTIES FINALIZADO 🏁🏁🏁');
         }
     };
 
@@ -216,22 +221,9 @@ export default function HomeScreen({ navigation }) {
         fetchProperties(clearedFilters, searchTerm, 0);
     };
 
-    const applyFilters = () => {
-        console.log('🔧🔧🔧 HomeScreen: APLICANDO FILTROS 🔧🔧🔧', filters);
-        setCurrentPage(0);
-        fetchProperties(filters, searchTerm, 0);
-        setShowFilters(false);
-    };
 
-    const openStoryModal = (story) => {
-        setSelectedStory(story);
-        setShowStoryModal(true);
-    };
 
-    const closeStoryModal = () => {
-        setShowStoryModal(false);
-        setSelectedStory(null);
-    };
+
 
     const fetchFavorites = async () => {
         if (!user?.id) return;
@@ -256,7 +248,7 @@ export default function HomeScreen({ navigation }) {
         }
     };
 
-    const toggleFavorite = async (propertyId) => {
+    const toggleFavorite = useCallback(async (propertyId) => {
         if (!user?.id) {
             Alert.alert('Atenção', 'Você precisa estar logado para favoritar imóveis');
             return;
@@ -297,7 +289,7 @@ export default function HomeScreen({ navigation }) {
             console.error('❌ Erro ao gerenciar favorito:', error);
             Alert.alert('Erro', 'Ocorreu um erro inesperado');
         }
-    };
+    }, [user?.id, favorites]);
 
     const loadMoreProperties = async () => {
         if (loadingMore || !hasMore) {
@@ -324,27 +316,29 @@ export default function HomeScreen({ navigation }) {
 
 
 
-    // Componente otimizado para renderizar propriedades
-    const PropertyItem = React.memo(({ item, index, favorites, toggleFavorite, navigation }) => {
+    // Componente simplificado para renderizar propriedades
+    const PropertyItem = React.memo(({ item, index, favorites, toggleFavorite, navigation, isTransitioning }) => {
+        // Memoizar o onPress para evitar re-renderizações
+        const handlePress = useCallback(() => {
+            navigation.navigate('PropertyDetails', { property: item });
+        }, [navigation, item]);
+
+        const handleFavoritePress = useCallback(() => {
+            toggleFavorite(item.id);
+        }, [toggleFavorite, item.id]);
         const mediaFiles = item.images || [];
         const [currentIndex, setCurrentIndex] = useState(0);
 
-        // Separar imagens e vídeos
-        const imageFiles = useMemo(() => mediaFiles.filter(file =>
-            !file.includes('.mp4') &&
-            !file.includes('.mov') &&
-            !file.includes('.avi') &&
-            !file.includes('.mkv') &&
-            !file.includes('.webm')
-        ), [mediaFiles]);
+        // Separar imagens e vídeos (simplificado)
+        const imageFiles = mediaFiles.filter(file =>
+            !file.includes('.mp4') && !file.includes('.mov') && !file.includes('.avi') &&
+            !file.includes('.mkv') && !file.includes('.webm')
+        );
 
-        const videoFiles = useMemo(() => mediaFiles.filter(file =>
-            file.includes('.mp4') ||
-            file.includes('.mov') ||
-            file.includes('.avi') ||
-            file.includes('.mkv') ||
-            file.includes('.webm')
-        ), [mediaFiles]);
+        const videoFiles = mediaFiles.filter(file =>
+            file.includes('.mp4') || file.includes('.mov') || file.includes('.avi') ||
+            file.includes('.mkv') || file.includes('.webm')
+        );
 
         const hasMultipleMedia = imageFiles.length > 1;
         const hasVideos = videoFiles.length > 0;
@@ -355,7 +349,7 @@ export default function HomeScreen({ navigation }) {
 
         const handleImageScroll = useCallback((event) => {
             const contentOffset = event.nativeEvent.contentOffset.x;
-            const imageIndex = Math.round(contentOffset / (width - 40)); // 40 é o padding
+            const imageIndex = Math.round(contentOffset / (width - 40));
             setCurrentIndex(imageIndex);
         }, []);
 
@@ -367,7 +361,8 @@ export default function HomeScreen({ navigation }) {
                     contentFit="cover"
                     cachePolicy="disk"
                     placeholder={require('../assets/icon.png')}
-                    transition={200}
+                    transition={0} // Remover transição para melhor performance
+                    priority="low"
                 />
             );
         }, []);
@@ -385,14 +380,15 @@ export default function HomeScreen({ navigation }) {
                         onScroll={handleImageScroll}
                         scrollEventThrottle={16}
                         style={styles.mediaList}
-                        nestedScrollEnabled={true}
-                        scrollEnabled={true}
+                        nestedScrollEnabled={false}
+                        scrollEnabled={!isTransitioning}
                         bounces={false}
                         decelerationRate="fast"
                         removeClippedSubviews={true}
-                        maxToRenderPerBatch={3}
-                        windowSize={5}
+                        maxToRenderPerBatch={1}
+                        windowSize={3}
                         initialNumToRender={1}
+                        updateCellsBatchingPeriod={100}
                     />
 
                     {/* Indicadores de múltiplas imagens */}
@@ -440,7 +436,7 @@ export default function HomeScreen({ navigation }) {
                     {/* Botão de Favoritos */}
                     <TouchableOpacity
                         style={styles.favoriteButton}
-                        onPress={() => toggleFavorite(item.id)}
+                        onPress={handleFavoritePress}
                         activeOpacity={0.8}
                     >
                         <Ionicons
@@ -489,14 +485,20 @@ export default function HomeScreen({ navigation }) {
                 {/* Botão invisível para navegação - posicionado sobre a área de informações */}
                 <TouchableOpacity
                     style={styles.propertyInfoTouchable}
-                    onPress={() => {
-                        navigation.navigate('PropertyDetails', { property: item });
-                    }}
+                    onPress={handlePress}
                     activeOpacity={0.7}
                     delayPressIn={150}
                     delayLongPress={500}
                 />
             </View>
+        );
+    }, (prevProps, nextProps) => {
+        // Comparação personalizada para evitar re-renderizações desnecessárias
+        return (
+            prevProps.item.id === nextProps.item.id &&
+            prevProps.favorites[prevProps.item.id] === nextProps.favorites[nextProps.item.id] &&
+            prevProps.isTransitioning === nextProps.isTransitioning &&
+            prevProps.index === nextProps.index
         );
     });
 
@@ -508,139 +510,80 @@ export default function HomeScreen({ navigation }) {
                 favorites={favorites}
                 toggleFavorite={toggleFavorite}
                 navigation={navigation}
+                isTransitioning={isTransitioning}
             />
         );
-    }, [favorites, toggleFavorite, navigation]);
+    }, [favorites, toggleFavorite, navigation, isTransitioning]);
 
-    const renderStoryModal = () => (
-        <Modal
-            visible={showStoryModal}
-            transparent={true}
-            animationType="fade"
-            onRequestClose={closeStoryModal}
-        >
-            <View style={styles.storyModalOverlay}>
-                <TouchableOpacity
-                    style={styles.storyModalCloseButton}
-                    onPress={closeStoryModal}
-                >
-                    <Ionicons name="close" size={30} color="#fff" />
-                </TouchableOpacity>
 
-                <View style={styles.storyModalContent}>
-                    <Image
-                        source={{
-                            uri: selectedStory?.image_url || 'https://via.placeholder.com/400x600?text=Story+Image'
-                        }}
-                        style={styles.storyModalImage}
-                        resizeMode="contain"
-                    />
-                    {selectedStory?.title && (
-                        <View style={styles.storyModalInfo}>
-                            <Text style={styles.storyModalTitle}>
-                                {selectedStory.title}
-                            </Text>
-                            {selectedStory?.description && (
-                                <Text style={styles.storyModalDescription}>
-                                    {selectedStory.description}
-                                </Text>
-                            )}
-                        </View>
-                    )}
-                </View>
-            </View>
-        </Modal>
-    );
 
-    const renderFilterModal = () => (
-        <Modal
-            visible={showFilters}
-            transparent={true}
-            animationType="slide"
-            onRequestClose={() => setShowFilters(false)}
-        >
-            <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                style={styles.modalOverlay}
-            >
-                <View style={styles.modalContent}>
-                    <View style={styles.modalHeader}>
-                        <Text style={styles.modalTitle}>Filtros</Text>
-                        <TouchableOpacity onPress={() => setShowFilters(false)}>
-                            <Ionicons name="close" size={24} color="#2c3e50" />
-                        </TouchableOpacity>
-                    </View>
-
-                    <ScrollView
-                        style={styles.filtersContainer}
-                        keyboardShouldPersistTaps="handled"
-                        showsVerticalScrollIndicator={false}
-                    >
-                        <View style={styles.filterGroup}>
-                            <Text style={styles.filterLabel}>Cidade</Text>
-                            <TextInput
-                                style={styles.filterInput}
-                                value={filters.city}
-                                onChangeText={(text) => setFilters({ ...filters, city: text })}
-                                placeholder="Digite a cidade"
-                                placeholderTextColor="#7f8c8d"
-                            />
-                        </View>
-
-                        <View style={styles.filterGroup}>
-                            <Text style={styles.filterLabel}>Tipo de Imóvel</Text>
-                            <TextInput
-                                style={styles.filterInput}
-                                value={filters.propertyType}
-                                onChangeText={(text) => setFilters({ ...filters, propertyType: text })}
-                                placeholder="Casa, Apartamento, etc."
-                                placeholderTextColor="#7f8c8d"
-                            />
-                        </View>
-
-                        <View style={styles.filterGroup}>
-                            <Text style={styles.filterLabel}>Preço Mínimo</Text>
-                            <TextInput
-                                style={styles.filterInput}
-                                value={filters.minPrice}
-                                onChangeText={(text) => setFilters({ ...filters, minPrice: text })}
-                                placeholder="R$ 0"
-                                placeholderTextColor="#7f8c8d"
-                                keyboardType="numeric"
-                            />
-                        </View>
-
-                        <View style={styles.filterGroup}>
-                            <Text style={styles.filterLabel}>Preço Máximo</Text>
-                            <TextInput
-                                style={styles.filterInput}
-                                value={filters.maxPrice}
-                                onChangeText={(text) => setFilters({ ...filters, maxPrice: text })}
-                                placeholder="R$ 1.000.000"
-                                placeholderTextColor="#7f8c8d"
-                                keyboardType="numeric"
-                            />
-                        </View>
-
-                        <View style={styles.filterButtons}>
-                            <TouchableOpacity style={styles.clearButton} onPress={clearFilters}>
-                                <Text style={styles.clearButtonText}>Ver Todos</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={styles.applyButton} onPress={applyFilters}>
-                                <Text style={styles.applyButtonText}>Aplicar</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </ScrollView>
-                </View>
-            </KeyboardAvoidingView>
-        </Modal>
-    );
+    const renderFilterModal = () => null; // Modal desabilitado para melhorar performance
 
     if (loading) {
         return (
             <View style={[styles.container, { paddingTop: insets.top }]}>
                 <View style={styles.loadingContainer}>
                     <Text style={styles.loadingText}>Carregando...</Text>
+                </View>
+            </View>
+        );
+    }
+
+    // iOS: Mostrar placeholder durante carregamento
+    if (Platform.OS === 'ios' && !shouldRenderContent) {
+        return (
+            <View style={[styles.container, { paddingTop: insets.top }]}>
+                <View style={styles.storiesContainer}>
+                    <View style={styles.titleContainer}>
+                        <Image
+                            source={require('../assets/logo_bb.jpg')}
+                            style={styles.titleLogo}
+                            resizeMode="contain"
+                        />
+                        <Text style={styles.storiesTitle}>Busca Busca Imóveis</Text>
+                    </View>
+                    {/* Placeholder para stories com altura fixa */}
+                    <View style={styles.storiesPlaceholderFixed}>
+                        <Text style={styles.placeholderText}>Carregando stories...</Text>
+                    </View>
+                </View>
+
+                <View style={styles.header}>
+                    <View style={styles.headerTop}>
+                        <View style={styles.searchBar}>
+                            <Ionicons name="search" size={20} color="#7f8c8d" style={styles.searchIcon} />
+                            <TextInput
+                                style={styles.searchInput}
+                                placeholder="Buscar imóveis..."
+                                placeholderTextColor="#7f8c8d"
+                                value={searchTerm}
+                                onChangeText={handleSearch}
+                                returnKeyType="search"
+                            />
+                        </View>
+                    </View>
+                    <View style={styles.headerBottom}>
+                        <View style={styles.leftButtons}>
+                            <TouchableOpacity onPress={clearFilters} style={styles.clearFiltersButton}>
+                                <Text style={styles.clearFiltersText}>Limpar Filtros</Text>
+                            </TouchableOpacity>
+                        </View>
+                        <View style={styles.actionButtons}>
+                            <TouchableOpacity style={styles.actionButton}>
+                                <Ionicons name="map" size={18} color="#fff" />
+                                <Text style={styles.actionButtonText}>Ver Mapa</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.actionButton}>
+                                <Ionicons name="swap-vertical" size={18} color="#fff" />
+                                <Text style={styles.actionButtonText}>Ordenar</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+
+                {/* Placeholder para propriedades */}
+                <View style={styles.contentPlaceholder}>
+                    <Text style={styles.placeholderText}>Carregando anúncios...</Text>
                 </View>
             </View>
         );
@@ -657,7 +600,9 @@ export default function HomeScreen({ navigation }) {
                     />
                     <Text style={styles.storiesTitle}>Busca Busca Imóveis</Text>
                 </View>
-                <StoriesComponent navigation={navigation} />
+                <View style={styles.storiesWrapper}>
+                    <StoriesComponent navigation={navigation} />
+                </View>
             </View>
 
             {/* Header */}
@@ -689,10 +634,6 @@ export default function HomeScreen({ navigation }) {
                 {/* Segunda linha: Filtros + Ver Mapa + Ordenar */}
                 <View style={styles.headerBottom}>
                     <View style={styles.leftButtons}>
-                        <TouchableOpacity onPress={() => setShowFilters(true)} style={styles.filterButton}>
-                            <Ionicons name="filter" size={20} color="#fff" />
-                        </TouchableOpacity>
-
                         <TouchableOpacity onPress={clearFilters} style={styles.clearFiltersButton}>
                             <Text style={styles.clearFiltersText}>Limpar Filtros</Text>
                         </TouchableOpacity>
@@ -718,21 +659,18 @@ export default function HomeScreen({ navigation }) {
             <FlatList
                 data={properties}
                 renderItem={renderProperty}
-                keyExtractor={(item) => item.id}
+                keyExtractor={(item) => item.id.toString()}
                 refreshControl={
                     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
                 }
                 ListHeaderComponent={
-                    <>
-                        {/* Properties Section */}
-                        <View style={styles.propertiesSection}>
-                            <View style={styles.sectionHeader}>
-                                <Text style={styles.sectionTitle}>
-                                    {`Anúncios (${totalCount})`}
-                                </Text>
-                            </View>
+                    <View style={styles.propertiesSection}>
+                        <View style={styles.sectionHeader}>
+                            <Text style={styles.sectionTitle}>
+                                {`Anúncios (${totalCount})`}
+                            </Text>
                         </View>
-                    </>
+                    </View>
                 }
                 ListEmptyComponent={
                     <View style={styles.emptyContainer}>
@@ -744,25 +682,24 @@ export default function HomeScreen({ navigation }) {
                     </View>
                 }
                 contentContainerStyle={styles.listContainer}
-                removeClippedSubviews={true}
-                maxToRenderPerBatch={5}
-                windowSize={10}
-                initialNumToRender={5}
-                getItemLayout={(data, index) => ({
-                    length: 300, // altura estimada de cada item
-                    offset: 300 * index,
-                    index,
-                })}
+                // Otimizações de performance
+                removeClippedSubviews={false}
+                maxToRenderPerBatch={3}
+                windowSize={5}
+                initialNumToRender={3}
+                updateCellsBatchingPeriod={100}
+                scrollEventThrottle={16}
+                showsVerticalScrollIndicator={false}
+                bounces={true}
+                decelerationRate="normal"
+                scrollEnabled={!isTransitioning}
+                nestedScrollEnabled={!isTransitioning}
                 onEndReached={loadMoreProperties}
-                onEndReachedThreshold={0.5}
+                onEndReachedThreshold={0.3}
                 ListFooterComponent={renderFooter}
             />
 
-            {/* Filter Modal */}
-            {renderFilterModal()}
 
-            {/* Story Modal */}
-            {renderStoryModal()}
         </View>
     );
 }
@@ -776,6 +713,7 @@ const styles = StyleSheet.create({
         paddingTop: 5,
         paddingBottom: 5,
         backgroundColor: '#ffcc1e',
+        height: 120, // Altura reduzida já que removemos os botões de admin
     },
     titleContainer: {
         flexDirection: 'row',
@@ -1310,6 +1248,47 @@ const styles = StyleSheet.create({
     cacheInfo: {
         fontSize: 12,
         color: '#7f8c8d',
+    },
+
+    // Placeholder styles
+    storiesPlaceholder: {
+        paddingHorizontal: 20,
+        paddingVertical: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#fff',
+        marginHorizontal: 20,
+        marginBottom: 10,
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
+    },
+    storiesPlaceholderFixed: {
+        height: 80, // Altura reduzida para stories
+        paddingHorizontal: 20,
+        paddingVertical: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#ffcc1e', // Mesmo fundo amarelo do container
+        marginHorizontal: 20,
+        marginBottom: 10,
+        // Removido borderWidth e borderColor para ficar sem borda
+    },
+    storiesWrapper: {
+        height: 80, // Altura reduzida para o container dos stories
+        overflow: 'hidden', // Evita que o conteúdo extrapole
+    },
+    contentPlaceholder: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#ffcc1e', // Mesmo fundo amarelo do container
+        paddingHorizontal: 20,
+    },
+    placeholderText: {
+        fontSize: 16,
+        color: '#00335e', // Cor mais escura para contrastar com o fundo amarelo
+        textAlign: 'center',
+        fontWeight: '500', // Deixar um pouco mais bold para melhor visibilidade
     },
 
 }); 

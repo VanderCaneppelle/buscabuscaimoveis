@@ -2,6 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
+import { Platform, Easing } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import HomeScreen from './HomeScreen';
@@ -26,7 +27,40 @@ const Stack = createStackNavigator();
 // Stack Navigator para cada tab que pode ter telas aninhadas
 function HomeStack() {
     return (
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Navigator
+            screenOptions={{
+                headerShown: false,
+                // Otimizações para iOS - transições
+                detachInactiveScreens: true,
+                unmountOnBlur: false,
+                // SEM SLIDE - apenas fade para iOS
+                cardStyleInterpolator: Platform.OS === 'ios' ? ({ current, layouts }) => ({
+                    cardStyle: {
+                        opacity: current.progress.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [0, 1], // Fade simples sem movimento
+                        }),
+                    },
+                }) : undefined,
+                // Configurações SEM SLIDE para iOS
+                transitionSpec: Platform.OS === 'ios' ? {
+                    open: {
+                        animation: 'timing',
+                        config: {
+                            duration: 0, // SEM ANIMAÇÃO
+                            easing: Easing.linear,
+                        },
+                    },
+                    close: {
+                        animation: 'timing',
+                        config: {
+                            duration: 0, // SEM ANIMAÇÃO
+                            easing: Easing.linear,
+                        },
+                    },
+                } : undefined,
+            }}
+        >
             <Stack.Screen name="HomeMain" component={HomeScreen} />
             <Stack.Screen
                 name="PropertyDetails"
@@ -274,14 +308,7 @@ export default function MainNavigator() {
                     paddingTop: 8,
                     paddingBottom: insets.bottom + 8,
                     height: 60 + insets.bottom,
-                    shadowColor: '#000',
-                    shadowOffset: {
-                        width: 0,
-                        height: -2,
-                    },
-                    shadowOpacity: 0.1,
-                    shadowRadius: 3.84,
-                    elevation: 10,
+                    // Removido: shadowColor, shadowOffset, shadowOpacity, shadowRadius, elevation
                 },
                 tabBarLabelStyle: {
                     fontSize: 12,
