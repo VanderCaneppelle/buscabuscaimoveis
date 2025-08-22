@@ -3,7 +3,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import {
     View, Text, StyleSheet, TouchableOpacity, FlatList,
     Alert, RefreshControl, Modal, ScrollView, TextInput, ActivityIndicator,
-    Dimensions, Platform
+    Dimensions, Platform, KeyboardAvoidingView, TouchableWithoutFeedback
 } from 'react-native';
 import { Image } from 'expo-image';
 import { Video } from 'expo-av';
@@ -43,6 +43,81 @@ export default function MyPropertiesScreen({ navigation }) {
     const [removedImages, setRemovedImages] = useState([]);
     const [editLoading, setEditLoading] = useState(false);
     const [deleteLoading, setDeleteLoading] = useState(false);
+
+    // Estados para dropdowns do formulário de edição
+    const [showPropertyTypeDropdown, setShowPropertyTypeDropdown] = useState(false);
+    const [showTransactionTypeDropdown, setShowTransactionTypeDropdown] = useState(false);
+    const [showBedroomsDropdown, setShowBedroomsDropdown] = useState(false);
+    const [showBathroomsDropdown, setShowBathroomsDropdown] = useState(false);
+    const [showParkingDropdown, setShowParkingDropdown] = useState(false);
+
+    /** ------------------ CONSTANTES E FUNÇÕES AUXILIARES ------------------ **/
+
+    // Opções para dropdowns
+    const propertyTypes = [
+        'Casa',
+        'Apartamento',
+        'Cobertura',
+        'Studio',
+        'Loft',
+        'Sobrado',
+        'Casa de Condomínio',
+        'Kitnet',
+        'Flat',
+        'Terreno',
+        'Comercial',
+        'Rural'
+    ];
+
+    const transactionTypes = [
+        'Venda',
+        'Aluguel',
+        'Temporada',
+        'Permuta'
+    ];
+
+    // Opções numéricas para dropdowns (0 a 8)
+    const numericOptions = Array.from({ length: 9 }, (_, i) => i.toString()); // 0 a 8
+
+    // Formatar preço para moeda brasileira
+    const formatCurrency = (value) => {
+        // Remover tudo que não é número
+        const numericValue = value.replace(/\D/g, '');
+
+        if (numericValue === '') return '';
+
+        // Converter para número e dividir por 100 para ter centavos
+        const number = parseFloat(numericValue) / 100;
+
+        // Formatar para moeda brasileira
+        return number.toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL',
+            minimumFractionDigits: 2
+        });
+    };
+
+    const handleEditPriceChange = (value) => {
+        const formattedValue = formatCurrency(value);
+        setEditForm(prev => ({
+            ...prev,
+            price: formattedValue
+        }));
+    };
+
+    // Extrair valor numérico do preço formatado
+    const getNumericPrice = (formattedPrice) => {
+        return parseFloat(formattedPrice.replace(/\D/g, '')) / 100;
+    };
+
+    // Função para fechar todos os dropdowns
+    const closeAllDropdowns = () => {
+        setShowPropertyTypeDropdown(false);
+        setShowTransactionTypeDropdown(false);
+        setShowBedroomsDropdown(false);
+        setShowBathroomsDropdown(false);
+        setShowParkingDropdown(false);
+    };
 
     /** ------------------ FETCHS ------------------ **/
 
@@ -129,10 +204,19 @@ export default function MyPropertiesScreen({ navigation }) {
 
     const openEditModal = (property) => {
         setEditingProperty(property);
+
+        // Formatar preço para moeda brasileira
+        const formattedPrice = property.price ?
+            new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
+                minimumFractionDigits: 2
+            }).format(property.price) : '';
+
         setEditForm({
             title: property.title || '',
             description: property.description || '',
-            price: property.price?.toString() || '',
+            price: formattedPrice,
             propertyType: property.property_type || '',
             transactionType: property.transaction_type || '',
             bedrooms: property.bedrooms?.toString() || '',
@@ -197,11 +281,17 @@ export default function MyPropertiesScreen({ navigation }) {
 
             // Preparar dados para atualização
             const updateData = {
-                ...editForm
+                ...editForm,
+                price: getNumericPrice(editForm.price).toString(), // Converter preço formatado para número
+                status: 'pending' // Voltar para pendente após edição
             };
 
             await PropertyService.updateProperty(editingProperty.id, updateData, newMediaFiles, removedImages);
-            Alert.alert('Sucesso', 'Anúncio atualizado com sucesso!');
+            Alert.alert(
+                'Sucesso!',
+                'Anúncio atualizado com sucesso! Como houve alterações, ele voltou para o status "Pendente" e aguarda nova aprovação do administrador.',
+                [{ text: 'OK' }]
+            );
             setEditModalVisible(false);
             // Limpar cache e recarregar
             await PropertyService.clearUserPropertiesCache(user.id);
@@ -728,145 +818,412 @@ export default function MyPropertiesScreen({ navigation }) {
                             )}
                         </TouchableOpacity>
                     </View>
-                    <ScrollView style={styles.modalContent}>
-                        <View style={styles.formGroup}>
-                            <Text style={styles.formLabel}>Título *</Text>
-                            <TextInput
-                                style={styles.formInput}
-                                value={editForm.title}
-                                onChangeText={(text) => setEditForm(prev => ({ ...prev, title: text }))}
-                                placeholder="Título do anúncio"
-                            />
-                        </View>
-                        <View style={styles.formGroup}>
-                            <Text style={styles.formLabel}>Descrição</Text>
-                            <TextInput
-                                style={[styles.formInput, styles.textArea]}
-                                value={editForm.description}
-                                onChangeText={(text) => setEditForm(prev => ({ ...prev, description: text }))}
-                                placeholder="Descrição detalhada"
-                                multiline
-                            />
-                        </View>
-                        <View style={styles.formRow}>
-                            <View style={styles.formGroupHalf}>
-                                <Text style={styles.formLabel}>Preço *</Text>
-                                <TextInput
-                                    style={styles.formInput}
-                                    value={editForm.price}
-                                    onChangeText={(text) => setEditForm(prev => ({ ...prev, price: text }))}
-                                    placeholder="0,00"
-                                    keyboardType="numeric"
-                                />
-                            </View>
-                            <View style={styles.formGroupHalf}>
-                                <Text style={styles.formLabel}>Tipo</Text>
-                                <TextInput
-                                    style={styles.formInput}
-                                    value={editForm.propertyType}
-                                    onChangeText={(text) => setEditForm(prev => ({ ...prev, propertyType: text }))}
-                                    placeholder="Casa, Apartamento..."
-                                />
-                            </View>
-                        </View>
-                        <View style={styles.formRow}>
-                            <View style={styles.formGroupHalf}>
-                                <Text style={styles.formLabel}>Quartos</Text>
-                                <TextInput
-                                    style={styles.formInput}
-                                    value={editForm.bedrooms}
-                                    onChangeText={(text) => setEditForm(prev => ({ ...prev, bedrooms: text }))}
-                                    placeholder="0"
-                                    keyboardType="numeric"
-                                />
-                            </View>
-                            <View style={styles.formGroupHalf}>
-                                <Text style={styles.formLabel}>Banheiros</Text>
-                                <TextInput
-                                    style={styles.formInput}
-                                    value={editForm.bathrooms}
-                                    onChangeText={(text) => setEditForm(prev => ({ ...prev, bathrooms: text }))}
-                                    placeholder="0"
-                                    keyboardType="numeric"
-                                />
-                            </View>
-                        </View>
-                        <View style={styles.formGroup}>
-                            <Text style={styles.formLabel}>Endereço *</Text>
-                            <TextInput
-                                style={styles.formInput}
-                                value={editForm.address}
-                                onChangeText={(text) => setEditForm(prev => ({ ...prev, address: text }))}
-                                placeholder="Endereço completo"
-                            />
-                        </View>
-                        <View style={styles.formRow}>
-                            <View style={styles.formGroupHalf}>
-                                <Text style={styles.formLabel}>Cidade *</Text>
-                                <TextInput
-                                    style={styles.formInput}
-                                    value={editForm.city}
-                                    onChangeText={(text) => setEditForm(prev => ({ ...prev, city: text }))}
-                                    placeholder="Cidade"
-                                />
-                            </View>
-                            <View style={styles.formGroupHalf}>
-                                <Text style={styles.formLabel}>Estado</Text>
-                                <TextInput
-                                    style={styles.formInput}
-                                    value={editForm.state}
-                                    onChangeText={(text) => setEditForm(prev => ({ ...prev, state: text }))}
-                                    placeholder="Estado"
-                                />
-                            </View>
-                        </View>
 
-                        {/* Seção de Gerenciamento de Imagens */}
-                        <View style={styles.formGroup}>
-                            <View style={styles.mediaSectionHeader}>
-                                <Text style={styles.formLabel}>Mídias (Imagens e Vídeos)</Text>
-                                <TouchableOpacity
-                                    style={styles.addMediaButton}
-                                    onPress={addMedia}
-                                >
-                                    <Ionicons name="add" size={16} color="#fff" />
-                                    <Text style={styles.addMediaButtonText}>Adicionar Mídia</Text>
-                                </TouchableOpacity>
-                            </View>
+                    <KeyboardAvoidingView
+                        style={{ flex: 1 }}
+                        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    >
+                        <TouchableWithoutFeedback onPress={closeAllDropdowns}>
+                            <ScrollView style={styles.modalContent}>
+                                <View style={styles.formContainer}>
+                                    <View style={styles.inputGroup}>
+                                        <Text style={styles.inputLabel}>Título do Anúncio *</Text>
+                                        <TextInput
+                                            style={styles.textInput}
+                                            value={editForm.title}
+                                            onChangeText={(value) => setEditForm(prev => ({ ...prev, title: value }))}
+                                            placeholder="Ex: Casa com 3 quartos em condomínio"
+                                            placeholderTextColor="#7f8c8d"
+                                        />
+                                    </View>
 
-                            {editImages.length > 0 ? (
-                                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                                    {editImages.map((image, index) => (
-                                        <View key={index} style={styles.editMediaItem}>
-                                            {renderMedia({ item: image, index, customStyle: styles.editMediaItemContent })}
-                                            <TouchableOpacity
-                                                style={styles.removeMediaButton}
-                                                onPress={() => removeImage(index)}
-                                            >
-                                                <Ionicons name="close-circle" size={20} color="#ef4444" />
-                                            </TouchableOpacity>
-                                            {/* Ícone indicativo de tipo de mídia */}
-                                            <View style={styles.editMediaTypeIcon}>
-                                                <Ionicons
-                                                    name={isVideoFile(image) ? "videocam" : "image"}
-                                                    size={10}
-                                                    color="#fff"
-                                                />
-                                            </View>
+                                    <View style={styles.inputGroup}>
+                                        <Text style={styles.inputLabel}>Descrição</Text>
+                                        <TextInput
+                                            style={[styles.textInput, styles.textArea]}
+                                            value={editForm.description}
+                                            onChangeText={(value) => setEditForm(prev => ({ ...prev, description: value }))}
+                                            placeholder="Descreva detalhes do imóvel..."
+                                            placeholderTextColor="#7f8c8d"
+                                            multiline
+                                            numberOfLines={4}
+                                        />
+                                    </View>
+
+                                    <View style={styles.row}>
+                                        <View style={[styles.inputGroup, styles.halfWidth]}>
+                                            <Text style={styles.inputLabel}>Preço *</Text>
+                                            <TextInput
+                                                style={styles.textInput}
+                                                value={editForm.price}
+                                                onChangeText={handleEditPriceChange}
+                                                placeholder="R$ 0,00"
+                                                placeholderTextColor="#7f8c8d"
+                                                keyboardType="numeric"
+                                            />
                                         </View>
-                                    ))}
-                                </ScrollView>
-                            ) : (
-                                <View style={styles.noMediaContainer}>
-                                    <Ionicons name="images-outline" size={48} color="#bdc3c7" />
-                                    <Text style={styles.noMediaText}>Nenhuma mídia adicionada</Text>
-                                    <Text style={styles.noMediaSubtext}>
-                                        Toque em "Adicionar" para incluir imagens ou vídeos
-                                    </Text>
+                                        <View style={[styles.inputGroup, styles.halfWidth]}>
+                                            <Text style={styles.inputLabel}>Área (m²)</Text>
+                                            <TextInput
+                                                style={styles.textInput}
+                                                value={editForm.area}
+                                                onChangeText={(value) => setEditForm(prev => ({ ...prev, area: value }))}
+                                                placeholder="0"
+                                                placeholderTextColor="#7f8c8d"
+                                                keyboardType="numeric"
+                                            />
+                                        </View>
+                                    </View>
+
+                                    {/* Tipo de Imóvel */}
+                                    <Text style={[styles.sectionTitle, styles.sectionTitleWithMargin]}>Tipo de Imóvel</Text>
+
+                                    <View style={styles.row}>
+                                        <View style={[styles.inputGroup, styles.halfWidth]}>
+                                            <Text style={styles.inputLabel}>Tipo *</Text>
+                                            <TouchableOpacity
+                                                style={styles.dropdownButton}
+                                                onPress={() => {
+                                                    closeAllDropdowns();
+                                                    setShowPropertyTypeDropdown(!showPropertyTypeDropdown);
+                                                }}
+                                            >
+                                                <Text style={[
+                                                    styles.dropdownButtonText,
+                                                    !editForm.propertyType && styles.placeholderText
+                                                ]}>
+                                                    {editForm.propertyType || 'Selecione o tipo'}
+                                                </Text>
+                                                <Ionicons
+                                                    name={showPropertyTypeDropdown ? 'chevron-up' : 'chevron-down'}
+                                                    size={20}
+                                                    color="#7f8c8d"
+                                                />
+                                            </TouchableOpacity>
+
+                                            {showPropertyTypeDropdown && (
+                                                <View style={styles.dropdownList}>
+                                                    <ScrollView
+                                                        style={styles.dropdownScroll}
+                                                        showsVerticalScrollIndicator={true}
+                                                        indicatorStyle="black"
+                                                        nestedScrollEnabled={true}
+                                                    >
+                                                        {propertyTypes.map((type, index) => (
+                                                            <TouchableOpacity
+                                                                key={index}
+                                                                style={styles.dropdownItem}
+                                                                onPress={() => {
+                                                                    setEditForm(prev => ({ ...prev, propertyType: type }));
+                                                                    setShowPropertyTypeDropdown(false);
+                                                                }}
+                                                            >
+                                                                <Text style={styles.dropdownItemText}>{type}</Text>
+                                                            </TouchableOpacity>
+                                                        ))}
+                                                    </ScrollView>
+                                                </View>
+                                            )}
+                                        </View>
+                                        <View style={[styles.inputGroup, styles.halfWidth]}>
+                                            <Text style={styles.inputLabel}>Transação *</Text>
+                                            <TouchableOpacity
+                                                style={styles.dropdownButton}
+                                                onPress={() => {
+                                                    closeAllDropdowns();
+                                                    setShowTransactionTypeDropdown(!showTransactionTypeDropdown);
+                                                }}
+                                            >
+                                                <Text style={[
+                                                    styles.dropdownButtonText,
+                                                    !editForm.transactionType && styles.placeholderText
+                                                ]}>
+                                                    {editForm.transactionType || 'Selecione a transação'}
+                                                </Text>
+                                                <Ionicons
+                                                    name={showTransactionTypeDropdown ? 'chevron-up' : 'chevron-down'}
+                                                    size={20}
+                                                    color="#7f8c8d"
+                                                />
+                                            </TouchableOpacity>
+
+                                            {showTransactionTypeDropdown && (
+                                                <View style={styles.dropdownList}>
+                                                    <ScrollView
+                                                        style={styles.dropdownScroll}
+                                                        showsVerticalScrollIndicator={true}
+                                                        indicatorStyle="black"
+                                                        nestedScrollEnabled={true}
+                                                    >
+                                                        {transactionTypes.map((type, index) => (
+                                                            <TouchableOpacity
+                                                                key={index}
+                                                                style={styles.dropdownItem}
+                                                                onPress={() => {
+                                                                    setEditForm(prev => ({ ...prev, transactionType: type }));
+                                                                    setShowTransactionTypeDropdown(false);
+                                                                }}
+                                                            >
+                                                                <Text style={styles.dropdownItemText}>{type}</Text>
+                                                            </TouchableOpacity>
+                                                        ))}
+                                                    </ScrollView>
+                                                </View>
+                                            )}
+                                        </View>
+                                    </View>
+
+                                    <View style={styles.row}>
+                                        <View style={[styles.inputGroup, styles.thirdWidth]}>
+                                            <Text style={styles.inputLabel}>Quartos</Text>
+                                            <TouchableOpacity
+                                                style={styles.dropdownButton}
+                                                onPress={() => {
+                                                    closeAllDropdowns();
+                                                    setShowBedroomsDropdown(!showBedroomsDropdown);
+                                                }}
+                                            >
+                                                <Text style={[
+                                                    styles.dropdownButtonText,
+                                                    !editForm.bedrooms && styles.placeholderText
+                                                ]}>
+                                                    {editForm.bedrooms || '0'}
+                                                </Text>
+                                                <Ionicons
+                                                    name={showBedroomsDropdown ? 'chevron-up' : 'chevron-down'}
+                                                    size={20}
+                                                    color="#7f8c8d"
+                                                />
+                                            </TouchableOpacity>
+
+                                            {showBedroomsDropdown && (
+                                                <View style={styles.dropdownList}>
+                                                    <ScrollView
+                                                        style={styles.dropdownScroll}
+                                                        showsVerticalScrollIndicator={true}
+                                                        indicatorStyle="black"
+                                                        nestedScrollEnabled={true}
+                                                    >
+                                                        {numericOptions.map((value, index) => (
+                                                            <TouchableOpacity
+                                                                key={index}
+                                                                style={styles.dropdownItem}
+                                                                onPress={() => {
+                                                                    setEditForm(prev => ({ ...prev, bedrooms: value }));
+                                                                    setShowBedroomsDropdown(false);
+                                                                }}
+                                                            >
+                                                                <Text style={styles.dropdownItemText}>{value}</Text>
+                                                            </TouchableOpacity>
+                                                        ))}
+                                                    </ScrollView>
+                                                </View>
+                                            )}
+                                        </View>
+                                        <View style={[styles.inputGroup, styles.thirdWidth]}>
+                                            <Text style={styles.inputLabel}>Banheiros</Text>
+                                            <TouchableOpacity
+                                                style={styles.dropdownButton}
+                                                onPress={() => {
+                                                    closeAllDropdowns();
+                                                    setShowBathroomsDropdown(!showBathroomsDropdown);
+                                                }}
+                                            >
+                                                <Text style={[
+                                                    styles.dropdownButtonText,
+                                                    !editForm.bathrooms && styles.placeholderText
+                                                ]}>
+                                                    {editForm.bathrooms || '0'}
+                                                </Text>
+                                                <Ionicons
+                                                    name={showBathroomsDropdown ? 'chevron-up' : 'chevron-down'}
+                                                    size={20}
+                                                    color="#7f8c8d"
+                                                />
+                                            </TouchableOpacity>
+
+                                            {showBathroomsDropdown && (
+                                                <View style={styles.dropdownList}>
+                                                    <ScrollView
+                                                        style={styles.dropdownScroll}
+                                                        showsVerticalScrollIndicator={true}
+                                                        indicatorStyle="black"
+                                                        nestedScrollEnabled={true}
+                                                    >
+                                                        {numericOptions.map((value, index) => (
+                                                            <TouchableOpacity
+                                                                key={index}
+                                                                style={styles.dropdownItem}
+                                                                onPress={() => {
+                                                                    setEditForm(prev => ({ ...prev, bathrooms: value }));
+                                                                    setShowBathroomsDropdown(false);
+                                                                }}
+                                                            >
+                                                                <Text style={styles.dropdownItemText}>{value}</Text>
+                                                            </TouchableOpacity>
+                                                        ))}
+                                                    </ScrollView>
+                                                </View>
+                                            )}
+                                        </View>
+                                        <View style={[styles.inputGroup, styles.thirdWidth]}>
+                                            <Text style={styles.inputLabel}>Vagas</Text>
+                                            <TouchableOpacity
+                                                style={styles.dropdownButton}
+                                                onPress={() => {
+                                                    closeAllDropdowns();
+                                                    setShowParkingDropdown(!showParkingDropdown);
+                                                }}
+                                            >
+                                                <Text style={[
+                                                    styles.dropdownButtonText,
+                                                    !editForm.parkingSpaces && styles.placeholderText
+                                                ]}>
+                                                    {editForm.parkingSpaces || '0'}
+                                                </Text>
+                                                <Ionicons
+                                                    name={showParkingDropdown ? 'chevron-up' : 'chevron-down'}
+                                                    size={20}
+                                                    color="#7f8c8d"
+                                                />
+                                            </TouchableOpacity>
+
+                                            {showParkingDropdown && (
+                                                <View style={styles.dropdownList}>
+                                                    <ScrollView
+                                                        style={styles.dropdownScroll}
+                                                        showsVerticalScrollIndicator={true}
+                                                        indicatorStyle="black"
+                                                        nestedScrollEnabled={true}
+                                                    >
+                                                        {numericOptions.map((value, index) => (
+                                                            <TouchableOpacity
+                                                                key={index}
+                                                                style={styles.dropdownItem}
+                                                                onPress={() => {
+                                                                    setEditForm(prev => ({ ...prev, parkingSpaces: value }));
+                                                                    setShowParkingDropdown(false);
+                                                                }}
+                                                            >
+                                                                <Text style={styles.dropdownItemText}>{value}</Text>
+                                                            </TouchableOpacity>
+                                                        ))}
+                                                    </ScrollView>
+                                                </View>
+                                            )}
+                                        </View>
+                                    </View>
+
+                                    {/* Localização */}
+                                    <Text style={[styles.sectionTitle, styles.sectionTitleWithMargin]}>Localização</Text>
+
+                                    <View style={styles.inputGroup}>
+                                        <Text style={styles.inputLabel}>Endereço *</Text>
+                                        <TextInput
+                                            style={styles.textInput}
+                                            value={editForm.address}
+                                            onChangeText={(value) => setEditForm(prev => ({ ...prev, address: value }))}
+                                            placeholder="Rua, número..."
+                                            placeholderTextColor="#7f8c8d"
+                                        />
+                                    </View>
+
+                                    <View style={styles.row}>
+                                        <View style={[styles.inputGroup, styles.halfWidth]}>
+                                            <Text style={styles.inputLabel}>Bairro</Text>
+                                            <TextInput
+                                                style={styles.textInput}
+                                                value={editForm.neighborhood}
+                                                onChangeText={(value) => setEditForm(prev => ({ ...prev, neighborhood: value }))}
+                                                placeholder="Nome do bairro"
+                                                placeholderTextColor="#7f8c8d"
+                                            />
+                                        </View>
+                                        <View style={[styles.inputGroup, styles.halfWidth]}>
+                                            <Text style={styles.inputLabel}>CEP</Text>
+                                            <TextInput
+                                                style={styles.textInput}
+                                                value={editForm.zipCode}
+                                                onChangeText={(value) => setEditForm(prev => ({ ...prev, zipCode: value }))}
+                                                placeholder="00000-000"
+                                                placeholderTextColor="#7f8c8d"
+                                                keyboardType="numeric"
+                                            />
+                                        </View>
+                                    </View>
+
+                                    <View style={styles.row}>
+                                        <View style={[styles.inputGroup, styles.halfWidth]}>
+                                            <Text style={styles.inputLabel}>Cidade *</Text>
+                                            <TextInput
+                                                style={styles.textInput}
+                                                value={editForm.city}
+                                                onChangeText={(value) => setEditForm(prev => ({ ...prev, city: value }))}
+                                                placeholder="Nome da cidade"
+                                                placeholderTextColor="#7f8c8d"
+                                            />
+                                        </View>
+                                        <View style={[styles.inputGroup, styles.halfWidth]}>
+                                            <Text style={styles.inputLabel}>Estado *</Text>
+                                            <TextInput
+                                                style={styles.textInput}
+                                                value={editForm.state}
+                                                onChangeText={(value) => setEditForm(prev => ({ ...prev, state: value }))}
+                                                placeholder="UF"
+                                                placeholderTextColor="#7f8c8d"
+                                            />
+                                        </View>
+                                    </View>
+
+                                    {/* Seção de Gerenciamento de Mídias */}
+                                    <View style={styles.formGroup}>
+                                        <View style={styles.mediaSectionHeader}>
+                                            <Text style={styles.formLabel}>Mídias (Imagens e Vídeos)</Text>
+                                            <TouchableOpacity
+                                                style={styles.addMediaButton}
+                                                onPress={addMedia}
+                                            >
+                                                <Ionicons name="add" size={16} color="#fff" />
+                                                <Text style={styles.addMediaButtonText}>Adicionar Mídia</Text>
+                                            </TouchableOpacity>
+                                        </View>
+
+                                        {editImages.length > 0 ? (
+                                            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                                                {editImages.map((image, index) => (
+                                                    <View key={index} style={styles.editMediaItem}>
+                                                        {renderMedia({ item: image, index, customStyle: styles.editMediaItemContent })}
+                                                        <TouchableOpacity
+                                                            style={styles.removeMediaButton}
+                                                            onPress={() => removeImage(index)}
+                                                        >
+                                                            <Ionicons name="close-circle" size={20} color="#ef4444" />
+                                                        </TouchableOpacity>
+                                                        {/* Ícone indicativo de tipo de mídia */}
+                                                        <View style={styles.editMediaTypeIcon}>
+                                                            <Ionicons
+                                                                name={isVideoFile(image) ? "videocam" : "image"}
+                                                                size={10}
+                                                                color="#fff"
+                                                            />
+                                                        </View>
+                                                    </View>
+                                                ))}
+                                            </ScrollView>
+                                        ) : (
+                                            <View style={styles.noMediaContainer}>
+                                                <Ionicons name="images-outline" size={48} color="#bdc3c7" />
+                                                <Text style={styles.noMediaText}>Nenhuma mídia adicionada</Text>
+                                                <Text style={styles.noMediaSubtext}>
+                                                    Toque em "Adicionar" para incluir imagens ou vídeos
+                                                </Text>
+                                            </View>
+                                        )}
+                                    </View>
                                 </View>
-                            )}
-                        </View>
-                    </ScrollView>
+                            </ScrollView>
+                        </TouchableWithoutFeedback>
+                    </KeyboardAvoidingView>
                 </View>
             </Modal>
 
@@ -1495,5 +1852,102 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 16,
         fontWeight: '600',
+    },
+
+    // Estilos do formulário de edição (iguais ao CreateAdScreen)
+    formContainer: {
+        padding: 20,
+    },
+    inputGroup: {
+        marginBottom: 15,
+    },
+    inputLabel: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#2c3e50',
+        marginBottom: 8,
+    },
+    textInput: {
+        borderWidth: 1,
+        borderColor: '#e0e0e0',
+        borderRadius: 8,
+        paddingHorizontal: 15,
+        paddingVertical: 12,
+        fontSize: 16,
+        color: '#2c3e50',
+        backgroundColor: '#fff',
+    },
+    row: {
+        flexDirection: 'row',
+        gap: 15,
+    },
+    halfWidth: {
+        flex: 1,
+    },
+    thirdWidth: {
+        flex: 1,
+    },
+    sectionTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#00335e',
+        marginBottom: 10,
+    },
+    sectionTitleWithMargin: {
+        marginTop: 20,
+    },
+
+    // Dropdown styles
+    dropdownButton: {
+        borderWidth: 1,
+        borderColor: '#e0e0e0',
+        borderRadius: 8,
+        paddingHorizontal: 15,
+        paddingVertical: 12,
+        backgroundColor: '#fff',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    dropdownButtonText: {
+        fontSize: 16,
+        color: '#2c3e50',
+        flex: 1,
+    },
+    placeholderText: {
+        color: '#7f8c8d',
+    },
+    dropdownList: {
+        position: 'absolute',
+        top: '100%',
+        left: 0,
+        right: 0,
+        backgroundColor: '#fff',
+        borderWidth: 1,
+        borderColor: '#e0e0e0',
+        borderRadius: 8,
+        maxHeight: 200,
+        zIndex: 9999,
+        elevation: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        marginTop: 2,
+        overflow: 'hidden',
+    },
+    dropdownScroll: {
+        maxHeight: 200,
+        flexGrow: 0,
+    },
+    dropdownItem: {
+        paddingVertical: 12,
+        paddingHorizontal: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: '#f0f0f0',
+    },
+    dropdownItemText: {
+        fontSize: 16,
+        color: '#2c3e50',
     },
 });
