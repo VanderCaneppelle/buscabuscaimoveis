@@ -384,7 +384,7 @@ export default function HomeScreen({ navigation }) {
                         scrollEnabled={!isTransitioning}
                         bounces={false}
                         decelerationRate="fast"
-                        removeClippedSubviews={true}
+                        removeClippedSubviews={false}
                         maxToRenderPerBatch={1}
                         windowSize={3}
                         initialNumToRender={1}
