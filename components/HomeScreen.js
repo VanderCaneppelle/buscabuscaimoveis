@@ -29,7 +29,7 @@ const { width } = Dimensions.get('window');
 
 
 export default function HomeScreen({ navigation }) {
-    console.log('Rendere HomeScreen');
+    console.log('🏠 HomeScreen: COMPONENTE MONTADO/RENDERIZADO');
 
     const { user, signOut } = useAuth();
     const insets = useSafeAreaInsets();
@@ -53,10 +53,9 @@ export default function HomeScreen({ navigation }) {
     const [hasMore, setHasMore] = useState(true);
     const [totalCount, setTotalCount] = useState(0);
 
-    // Estado para controlar renderizações durante transições
-    const [isTransitioning, setIsTransitioning] = useState(false);
-    const [shouldRenderContent, setShouldRenderContent] = useState(false);
+    // Estado para controlar dados
     const [hasInitialData, setHasInitialData] = useState(false);
+    const [scrollPosition, setScrollPosition] = useState(0); // Manter posição do scroll
 
     // Cores dinâmicas baseadas no tema do dispositivo
     const colors = {
@@ -69,53 +68,26 @@ export default function HomeScreen({ navigation }) {
     };
 
     useEffect(() => {
-        if (user?.id && shouldRenderContent && !hasInitialData) {
-            console.log('👤👤👤 HomeScreen: USUÁRIO DETECTADO E CONTEÚDO LIBERADO, CARREGANDO DADOS 👤👤👤');
+        console.log('🏠 HomeScreen: useEffect dados - user?.id:', !!user?.id, 'hasInitialData:', hasInitialData);
+        if (user?.id && !hasInitialData) {
+            console.log('👤👤👤 HomeScreen: USUÁRIO DETECTADO, CARREGANDO DADOS 👤👤👤');
             // Carregar dados apenas uma vez
             fetchProfile();
             fetchProperties();
             fetchFavorites();
             setHasInitialData(true);
         }
-    }, [user?.id, shouldRenderContent, hasInitialData]);
+    }, [user?.id, hasInitialData]);
 
-    // Listener para detectar transições de tela (iOS)
+    // Detectar quando o componente é desmontado
     useEffect(() => {
-        if (Platform.OS === 'ios') {
-            const unsubscribeFocus = navigation.addListener('focus', () => {
-                console.log('🏠 HomeScreen: Tela focada - iniciando carregamento completo');
-                setIsTransitioning(false);
-                // Aguardar carregamento completo antes de mostrar conteúdo
-                setTimeout(() => {
-                    setShouldRenderContent(true);
-                }, 200); // Reduzido para 200ms para iOS
-            });
+        console.log('🏠 HomeScreen: COMPONENTE MONTADO - useEffect cleanup');
+        return () => {
+            console.log('🏠 HomeScreen: COMPONENTE DESMONTADO');
+        };
+    }, []);
 
-            const unsubscribeBlur = navigation.addListener('blur', () => {
-                console.log('🏠 HomeScreen: Tela desfocada - pausando renderizações pesadas');
-                setIsTransitioning(true);
-                setShouldRenderContent(false); // Parar renderização imediatamente
-                // Não resetar hasInitialData no blur para iOS - manter dados em cache
-            });
 
-            // Listener para detectar quando está prestes a navegar
-            const unsubscribeBeforeRemove = navigation.addListener('beforeRemove', () => {
-                console.log('🏠 HomeScreen: Antes de navegar - pausando tudo');
-                setIsTransitioning(true);
-                setShouldRenderContent(false); // Parar renderização imediatamente
-                // Não resetar hasInitialData no beforeRemove para iOS
-            });
-
-            return () => {
-                unsubscribeFocus();
-                unsubscribeBlur();
-                unsubscribeBeforeRemove();
-            };
-        } else {
-            // Android: renderizar imediatamente
-            setShouldRenderContent(true);
-        }
-    }, [navigation]);
 
     // Removido useFocusEffect para evitar recarregamento desnecessário
     // Os favoritos são carregados apenas na primeira montagem
@@ -317,7 +289,7 @@ export default function HomeScreen({ navigation }) {
 
 
     // Componente simplificado para renderizar propriedades
-    const PropertyItem = React.memo(({ item, index, favorites, toggleFavorite, navigation, isTransitioning }) => {
+    const PropertyItem = React.memo(({ item, index, favorites, toggleFavorite, navigation }) => {
         // Memoizar o onPress para evitar re-renderizações
         const handlePress = useCallback(() => {
             navigation.navigate('PropertyDetails', { property: item });
@@ -381,7 +353,7 @@ export default function HomeScreen({ navigation }) {
                         scrollEventThrottle={16}
                         style={styles.mediaList}
                         nestedScrollEnabled={false}
-                        scrollEnabled={!isTransitioning}
+                        scrollEnabled={true}
                         bounces={false}
                         decelerationRate="fast"
                         removeClippedSubviews={false}
@@ -497,7 +469,6 @@ export default function HomeScreen({ navigation }) {
         return (
             prevProps.item.id === nextProps.item.id &&
             prevProps.favorites[prevProps.item.id] === nextProps.favorites[nextProps.item.id] &&
-            prevProps.isTransitioning === nextProps.isTransitioning &&
             prevProps.index === nextProps.index
         );
     });
@@ -510,10 +481,9 @@ export default function HomeScreen({ navigation }) {
                 favorites={favorites}
                 toggleFavorite={toggleFavorite}
                 navigation={navigation}
-                isTransitioning={isTransitioning}
             />
         );
-    }, [favorites, toggleFavorite, navigation, isTransitioning]);
+    }, [favorites, toggleFavorite, navigation]);
 
 
 
@@ -529,65 +499,7 @@ export default function HomeScreen({ navigation }) {
         );
     }
 
-    // iOS: Mostrar placeholder durante carregamento
-    if (Platform.OS === 'ios' && !shouldRenderContent) {
-        return (
-            <View style={[styles.container, { paddingTop: insets.top }]}>
-                <View style={styles.storiesContainer}>
-                    <View style={styles.titleContainer}>
-                        <Image
-                            source={require('../assets/logo_bb.jpg')}
-                            style={styles.titleLogo}
-                            resizeMode="contain"
-                        />
-                        <Text style={styles.storiesTitle}>Busca Busca Imóveis</Text>
-                    </View>
-                    {/* Placeholder para stories com altura fixa */}
-                    <View style={styles.storiesPlaceholderFixed}>
-                        <Text style={styles.placeholderText}>Carregando stories...</Text>
-                    </View>
-                </View>
 
-                <View style={styles.header}>
-                    <View style={styles.headerTop}>
-                        <View style={styles.searchBar}>
-                            <Ionicons name="search" size={20} color="#7f8c8d" style={styles.searchIcon} />
-                            <TextInput
-                                style={styles.searchInput}
-                                placeholder="Buscar imóveis..."
-                                placeholderTextColor="#7f8c8d"
-                                value={searchTerm}
-                                onChangeText={handleSearch}
-                                returnKeyType="search"
-                            />
-                        </View>
-                    </View>
-                    <View style={styles.headerBottom}>
-                        <View style={styles.leftButtons}>
-                            <TouchableOpacity onPress={clearFilters} style={styles.clearFiltersButton}>
-                                <Text style={styles.clearFiltersText}>Limpar Filtros</Text>
-                            </TouchableOpacity>
-                        </View>
-                        <View style={styles.actionButtons}>
-                            <TouchableOpacity style={styles.actionButton}>
-                                <Ionicons name="map" size={18} color="#fff" />
-                                <Text style={styles.actionButtonText}>Ver Mapa</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={styles.actionButton}>
-                                <Ionicons name="swap-vertical" size={18} color="#fff" />
-                                <Text style={styles.actionButtonText}>Ordenar</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </View>
-
-                {/* Placeholder para propriedades */}
-                <View style={styles.contentPlaceholder}>
-                    <Text style={styles.placeholderText}>Carregando anúncios...</Text>
-                </View>
-            </View>
-        );
-    }
 
     return (
         <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -692,8 +604,12 @@ export default function HomeScreen({ navigation }) {
                 showsVerticalScrollIndicator={false}
                 bounces={true}
                 decelerationRate="normal"
-                scrollEnabled={!isTransitioning}
-                nestedScrollEnabled={!isTransitioning}
+                scrollEnabled={true}
+                nestedScrollEnabled={true}
+                maintainVisibleContentPosition={{
+                    minIndexForVisible: 0,
+                    autoscrollToTopThreshold: 10,
+                }}
                 onEndReached={loadMoreProperties}
                 onEndReachedThreshold={0.3}
                 ListFooterComponent={renderFooter}

@@ -31,7 +31,7 @@ function HomeStack() {
             screenOptions={{
                 headerShown: false,
                 // Otimizações para iOS - transições
-                detachInactiveScreens: true,
+                detachInactiveScreens: false, // Manter HomeScreen em memória
                 unmountOnBlur: false,
                 // SEM SLIDE - apenas fade para iOS
                 cardStyleInterpolator: Platform.OS === 'ios' ? ({ current, layouts }) => ({
