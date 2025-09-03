@@ -22,7 +22,8 @@ export default function MyPropertiesScreen({ navigation }) {
     const insets = useSafeAreaInsets();
 
     const [properties, setProperties] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [listLoading, setListLoading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [selectedFilter, setSelectedFilter] = useState('all');
     const [expandedItems, setExpandedItems] = useState(new Set());
@@ -156,30 +157,45 @@ export default function MyPropertiesScreen({ navigation }) {
         }
     }, [user?.id]);
 
-    const fetchProperties = useCallback(async (forceRefresh = false) => {
-        if (!user?.id) return;
-        setLoading(true);
-        try {
-            const data = await PropertyService.getUserProperties(
-                user.id,
-                selectedFilter === 'all' ? null : selectedFilter,
-                forceRefresh
-            );
-            setProperties(data);
-        } catch (err) {
-            console.error('Erro ao buscar propriedades:', err);
-            Alert.alert('Erro', 'Não foi possível carregar seus anúncios');
-        } finally {
-            setLoading(false);
-        }
-    }, [user?.id, selectedFilter]);
+    const fetchProperties = useCallback(
+        async (forceRefresh = false, isFilterChange = false) => {
+            if (!user?.id) return;
+
+            if (isFilterChange) {
+                setListLoading(true); // não some com a tela
+            } else {
+                setLoading(true); // tela inicial
+            }
+
+            try {
+                const data = await PropertyService.getUserProperties(
+                    user.id,
+                    selectedFilter === 'all' ? null : selectedFilter,
+                    forceRefresh
+                );
+                setProperties(data);
+            } catch (err) {
+                console.error('Erro ao buscar propriedades:', err);
+                Alert.alert('Erro', 'Não foi possível carregar seus anúncios');
+            } finally {
+                if (isFilterChange) {
+                    setListLoading(false);
+                } else {
+                    setLoading(false);
+                }
+            }
+        },
+        [user?.id, selectedFilter]
+    );
+
 
     useEffect(() => {
         if (user?.id) {
             fetchStatsAndPlan();
-            fetchProperties();
+            fetchProperties(false, true); // true = mudança de filtro (sem piscar a tela toda)
         }
-    }, [user?.id]);
+    }, [selectedFilter, user?.id]);
+
 
     // Recarregar dados quando a tela receber foco
     useFocusEffect(
@@ -774,6 +790,13 @@ export default function MyPropertiesScreen({ navigation }) {
                 renderItem={renderPropertyItem}
                 contentContainerStyle={styles.listContainer}
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+                ListFooterComponent={
+                    listLoading ? (
+                        <View style={{ paddingVertical: 20 }}>
+                            <ActivityIndicator size="small" color="#00335e" />
+                        </View>
+                    ) : null
+                }
                 ListEmptyComponent={
                     <View style={styles.emptyContainer}>
                         <Ionicons name="home-outline" size={64} color="#bdc3c7" />

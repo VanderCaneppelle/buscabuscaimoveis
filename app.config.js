@@ -3,6 +3,7 @@ export default {
     name: "BuscaBusca Imóveis",
     slug: "buscabuscaimoveis",
     version: "1.0.0",
+    host: "lan",
     orientation: "portrait",
     icon: "./assets/icon.png",
     userInterfaceStyle: "light",
