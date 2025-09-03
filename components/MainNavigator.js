@@ -346,6 +346,16 @@ export default function MainNavigator() {
                 options={{
                     presentation: 'fullScreenModal',
                     cardStyle: { backgroundColor: 'black' },
+                    // ✅ Transições mínimas para iOS (resolve travada)
+                    cardStyleInterpolator: Platform.OS === 'ios' ? ({ current }) => ({
+                        cardStyle: {
+                            opacity: current.progress,
+                        },
+                    }) : undefined,
+                    transitionSpec: Platform.OS === 'ios' ? {
+                        open: { animation: 'timing', config: { duration: 0 } },
+                        close: { animation: 'timing', config: { duration: 0 } },
+                    } : undefined,
                 }}
             />
             {/* PropertyDetails como modal - oculta bottom tabs */}
@@ -355,8 +365,8 @@ export default function MainNavigator() {
                 options={{
                     title: 'Detalhes do Imóvel',
                     headerBackTitle: 'Voltar',
-                    presentation: 'fullScreenModal', // ✅ Modal oculta bottom tabs automaticamente
-                    headerShown: true, // ✅ Sem header padrão
+                    presentation: 'modal', // ✅ Modal oculta bottom tabs automaticamente
+                    headerShown: true, // ✅ Header personalizado para iOS e Android
                     cardStyle: { backgroundColor: 'white' },
                     headerStyle: {
                         backgroundColor: '#00335e',
@@ -365,6 +375,16 @@ export default function MainNavigator() {
                     headerTitleStyle: {
                         fontWeight: 'bold',
                     },
+                    // ✅ Transições mínimas para iOS (resolve travada)
+                    cardStyleInterpolator: Platform.OS === 'ios' ? ({ current }) => ({
+                        cardStyle: {
+                            opacity: current.progress,
+                        },
+                    }) : undefined,
+                    transitionSpec: Platform.OS === 'ios' ? {
+                        open: { animation: 'timing', config: { duration: 0 } },
+                        close: { animation: 'timing', config: { duration: 0 } },
+                    } : undefined,
                 }}
             />
         </Stack.Navigator>

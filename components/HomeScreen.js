@@ -352,7 +352,7 @@ export default function HomeScreen({ navigation }) {
                         onScroll={handleImageScroll}
                         scrollEventThrottle={16}
                         style={styles.mediaList}
-                        nestedScrollEnabled={false}
+                        nestedScrollEnabled={true}
                         scrollEnabled={true}
                         bounces={false}
                         decelerationRate="fast"
@@ -452,16 +452,17 @@ export default function HomeScreen({ navigation }) {
                     <Text style={styles.propertyType}>
                         {(item.property_type ?? '') + ' • ' + (item.transaction_type ?? '')}
                     </Text>
+
+                    {/* Botão "Ver detalhes" para indicar que o card é clicável */}
+                    <TouchableOpacity
+                        style={styles.verDetalhesButton}
+                        onPress={handlePress}
+                        activeOpacity={0.8}
+                    >
+                        <Text style={styles.verDetalhesText}>Ver detalhes</Text>
+                    </TouchableOpacity>
                 </View>
 
-                {/* Botão invisível para navegação - posicionado sobre a área de informações */}
-                <TouchableOpacity
-                    style={styles.propertyInfoTouchable}
-                    onPress={handlePress}
-                    activeOpacity={0.7}
-                    delayPressIn={150}
-                    delayLongPress={500}
-                />
             </View>
         );
     }, (prevProps, nextProps) => {
@@ -875,14 +876,28 @@ const styles = StyleSheet.create({
         borderBottomLeftRadius: 12,
         borderBottomRightRadius: 12,
     },
-    propertyInfoTouchable: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: 120, // Altura aproximada da área de informações
-        backgroundColor: 'transparent',
-        zIndex: 1,
+    verDetalhesButton: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#ffcc1e',
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        borderRadius: 12,
+        marginTop: 15,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.15,
+        shadowRadius: 4,
+        elevation: 6,
+    },
+    verDetalhesText: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#00335e',
+        textAlign: 'center',
     },
 
     propertyTitle: {
