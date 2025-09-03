@@ -358,14 +358,14 @@ export default function MainNavigator() {
                     } : undefined,
                 }}
             />
-            {/* PropertyDetails como modal - oculta bottom tabs */}
+            {/* PropertyDetails como modal - abre rápido, carrega imagens depois */}
             <Stack.Screen
                 name="PropertyDetails"
                 component={PropertyDetailsScreen}
                 options={{
                     title: 'Detalhes do Imóvel',
                     headerBackTitle: 'Voltar',
-                    presentation: 'modal', // ✅ Modal oculta bottom tabs automaticamente
+                    presentation: 'fullScreenModal', // ✅ Modal abre instantaneamente
                     headerShown: true, // ✅ Header personalizado para iOS e Android
                     cardStyle: { backgroundColor: 'white' },
                     headerStyle: {
@@ -375,16 +375,8 @@ export default function MainNavigator() {
                     headerTitleStyle: {
                         fontWeight: 'bold',
                     },
-                    // ✅ Transições mínimas para iOS (resolve travada)
-                    cardStyleInterpolator: Platform.OS === 'ios' ? ({ current }) => ({
-                        cardStyle: {
-                            opacity: current.progress,
-                        },
-                    }) : undefined,
-                    transitionSpec: Platform.OS === 'ios' ? {
-                        open: { animation: 'timing', config: { duration: 0 } },
-                        close: { animation: 'timing', config: { duration: 0 } },
-                    } : undefined,
+                    animation: 'none',
+                    // ✅ Modal abre rápido, imagens carregam depois
                 }}
             />
         </Stack.Navigator>

@@ -28,6 +28,8 @@ export default function PropertyDetailsScreen({ route, navigation }) {
     const [isFavorite, setIsFavorite] = useState(false);
     const [loading, setLoading] = useState(false);
     const [videoRefs, setVideoRefs] = useState({});
+    const [imagesLoaded, setImagesLoaded] = useState({}); // ✅ Controle de imagens carregadas
+    const [isInitialLoad, setIsInitialLoad] = useState(true); // ✅ Estado inicial
 
     // Separar imagens e vídeos usando useMemo para evitar re-cálculos
     // Função para verificar se é vídeo
@@ -168,6 +170,7 @@ export default function PropertyDetailsScreen({ route, navigation }) {
 
     const renderMedia = useCallback(({ item, index }) => {
         const isVideo = isVideoFile(item);
+        const isImageLoaded = imagesLoaded[index];
 
         if (isVideo) {
             return (
@@ -190,16 +193,40 @@ export default function PropertyDetailsScreen({ route, navigation }) {
         }
 
         return (
-            <Image
-                source={{ uri: item }}
-                style={styles.image}
-                contentFit="cover"
-                cachePolicy="disk"
-                placeholder={require('../assets/icon.png')}
-                transition={200}
-            />
+            <View style={styles.imageContainer}>
+                {/* Placeholder enquanto carrega */}
+                {!isImageLoaded && (
+                    <View style={styles.imagePlaceholder}>
+                        <Ionicons name="image-outline" size={48} color="#cbd5e1" />
+                        <Text style={styles.imagePlaceholderText}>Carregando...</Text>
+                    </View>
+                )}
+
+                {/* Imagem real */}
+                <Image
+                    source={{ uri: item }}
+                    style={[styles.image, !isImageLoaded && styles.imageHidden]}
+                    contentFit="cover"
+                    cachePolicy="disk"
+                    placeholder={require('../assets/icon.png')}
+                    transition={0} // ✅ Sem transição para carregar mais rápido
+                    priority={index === 0 ? "high" : "low"} // ✅ Prioridade para primeira imagem
+                    onLoad={() => {
+                        // ✅ Marcar imagem como carregada
+                        setImagesLoaded(prev => ({ ...prev, [index]: true }));
+                        if (index === 0) {
+                            setIsInitialLoad(false); // ✅ Primeira imagem carregada
+                        }
+                    }}
+                    onError={(error) => {
+                        console.error(`❌ Erro ao carregar imagem ${index}:`, error);
+                        // ✅ Marcar como carregada mesmo com erro para não ficar travado
+                        setImagesLoaded(prev => ({ ...prev, [index]: true }));
+                    }}
+                />
+            </View>
         );
-    }, [isVideoFile]);
+    }, [isVideoFile, imagesLoaded]);
 
     const formatPrice = (price) => {
         return new Intl.NumberFormat('pt-BR', {
@@ -284,6 +311,15 @@ export default function PropertyDetailsScreen({ route, navigation }) {
 
             {/* Galeria de Mídia */}
             <View style={styles.imageContainer}>
+                {/* Indicador de carregamento inicial */}
+                {isInitialLoad && (
+                    <View style={styles.initialLoadingOverlay}>
+                        <View style={styles.initialLoadingContent}>
+                            <Ionicons name="images-outline" size={48} color="#00335e" />
+                            <Text style={styles.initialLoadingText}>Carregando galeria...</Text>
+                        </View>
+                    </View>
+                )}
                 <FlatList
                     data={finalDisplayMedia}
                     renderItem={renderMedia}
@@ -294,8 +330,11 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                     onScroll={handleImageScroll}
                     scrollEventThrottle={16}
                     nestedScrollEnabled={true}
-                    removeClippedSubviews={false}
-
+                    removeClippedSubviews={false} // ✅ Melhor performance
+                    maxToRenderPerBatch={2} // ✅ Renderizar apenas 2 itens por vez
+                    windowSize={3} // ✅ Janela de renderização pequena
+                    initialNumToRender={1} // ✅ Renderizar apenas 1 item inicialmente
+                    updateCellsBatchingPeriod={100} // ✅ Batch de atualizações
                 />
 
                 {/* Indicadores de mídia */}
@@ -466,6 +505,47 @@ const styles = StyleSheet.create({
     image: {
         width: width,
         height: 300,
+    },
+    imageHidden: {
+        opacity: 0,
+    },
+    imagePlaceholder: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: '#f8fafc',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1,
+    },
+    imagePlaceholderText: {
+        fontSize: 14,
+        color: '#64748b',
+        marginTop: 8,
+        fontWeight: '500',
+    },
+    initialLoadingOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: '#f8fafc',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 2,
+    },
+    initialLoadingContent: {
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    initialLoadingText: {
+        fontSize: 16,
+        color: '#00335e',
+        marginTop: 12,
+        fontWeight: '600',
     },
     video: {
         width: width,
