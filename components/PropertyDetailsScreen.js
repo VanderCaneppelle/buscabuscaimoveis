@@ -212,18 +212,58 @@ export default function PropertyDetailsScreen({ route, navigation }) {
         return `${area}m²`;
     };
 
-    const handleWhatsAppContact = () => {
-        const phoneNumber = property.contact_phone || '5511999999999';
-        const message = `Olá! Vi seu anúncio "${property.title}" no BuscaBusca Imóveis e gostaria de mais informações.`;
-        const whatsappUrl = `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
+    const handleWhatsAppContact = async () => {
+        try {
+            const phoneNumber = property.contact_phone || '5511999999999';
+            const message = `Olá! Vi seu anúncio "${property.title}" no BuscaBusca Imóveis e gostaria de mais informações.`;
 
-        Linking.canOpenURL(whatsappUrl).then(supported => {
-            if (supported) {
-                Linking.openURL(whatsappUrl);
-            } else {
-                Alert.alert('Erro', 'WhatsApp não está instalado no seu dispositivo');
+            // Formatar número de telefone (remover caracteres especiais)
+            const cleanPhone = phoneNumber.replace(/\D/g, '');
+
+            // Tentar diferentes URLs do WhatsApp
+            const whatsappUrls = [
+                `whatsapp://send?phone=${cleanPhone}&text=${encodeURIComponent(message)}`,
+                `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`,
+            ];
+
+            // Tentar abrir o app WhatsApp primeiro
+            for (const url of whatsappUrls) {
+                try {
+                    const canOpen = await Linking.canOpenURL(url);
+                    if (canOpen) {
+                        await Linking.openURL(url);
+                        return; // Sucesso, sair da função
+                    }
+                } catch (error) {
+                    console.log('Tentativa falhou:', url, error);
+                    continue; // Tentar próxima URL
+                }
             }
-        });
+
+            // Se nenhuma URL funcionar, abrir WhatsApp Web
+            const webWhatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+            await Linking.openURL(webWhatsappUrl);
+
+        } catch (error) {
+            console.error('❌ Erro ao abrir WhatsApp:', error);
+            Alert.alert(
+                'Erro ao abrir WhatsApp',
+                'Não foi possível abrir o WhatsApp. Verifique se o aplicativo está instalado ou tente abrir manualmente.',
+                [
+                    { text: 'OK', style: 'default' },
+                    {
+                        text: 'Abrir WhatsApp Web',
+                        onPress: () => {
+                            const phoneNumber = property.contact_phone || '5511999999999';
+                            const cleanPhone = phoneNumber.replace(/\D/g, '');
+                            const message = `Olá! Vi seu anúncio "${property.title}" no BuscaBusca Imóveis e gostaria de mais informações.`;
+                            const webUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+                            Linking.openURL(webUrl);
+                        }
+                    }
+                ]
+            );
+        }
     };
 
     const handlePhoneContact = () => {
@@ -301,7 +341,11 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                 )}
             </View>
 
-            <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+            <ScrollView
+                style={styles.content}
+                contentContainerStyle={styles.scrollContent}
+                showsVerticalScrollIndicator={false}
+            >
                 {/* Informações Principais */}
                 <View style={styles.mainInfo}>
                     <Text style={styles.title}>{property.title}</Text>
@@ -385,28 +429,27 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                     </View>
                 </View>
 
-                {/* Botões de Contato */}
-                <View style={styles.contactSection}>
-                    <Text style={styles.sectionTitle}>Entre em Contato</Text>
-                    <View style={styles.contactButtons}>
-                        <TouchableOpacity
-                            style={[styles.contactButton, styles.whatsappButton]}
-                            onPress={handleWhatsAppContact}
-                        >
-                            <Ionicons name="logo-whatsapp" size={24} color="#fff" />
-                            <Text style={styles.contactButtonText}>WhatsApp</Text>
-                        </TouchableOpacity>
 
-                        <TouchableOpacity
-                            style={[styles.contactButton, styles.phoneButton]}
-                            onPress={handlePhoneContact}
-                        >
-                            <Ionicons name="call" size={24} color="#fff" />
-                            <Text style={styles.contactButtonText}>Ligar</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
             </ScrollView>
+
+            {/* Botões de Contato Fixos no Bottom */}
+            <View style={styles.fixedBottomButtons}>
+                <TouchableOpacity
+                    style={[styles.contactButton, styles.whatsappButton]}
+                    onPress={handleWhatsAppContact}
+                >
+                    <Ionicons name="logo-whatsapp" size={24} color="#fff" />
+                    <Text style={styles.contactButtonText}>WhatsApp</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={[styles.contactButton, styles.phoneButton]}
+                    onPress={handlePhoneContact}
+                >
+                    <Ionicons name="call" size={24} color="#fff" />
+                    <Text style={styles.contactButtonText}>Ligar</Text>
+                </TouchableOpacity>
+            </View>
         </SafeAreaView>
     );
 }
@@ -493,6 +536,9 @@ const styles = StyleSheet.create({
     content: {
         flex: 1,
         padding: 20,
+    },
+    scrollContent: {
+        paddingBottom: 120, // Espaço para os botões fixos no bottom
     },
     mainInfo: {
         marginBottom: 25,
@@ -606,5 +652,26 @@ const styles = StyleSheet.create({
     },
     headerButton: {
         padding: 8,
+    },
+    // Botões fixos no bottom com margens de segurança
+    fixedBottomButtons: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: '#fff',
+        paddingHorizontal: 20, // Alinhado com o padding do conteúdo
+        paddingTop: 15,
+        paddingBottom: 25, // Extra padding para safe area
+        borderTopWidth: 1,
+        borderTopColor: '#e5e7eb',
+        flexDirection: 'row',
+        gap: 15,
+        // Sombra sutil para destacar
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 8,
     },
 }); 

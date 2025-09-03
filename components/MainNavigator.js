@@ -62,21 +62,7 @@ function HomeStack() {
             }}
         >
             <Stack.Screen name="HomeMain" component={HomeScreen} />
-            <Stack.Screen
-                name="PropertyDetails"
-                component={PropertyDetailsScreen}
-                options={{
-                    headerShown: true,
-                    title: 'Detalhes do Imóvel',
-                    headerStyle: {
-                        backgroundColor: '#00335e',
-                    },
-                    headerTintColor: '#fff',
-                    headerTitleStyle: {
-                        fontWeight: 'bold',
-                    },
-                }}
-            />
+
             <Stack.Screen
                 name="CreateStory"
                 component={CreateStoryScreen}
@@ -360,6 +346,25 @@ export default function MainNavigator() {
                 options={{
                     presentation: 'fullScreenModal',
                     cardStyle: { backgroundColor: 'black' },
+                }}
+            />
+            {/* PropertyDetails como modal - oculta bottom tabs */}
+            <Stack.Screen
+                name="PropertyDetails"
+                component={PropertyDetailsScreen}
+                options={{
+                    title: 'Detalhes do Imóvel',
+                    headerBackTitle: 'Voltar',
+                    presentation: 'fullScreenModal', // ✅ Modal oculta bottom tabs automaticamente
+                    headerShown: true, // ✅ Sem header padrão
+                    cardStyle: { backgroundColor: 'white' },
+                    headerStyle: {
+                        backgroundColor: '#00335e',
+                    },
+                    headerTintColor: '#fff',
+                    headerTitleStyle: {
+                        fontWeight: 'bold',
+                    },
                 }}
             />
         </Stack.Navigator>
