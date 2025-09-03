@@ -19,6 +19,9 @@ export default function ViewerScreen({ navigation, route }) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [optimizedUrls, setOptimizedUrls] = useState({});
     const [currentProgress, setCurrentProgress] = useState(0);
+    const hasClosed = useRef(false);
+    const progressAnim = useRef(null);
+
 
     useEffect(() => {
         fetchStories();
@@ -34,6 +37,17 @@ export default function ViewerScreen({ navigation, route }) {
         // Reset progress quando muda de story
         setCurrentProgress(0);
     }, [currentIndex]);
+
+    // Cleanup quando o componente é desmontado
+    useEffect(() => {
+        return () => {
+            hasClosed.current = true;
+            if (progressAnim.current) {
+                progressAnim.current.stopAnimation();
+                progressAnim.current.removeAllListeners();
+            }
+        };
+    }, []);
 
     const fetchStories = async () => {
         const cutoffDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
@@ -71,26 +85,57 @@ export default function ViewerScreen({ navigation, route }) {
 
 
     const goNext = () => {
+        if (hasClosed.current) return;
+
         if (currentIndex < stories.length - 1) {
             setCurrentIndex(currentIndex + 1);
         } else {
+            hasClosed.current = true;
             navigation.goBack();
         }
     };
 
+
     const goPrev = () => {
+        if (hasClosed.current) return;
         if (currentIndex > 0) {
             setCurrentIndex(currentIndex - 1);
         }
     };
 
     const handleStoryComplete = () => {
+        if (hasClosed.current) return;
         goNext();
     };
 
-    const handleProgressUpdate = (progressValue) => {
+    const handleProgressUpdate = (progressValue, animRef) => {
         setCurrentProgress(progressValue);
+        // Armazenar referência da animação para poder pará-la quando fechar
+        if (animRef && !progressAnim.current) {
+            progressAnim.current = animRef;
+        }
     };
+
+    // Função para fechar o visualizador
+    const handleCloseViewer = () => {
+        // Marcar como fechado para evitar execução de callbacks
+        hasClosed.current = true;
+
+        // Parar todas as animações em andamento
+        if (progressAnim.current) {
+            progressAnim.current.stopAnimation();
+            progressAnim.current.removeAllListeners();
+        }
+
+        // Navegar de volta
+        if (navigation.canGoBack()) {
+            navigation.goBack();
+        } else {
+            // Se não puder voltar, navegar para home
+            navigation.navigate('home');
+        }
+    };
+
 
     if (!stories.length) return null;
     const currentStory = stories[currentIndex];
@@ -129,7 +174,7 @@ export default function ViewerScreen({ navigation, route }) {
                                 setCurrentIndex(updatedStories.length - 1);
                             } else if (updatedStories.length === 0) {
                                 // Se não há mais stories, voltar para a tela anterior
-                                navigation.goBack();
+                                navigation.navigate('home');
                                 return;
                             }
 
@@ -173,6 +218,7 @@ export default function ViewerScreen({ navigation, route }) {
                         currentProgress={currentProgress}
                         canDeleteStory={canDeleteStory}
                         onDeletePress={handleDeleteStory}
+                        onClosePress={handleCloseViewer}
                     />
                 </View>
             </TouchableWithoutFeedback>

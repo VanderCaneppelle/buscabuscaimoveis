@@ -52,7 +52,7 @@ export default function StoryItem({
             // Listener para notificar progresso ao componente pai
             progressAnim.addListener(({ value }) => {
                 if (onProgressUpdate) {
-                    onProgressUpdate(value);
+                    onProgressUpdate(value, progressAnim);
                 }
             });
         }
@@ -76,7 +76,7 @@ export default function StoryItem({
             // Listener para notificar progresso ao componente pai
             progressAnim.addListener(({ value }) => {
                 if (onProgressUpdate) {
-                    onProgressUpdate(value);
+                    onProgressUpdate(value, progressAnim);
                 }
             });
         }

@@ -358,7 +358,7 @@ export default function MainNavigator() {
                 name="StoryViewer"
                 component={StoryViewerScreen}
                 options={{
-                    presentation: 'modal',
+                    presentation: 'fullScreenModal',
                     cardStyle: { backgroundColor: 'black' },
                 }}
             />

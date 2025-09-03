@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
 
+
 export default function StoryControls({
 
     stories,
@@ -33,19 +34,23 @@ export default function StoryControls({
                     </View>
                 ))}
             </View>
-            {/* Close Button */}
+            {/* Top Buttons Container */}
             <View style={styles.topButtonsContainer}>
+                {/* Botão X para fechar */}
                 <View style={styles.buttonWrapper}>
-                    <TouchableOpacity style={styles.closeButton} onPress={() => navigation.pop()}>
+                    <TouchableOpacity style={styles.closeButton} onPress={onClosePress}>
                         <Ionicons name="close" size={28} color="#fff" />
                     </TouchableOpacity>
                 </View>
 
-                <View style={styles.buttonWrapper}>
-                    <TouchableOpacity style={styles.deleteButton} onPress={onDeletePress}>
-                        <Ionicons name="trash-outline" size={24} color="#fff" />
-                    </TouchableOpacity>
-                </View>
+                {/* Botão de deletar - SÓ aparece se canDeleteStory for true */}
+                {canDeleteStory && onDeletePress && (
+                    <View style={styles.buttonWrapper}>
+                        <TouchableOpacity style={styles.deleteButton} onPress={onDeletePress}>
+                            <Ionicons name="trash-outline" size={24} color="#fff" />
+                        </TouchableOpacity>
+                    </View>
+                )}
             </View>
 
         </>
@@ -56,7 +61,7 @@ const styles = StyleSheet.create({
     progressBarContainer: {
         flexDirection: "row",
         position: "absolute",
-        top: Platform.OS === 'ios' ? 50 : 20,
+        top: Platform.OS === 'ios' ? 20 : 20,
         left: 10,
         right: 10,
         zIndex: 1,
