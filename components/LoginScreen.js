@@ -17,7 +17,7 @@ import {
 import { Video } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
-import { useLoading } from '../contexts/LoadingContext';
+// import { useLoading } from '../contexts/LoadingContext';
 import { supabase } from '../lib/supabase';
 import { RESET_PASSWORD_URL } from '../lib/config';
 import SignUpForm from './SignUpForm';
@@ -31,9 +31,10 @@ export default function LoginScreen() {
     const [isForgotPassword, setIsForgotPassword] = useState(false);
     const [videoLoaded, setVideoLoaded] = useState(false);
     const [videoError, setVideoError] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const { signIn, signUp } = useAuth();
-    const { withLoading } = useLoading();
+    // const { withLoading } = useLoading();
 
     // Forçar o vídeo a carregar após um pequeno delay
     useEffect(() => {
@@ -47,66 +48,70 @@ export default function LoginScreen() {
         return () => clearTimeout(timer);
     }, [videoLoaded, videoError]);
 
-    const handleAuth = () => {
+    const handleAuth = async () => {
         if (!email || !password) {
             Alert.alert('Erro', 'Por favor, preencha todos os campos');
             return;
         }
 
-        withLoading(async () => {
-            try {
-                // Delay de 2.5 segundos para mostrar o vídeo
-                await new Promise(resolve => setTimeout(resolve, 2500));
+        setIsLoading(true);
+        try {
+            // Delay de 2.5 segundos para mostrar o vídeo
+            // await new Promise(resolve => setTimeout(resolve, 2500));
 
-                const { data, error } = isSignUp
-                    ? await signUp(email, password)
-                    : await signIn(email, password);
+            const { data, error } = isSignUp
+                ? await signUp(email, password)
+                : await signIn(email, password);
 
-                if (error) {
-                    Alert.alert('Erro', error.message);
-                } else if (isSignUp) {
-                    Alert.alert(
-                        'Sucesso!',
-                        'Conta criada! Verifique seu email para confirmar a conta.',
-                        [{ text: 'OK' }]
-                    );
-                    setIsSignUp(false);
-                }
-            } catch (error) {
-                Alert.alert('Erro', 'Ocorreu um erro inesperado');
+            if (error) {
+                Alert.alert('Erro', error.message);
+            } else if (isSignUp) {
+                Alert.alert(
+                    'Sucesso!',
+                    'Conta criada! Verifique seu email para confirmar a conta.',
+                    [{ text: 'OK' }]
+                );
+                setIsSignUp(false);
             }
-        });
+        } catch (error) {
+            Alert.alert('Erro', 'Ocorreu um erro inesperado');
+        } finally {
+            setIsLoading(false);
+        }
+
     };
 
-    const handleForgotPassword = () => {
+    const handleForgotPassword = async () => {
         if (!email) {
             Alert.alert('Erro', 'Por favor, digite seu email');
             return;
         }
 
-        withLoading(async () => {
-            try {
-                // Delay de 2.5 segundos para mostrar o vídeo
-                await new Promise(resolve => setTimeout(resolve, 2500));
+        setIsLoading(true);
+        try {
+            // Delay de 2.5 segundos para mostrar o vídeo
+            // await new Promise(resolve => setTimeout(resolve, 2500));
 
-                const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                    redirectTo: RESET_PASSWORD_URL,
-                });
+            const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: RESET_PASSWORD_URL,
+            });
 
-                if (error) {
-                    Alert.alert('Erro', error.message);
-                } else {
-                    Alert.alert(
-                        'Email enviado!',
-                        'Verifique sua caixa de entrada para redefinir sua senha.',
-                        [{ text: 'OK' }]
-                    );
-                    setIsForgotPassword(false);
-                }
-            } catch (error) {
-                Alert.alert('Erro', 'Ocorreu um erro inesperado');
+            if (error) {
+                Alert.alert('Erro', error.message);
+            } else {
+                Alert.alert(
+                    'Email enviado!',
+                    'Verifique sua caixa de entrada para redefinir sua senha.',
+                    [{ text: 'OK' }]
+                );
+                setIsForgotPassword(false);
             }
-        });
+        } catch (error) {
+            Alert.alert('Erro', 'Ocorreu um erro inesperado');
+        } finally {
+            setIsLoading(false);
+        }
+
     };
 
     // Se está no modo de cadastro, mostrar o formulário completo
@@ -115,119 +120,133 @@ export default function LoginScreen() {
     }
 
     return (
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <KeyboardAvoidingView
-                style={styles.container}
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-            >
-                <ScrollView
-                    contentContainerStyle={styles.scrollContainer}
-                    keyboardShouldPersistTaps="handled"
+        <>
+            {isLoading && (
+                <View style={{
+                    position: 'absolute',
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+                    zIndex: 10
+                }}>
+                    <ActivityIndicator size="large" color="#00335e" />
+                </View>
+            )}
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <KeyboardAvoidingView
+                    style={styles.container}
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : -50}
                 >
-                    <View style={styles.content}>
-                        <View style={styles.logoContainer}>
-                            <Video
-                                source={require('../assets/oficial_bb.mp4')}
-                                style={styles.logo}
-                                resizeMode="cover"
-                                shouldPlay={true}
-                                isLooping={true}
-                                isMuted={true}
-                                onLoadStart={() => console.log('🎬 Vídeo: Iniciando carregamento')}
-                                onLoad={() => {
-                                    console.log('🎬 Vídeo: Carregado com sucesso');
-                                    setVideoLoaded(true);
-                                }}
-                                onError={(error) => console.log('❌ Erro no vídeo:', error)}
-                            />
-                        </View>
-                        <Text style={styles.title}>Busca Busca Imóveis</Text>
-                        <Text style={styles.subtitle}>
-                            {isForgotPassword
-                                ? 'Recuperar senha'
-                                : 'Faça login para continuar'
-                            }
-                        </Text>
-
-                        <View style={styles.form}>
-                            <View style={styles.inputContainer}>
-                                <Ionicons name="mail-outline" size={20} color="#7f8c8d" style={styles.inputIcon} />
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Email"
-                                    placeholderTextColor="#7f8c8d"
-                                    value={email}
-                                    onChangeText={setEmail}
-                                    keyboardType="email-address"
-                                    autoCapitalize="none"
-                                    autoCorrect={false}
+                    <ScrollView
+                        contentContainerStyle={styles.scrollContainer}
+                        keyboardShouldPersistTaps="handled"
+                    >
+                        <View style={styles.content}>
+                            <View style={styles.logoContainer}>
+                                <Video
+                                    source={require('../assets/oficial_bb.mp4')}
+                                    style={styles.logo}
+                                    resizeMode="cover"
+                                    shouldPlay={true}
+                                    isLooping={true}
+                                    isMuted={true}
+                                    onLoadStart={() => console.log('🎬 Vídeo: Iniciando carregamento')}
+                                    onLoad={() => {
+                                        console.log('🎬 Vídeo: Carregado com sucesso');
+                                        setVideoLoaded(true);
+                                    }}
+                                    onError={(error) => console.log('❌ Erro no vídeo:', error)}
                                 />
                             </View>
+                            <Text style={styles.title}>Busca Busca Imóveis</Text>
+                            <Text style={styles.subtitle}>
+                                {isForgotPassword
+                                    ? 'Recuperar senha'
+                                    : 'Faça login para continuar'
+                                }
+                            </Text>
 
-                            {!isForgotPassword && (
+                            <View style={styles.form}>
                                 <View style={styles.inputContainer}>
-                                    <Ionicons name="lock-closed-outline" size={20} color="#7f8c8d" style={styles.inputIcon} />
+                                    <Ionicons name="mail-outline" size={20} color="#7f8c8d" style={styles.inputIcon} />
                                     <TextInput
                                         style={styles.input}
-                                        placeholder="Senha"
+                                        placeholder="Email"
                                         placeholderTextColor="#7f8c8d"
-                                        value={password}
-                                        onChangeText={setPassword}
-                                        secureTextEntry
+                                        value={email}
+                                        onChangeText={setEmail}
+                                        keyboardType="email-address"
                                         autoCapitalize="none"
+                                        autoCorrect={false}
                                     />
                                 </View>
-                            )}
 
-                            <TouchableOpacity
-                                style={styles.button}
-                                onPress={isForgotPassword ? handleForgotPassword : handleAuth}
-                            >
-                                <Ionicons
-                                    name={isForgotPassword ? "mail-outline" : "log-in-outline"}
-                                    size={20}
-                                    color="#fff"
-                                    style={styles.buttonIcon}
-                                />
-                                <Text style={styles.buttonText}>
-                                    {isForgotPassword ? 'Enviar Email' : 'Entrar'}
-                                </Text>
-                            </TouchableOpacity>
+                                {!isForgotPassword && (
+                                    <View style={styles.inputContainer}>
+                                        <Ionicons name="lock-closed-outline" size={20} color="#7f8c8d" style={styles.inputIcon} />
+                                        <TextInput
+                                            style={styles.input}
+                                            placeholder="Senha"
+                                            placeholderTextColor="#7f8c8d"
+                                            value={password}
+                                            onChangeText={setPassword}
+                                            secureTextEntry
+                                            autoCapitalize="none"
+                                        />
+                                    </View>
+                                )}
 
-                            {!isForgotPassword && (
                                 <TouchableOpacity
-                                    style={styles.switchButton}
-                                    onPress={() => setIsSignUp(true)}
+                                    style={styles.button}
+                                    onPress={isForgotPassword ? handleForgotPassword : handleAuth}
                                 >
-                                    <Text style={styles.switchText}>
-                                        Não tem conta? Cadastre-se
+                                    <Ionicons
+                                        name={isForgotPassword ? "mail-outline" : "log-in-outline"}
+                                        size={20}
+                                        color="#fff"
+                                        style={styles.buttonIcon}
+                                    />
+                                    <Text style={styles.buttonText}>
+                                        {isForgotPassword ? 'Enviar Email' : 'Entrar'}
                                     </Text>
                                 </TouchableOpacity>
-                            )}
 
-                            {!isForgotPassword && (
-                                <TouchableOpacity
-                                    style={styles.forgotButton}
-                                    onPress={() => setIsForgotPassword(true)}
-                                >
-                                    <Text style={styles.forgotText}>Esqueci minha senha</Text>
-                                </TouchableOpacity>
-                            )}
+                                {!isForgotPassword && (
+                                    <TouchableOpacity
+                                        style={styles.switchButton}
+                                        onPress={() => setIsSignUp(true)}
+                                    >
+                                        <Text style={styles.switchText}>
+                                            Não tem conta? Cadastre-se
+                                        </Text>
+                                    </TouchableOpacity>
+                                )}
 
-                            {isForgotPassword && (
-                                <TouchableOpacity
-                                    style={styles.switchButton}
-                                    onPress={() => setIsForgotPassword(false)}
-                                >
-                                    <Text style={styles.switchText}>Voltar ao login</Text>
-                                </TouchableOpacity>
-                            )}
+                                {!isForgotPassword && (
+                                    <TouchableOpacity
+                                        style={styles.forgotButton}
+                                        onPress={() => setIsForgotPassword(true)}
+                                    >
+                                        <Text style={styles.forgotText}>Esqueci minha senha</Text>
+                                    </TouchableOpacity>
+                                )}
+
+                                {isForgotPassword && (
+                                    <TouchableOpacity
+                                        style={styles.switchButton}
+                                        onPress={() => setIsForgotPassword(false)}
+                                    >
+                                        <Text style={styles.switchText}>Voltar ao login</Text>
+                                    </TouchableOpacity>
+                                )}
+                            </View>
                         </View>
-                    </View>
-                </ScrollView>
-            </KeyboardAvoidingView>
-        </TouchableWithoutFeedback>
+                    </ScrollView>
+                </KeyboardAvoidingView>
+            </TouchableWithoutFeedback>
+        </>
     );
 }
 
@@ -237,9 +256,9 @@ const styles = StyleSheet.create({
         backgroundColor: '#ffcc1e', // Nova cor amarela
     },
     scrollContainer: {
-        flexGrow: 1,
+        flex: 1,
         justifyContent: 'center',
-        paddingBottom: 50, // Espaço extra no final para o teclado
+        // paddingBottom: 50, // Espaço extra no final para o teclado
     },
     content: {
         padding: 20,

@@ -23,9 +23,9 @@ export default function StoryVideo({ videoUrl, optimizedUrl, videoRef, onLoad, o
                 onPlaybackStatusUpdate={onPlaybackStatusUpdate}
                 onError={onError}
             />
-            <View style={styles.mediaTypeIndicator}>
+            {/* <View style={styles.mediaTypeIndicator}>
                 <Ionicons name="videocam" size={20} color="#fff" />
-            </View>
+            </View> */}
         </View>
     );
 }

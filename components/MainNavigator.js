@@ -92,21 +92,7 @@ function HomeStack() {
                     },
                 }}
             />
-            <Stack.Screen
-                name="StoryViewer"
-                component={StoryViewerScreen}
-                options={{
-                    headerShown: true,
-                    title: 'Stories',
-                    headerStyle: {
-                        backgroundColor: '#00335e',
-                    },
-                    headerTintColor: '#fff',
-                    headerTitleStyle: {
-                        fontWeight: 'bold',
-                    },
-                }}
-            />
+
         </Stack.Navigator>
     );
 }
@@ -276,7 +262,7 @@ function AccountStack() {
     );
 }
 
-export default function MainNavigator() {
+function TabNavigator() {
     const insets = useSafeAreaInsets();
 
     return (
@@ -354,5 +340,28 @@ export default function MainNavigator() {
                 }}
             />
         </Tab.Navigator>
+    );
+}
+
+export default function MainNavigator() {
+    return (
+        <Stack.Navigator
+            screenOptions={{
+                headerShown: false,
+            }}
+        >
+            <Stack.Screen
+                name="MainTabs"
+                component={TabNavigator}
+            />
+            <Stack.Screen
+                name="StoryViewer"
+                component={StoryViewerScreen}
+                options={{
+                    presentation: 'modal',
+                    cardStyle: { backgroundColor: 'black' },
+                }}
+            />
+        </Stack.Navigator>
     );
 } 

@@ -14,9 +14,9 @@ export default function StoryImage({ imageUrl, optimizedUrl }) {
                 style={styles.media}
                 resizeMode="cover"
             />
-            <View style={styles.mediaTypeIndicator}>
+            {/* <View style={styles.mediaTypeIndicator}>
                 <Ionicons name="image" size={20} color="#fff" />
-            </View>
+            </View> */}
         </View>
     );
 }

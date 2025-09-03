@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, TouchableWithoutFeedback, Dimensions, StyleSheet, Animated, Text, SafeAreaView, StatusBar, Platform, Alert } from "react-native";
+import { View, TouchableOpacity, TouchableWithoutFeedback, Dimensions, StyleSheet, Animated, Text, SafeAreaView, StatusBar, Platform, Alert } from "react-native";
+import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from "../lib/supabase";
 import { getOptimizedUrl } from "../lib/mediaCacheService";
