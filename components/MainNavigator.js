@@ -88,35 +88,6 @@ function AdvertiseStack() {
         <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="AdvertiseMain" component={AdvertiseScreen} />
             <Stack.Screen
-                name="CreateAd"
-                component={CreateAdScreen}
-                options={{
-                    headerShown: false,
-                }}
-            />
-            <Stack.Screen
-                name="Plans"
-                component={PlansScreen}
-                options={{
-                    headerShown: false,
-                }}
-            />
-            <Stack.Screen
-                name="PaymentDetails"
-                component={PaymentDetailsScreen}
-                options={{
-                    headerShown: true,
-                    title: 'Pagamento',
-                    headerStyle: {
-                        backgroundColor: '#00335e',
-                    },
-                    headerTintColor: '#fff',
-                    headerTitleStyle: {
-                        fontWeight: 'bold',
-                    },
-                }}
-            />
-            <Stack.Screen
                 name="PaymentConfirmation"
                 component={PaymentConfirmationScreen}
                 options={{
@@ -200,28 +171,6 @@ function AccountStack() {
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="AccountMain" component={AccountScreen} />
-            <Stack.Screen
-                name="Plans"
-                component={PlansScreen}
-                options={{
-                    headerShown: false,
-                }}
-            />
-            <Stack.Screen
-                name="PaymentDetails"
-                component={PaymentDetailsScreen}
-                options={{
-                    headerShown: true,
-                    title: 'Pagamento',
-                    headerStyle: {
-                        backgroundColor: '#00335e',
-                    },
-                    headerTintColor: '#fff',
-                    headerTitleStyle: {
-                        fontWeight: 'bold',
-                    },
-                }}
-            />
             <Stack.Screen
                 name="PaymentConfirmation"
                 component={PaymentConfirmationScreen}
@@ -376,7 +325,74 @@ export default function MainNavigator() {
                         fontWeight: 'bold',
                     },
                     animation: 'none',
+                    tabBarStyle: { display: 'none' }, // Esconde a barra de rodapé
                     // ✅ Modal abre rápido, imagens carregam depois
+                }}
+            />
+
+            {/* CreateAd como modal - mesmo nível das outras telas */}
+            <Stack.Screen
+                name="CreateAd"
+                component={CreateAdScreen}
+                options={{
+                    title: 'Criar Anúncio',
+                    headerBackTitle: 'Voltar',
+                    presentation: 'fullScreenModal',
+                    headerShown: false,
+                    cardStyle: { backgroundColor: 'white' },
+                    headerStyle: {
+                        backgroundColor: '#00335e',
+                    },
+                    headerTintColor: '#fff',
+                    headerTitleStyle: {
+                        fontWeight: 'bold',
+                    },
+                    animation: 'none',
+                    tabBarStyle: { display: 'none' }, // Esconde a barra de rodapé
+                }}
+            />
+
+            {/* Plans como modal - mesmo nível das outras telas */}
+            <Stack.Screen
+                name="Plans"
+                component={PlansScreen}
+                options={{
+                    title: 'Planos',
+                    headerBackTitle: 'Voltar',
+                    presentation: 'fullScreenModal',
+                    headerShown: false,
+                    cardStyle: { backgroundColor: 'white' },
+                    headerStyle: {
+                        backgroundColor: '#00335e',
+                    },
+                    headerTintColor: '#fff',
+                    headerTitleStyle: {
+                        fontWeight: 'bold',
+                    },
+                    animation: 'none',
+                    tabBarStyle: { display: 'none' }, // Esconde a barra de rodapé
+                }}
+            />
+
+            {/* PaymentDetails como modal - mesmo nível das outras telas */}
+            <Stack.Screen
+                name="PaymentDetails"
+                component={PaymentDetailsScreen}
+                options={{
+                    title: 'Pagamento',
+                    headerBackTitle: 'Voltar',
+                    presentation: 'fullScreenModal',
+                    headerShown: false, // Header customizado amarelo como na PlansScreen
+                    cardStyle: { backgroundColor: '#ffcc1e' }, // Cor amarela igual à PlansScreen
+                    headerStyle: {
+                        backgroundColor: '#00335e',
+                    },
+                    headerTintColor: '#00335e',
+                    headerTitleStyle: {
+                        fontWeight: 'bold',
+                    },
+                    animation: 'none',
+                    tabBarStyle: { display: 'none' }, // Esconde a barra de rodapé
                 }}
             />
         </Stack.Navigator>

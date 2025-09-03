@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
     View,
     Text,
@@ -37,9 +37,12 @@ export default function HomeScreen({ navigation }) {
     const [profile, setProfile] = useState(null);
     const [properties, setProperties] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [listLoading, setListLoading] = useState(false); // Loading apenas para a lista
     const [refreshing, setRefreshing] = useState(false);
     const [loadingMore, setLoadingMore] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [searchInputValue, setSearchInputValue] = useState(''); // Valor do input separado do termo de busca
+    const [isSearching, setIsSearching] = useState(false); // Estado para indicar se está buscando
     const [filters, setFilters] = useState({
         city: '',
         propertyType: '',
@@ -56,6 +59,10 @@ export default function HomeScreen({ navigation }) {
     // Estado para controlar dados
     const [hasInitialData, setHasInitialData] = useState(false);
     const [scrollPosition, setScrollPosition] = useState(0); // Manter posição do scroll
+
+    // Refs para controle
+    const searchInputRef = useRef(null);
+    const flatListRef = useRef(null);
 
     // Cores dinâmicas baseadas no tema do dispositivo
     const colors = {
@@ -87,11 +94,6 @@ export default function HomeScreen({ navigation }) {
         };
     }, []);
 
-
-
-    // Removido useFocusEffect para evitar recarregamento desnecessário
-    // Os favoritos são carregados apenas na primeira montagem
-
     const fetchProfile = async () => {
         try {
             const { data, error } = await supabase
@@ -110,15 +112,24 @@ export default function HomeScreen({ navigation }) {
         }
     };
 
-    const fetchProperties = async (customFilters = null, searchQuery = null, page = 0, forceRefresh = false) => {
+    const fetchProperties = async (customFilters = null, searchQuery = null, page = 0, forceRefresh = false, isSearchOrFilterChange = false) => {
         // Evitar recarregamento se já temos dados e não é forceRefresh
-        if (page === 0 && properties.length > 0 && !forceRefresh && shouldRenderContent && hasInitialData) {
+        // Mas sempre executar se for forceRefresh ou mudança de busca/filtro
+        if (page === 0 && properties.length > 0 && !forceRefresh && !isSearchOrFilterChange && hasInitialData) {
             console.log('🏠 HomeScreen: Dados já carregados, pulando fetchProperties');
             return;
         }
 
         console.log('🏠 HomeScreen: Carregando propriedades...');
-        setLoading(true);
+
+        // Controlar loading baseado no tipo de operação
+        if (page === 0) {
+            if (isSearchOrFilterChange) {
+                setListLoading(true); // Loading apenas da lista (não pisca a tela)
+            } else {
+                setLoading(true); // Loading da tela inteira (apenas na primeira vez)
+            }
+        }
 
         try {
             const activeFilters = customFilters || filters;
@@ -146,12 +157,17 @@ export default function HomeScreen({ navigation }) {
             console.error('❌ Erro ao carregar propriedades:', error);
             Alert.alert('Erro', 'Não foi possível carregar os anúncios');
         } finally {
-            setLoading(false);
+            if (page === 0) {
+                if (isSearchOrFilterChange) {
+                    setListLoading(false);
+                } else {
+                    setLoading(false);
+                }
+            }
             setLoadingMore(false);
+            setIsSearching(false);
         }
     };
-
-
 
     const onRefresh = async () => {
         console.log('🔄🔄🔄 HomeScreen: INICIANDO REFRESH MANUAL 🔄🔄🔄');
@@ -166,22 +182,44 @@ export default function HomeScreen({ navigation }) {
         console.log('✅✅✅ HomeScreen: REFRESH MANUAL FINALIZADO ✅✅✅');
     };
 
-    const handleSearch = (text) => {
-        console.log(`🔍🔍🔍 HomeScreen: BUSCA INICIADA: "${text}" 🔍🔍🔍`);
-        setSearchTerm(text);
+    // Nova função para executar a busca
+    const executeSearch = useCallback(async () => {
+        if (!searchInputValue.trim()) {
+            // Se não há texto, limpar busca e mostrar todos os imóveis
+            clearSearch();
+            return;
+        }
+
+        console.log(`🔍🔍🔍 HomeScreen: EXECUTANDO BUSCA: "${searchInputValue}" 🔍🔍🔍`);
+        setIsSearching(true);
+        setSearchTerm(searchInputValue);
         setCurrentPage(0);
-        fetchProperties(filters, text, 0);
+
+        // Atualizar apenas os dados, sem re-renderizar a página inteira
+        await fetchProperties(filters, searchInputValue, 0, true, true); // true = mudança de busca/filtro
+
+        // Fechar o teclado
+        if (searchInputRef.current) {
+            searchInputRef.current.blur();
+        }
+    }, [searchInputValue, filters]);
+
+    // Função para lidar com mudanças no input (sem executar busca automática)
+    const handleSearchInputChange = (text) => {
+        setSearchInputValue(text);
     };
 
     const clearSearch = () => {
         console.log('🧹🧹🧹 HomeScreen: LIMPANDO BUSCA 🧹🧹🧹');
+        setSearchInputValue('');
         setSearchTerm('');
         setCurrentPage(0);
-        fetchProperties(filters, '', 0);
+        // Buscar todos os imóveis sem filtros de busca
+        fetchProperties(filters, '', 0, true, true); // forceRefresh = true para garantir nova busca
     };
 
     const clearFilters = () => {
-        console.log('🧹🧹🧹 HomeScreen: LIMPANDO FILTROS 🧹🧹🧹');
+        console.log('🧹🧹🧹 HomeScreen: LIMPANDO FILTROS E BUSCA 🧹🧹🧹');
         const clearedFilters = {
             city: '',
             propertyType: '',
@@ -189,8 +227,11 @@ export default function HomeScreen({ navigation }) {
             maxPrice: '',
         };
         setFilters(clearedFilters);
+        setSearchInputValue(''); // Limpar o input de busca
+        setSearchTerm(''); // Limpar o termo de busca ativo
         setCurrentPage(0);
-        fetchProperties(clearedFilters, searchTerm, 0);
+        // Buscar todos os imóveis sem filtros e sem termo de busca
+        fetchProperties(clearedFilters, '', 0, true, true); // forceRefresh = true para garantir nova busca
     };
 
 
@@ -525,22 +566,43 @@ export default function HomeScreen({ navigation }) {
 
                 {/* Primeira linha: Barra de Pesquisa */}
                 <View style={styles.headerTop}>
-                    {/* Barra de Pesquisa */}
-                    <View style={styles.searchBar}>
-                        <Ionicons name="search" size={20} color="#7f8c8d" style={styles.searchIcon} />
-                        <TextInput
-                            style={styles.searchInput}
-                            placeholder="Buscar imóveis..."
-                            placeholderTextColor="#7f8c8d"
-                            value={searchTerm}
-                            onChangeText={handleSearch}
-                            returnKeyType="search"
-                        />
-                        {searchTerm.length > 0 && (
-                            <TouchableOpacity onPress={clearSearch} style={styles.clearSearchButton}>
-                                <Ionicons name="close-circle" size={20} color="#7f8c8d" />
-                            </TouchableOpacity>
-                        )}
+                    {/* Barra de Pesquisa com Botão de Busca */}
+                    <View style={styles.searchContainer}>
+                        <View style={styles.searchBar}>
+                            <Ionicons name="search" size={20} color="#7f8c8d" style={styles.searchIcon} />
+                            <TextInput
+                                ref={searchInputRef}
+                                style={styles.searchInput}
+                                placeholder="Buscar imóveis..."
+                                placeholderTextColor="#7f8c8d"
+                                value={searchInputValue}
+                                onChangeText={handleSearchInputChange}
+                                returnKeyType="search"
+                                onSubmitEditing={executeSearch}
+                            />
+                            {searchInputValue.length > 0 && (
+                                <TouchableOpacity onPress={clearSearch} style={styles.clearSearchButton}>
+                                    <Ionicons name="close-circle" size={20} color="#7f8c8d" />
+                                </TouchableOpacity>
+                            )}
+                        </View>
+
+                        {/* Botão de Busca Discreto */}
+                        <TouchableOpacity
+                            style={[
+                                styles.searchButton,
+                                searchInputValue.trim() && styles.searchButtonActive
+                            ]}
+                            onPress={executeSearch}
+                            activeOpacity={0.8}
+                            disabled={!searchInputValue.trim()}
+                        >
+                            <Ionicons
+                                name="search"
+                                size={18}
+                                color={searchInputValue.trim() ? "#fff" : "#7f8c8d"}
+                            />
+                        </TouchableOpacity>
                     </View>
                 </View>
 
@@ -581,16 +643,26 @@ export default function HomeScreen({ navigation }) {
                         <View style={styles.sectionHeader}>
                             <Text style={styles.sectionTitle}>
                                 {`Anúncios (${totalCount})`}
+                                {searchTerm && (
+                                    <Text style={styles.searchResultInfo}>
+                                        {` - Busca: "${searchTerm}"`}
+                                    </Text>
+                                )}
                             </Text>
+                            {isSearching && (
+                                <Text style={styles.searchingText}>Buscando...</Text>
+                            )}
                         </View>
                     </View>
                 }
                 ListEmptyComponent={
                     <View style={styles.emptyContainer}>
                         <Ionicons name="home-outline" size={64} color="#bdc3c7" />
-                        <Text style={styles.emptyText}>Nenhum anúncio encontrado</Text>
+                        <Text style={styles.emptyText}>
+                            {searchTerm ? 'Nenhum imóvel encontrado para esta busca' : 'Nenhum anúncio encontrado'}
+                        </Text>
                         <Text style={styles.emptySubtext}>
-                            Tente ajustar os filtros ou volte mais tarde
+                            {searchTerm ? 'Tente ajustar os termos de busca' : 'Tente ajustar os filtros ou volte mais tarde'}
                         </Text>
                     </View>
                 }
@@ -613,7 +685,16 @@ export default function HomeScreen({ navigation }) {
                 }}
                 onEndReached={loadMoreProperties}
                 onEndReachedThreshold={0.3}
-                ListFooterComponent={renderFooter}
+                ListFooterComponent={
+                    <>
+                        {renderFooter()}
+                        {listLoading && (
+                            <View style={styles.loadingMoreContainer}>
+                                <Text style={styles.loadingMoreText}>Atualizando lista...</Text>
+                            </View>
+                        )}
+                    </>
+                }
             />
 
 
@@ -1036,8 +1117,7 @@ const styles = StyleSheet.create({
 
 
     searchBar: {
-        width: '100%',
-        maxWidth: 400,
+        flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: '#fff',
@@ -1067,6 +1147,38 @@ const styles = StyleSheet.create({
     },
     clearSearchButton: {
         padding: 5,
+    },
+
+    searchResultInfo: {
+        fontSize: 14,
+        color: '#7f8c8d',
+        fontStyle: 'italic',
+    },
+    searchingText: {
+        fontSize: 16,
+        color: '#7f8c8d',
+        textAlign: 'center',
+        marginTop: 10,
+    },
+    searchContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        width: '100%',
+        maxWidth: 400,
+        height: 48,
+    },
+    searchButton: {
+        padding: 10,
+        borderRadius: 20,
+        backgroundColor: '#e2e8f0',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginLeft: 10,
+        width: 40,
+        height: 40,
+    },
+    searchButtonActive: {
+        backgroundColor: '#00335e',
     },
 
     appTitle: {

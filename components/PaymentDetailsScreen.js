@@ -200,140 +200,141 @@ export default function PaymentDetailsScreen({ route, navigation }) {
 
     return (
         <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color="#2c3e50" />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>Detalhes do Pagamento</Text>
-                <View style={styles.placeholder} />
-            </View>
+            <View style={styles.container}>
+                {/* Header Amarelo com Título */}
+                <View style={styles.headerContainer}>
+                    <View style={styles.titleContainer}>
+                        <TouchableOpacity
+                            style={styles.backButton}
+                            onPress={() => navigation.goBack()}>
+                            <Ionicons name="arrow-back" size={24} color="#00335e" />
+                        </TouchableOpacity>
+                        <Text style={styles.headerTitle}>Escolha seu Plano</Text>
+                        <View style={styles.placeholder} />
 
-            <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-                {/* Info Card */}
-                <View style={styles.infoCard}>
-                    <Ionicons name="card" size={24} color="#3498db" />
-                    <View style={styles.infoContent}>
-                        <Text style={styles.infoTitle}>Pagamento Seguro</Text>
-                        <Text style={styles.infoText}>
-                            Seu pagamento será processado pelo Mercado Pago, garantindo total segurança.
-                        </Text>
                     </View>
                 </View>
+                {/* Conteúdo Principal */}
+                <View style={styles.contentContainer}>
+                    <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
 
-                {/* Plan Card */}
-                <View style={styles.planCard}>
-                    <View style={styles.planHeader}>
-                        <Ionicons name="star" size={24} color="#f39c12" />
-                        <Text style={styles.planName}>{plan.display_name || plan.name || 'Plano'}</Text>
-                    </View>
 
-                    <View style={styles.priceSection}>
-                        <Text style={styles.priceValue}>
-                            R$ {plan.price ? plan.price.toFixed(2).replace('.', ',') : '0,00'}
-                        </Text>
-                        <Text style={styles.pricePeriod}>pagamento único</Text>
-                    </View>
-
-                    <View style={styles.divider} />
-
-                    <View style={styles.planFeatures}>
-                        <Text style={styles.featuresTitle}>Recursos Inclusos:</Text>
-                        {getPlanFeatures().map((feature, index) => (
-                            <View key={index} style={styles.featureItem}>
-                                <Ionicons
-                                    name="checkmark-circle"
-                                    size={20}
-                                    style={styles.featureIcon}
-                                />
-                                <Text style={styles.featureText}>{feature}</Text>
+                        {/* Plan Card */}
+                        <View style={styles.planCard}>
+                            <View style={styles.planHeader}>
+                                <Ionicons name="star" size={24} color="#f39c12" />
+                                <Text style={styles.planName}>{plan.display_name || plan.name || 'Plano'}</Text>
                             </View>
-                        ))}
-                    </View>
-                </View>
 
-                {/* Payment Method Card */}
-                <View style={styles.paymentMethodCard}>
-                    <View style={styles.paymentMethodHeader}>
-                        <Ionicons name="card-outline" size={24} color="#27ae60" />
-                        <Text style={styles.paymentMethodTitle}>Método de Pagamento</Text>
-                    </View>
-                    <View style={styles.mercadopagoInfo}>
-                        <Ionicons name="shield-checkmark" size={20} color="#27ae60" />
-                        <Text style={styles.mercadopagoText}>
-                            Mercado Pago - Pagamento 100% seguro
-                        </Text>
-                    </View>
-                </View>
-
-                {/* Security Info */}
-                <View style={styles.securityCard}>
-                    <View style={styles.securityHeader}>
-                        <Ionicons name="lock-closed" size={20} color="#e74c3c" />
-                        <Text style={styles.securityTitle}>Informações de Segurança</Text>
-                    </View>
-                    <View style={styles.securityItems}>
-                        <View style={styles.securityItem}>
-                            <Ionicons name="checkmark" size={16} color="#27ae60" />
-                            <Text style={styles.securityText}>Dados criptografados</Text>
-                        </View>
-                        <View style={styles.securityItem}>
-                            <Ionicons name="checkmark" size={16} color="#27ae60" />
-                            <Text style={styles.securityText}>Pagamento processado pelo Mercado Pago</Text>
-                        </View>
-                        <View style={styles.securityItem}>
-                            <Ionicons name="checkmark" size={16} color="#27ae60" />
-                            <Text style={styles.securityText}>Nenhum dado bancário fica salvo</Text>
-                        </View>
-                    </View>
-                </View>
-
-                {/* Downgrade Warning */}
-                {currentPlan && plan.max_ads < currentPlan.max_ads && (
-                    <View style={styles.downgradeCard}>
-                        <View style={styles.downgradeHeader}>
-                            <Ionicons name="warning" size={24} color="#f39c12" />
-                            <Text style={styles.downgradeTitle}>Atenção: Downgrade de Plano</Text>
-                        </View>
-                        <View style={styles.downgradeContent}>
-                            <Text style={styles.downgradeText}>
-                                Você está fazendo downgrade do plano <Text style={styles.planHighlight}>{currentPlan.display_name}</Text>
-                                para o plano <Text style={styles.planHighlight}>{plan.display_name}</Text>.
-                            </Text>
-                            <Text style={styles.downgradeText}>
-                                Anúncios ativos: <Text style={styles.adsHighlight}>{currentAdsCount}</Text>
-                            </Text>
-                            <Text style={styles.downgradeText}>
-                                Limite do novo plano: <Text style={styles.adsHighlight}>{plan.max_ads}</Text>
-                            </Text>
-                            {currentAdsCount > plan.max_ads && (
-                                <Text style={styles.downgradeWarning}>
-                                    ⚠️ Você precisa remover {currentAdsCount - plan.max_ads} anúncio(s) antes de fazer o downgrade.
+                            <View style={styles.priceSection}>
+                                <Text style={styles.priceValue}>
+                                    R$ {plan.price ? plan.price.toFixed(2).replace('.', ',') : '0,00'}
                                 </Text>
-                            )}
+                                <Text style={styles.pricePeriod}>pagamento único</Text>
+                            </View>
+
+                            <View style={styles.divider} />
+
+                            <View style={styles.planFeatures}>
+                                <Text style={styles.featuresTitle}>Recursos Inclusos:</Text>
+                                {getPlanFeatures().map((feature, index) => (
+                                    <View key={index} style={styles.featureItem}>
+                                        <Ionicons
+                                            name="checkmark-circle"
+                                            size={20}
+                                            style={styles.featureIcon}
+                                        />
+                                        <Text style={styles.featureText}>{feature}</Text>
+                                    </View>
+                                ))}
+                            </View>
                         </View>
-                    </View>
-                )}
 
-                {/* Payment Button */}
-                <TouchableOpacity
-                    style={styles.paymentButton}
-                    onPress={handlePayment}
-                    disabled={loading}
-                >
-                    <Ionicons name="card" size={24} color="#fff" />
-                    <Text style={styles.paymentButtonText}>
-                        Pagar com Mercado Pago
-                    </Text>
-                </TouchableOpacity>
+                        {/* Payment Method Card */}
+                        <View style={styles.paymentMethodCard}>
+                            <View style={styles.paymentMethodHeader}>
+                                <Ionicons name="card-outline" size={24} color="#27ae60" />
+                                <Text style={styles.paymentMethodTitle}>Método de Pagamento</Text>
+                            </View>
+                            <View style={styles.mercadopagoInfo}>
+                                <Ionicons name="shield-checkmark" size={20} color="#27ae60" />
+                                <Text style={styles.mercadopagoText}>
+                                    Mercado Pago - Pagamento 100% seguro
+                                </Text>
+                            </View>
+                        </View>
 
-                {/* Cancel Button */}
-                <TouchableOpacity
-                    style={styles.cancelButton}
-                    onPress={() => navigation.goBack()}
-                >
-                    <Text style={styles.cancelButtonText}>Cancelar</Text>
-                </TouchableOpacity>
-            </ScrollView>
+                        {/* Security Info
+                        <View style={styles.securityCard}>
+                            <View style={styles.securityHeader}>
+                                <Ionicons name="lock-closed" size={20} color="#e74c3c" />
+                                <Text style={styles.securityTitle}>Informações de Segurança</Text>
+                            </View>
+                            <View style={styles.securityItems}>
+                                <View style={styles.securityItem}>
+                                    <Ionicons name="checkmark" size={16} color="#27ae60" />
+                                    <Text style={styles.securityText}>Dados criptografados</Text>
+                                </View>
+                                <View style={styles.securityItem}>
+                                    <Ionicons name="checkmark" size={16} color="#27ae60" />
+                                    <Text style={styles.securityText}>Pagamento processado pelo Mercado Pago</Text>
+                                </View>
+                                <View style={styles.securityItem}>
+                                    <Ionicons name="checkmark" size={16} color="#27ae60" />
+                                    <Text style={styles.securityText}>Nenhum dado bancário fica salvo</Text>
+                                </View>
+                            </View>
+                        </View> */}
+
+                        {/* Downgrade Warning */}
+                        {currentPlan && plan.max_ads < currentPlan.max_ads && (
+                            <View style={styles.downgradeCard}>
+                                <View style={styles.downgradeHeader}>
+                                    <Ionicons name="warning" size={24} color="#f39c12" />
+                                    <Text style={styles.downgradeTitle}>Atenção: Downgrade de Plano</Text>
+                                </View>
+                                <View style={styles.downgradeContent}>
+                                    <Text style={styles.downgradeText}>
+                                        Você está fazendo downgrade do plano <Text style={styles.planHighlight}>{currentPlan.display_name} </Text>
+                                        para o plano <Text style={styles.planHighlight}>{plan.display_name}</Text>.
+                                    </Text>
+                                    <Text style={styles.downgradeText}>
+                                        Anúncios ativos: <Text style={styles.adsHighlight}>{currentAdsCount}</Text>
+                                    </Text>
+                                    <Text style={styles.downgradeText}>
+                                        Limite do novo plano: <Text style={styles.adsHighlight}>{plan.max_ads}</Text>
+                                    </Text>
+                                    {currentAdsCount > plan.max_ads && (
+                                        <Text style={styles.downgradeWarning}>
+                                            ⚠️ Você precisa remover {currentAdsCount - plan.max_ads} anúncio(s) antes de fazer o downgrade.
+                                        </Text>
+                                    )}
+                                </View>
+                            </View>
+                        )}
+
+                        {/* Payment Button */}
+                        <TouchableOpacity
+                            style={styles.paymentButton}
+                            onPress={handlePayment}
+                            disabled={loading}
+                        >
+                            <Ionicons name="card" size={24} color="#fff" />
+                            <Text style={styles.paymentButtonText}>
+                                Pagar com Mercado Pago
+                            </Text>
+                        </TouchableOpacity>
+
+                        {/* Cancel Button */}
+                        <TouchableOpacity
+                            style={styles.cancelButton}
+                            onPress={() => navigation.goBack()}
+                        >
+                            <Text style={styles.cancelButtonText}>Cancelar</Text>
+                        </TouchableOpacity>
+                    </ScrollView>
+                </View>
+            </View>
         </SafeAreaView>
     );
 }
@@ -341,31 +342,52 @@ export default function PaymentDetailsScreen({ route, navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f5f5f5',
+        backgroundColor: '#ffcc1e',
     },
-    header: {
-        backgroundColor: '#fff',
+    headerContainer: {
+        paddingTop: 60,
+        paddingBottom: 15,
+        backgroundColor: '#ffcc1e',
+        paddingHorizontal: 20,
+    },
+    titleContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: 20,
-        paddingVertical: 15,
-        borderBottomWidth: 1,
-        borderBottomColor: '#e0e0e0',
+        justifyContent: 'center',
+        position: 'relative',
+
     },
+    contentContainer: {
+        flex: 1,
+        backgroundColor: '#fff',
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: -2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 3.84,
+        elevation: 5,
+    },
+
     backButton: {
-        padding: 5,
+        position: 'absolute',
+        left: 0,
+        padding: 10,
     },
     headerTitle: {
-        fontSize: 18,
+        fontSize: 20,
         fontWeight: 'bold',
-        color: '#2c3e50',
+        color: '#00335e',
     },
     placeholder: {
-        width: 34,
+        width: 40, // Ajustar conforme necessário para centralizar o título
     },
     content: {
         flex: 1,
+        paddingTop: 15,
     },
     loadingContainer: {
         flex: 1,
@@ -408,6 +430,7 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         borderRadius: 12,
         padding: 24,
+        paddingTop: 10,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,

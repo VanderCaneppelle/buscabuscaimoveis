@@ -5,7 +5,7 @@ export default {
     version: "1.0.0",
     host: "lan",
     orientation: "portrait",
-    icon: "./assets/icon.png",
+    icon: "./assets/logo_bb.jpg",
     userInterfaceStyle: "light",
     splash: {
       image: "./assets/splash-icon.png",
@@ -27,7 +27,7 @@ export default {
       }
     },
     web: {
-      favicon: "./assets/favicon.png"
+      favicon: "./assets/logo_bb.jpg"
     },
     extra: {
       eas: {
@@ -35,7 +35,8 @@ export default {
       }
     },
     plugins: [
-      "expo-notifications"
+      "expo-notifications",
+      "expo-font"
     ],
     scheme: "buscabuscaimoveis",
     // Configurações do Mercado Pago
