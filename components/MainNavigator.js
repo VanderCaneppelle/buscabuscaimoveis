@@ -88,21 +88,6 @@ function AdvertiseStack() {
         <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="AdvertiseMain" component={AdvertiseScreen} />
             <Stack.Screen
-                name="PaymentConfirmation"
-                component={PaymentConfirmationScreen}
-                options={{
-                    headerShown: true,
-                    title: 'Confirmação',
-                    headerStyle: {
-                        backgroundColor: '#00335e',
-                    },
-                    headerTintColor: '#fff',
-                    headerTitleStyle: {
-                        fontWeight: 'bold',
-                    },
-                }}
-            />
-            <Stack.Screen
                 name="VideoUploadTest"
                 component={VideoUploadTestScreen}
                 options={{
@@ -171,21 +156,6 @@ function AccountStack() {
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="AccountMain" component={AccountScreen} />
-            <Stack.Screen
-                name="PaymentConfirmation"
-                component={PaymentConfirmationScreen}
-                options={{
-                    headerShown: true,
-                    title: 'Confirmação',
-                    headerStyle: {
-                        backgroundColor: '#00335e',
-                    },
-                    headerTintColor: '#fff',
-                    headerTitleStyle: {
-                        fontWeight: 'bold',
-                    },
-                }}
-            />
             <Stack.Screen
                 name="MyProperties"
                 component={MyPropertiesScreen}
@@ -393,6 +363,20 @@ export default function MainNavigator() {
                     },
                     animation: 'none',
                     tabBarStyle: { display: 'none' }, // Esconde a barra de rodapé
+                }}
+            />
+            {/* PaymentConfirmation como modal - mesmo nível das outras telas */}
+            <Stack.Screen
+                name="PaymentConfirmation"
+                component={PaymentConfirmationScreen}
+                options={{
+                    title: 'Confirmação',
+                    headerBackTitle: 'Voltar',
+                    presentation: 'fullScreenModal',
+                    headerShown: false,
+                    cardStyle: { backgroundColor: '#ffcc1e' },
+                    animation: 'none',
+                    tabBarStyle: { display: 'none' },
                 }}
             />
         </Stack.Navigator>

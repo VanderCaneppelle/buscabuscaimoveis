@@ -273,22 +273,26 @@ export default function PaymentConfirmationScreen({ route, navigation }) {
 
     return (
         <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color="#2c3e50" />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>
-                    {status === 'waiting' ? 'Confirmação de Pagamento' :
-                        status === 'success' ? 'Pagamento Aprovado' : 'Erro no Pagamento'}
-                </Text>
-                <View style={styles.placeholder} />
+            <View style={styles.headerContainer}>
+                <View style={styles.titleContainer}>
+                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                        <Ionicons name="arrow-back" size={24} color="#00335e" />
+                    </TouchableOpacity>
+                    <Text style={styles.headerTitle}>
+                        {status === 'waiting' ? 'Confirmação de Pagamento' :
+                            status === 'success' ? 'Pagamento Aprovado' : 'Erro no Pagamento'}
+                    </Text>
+                    <View style={styles.placeholder} />
+                </View>
             </View>
 
-            <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-                {status === 'waiting' && renderWaitingContent()}
-                {status === 'success' && renderSuccessContent()}
-                {status === 'error' && renderErrorContent()}
-            </ScrollView>
+            <View style={styles.contentContainer}>
+                <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+                    {status === 'waiting' && renderWaitingContent()}
+                    {status === 'success' && renderSuccessContent()}
+                    {status === 'error' && renderErrorContent()}
+                </ScrollView>
+            </View>
         </SafeAreaView>
     );
 }
@@ -296,31 +300,50 @@ export default function PaymentConfirmationScreen({ route, navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f5f5f5',
+        backgroundColor: '#ffcc1e',
     },
-    header: {
-        backgroundColor: '#fff',
+    headerContainer: {
+        paddingTop: 60,
+        paddingBottom: 15,
+        backgroundColor: '#ffcc1e',
+        paddingHorizontal: 20,
+    },
+    titleContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: 20,
-        paddingVertical: 15,
-        borderBottomWidth: 1,
-        borderBottomColor: '#e0e0e0',
+        justifyContent: 'center',
+        position: 'relative',
     },
     backButton: {
-        padding: 5,
+        position: 'absolute',
+        left: 0,
+        padding: 10,
     },
     headerTitle: {
-        fontSize: 18,
+        fontSize: 20,
         fontWeight: 'bold',
-        color: '#2c3e50',
+        color: '#00335e',
     },
     placeholder: {
-        width: 34,
+        width: 40,
+    },
+    contentContainer: {
+        flex: 1,
+        backgroundColor: '#fff',
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: -2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 3.84,
+        elevation: 5,
     },
     content: {
         flex: 1,
+        paddingTop: 15,
     },
     infoCard: {
         backgroundColor: '#e8f8f5',
