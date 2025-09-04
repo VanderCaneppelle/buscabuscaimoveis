@@ -140,7 +140,7 @@ export default function HomeScreen({ navigation }) {
                 filters: activeFilters,
                 searchTerm: activeSearch,
                 forceRefresh,
-                enableParallelUpdate: false // Desabilitar atualização em background
+                enableParallelUpdate: true // Habilitar atualização em background (SWR)
             });
 
             if (page === 0) {
@@ -214,8 +214,8 @@ export default function HomeScreen({ navigation }) {
         setSearchInputValue('');
         setSearchTerm('');
         setCurrentPage(0);
-        // Buscar todos os imóveis sem filtros de busca
-        fetchProperties(filters, '', 0, true, true); // forceRefresh = true para garantir nova busca
+        // Mostrar imediatamente do cache e revalidar em background
+        fetchProperties(filters, '', 0, false, true);
     };
 
     const clearFilters = () => {
@@ -230,8 +230,8 @@ export default function HomeScreen({ navigation }) {
         setSearchInputValue(''); // Limpar o input de busca
         setSearchTerm(''); // Limpar o termo de busca ativo
         setCurrentPage(0);
-        // Buscar todos os imóveis sem filtros e sem termo de busca
-        fetchProperties(clearedFilters, '', 0, true, true); // forceRefresh = true para garantir nova busca
+        // Mostrar imediatamente do cache e revalidar em background
+        fetchProperties(clearedFilters, '', 0, false, true);
     };
 
 

@@ -10,6 +10,7 @@ import {
     Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
 import { PlanService } from '../lib/planService';
 import { useFocusEffect } from '@react-navigation/native';
@@ -18,6 +19,7 @@ export default function AdvertiseScreen({ navigation }) {
     console.log('Rendered AdvertiseScreen');
 
     const { user } = useAuth();
+    const insets = useSafeAreaInsets();
     const [userPlanInfo, setUserPlanInfo] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -120,7 +122,7 @@ export default function AdvertiseScreen({ navigation }) {
     );
 
     return (
-        <SafeAreaView style={styles.container}>
+        <View style={[styles.container, { paddingTop: insets.top }]}>
             {/* Header Amarelo com Título */}
             <View style={styles.headerContainer}>
                 <View style={styles.titleContainer}>
@@ -231,7 +233,7 @@ export default function AdvertiseScreen({ navigation }) {
                     </View>
                 </ScrollView>
             </View>
-        </SafeAreaView>
+        </View>
     );
 }
 
@@ -241,10 +243,10 @@ const styles = StyleSheet.create({
         backgroundColor: '#ffcc1e',
     },
     headerContainer: {
-        paddingTop: 50,
+        paddingTop: 10,
         paddingBottom: 15,
         backgroundColor: '#ffcc1e',
-        paddingHorizontal: 20,
+        paddingHorizontal: 0,
     },
     titleContainer: {
         flexDirection: 'row',
