@@ -196,8 +196,8 @@ function TabNavigator() {
                     backgroundColor: '#fff',
                     borderTopWidth: 1,
                     borderTopColor: '#e2e8f0',
-                    paddingTop: 8,
-                    paddingBottom: insets.bottom + 8,
+                    paddingTop: 2,
+                    paddingBottom: insets.bottom + 5,
                     height: 60 + insets.bottom,
                     // Removido: shadowColor, shadowOffset, shadowOpacity, shadowRadius, elevation
                 },

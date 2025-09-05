@@ -16,7 +16,8 @@ import {
     useColorScheme,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import Slider from '@react-native-community/slider';
@@ -720,9 +721,17 @@ export default function HomeScreen({ navigation }) {
 
     if (loading) {
         return (
-            <View style={[styles.container, { paddingTop: insets.top }]}>
-                <View style={styles.loadingContainer}>
-                    <Text style={styles.loadingText}>Carregando...</Text>
+            <View style={styles.container}>
+                <StatusBar
+                    backgroundColor="#ffcc1e"
+                    style="dark"
+                    translucent={false}
+                />
+                <View style={[styles.safeAreaTop, { height: insets.top }]} />
+                <View style={styles.contentContainer}>
+                    <View style={styles.loadingContainer}>
+                        <Text style={styles.loadingText}>Carregando...</Text>
+                    </View>
                 </View>
             </View>
         );
@@ -731,359 +740,374 @@ export default function HomeScreen({ navigation }) {
 
 
     return (
-        <View style={[styles.container, { paddingTop: insets.top }]}>
-            <View style={styles.storiesContainer}>
-                <View style={styles.titleContainer}>
-                    <Image
-                        source={require('../assets/logo_bb.jpg')}
-                        style={styles.titleLogo}
-                        resizeMode="contain"
-                    />
-                    <Text style={styles.storiesTitle}>Busca Busca Imóveis</Text>
-                </View>
-                <View style={styles.storiesWrapper}>
-                    <StoriesComponent navigation={navigation} />
-                </View>
-            </View>
-
-            {/* Header */}
-            <View style={styles.header}>
-                {/* Nome do app - pequeno e acima da barra de pesquisa */}
-
-
-                {/* Primeira linha: Barra de Pesquisa */}
-                <View style={styles.headerTop}>
-                    {/* Barra de Pesquisa com Botão de Busca */}
-                    <View style={styles.searchContainer}>
-                        <View style={styles.searchBar}>
-                            <Ionicons name="search" size={20} color="#7f8c8d" style={styles.searchIcon} />
-                            <TextInput
-                                ref={searchInputRef}
-                                style={styles.searchInput}
-                                placeholder="Buscar imóveis..."
-                                placeholderTextColor="#7f8c8d"
-                                value={searchInputValue}
-                                onChangeText={handleSearchInputChange}
-                                returnKeyType="search"
-                                onSubmitEditing={executeSearch}
-                            />
-                            {searchInputValue.length > 0 && (
-                                <TouchableOpacity onPress={clearSearch} style={styles.clearSearchButton}>
-                                    <Ionicons name="close-circle" size={20} color="#7f8c8d" />
-                                </TouchableOpacity>
-                            )}
-                        </View>
-
-                        {/* Botão de Busca Discreto */}
-                        <TouchableOpacity
-                            style={[
-                                styles.searchButton,
-                                searchInputValue.trim() && styles.searchButtonActive
-                            ]}
-                            onPress={executeSearch}
-                            activeOpacity={0.8}
-                            disabled={!searchInputValue.trim()}
-                        >
-                            <Ionicons
-                                name="search"
-                                size={18}
-                                color={searchInputValue.trim() ? "#fff" : "#7f8c8d"}
-                            />
-                        </TouchableOpacity>
-                    </View>
-                </View>
-
-                {/* Segunda linha: Filtros + Ordenar + Ver Mapa + Limpar */}
-                <View style={styles.headerBottom}>
-                    <View style={styles.leftButtons}>
-                        <TouchableOpacity onPress={openFiltersModal} style={styles.filtersButton}>
-                            <Ionicons name="options-outline" size={16} color="#00335e" />
-                            <Text style={styles.filtersText}>Filtros</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.filtersButton}>
-                            <Ionicons name="swap-vertical" size={16} color="#00335e" />
-                            <Text style={styles.filtersText}>Ordenar</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.filtersButton}>
-                            <Ionicons name="map" size={16} color="#00335e" />
-                            <Text style={styles.filtersText}>Ver Mapa</Text>
-                        </TouchableOpacity>
-                    </View>
-
-                    <View style={styles.rightButtons}>
-                        <TouchableOpacity onPress={clearFilters} style={styles.clearFiltersButton}>
-                            <Text style={styles.clearFiltersText}>Limpar</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </View>
-
-            {/* Content */}
-            <FlatList
-                data={properties}
-                renderItem={renderProperty}
-                keyExtractor={(item) => item.id.toString()}
-                refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                }
-                ListHeaderComponent={
-                    <View style={styles.propertiesSection}>
-                        <View style={styles.sectionHeader}>
-                            <Text style={styles.sectionTitle}>
-                                {`Anúncios (${totalCount})`}
-                                {searchTerm && (
-                                    <Text style={styles.searchResultInfo}>
-                                        {` - Busca: "${searchTerm}"`}
-                                    </Text>
-                                )}
-                            </Text>
-                            {isSearching && (
-                                <Text style={styles.searchingText}>Buscando...</Text>
-                            )}
-                        </View>
-                    </View>
-                }
-                ListEmptyComponent={
-                    <View style={styles.emptyContainer}>
-                        <Ionicons name="home-outline" size={64} color="#bdc3c7" />
-                        <Text style={styles.emptyText}>
-                            {searchTerm ? 'Nenhum imóvel encontrado para esta busca' : 'Nenhum anúncio encontrado'}
-                        </Text>
-                        <Text style={styles.emptySubtext}>
-                            {searchTerm ? 'Tente ajustar os termos de busca' : 'Tente ajustar os filtros ou volte mais tarde'}
-                        </Text>
-                    </View>
-                }
-                contentContainerStyle={styles.listContainer}
-                // Otimizações de performance
-                removeClippedSubviews={false}
-                maxToRenderPerBatch={3}
-                windowSize={5}
-                initialNumToRender={3}
-                updateCellsBatchingPeriod={100}
-                scrollEventThrottle={16}
-                showsVerticalScrollIndicator={false}
-                bounces={true}
-                decelerationRate="normal"
-                scrollEnabled={true}
-                nestedScrollEnabled={true}
-                maintainVisibleContentPosition={{
-                    minIndexForVisible: 0,
-                    autoscrollToTopThreshold: 10,
-                }}
-                onEndReached={loadMoreProperties}
-                onEndReachedThreshold={0.3}
-                ListFooterComponent={
-                    <>
-                        {renderFooter()}
-                        {listLoading && (
-                            <View style={styles.loadingMoreContainer}>
-                                <Text style={styles.loadingMoreText}>Atualizando lista...</Text>
-                            </View>
-                        )}
-                    </>
-                }
+        <View style={styles.container}>
+            <StatusBar
+                backgroundColor="#ffcc1e"
+                style="dark"
+                translucent={false}
             />
+            <View style={[styles.safeAreaTop, { height: insets.top }]} />
+            <View style={styles.contentContainer}>
+                <View style={styles.storiesContainer}>
+                    <View style={styles.titleContainer}>
+                        <Image
+                            source={require('../assets/logo_bb.jpg')}
+                            style={styles.titleLogo}
+                            resizeMode="contain"
+                        />
+                        <Text style={styles.storiesTitle}>Busca Busca Imóveis</Text>
+                    </View>
+                    <View style={styles.storiesWrapper}>
+                        <StoriesComponent navigation={navigation} />
+                    </View>
+                </View>
 
-            {/* Modal de Filtros */}
-            <Modal
-                visible={showFiltersModal}
-                animationType="slide"
-                transparent={true}
-                onRequestClose={closeFiltersModal}
-            >
-                <TouchableOpacity
-                    style={styles.modalOverlay}
-                    activeOpacity={1}
-                    onPress={closeFiltersModal}
-                >
-                    <KeyboardAvoidingView
-                        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                        style={styles.modalContent}
-                    >
-                        <View style={styles.modalHeader}>
-                            <Text style={styles.modalTitle}>Filtros</Text>
-                            <TouchableOpacity onPress={closeFiltersModal}>
-                                <Ionicons name="close" size={24} color="#00335e" />
+                {/* Header */}
+                <View style={styles.header}>
+                    {/* Nome do app - pequeno e acima da barra de pesquisa */}
+
+
+                    {/* Primeira linha: Barra de Pesquisa */}
+                    <View style={styles.headerTop}>
+                        {/* Barra de Pesquisa com Botão de Busca */}
+                        <View style={styles.searchContainer}>
+                            <View style={styles.searchBar}>
+                                <Ionicons name="search" size={20} color="#7f8c8d" style={styles.searchIcon} />
+                                <TextInput
+                                    ref={searchInputRef}
+                                    style={styles.searchInput}
+                                    placeholder="Buscar imóveis..."
+                                    placeholderTextColor="#7f8c8d"
+                                    value={searchInputValue}
+                                    onChangeText={handleSearchInputChange}
+                                    returnKeyType="search"
+                                    onSubmitEditing={executeSearch}
+                                />
+                                {searchInputValue.length > 0 && (
+                                    <TouchableOpacity onPress={clearSearch} style={styles.clearSearchButton}>
+                                        <Ionicons name="close-circle" size={20} color="#7f8c8d" />
+                                    </TouchableOpacity>
+                                )}
+                            </View>
+
+                            {/* Botão de Busca Discreto */}
+                            <TouchableOpacity
+                                style={[
+                                    styles.searchButton,
+                                    searchInputValue.trim() && styles.searchButtonActive
+                                ]}
+                                onPress={executeSearch}
+                                activeOpacity={0.8}
+                                disabled={!searchInputValue.trim()}
+                            >
+                                <Ionicons
+                                    name="search"
+                                    size={18}
+                                    color={searchInputValue.trim() ? "#fff" : "#7f8c8d"}
+                                />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+
+                    {/* Segunda linha: Filtros + Ordenar + Ver Mapa + Limpar */}
+                    <View style={styles.headerBottom}>
+                        <View style={styles.leftButtons}>
+                            <TouchableOpacity onPress={openFiltersModal} style={styles.filtersButton}>
+                                <Ionicons name="options-outline" size={16} color="#00335e" />
+                                <Text style={styles.filtersText}>Filtros</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.filtersButton}>
+                                <Ionicons name="swap-vertical" size={16} color="#00335e" />
+                                <Text style={styles.filtersText}>Ordenar</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.filtersButton}>
+                                <Ionicons name="map" size={16} color="#00335e" />
+                                <Text style={styles.filtersText}>Ver Mapa</Text>
                             </TouchableOpacity>
                         </View>
 
-                        <View style={styles.modalBody}>
-                            <TouchableOpacity
-                                style={styles.filtersContainer}
-                                activeOpacity={1}
-                                onPress={() => setShowCityDropdown(false)}
-                            >
-                                <ScrollView
-                                    style={styles.filtersScrollView}
-                                    showsVerticalScrollIndicator={false}
-                                    keyboardShouldPersistTaps="handled"
-                                >
-                                    {/* Tipo de Propriedade */}
-                                    <View style={styles.filterGroup}>
-                                        <Text style={styles.filterLabel}>Tipo de Propriedade</Text>
-                                        <View style={styles.propertyTypeContainer}>
-                                            {['Casa', 'Apartamento', 'Terreno', 'Comercial', 'Rural'].map((type) => (
-                                                <TouchableOpacity
-                                                    key={type}
-                                                    style={[
-                                                        styles.propertyTypeButton,
-                                                        tempFilters.propertyType.includes(type) && styles.propertyTypeButtonSelected
-                                                    ]}
-                                                    onPress={() => setTempFilters(prev => ({
-                                                        ...prev,
-                                                        propertyType: prev.propertyType.includes(type)
-                                                            ? prev.propertyType.filter(t => t !== type)
-                                                            : [...prev.propertyType, type]
-                                                    }))}
-                                                >
-                                                    <Text style={[
-                                                        styles.propertyTypeButtonText,
-                                                        tempFilters.propertyType.includes(type) && styles.propertyTypeButtonTextSelected
-                                                    ]}>
-                                                        {type}
-                                                    </Text>
-                                                </TouchableOpacity>
-                                            ))}
-                                        </View>
-                                    </View>
+                        <View style={styles.rightButtons}>
+                            <TouchableOpacity onPress={clearFilters} style={styles.clearFiltersButton}>
+                                <Text style={styles.clearFiltersText}>Limpar</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
 
-                                    {/* Cidade com Dropdown */}
-                                    <View style={styles.filterGroup}>
-                                        <Text style={styles.filterLabel}>Cidade</Text>
-                                        <TouchableOpacity
-                                            style={styles.cityDropdownContainer}
-                                            activeOpacity={0.7}
-                                            onPress={() => setShowCityDropdown(!showCityDropdown)}
-                                        >
-                                            <View style={styles.cityDropdownButton}>
-                                                <Text style={[
-                                                    styles.cityDropdownButtonText,
-                                                    !citySearchTerm && styles.cityDropdownPlaceholder
-                                                ]}>
-                                                    {citySearchTerm || 'Selecione uma cidade'}
+                {/* Content */}
+                <FlatList
+                    data={properties}
+                    renderItem={renderProperty}
+                    keyExtractor={(item) => item.id.toString()}
+                    refreshControl={
+                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                    }
+                    ListHeaderComponent={
+                        <View style={styles.propertiesSection}>
+                            <View style={styles.sectionHeader}>
+                                <Text style={styles.sectionTitle}>
+                                    {`Anúncios (${totalCount})`}
+                                    {searchTerm && (
+                                        <Text style={styles.searchResultInfo}>
+                                            {` - Busca: "${searchTerm}"`}
+                                        </Text>
+                                    )}
+                                </Text>
+                                {isSearching && (
+                                    <Text style={styles.searchingText}>Buscando...</Text>
+                                )}
+                            </View>
+                        </View>
+                    }
+                    ListEmptyComponent={
+                        <View style={styles.emptyContainer}>
+                            <Ionicons name="home-outline" size={64} color="#bdc3c7" />
+                            <Text style={styles.emptyText}>
+                                {searchTerm ? 'Nenhum imóvel encontrado para esta busca' : 'Nenhum anúncio encontrado'}
+                            </Text>
+                            <Text style={styles.emptySubtext}>
+                                {searchTerm ? 'Tente ajustar os termos de busca' : 'Tente ajustar os filtros ou volte mais tarde'}
+                            </Text>
+                        </View>
+                    }
+                    contentContainerStyle={styles.listContainer}
+                    // Otimizações de performance
+                    removeClippedSubviews={false}
+                    maxToRenderPerBatch={3}
+                    windowSize={5}
+                    initialNumToRender={3}
+                    updateCellsBatchingPeriod={100}
+                    scrollEventThrottle={16}
+                    showsVerticalScrollIndicator={false}
+                    bounces={true}
+                    decelerationRate="normal"
+                    scrollEnabled={true}
+                    nestedScrollEnabled={true}
+                    maintainVisibleContentPosition={{
+                        minIndexForVisible: 0,
+                        autoscrollToTopThreshold: 10,
+                    }}
+                    onEndReached={loadMoreProperties}
+                    onEndReachedThreshold={0.3}
+                    ListFooterComponent={
+                        <>
+                            {renderFooter()}
+                            {listLoading && (
+                                <View style={styles.loadingMoreContainer}>
+                                    <Text style={styles.loadingMoreText}>Atualizando lista...</Text>
+                                </View>
+                            )}
+                        </>
+                    }
+                />
+
+                {/* Modal de Filtros */}
+                <Modal
+                    visible={showFiltersModal}
+                    animationType="slide"
+                    transparent={true}
+                    onRequestClose={closeFiltersModal}
+                >
+                    <TouchableOpacity
+                        style={styles.modalOverlay}
+                        activeOpacity={1}
+                        onPress={closeFiltersModal}
+                    >
+                        <KeyboardAvoidingView
+                            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                            style={styles.modalContent}
+                        >
+                            <View style={styles.modalHeader}>
+                                <Text style={styles.modalTitle}>Filtros</Text>
+                                <TouchableOpacity onPress={closeFiltersModal}>
+                                    <Ionicons name="close" size={24} color="#00335e" />
+                                </TouchableOpacity>
+                            </View>
+
+                            <View style={styles.modalBody}>
+                                <TouchableOpacity
+                                    style={styles.filtersContainer}
+                                    activeOpacity={1}
+                                    onPress={() => setShowCityDropdown(false)}
+                                >
+                                    <ScrollView
+                                        style={styles.filtersScrollView}
+                                        showsVerticalScrollIndicator={false}
+                                        keyboardShouldPersistTaps="handled"
+                                    >
+                                        {/* Tipo de Propriedade */}
+                                        <View style={styles.filterGroup}>
+                                            <Text style={styles.filterLabel}>Tipo de Propriedade</Text>
+                                            <View style={styles.propertyTypeContainer}>
+                                                {['Casa', 'Apartamento', 'Terreno', 'Comercial', 'Rural'].map((type) => (
+                                                    <TouchableOpacity
+                                                        key={type}
+                                                        style={[
+                                                            styles.propertyTypeButton,
+                                                            tempFilters.propertyType.includes(type) && styles.propertyTypeButtonSelected
+                                                        ]}
+                                                        onPress={() => setTempFilters(prev => ({
+                                                            ...prev,
+                                                            propertyType: prev.propertyType.includes(type)
+                                                                ? prev.propertyType.filter(t => t !== type)
+                                                                : [...prev.propertyType, type]
+                                                        }))}
+                                                    >
+                                                        <Text style={[
+                                                            styles.propertyTypeButtonText,
+                                                            tempFilters.propertyType.includes(type) && styles.propertyTypeButtonTextSelected
+                                                        ]}>
+                                                            {type}
+                                                        </Text>
+                                                    </TouchableOpacity>
+                                                ))}
+                                            </View>
+                                        </View>
+
+                                        {/* Cidade com Dropdown */}
+                                        <View style={styles.filterGroup}>
+                                            <Text style={styles.filterLabel}>Cidade</Text>
+                                            <TouchableOpacity
+                                                style={styles.cityDropdownContainer}
+                                                activeOpacity={0.7}
+                                                onPress={() => setShowCityDropdown(!showCityDropdown)}
+                                            >
+                                                <View style={styles.cityDropdownButton}>
+                                                    <Text style={[
+                                                        styles.cityDropdownButtonText,
+                                                        !citySearchTerm && styles.cityDropdownPlaceholder
+                                                    ]}>
+                                                        {citySearchTerm || 'Selecione uma cidade'}
+                                                    </Text>
+                                                    <Ionicons
+                                                        name={showCityDropdown ? "chevron-up" : "chevron-down"}
+                                                        size={20}
+                                                        color="#7f8c8d"
+                                                    />
+                                                </View>
+                                                {showCityDropdown && (
+                                                    <View style={styles.cityDropdown}>
+                                                        <ScrollView
+                                                            style={styles.cityDropdownList}
+                                                            keyboardShouldPersistTaps="handled"
+                                                            nestedScrollEnabled={true}
+                                                            showsVerticalScrollIndicator={true}
+                                                            bounces={false}
+                                                            scrollEventThrottle={16}
+                                                        >
+                                                            <TouchableOpacity
+                                                                style={styles.cityDropdownItem}
+                                                                onPress={() => selectCity('')}
+                                                            >
+                                                                <Text style={styles.cityDropdownText}>Todas as cidades</Text>
+                                                            </TouchableOpacity>
+                                                            {cities.map((city, index) => (
+                                                                <TouchableOpacity
+                                                                    key={index}
+                                                                    style={[
+                                                                        styles.cityDropdownItem,
+                                                                        citySearchTerm === city && styles.cityDropdownItemSelected
+                                                                    ]}
+                                                                    onPress={() => selectCity(city)}
+                                                                >
+                                                                    <Text style={[
+                                                                        styles.cityDropdownText,
+                                                                        citySearchTerm === city && styles.cityDropdownTextSelected
+                                                                    ]}>
+                                                                        {city}
+                                                                    </Text>
+                                                                </TouchableOpacity>
+                                                            ))}
+                                                        </ScrollView>
+                                                    </View>
+                                                )}
+                                            </TouchableOpacity>
+                                        </View>
+
+                                        {/* Range de Preço com Slider */}
+                                        <View style={styles.filterGroup}>
+                                            <Text style={styles.filterLabel}>Faixa de Preço</Text>
+
+                                            {/* Valores de preço acima dos sliders */}
+                                            <View style={styles.priceDisplayContainer}>
+                                                <Text style={styles.priceDisplayText}>
+                                                    R$ {formatPrice(sliderValues.min)}
                                                 </Text>
-                                                <Ionicons
-                                                    name={showCityDropdown ? "chevron-up" : "chevron-down"}
-                                                    size={20}
-                                                    color="#7f8c8d"
+                                                <Text style={styles.priceDisplayText}>
+                                                    R$ {formatPrice(sliderValues.max)}
+                                                </Text>
+                                            </View>
+
+                                            {/* Sliders ocupando toda a largura */}
+                                            <View style={styles.sliderContainer}>
+                                                <Text style={styles.sliderLabel}>Preço Mínimo</Text>
+                                                <Slider
+                                                    style={styles.slider}
+                                                    minimumValue={priceRange.min}
+                                                    maximumValue={priceRange.max}
+                                                    value={minSliderValue}
+                                                    onValueChange={handleMinSliderChange}
+                                                    minimumTrackTintColor="#00335e"
+                                                    maximumTrackTintColor="#e2e8f0"
+                                                    thumbStyle={styles.sliderThumb}
+                                                    step={10000}
+                                                />
+
+                                                <Text style={styles.sliderLabel}>Preço Máximo</Text>
+                                                <Slider
+                                                    style={styles.slider}
+                                                    minimumValue={priceRange.min}
+                                                    maximumValue={priceRange.max}
+                                                    value={maxSliderValue}
+                                                    onValueChange={handleMaxSliderChange}
+                                                    minimumTrackTintColor="#00335e"
+                                                    maximumTrackTintColor="#e2e8f0"
+                                                    thumbStyle={styles.sliderThumb}
+                                                    step={10000}
                                                 />
                                             </View>
-                                            {showCityDropdown && (
-                                                <View style={styles.cityDropdown}>
-                                                    <ScrollView
-                                                        style={styles.cityDropdownList}
-                                                        keyboardShouldPersistTaps="handled"
-                                                        nestedScrollEnabled={true}
-                                                        showsVerticalScrollIndicator={true}
-                                                        bounces={false}
-                                                        scrollEventThrottle={16}
-                                                    >
-                                                        <TouchableOpacity
-                                                            style={styles.cityDropdownItem}
-                                                            onPress={() => selectCity('')}
-                                                        >
-                                                            <Text style={styles.cityDropdownText}>Todas as cidades</Text>
-                                                        </TouchableOpacity>
-                                                        {cities.map((city, index) => (
-                                                            <TouchableOpacity
-                                                                key={index}
-                                                                style={[
-                                                                    styles.cityDropdownItem,
-                                                                    citySearchTerm === city && styles.cityDropdownItemSelected
-                                                                ]}
-                                                                onPress={() => selectCity(city)}
-                                                            >
-                                                                <Text style={[
-                                                                    styles.cityDropdownText,
-                                                                    citySearchTerm === city && styles.cityDropdownTextSelected
-                                                                ]}>
-                                                                    {city}
-                                                                </Text>
-                                                            </TouchableOpacity>
-                                                        ))}
-                                                    </ScrollView>
-                                                </View>
-                                            )}
-                                        </TouchableOpacity>
-                                    </View>
-
-                                    {/* Range de Preço com Slider */}
-                                    <View style={styles.filterGroup}>
-                                        <Text style={styles.filterLabel}>Faixa de Preço</Text>
-
-                                        {/* Valores de preço acima dos sliders */}
-                                        <View style={styles.priceDisplayContainer}>
-                                            <Text style={styles.priceDisplayText}>
-                                                R$ {formatPrice(sliderValues.min)}
-                                            </Text>
-                                            <Text style={styles.priceDisplayText}>
-                                                R$ {formatPrice(sliderValues.max)}
-                                            </Text>
                                         </View>
+                                    </ScrollView>
+                                </TouchableOpacity>
+                            </View>
 
-                                        {/* Sliders ocupando toda a largura */}
-                                        <View style={styles.sliderContainer}>
-                                            <Text style={styles.sliderLabel}>Preço Mínimo</Text>
-                                            <Slider
-                                                style={styles.slider}
-                                                minimumValue={priceRange.min}
-                                                maximumValue={priceRange.max}
-                                                value={minSliderValue}
-                                                onValueChange={handleMinSliderChange}
-                                                minimumTrackTintColor="#00335e"
-                                                maximumTrackTintColor="#e2e8f0"
-                                                thumbStyle={styles.sliderThumb}
-                                                step={10000}
-                                            />
+                            <View style={styles.filterButtons}>
+                                <TouchableOpacity style={styles.clearButton} onPress={() => {
+                                    setTempFilters({
+                                        city: '',
+                                        propertyType: [],
+                                        minPrice: '',
+                                        maxPrice: '',
+                                    });
+                                    setCitySearchTerm('');
+                                    setSliderValues({ min: 0, max: 5000000 });
+                                    setMinSliderValue(0);
+                                    setMaxSliderValue(5000000);
+                                    setShowCityDropdown(false);
+                                }}>
+                                    <Text style={styles.clearButtonText}>Limpar</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.applyButton} onPress={applyFilters}>
+                                    <Text style={styles.applyButtonText}>Aplicar</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </KeyboardAvoidingView>
+                    </TouchableOpacity>
+                </Modal>
 
-                                            <Text style={styles.sliderLabel}>Preço Máximo</Text>
-                                            <Slider
-                                                style={styles.slider}
-                                                minimumValue={priceRange.min}
-                                                maximumValue={priceRange.max}
-                                                value={maxSliderValue}
-                                                onValueChange={handleMaxSliderChange}
-                                                minimumTrackTintColor="#00335e"
-                                                maximumTrackTintColor="#e2e8f0"
-                                                thumbStyle={styles.sliderThumb}
-                                                step={10000}
-                                            />
-                                        </View>
-                                    </View>
-                                </ScrollView>
-                            </TouchableOpacity>
-                        </View>
-
-                        <View style={styles.filterButtons}>
-                            <TouchableOpacity style={styles.clearButton} onPress={() => {
-                                setTempFilters({
-                                    city: '',
-                                    propertyType: [],
-                                    minPrice: '',
-                                    maxPrice: '',
-                                });
-                                setCitySearchTerm('');
-                                setSliderValues({ min: 0, max: 5000000 });
-                                setMinSliderValue(0);
-                                setMaxSliderValue(5000000);
-                                setShowCityDropdown(false);
-                            }}>
-                                <Text style={styles.clearButtonText}>Limpar</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={styles.applyButton} onPress={applyFilters}>
-                                <Text style={styles.applyButtonText}>Aplicar</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </KeyboardAvoidingView>
-                </TouchableOpacity>
-            </Modal>
-
+            </View>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
+    safeAreaTop: {
+        backgroundColor: '#ffcc1e',
+        width: '100%',
+    },
+    contentContainer: {
+        flex: 1,
+    },
     container: {
         flex: 1,
         backgroundColor: '#ffcc1e',
@@ -1099,7 +1123,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: 5,
-        paddingHorizontal: 20,
+        paddingHorizontal: 0,
     },
     titleLogo: {
         width: 30,
@@ -1175,8 +1199,8 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
         color: '#00335e',
-        marginBottom: 5,
-        paddingHorizontal: 20,
+        marginBottom: 0,
+        paddingHorizontal: 10,
     },
     storiesList: {
         paddingHorizontal: 20,
