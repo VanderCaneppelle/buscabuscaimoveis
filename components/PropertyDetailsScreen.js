@@ -241,8 +241,35 @@ export default function PropertyDetailsScreen({ route, navigation }) {
 
     const handleWhatsAppContact = async () => {
         try {
-            const phoneNumber = property.contact_phone || '5511999999999';
-            const message = `Olá! Vi seu anúncio "${property.title}" no BuscaBusca Imóveis e gostaria de mais informações.`;
+            // Buscar dados do usuário que criou o anúncio
+            const { data: userProfile, error } = await supabase
+                .from('profiles')
+                .select('full_name, phone')
+                .eq('id', property.user_id)
+                .single();
+
+            if (error) {
+                console.error('❌ Erro ao buscar perfil do usuário:', error);
+                Alert.alert(
+                    'Erro',
+                    'Não foi possível obter as informações de contato do anunciante.',
+                    [{ text: 'OK', style: 'default' }]
+                );
+                return;
+            }
+
+            if (!userProfile || !userProfile.phone) {
+                Alert.alert(
+                    'Contato não disponível',
+                    'O anunciante não possui telefone cadastrado.',
+                    [{ text: 'OK', style: 'default' }]
+                );
+                return;
+            }
+
+            const phoneNumber = userProfile.phone;
+            const userName = userProfile.full_name || 'Anunciante';
+            const message = `Olá ${userName}! Vi seu anúncio "${property.title}" no BuscaBusca Imóveis e gostaria de mais informações.`;
 
             // Formatar número de telefone (remover caracteres especiais)
             const cleanPhone = phoneNumber.replace(/\D/g, '');
@@ -280,12 +307,25 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                     { text: 'OK', style: 'default' },
                     {
                         text: 'Abrir WhatsApp Web',
-                        onPress: () => {
-                            const phoneNumber = property.contact_phone || '5511999999999';
-                            const cleanPhone = phoneNumber.replace(/\D/g, '');
-                            const message = `Olá! Vi seu anúncio "${property.title}" no BuscaBusca Imóveis e gostaria de mais informações.`;
-                            const webUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
-                            Linking.openURL(webUrl);
+                        onPress: async () => {
+                            try {
+                                // Buscar dados do usuário novamente para o fallback
+                                const { data: userProfile } = await supabase
+                                    .from('profiles')
+                                    .select('full_name, phone')
+                                    .eq('id', property.user_id)
+                                    .single();
+
+                                if (userProfile?.phone) {
+                                    const cleanPhone = userProfile.phone.replace(/\D/g, '');
+                                    const userName = userProfile.full_name || 'Anunciante';
+                                    const message = `Olá ${userName}! Vi seu anúncio "${property.title}" no BuscaBusca Imóveis e gostaria de mais informações.`;
+                                    const webUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+                                    Linking.openURL(webUrl);
+                                }
+                            } catch (fallbackError) {
+                                console.error('❌ Erro no fallback do WhatsApp:', fallbackError);
+                            }
                         }
                     }
                 ]
@@ -293,17 +333,47 @@ export default function PropertyDetailsScreen({ route, navigation }) {
         }
     };
 
-    const handlePhoneContact = () => {
-        const phoneNumber = property.contact_phone || '11999999999';
-        const phoneUrl = `tel:${phoneNumber}`;
+    const handlePhoneContact = async () => {
+        try {
+            // Buscar dados do usuário que criou o anúncio
+            const { data: userProfile, error } = await supabase
+                .from('profiles')
+                .select('full_name, phone')
+                .eq('id', property.user_id)
+                .single();
 
-        Linking.canOpenURL(phoneUrl).then(supported => {
+            if (error) {
+                console.error('❌ Erro ao buscar perfil do usuário:', error);
+                Alert.alert(
+                    'Erro',
+                    'Não foi possível obter as informações de contato do anunciante.',
+                    [{ text: 'OK', style: 'default' }]
+                );
+                return;
+            }
+
+            if (!userProfile || !userProfile.phone) {
+                Alert.alert(
+                    'Contato não disponível',
+                    'O anunciante não possui telefone cadastrado.',
+                    [{ text: 'OK', style: 'default' }]
+                );
+                return;
+            }
+
+            const phoneNumber = userProfile.phone;
+            const phoneUrl = `tel:${phoneNumber}`;
+
+            const supported = await Linking.canOpenURL(phoneUrl);
             if (supported) {
-                Linking.openURL(phoneUrl);
+                await Linking.openURL(phoneUrl);
             } else {
                 Alert.alert('Erro', 'Não foi possível fazer a ligação');
             }
-        });
+        } catch (error) {
+            console.error('❌ Erro ao fazer ligação:', error);
+            Alert.alert('Erro', 'Ocorreu um erro inesperado ao tentar fazer a ligação');
+        }
     };
 
     return (

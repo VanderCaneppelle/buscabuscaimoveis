@@ -164,7 +164,12 @@ export default function PaymentConfirmationScreen({ route, navigation }) {
     };
 
     const handleVerImoveis = () => {
-        navigation.navigate('Main', { screen: 'Busca' });
+        navigation.navigate('Main', {
+            screen: 'MainTabs',
+            params: {
+                screen: 'Busca'
+            }
+        });
     };
 
     const handleTentarNovamente = () => {
