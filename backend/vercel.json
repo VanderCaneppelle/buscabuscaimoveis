@@ -12,6 +12,9 @@
         },
         "api/delete-cloudinary.js": {
             "maxDuration": 30
+        },
+        "api/notifications.js": {
+            "maxDuration": 30
         }
     }
 }

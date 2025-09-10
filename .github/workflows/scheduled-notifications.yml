@@ -1,0 +1,49 @@
+name: Enviar Notificações Agendadas
+
+on:
+  schedule:
+    # Executar nos horários: 9h, 15h e 21h (horário de Brasília)
+    # UTC: 12:00 (9h BRT), 18:00 (15h BRT), 00:00 (21h BRT)
+    - cron: '0 12,18,0 * * *'
+  
+  # Permitir execução manual
+  workflow_dispatch:
+
+jobs:
+  send-notifications:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+      
+      - name: Instalar dependências
+        run: |
+          cd backend
+          npm ci
+      
+      - name: Configurar variáveis de ambiente
+        run: |
+          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> $GITHUB_ENV
+          echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> $GITHUB_ENV
+      
+      - name: Executar script de notificações
+        run: |
+          cd backend
+          node scripts/send-scheduled-notifications.js
+      
+      - name: Notificar resultado
+        if: always()
+        run: |
+          if [ ${{ job.status }} == 'success' ]; then
+            echo "✅ Notificações enviadas com sucesso"
+          else
+            echo "❌ Falha ao enviar notificações"
+          fi
