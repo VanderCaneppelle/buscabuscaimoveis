@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
-import { Platform, Easing } from 'react-native';
+import { Platform, Easing, Animated } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Image } from 'expo-image';
+import { useFavorites } from '../contexts/FavoritesContext';
 
 import HomeScreen from './HomeScreen';
 import DiscoverScreen from './DiscoverScreen';
@@ -22,6 +24,44 @@ import MyPropertiesScreen from './MyPropertiesScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
+
+// Componente customizado para o ícone de favoritos com animação
+function AnimatedFavoriteIcon({ focused, color, size }) {
+    const [scaleValue] = useState(new Animated.Value(1));
+    const { shouldAnimate, setShouldAnimate } = useFavorites();
+
+    // Animar quando shouldAnimate for true
+    useEffect(() => {
+        if (shouldAnimate) {
+            animateIcon();
+        }
+    }, [shouldAnimate]);
+
+    const animateIcon = () => {
+        Animated.sequence([
+            Animated.timing(scaleValue, {
+                toValue: 1.8,
+                duration: 500,
+                useNativeDriver: true,
+            }),
+            Animated.timing(scaleValue, {
+                toValue: 1,
+                duration: 150,
+                useNativeDriver: true,
+            }),
+        ]).start();
+    };
+
+    return (
+        <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
+            <Image
+                source={require('../assets/gif_bb.mp4')}
+                style={{ width: size, height: size }}
+                resizeMode="contain"
+            />
+        </Animated.View>
+    );
+}
 
 
 // Stack Navigator para cada tab que pode ter telas aninhadas
@@ -174,14 +214,15 @@ function TabNavigator() {
         <Tab.Navigator
             screenOptions={({ route }) => ({
                 tabBarIcon: ({ focused, color, size }) => {
-                    let iconName;
+                    if (route.name === 'Favoritos') {
+                        return <AnimatedFavoriteIcon focused={focused} color={color} size={size} />;
+                    }
 
+                    let iconName;
                     if (route.name === 'Busca') {
                         iconName = focused ? 'search' : 'search-outline';
                     } else if (route.name === 'Destaques') {
                         iconName = focused ? 'star' : 'star-outline';
-                    } else if (route.name === 'Favoritos') {
-                        iconName = focused ? 'heart' : 'heart-outline';
                     } else if (route.name === 'Anuncie') {
                         iconName = focused ? 'add-circle' : 'add-circle-outline';
                     } else if (route.name === 'Conta') {

@@ -10,6 +10,7 @@ enableScreens();
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LoadingProvider } from './contexts/LoadingContext';
 import { AdminProvider } from './contexts/AdminContext';
+import { FavoritesProvider } from './contexts/FavoritesContext';
 import LoginScreen from './components/LoginScreen';
 import MainNavigator from './components/MainNavigator';
 
@@ -99,7 +100,9 @@ export default function App() {
       <AuthProvider>
         <LoadingProvider>
           <AdminProvider>
-            <AppContent />
+            <FavoritesProvider>
+              <AppContent />
+            </FavoritesProvider>
           </AdminProvider>
         </LoadingProvider>
       </AuthProvider>

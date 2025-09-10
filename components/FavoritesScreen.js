@@ -250,10 +250,10 @@ export default function FavoritesScreen({ navigation }) {
                         onPress={handleRemoveFavorite}
                         activeOpacity={0.8}
                     >
-                        <Ionicons
-                            name="heart"
-                            size={24}
-                            color="#dc2626"
+                        <Image
+                            source={require('../assets/logo_bb.jpg')}
+                            style={styles.favoriteIcon}
+                            resizeMode="contain"
                         />
                     </TouchableOpacity>
                 </View>
@@ -515,6 +515,10 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         padding: 8,
         zIndex: 10,
+    },
+    favoriteIcon: {
+        width: 24,
+        height: 24,
     },
     propertyInfo: {
         padding: 15,

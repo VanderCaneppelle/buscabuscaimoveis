@@ -22,6 +22,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import Slider from '@react-native-community/slider';
 import { useAuth } from '../contexts/AuthContext';
+import { useFavorites } from '../contexts/FavoritesContext';
 import { supabase } from '../lib/supabase';
 import PropertyCacheService from '../lib/propertyCacheService';
 import StoriesComponent from './StoriesComponent';
@@ -47,6 +48,7 @@ export default function HomeScreen({ navigation }) {
     // console.log('🏠 HomeScreen: COMPONENTE MONTADO/RENDERIZADO'); // Removido para evitar logs excessivos
 
     const { user, signOut } = useAuth();
+    const { favorites, toggleFavorite, isFavorite } = useFavorites();
     const insets = useSafeAreaInsets();
     const colorScheme = useColorScheme();
     const [profile, setProfile] = useState(null);
@@ -81,7 +83,6 @@ export default function HomeScreen({ navigation }) {
     });
     const [minSliderValue, setMinSliderValue] = useState(0);
     const [maxSliderValue, setMaxSliderValue] = useState(5000000);
-    const [favorites, setFavorites] = useState({});
 
     // Estados para dropdown de cidades
     const [cities, setCities] = useState([]);
@@ -449,7 +450,7 @@ export default function HomeScreen({ navigation }) {
         }
     };
 
-    const toggleFavorite = useCallback(async (propertyId) => {
+    const handleToggleFavorite = useCallback(async (propertyId) => {
         if (!user?.id) {
             Alert.alert('Atenção', 'Você precisa estar logado para favoritar imóveis');
             return;
@@ -467,8 +468,7 @@ export default function HomeScreen({ navigation }) {
                 if (error) {
                     console.error('❌ Erro ao remover favorito:', error);
                     Alert.alert('Erro', 'Não foi possível remover dos favoritos');
-                } else {
-                    setFavorites(prev => ({ ...prev, [propertyId]: false }));
+                    return;
                 }
             } else {
                 // Adicionar aos favoritos
@@ -482,15 +482,17 @@ export default function HomeScreen({ navigation }) {
                 if (error) {
                     console.error('❌ Erro ao adicionar favorito:', error);
                     Alert.alert('Erro', 'Não foi possível adicionar aos favoritos');
-                } else {
-                    setFavorites(prev => ({ ...prev, [propertyId]: true }));
+                    return;
                 }
             }
+
+            // Usar a função do contexto (que dispara a animação)
+            toggleFavorite(propertyId);
         } catch (error) {
             console.error('❌ Erro ao gerenciar favorito:', error);
             Alert.alert('Erro', 'Ocorreu um erro inesperado');
         }
-    }, [user?.id, favorites]);
+    }, [user?.id, favorites, toggleFavorite]);
 
     const loadMoreProperties = async () => {
         if (loadingMore || !hasMore) {
@@ -518,15 +520,15 @@ export default function HomeScreen({ navigation }) {
 
 
     // Componente simplificado para renderizar propriedades
-    const PropertyItem = React.memo(({ item, index, favorites, toggleFavorite, navigation }) => {
+    const PropertyItem = React.memo(({ item, index, favorites, handleToggleFavorite, navigation }) => {
         // Memoizar o onPress para evitar re-renderizações
         const handlePress = useCallback(() => {
             navigation.navigate('PropertyDetails', { property: item });
         }, [navigation, item]);
 
         const handleFavoritePress = useCallback(() => {
-            toggleFavorite(item.id);
-        }, [toggleFavorite, item.id]);
+            handleToggleFavorite(item.id);
+        }, [handleToggleFavorite, item.id]);
         const mediaFiles = item.images || [];
         const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -640,10 +642,13 @@ export default function HomeScreen({ navigation }) {
                         onPress={handleFavoritePress}
                         activeOpacity={0.8}
                     >
-                        <Ionicons
-                            name={favorites[item.id] ? "heart" : "heart-outline"}
-                            size={24}
-                            color={favorites[item.id] ? "#dc2626" : "#fff"}
+                        <Image
+                            source={require('../assets/logo_bb.jpg')}
+                            style={[
+                                styles.favoriteIcon,
+                                { opacity: favorites[item.id] ? 1 : 0.6 }
+                            ]}
+                            resizeMode="contain"
                         />
                     </TouchableOpacity>
                 </View>
@@ -709,11 +714,11 @@ export default function HomeScreen({ navigation }) {
                 item={item}
                 index={index}
                 favorites={favorites}
-                toggleFavorite={toggleFavorite}
+                handleToggleFavorite={handleToggleFavorite}
                 navigation={navigation}
             />
         );
-    }, [favorites, toggleFavorite, navigation]);
+    }, [favorites, handleToggleFavorite, navigation]);
 
 
 
@@ -1355,6 +1360,10 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         padding: 8,
         zIndex: 10,
+    },
+    favoriteIcon: {
+        width: 24,
+        height: 24,
     },
     propertyInfo: {
         padding: 15,
