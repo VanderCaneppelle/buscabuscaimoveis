@@ -36,16 +36,7 @@ jobs:
       - name: Enviar notificação da noite
         run: |
           cd backend
-          node -e "
-          import { NotificationService } from './lib/notificationService.js';
-          const service = new NotificationService();
-          const result = await service.sendNotificationToAllDevices(
-            '🌙 Boa noite!',
-            'Não esqueça de conferir o BuscaBusca Imóveis antes de dormir!',
-            { type: 'daily_reminder', time: 'evening' }
-          );
-          console.log('Resultado:', result);
-          "
+          node scripts/send-notification.js evening
       
       - name: Notificar resultado
         if: always()
