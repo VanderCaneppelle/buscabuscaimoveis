@@ -36,16 +36,7 @@ jobs:
       - name: Enviar notificação da manhã
         run: |
           cd backend
-          node -e "
-          import { NotificationService } from './lib/notificationService.js';
-          const service = new NotificationService();
-          const result = await service.sendNotificationToAllDevices(
-            '🌅 Bom dia!',
-            'Que tal conferir as novidades no BuscaBusca Imóveis?',
-            { type: 'daily_reminder', time: 'morning' }
-          );
-          console.log('Resultado:', result);
-          "
+          node scripts/send-notification.js morning
       
       - name: Notificar resultado
         if: always()
