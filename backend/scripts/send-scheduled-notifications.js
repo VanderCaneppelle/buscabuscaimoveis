@@ -5,11 +5,11 @@ import { NotificationService } from '../lib/notificationService.js';
 
 async function sendScheduledNotifications() {
     console.log('🕐 Iniciando envio de notificações agendadas...');
-
+    
     const notificationService = new NotificationService();
     const now = new Date();
-    const currentTime = now.toLocaleTimeString('pt-BR', {
-        hour: '2-digit',
+    const currentTime = now.toLocaleTimeString('pt-BR', { 
+        hour: '2-digit', 
         minute: '2-digit',
         timeZone: 'America/Sao_Paulo'
     });
@@ -17,23 +17,24 @@ async function sendScheduledNotifications() {
     console.log(`⏰ Horário atual: ${currentTime}`);
 
     // Determinar qual notificação enviar baseado no horário
+    // O GitHub Actions já controla quando executar
     let notificationToSend = null;
 
-    if (currentTime === '09:00') {
+    if (currentTime.startsWith('09:') || currentTime.startsWith('9:')) {
         notificationToSend = {
             time: '09:00',
             title: '🌅 Bom dia!',
             body: 'Que tal conferir as novidades no BuscaBusca Imóveis?',
             data: { type: 'daily_reminder', time: 'morning' }
         };
-    } else if (currentTime === '15:00') {
+    } else if (currentTime.startsWith('15:') || currentTime.startsWith('3:')) {
         notificationToSend = {
             time: '15:00',
             title: '☀️ Boa tarde!',
             body: 'Novos imóveis podem ter chegado! Dê uma olhada no app.',
             data: { type: 'daily_reminder', time: 'afternoon' }
         };
-    } else if (currentTime === '21:00') {
+    } else if (currentTime.startsWith('21:') || currentTime.startsWith('9:')) {
         notificationToSend = {
             time: '21:00',
             title: '🌙 Boa noite!',
@@ -43,13 +44,13 @@ async function sendScheduledNotifications() {
     }
 
     if (!notificationToSend) {
-        console.log(`⚠️ Nenhuma notificação agendada para ${currentTime}`);
+        console.log(`⚠️ Nenhuma notificação configurada para ${currentTime}`);
         return;
     }
 
     try {
         console.log(`📱 Enviando notificação ${notificationToSend.time}...`);
-
+        
         const result = await notificationService.sendNotificationToAllDevices(
             notificationToSend.title,
             notificationToSend.body,
@@ -59,7 +60,7 @@ async function sendScheduledNotifications() {
         if (result.success) {
             console.log(`✅ Notificação ${notificationToSend.time} enviada com sucesso!`);
             console.log(`📊 Enviado para: ${result.sent}/${result.total} dispositivos`);
-
+            
             // Log detalhado dos resultados
             if (result.results && result.results.length > 0) {
                 const successCount = result.results.filter(r => r.success).length;
