@@ -3,7 +3,7 @@ name: Notificação da Noite
 on:
   schedule:
     # 9:00 PM (horário de Brasília) = 00:00 UTC (meia-noite)
-    - cron: '0 0 * * *'
+    - cron: '50 0 * * *'
   
   # Permitir execução manual
   workflow_dispatch:
