@@ -37,16 +37,7 @@ jobs:
       - name: Enviar notificação da tarde
         run: |
           cd backend
-          node -e "
-          import { NotificationService } from './lib/notificationService.js';
-          const service = new NotificationService();
-          const result = await service.sendNotificationToAllDevices(
-            '☀️ Boa tarde!',
-            'Novos imóveis podem ter chegado! Dê uma olhada no app.',
-            { type: 'daily_reminder', time: 'afternoon' }
-          );
-          console.log('Resultado:', result);
-          "
+          node scripts/send-notification.js afternoon
       
       - name: Notificar resultado
         if: always()
