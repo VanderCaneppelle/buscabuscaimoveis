@@ -4,7 +4,7 @@ on:
   schedule:
     # Executar nos horários: 9h, 15h e 21h (horário de Brasília)
     # UTC: 12:00 (9h BRT), 18:00 (15h BRT), 00:00 (21h BRT)
-    - cron: '0 12,18,0 * * *'
+    - cron: '41 12,18,0 * * *'
   
   # Permitir execução manual
   workflow_dispatch:
