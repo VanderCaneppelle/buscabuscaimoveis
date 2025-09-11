@@ -27,13 +27,12 @@ export default function NotificationManager() {
                     // Registrar token no backend
                     await PushNotificationService.registerDeviceToken(token, user.id);
 
-                    // Agendar notificações diárias
-                    const scheduled = await PushNotificationService.scheduleDailyNotifications();
-
-                    if (scheduled) {
+                    // Verificar se já existem notificações agendadas
+                    const scheduledNotifications = await PushNotificationService.getScheduledNotifications();
+                    setScheduledCount(scheduledNotifications.length);
+                    
+                    if (scheduledNotifications.length > 0) {
                         setNotificationsEnabled(true);
-                        const scheduledNotifications = await PushNotificationService.getScheduledNotifications();
-                        setScheduledCount(scheduledNotifications.length);
                     }
                 }
             }
