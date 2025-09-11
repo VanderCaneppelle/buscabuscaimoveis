@@ -15,6 +15,7 @@ import { supabase } from '../lib/supabase';
 import { PlanService } from '../lib/planService';
 import PropertyCacheService from '../lib/propertyCacheService';
 import { useFocusEffect } from '@react-navigation/native';
+import NotificationManager from './NotificationManager';
 
 export default function AccountScreen({ navigation }) {
     console.log('Rendered AccountScreen');
@@ -378,6 +379,9 @@ export default function AccountScreen({ navigation }) {
                             handleClearCache
                         )}
                     </View>
+
+                    {/* Notification Manager */}
+                    <NotificationManager />
 
                     {/* Logout Button */}
                     <TouchableOpacity style={styles.logoutButton} onPress={handleSignOut}>
