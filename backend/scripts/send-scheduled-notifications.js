@@ -5,11 +5,11 @@ import { NotificationService } from '../lib/notificationService.js';
 
 async function sendScheduledNotifications() {
     console.log('🕐 Iniciando envio de notificações agendadas...');
-    
+
     const notificationService = new NotificationService();
     const now = new Date();
-    const currentTime = now.toLocaleTimeString('pt-BR', { 
-        hour: '2-digit', 
+    const currentTime = now.toLocaleTimeString('pt-BR', {
+        hour: '2-digit',
         minute: '2-digit',
         timeZone: 'America/Sao_Paulo'
     });
@@ -50,7 +50,7 @@ async function sendScheduledNotifications() {
 
     try {
         console.log(`📱 Enviando notificação ${notificationToSend.time}...`);
-        
+
         const result = await notificationService.sendNotificationToAllDevices(
             notificationToSend.title,
             notificationToSend.body,
@@ -60,7 +60,7 @@ async function sendScheduledNotifications() {
         if (result.success) {
             console.log(`✅ Notificação ${notificationToSend.time} enviada com sucesso!`);
             console.log(`📊 Enviado para: ${result.sent}/${result.total} dispositivos`);
-            
+
             // Log detalhado dos resultados
             if (result.results && result.results.length > 0) {
                 const successCount = result.results.filter(r => r.success).length;

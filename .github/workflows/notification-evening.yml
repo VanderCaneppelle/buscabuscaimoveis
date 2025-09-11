@@ -1,0 +1,57 @@
+name: Notificação da Noite
+
+on:
+  schedule:
+    # 9:00 PM (horário de Brasília) = 00:00 UTC (meia-noite)
+    - cron: '0 0 * * *'
+  
+  # Permitir execução manual
+  workflow_dispatch:
+
+jobs:
+  send-evening-notification:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+      
+      - name: Instalar dependências
+        run: |
+          cd backend
+          npm ci
+      
+      - name: Configurar variáveis de ambiente
+        run: |
+          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> $GITHUB_ENV
+          echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> $GITHUB_ENV
+      
+      - name: Enviar notificação da noite
+        run: |
+          cd backend
+          node -e "
+          import { NotificationService } from './lib/notificationService.js';
+          const service = new NotificationService();
+          const result = await service.sendNotificationToAllDevices(
+            '🌙 Boa noite!',
+            'Não esqueça de conferir o BuscaBusca Imóveis antes de dormir!',
+            { type: 'daily_reminder', time: 'evening' }
+          );
+          console.log('Resultado:', result);
+          "
+      
+      - name: Notificar resultado
+        if: always()
+        run: |
+          if [ ${{ job.status }} == 'success' ]; then
+            echo "✅ Notificação da noite enviada com sucesso"
+          else
+            echo "❌ Falha ao enviar notificação da noite"
+          fi

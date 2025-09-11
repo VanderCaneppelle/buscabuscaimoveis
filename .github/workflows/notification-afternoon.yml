@@ -1,16 +1,15 @@
-name: Enviar Notificações Agendadas
+name: Notificação da Tarde
 
 on:
   schedule:
-    # Executar nos horários: 9h, 15h e 21h (horário de Brasília)
-    # UTC: 12:00 (9h BRT), 18:00 (15h BRT), 00:00 (21h BRT)
-    - cron: '41 12,18,0 * * *'
+    # 3:00 PM (horário de Brasília) = 18:00 UTC
+    - cron: '0 18 * * *'
   
   # Permitir execução manual
   workflow_dispatch:
 
 jobs:
-  send-notifications:
+  send-afternoon-notification:
     runs-on: ubuntu-latest
     
     steps:
@@ -34,16 +33,25 @@ jobs:
           echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> $GITHUB_ENV
           echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> $GITHUB_ENV
       
-      - name: Executar script de notificações
+      - name: Enviar notificação da tarde
         run: |
           cd backend
-          node scripts/send-scheduled-notifications.js
+          node -e "
+          import { NotificationService } from './lib/notificationService.js';
+          const service = new NotificationService();
+          const result = await service.sendNotificationToAllDevices(
+            '☀️ Boa tarde!',
+            'Novos imóveis podem ter chegado! Dê uma olhada no app.',
+            { type: 'daily_reminder', time: 'afternoon' }
+          );
+          console.log('Resultado:', result);
+          "
       
       - name: Notificar resultado
         if: always()
         run: |
           if [ ${{ job.status }} == 'success' ]; then
-            echo "✅ Notificações enviadas com sucesso"
+            echo "✅ Notificação da tarde enviada com sucesso"
           else
-            echo "❌ Falha ao enviar notificações"
+            echo "❌ Falha ao enviar notificação da tarde"
           fi
