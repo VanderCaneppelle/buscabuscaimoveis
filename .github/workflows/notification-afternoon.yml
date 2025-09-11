@@ -8,6 +8,7 @@ on:
   # Permitir execução manual
   workflow_dispatch:
 
+
 jobs:
   send-afternoon-notification:
     runs-on: ubuntu-latest
