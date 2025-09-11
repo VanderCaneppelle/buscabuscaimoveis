@@ -29,17 +29,11 @@ async function sendNotification() {
 
     try {
         console.log(`🕐 Enviando notificação ${type}...`);
-<<<<<<< HEAD
-        
-        const notificationService = new NotificationService();
-        const notification = notifications[type];
-        
-=======
 
         const notificationService = new NotificationService();
         const notification = notifications[type];
 
->>>>>>> qa
+
         const result = await notificationService.sendNotificationToAllDevices(
             notification.title,
             notification.body,
