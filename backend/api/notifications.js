@@ -119,22 +119,22 @@ async function handleSchedule(req, res, notificationService) {
 
     const scheduledNotifications = [
         {
-            time: '09:00',
-            title: '🌅 Bom dia!',
-            body: 'Que tal conferir as novidades no BuscaBusca Imóveis?',
-            data: { type: 'daily_reminder', time: 'morning' }
+            time: 'Teste 1',
+            title: '🧪 Teste 1 - Backend',
+            body: 'Primeira notificação de teste via backend!',
+            data: { type: 'test_reminder', time: 'test1' }
         },
         {
-            time: '15:00',
-            title: '☀️ Boa tarde!',
-            body: 'Novos imóveis podem ter chegado! Dê uma olhada no app.',
-            data: { type: 'daily_reminder', time: 'afternoon' }
+            time: 'Teste 2',
+            title: '🧪 Teste 2 - Backend',
+            body: 'Segunda notificação de teste via backend!',
+            data: { type: 'test_reminder', time: 'test2' }
         },
         {
-            time: '21:00',
-            title: '🌙 Boa noite!',
-            body: 'Não esqueça de conferir o BuscaBusca Imóveis antes de dormir!',
-            data: { type: 'daily_reminder', time: 'evening' }
+            time: 'Teste 3',
+            title: '🧪 Teste 3 - Backend',
+            body: 'Terceira notificação de teste via backend!',
+            data: { type: 'test_reminder', time: 'test3' }
         }
     ];
 

@@ -30,7 +30,7 @@ export default function NotificationManager() {
                     // Verificar se já existem notificações agendadas
                     const scheduledNotifications = await PushNotificationService.getScheduledNotifications();
                     setScheduledCount(scheduledNotifications.length);
-                    
+
                     if (scheduledNotifications.length > 0) {
                         setNotificationsEnabled(true);
                     }

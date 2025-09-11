@@ -24,7 +24,8 @@ export default {
       adaptiveIcon: {
         foregroundImage: "./assets/adaptive-icon.png",
         backgroundColor: "#ffffff"
-      }
+      },
+      googleServicesFile: "./google-services.json"
     },
     web: {
       favicon: "./assets/logo_bb.jpg"
