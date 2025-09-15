@@ -25,7 +25,7 @@ export default {
         foregroundImage: "./assets/adaptive-icon.png",
         backgroundColor: "#ffffff"
       },
-      googleServicesFile: "./google-services.json"
+      googleServicesFile: "./android/app/google-services.json"
     },
     web: {
       favicon: "./assets/logo_bb.jpg"
@@ -38,6 +38,7 @@ export default {
     plugins: [
       "expo-notifications",
       "expo-font",
+      "@react-native-firebase/messaging",
       "react-native-compressor"
     ],
     scheme: "buscabuscaimoveis",
