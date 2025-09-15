@@ -48,15 +48,15 @@ async function handleRegister(req, res, notificationService) {
         return res.status(405).json({ error: 'Método não permitido' });
     }
 
-    const { token, userId, platform } = req.body;
+    const { token, userId, deviceInfo } = req.body;
 
-    if (!token || !userId || !platform) {
+    if (!token || !userId) {
         return res.status(400).json({
-            error: 'Token, userId e platform são obrigatórios'
+            error: 'Token e userId são obrigatórios'
         });
     }
 
-    const result = await notificationService.registerDeviceToken(token, userId, platform);
+    const result = await notificationService.registerDeviceToken(token, userId, deviceInfo);
 
     if (result.success) {
         return res.status(200).json({

@@ -12,12 +12,12 @@ export default function NotificationManager() {
     useEffect(() => {
         initializeNotifications();
 
-        // Verificar token quando app volta do background
+        // Registrar token quando app volta do background
         const handleAppStateChange = (nextAppState) => {
             if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
-                console.log('📱 App voltou do background - verificando token...');
+                console.log('📱 App voltou do background - registrando token...');
                 if (user) {
-                    validateTokenInBackground();
+                    registerTokenInBackground();
                 }
             }
             appState.current = nextAppState;
@@ -36,12 +36,12 @@ export default function NotificationManager() {
             const hasPermission = await PushNotificationService.requestPermissions();
 
             if (hasPermission) {
-                // Validar token usando sessionId (mais confiável)
-                const token = await PushNotificationService.validateTokenWithSession(user.id);
+                // Registrar token automaticamente
+                const token = await PushNotificationService.registerTokenAutomatically(user.id);
 
                 if (token) {
-                    console.log('✅ Token validado com sessionId:', token.substring(0, 30) + '...');
-
+                    console.log('✅ Token registrado automaticamente:', token.substring(0, 30) + '...');
+                    
                     // Verificar se já existem notificações agendadas
                     const scheduledNotifications = await PushNotificationService.getScheduledNotifications();
                     setScheduledCount(scheduledNotifications.length);
@@ -50,7 +50,7 @@ export default function NotificationManager() {
                         setNotificationsEnabled(true);
                     }
                 } else {
-                    console.error('❌ Falha ao validar token com sessionId');
+                    console.error('❌ Falha ao registrar token automaticamente');
                 }
             }
         } catch (error) {
@@ -58,19 +58,19 @@ export default function NotificationManager() {
         }
     };
 
-    // Validar token quando app volta do background
-    const validateTokenInBackground = async () => {
+    // Registrar token quando app volta do background
+    const registerTokenInBackground = async () => {
         try {
-            // Usar validação com sessionId para maior confiabilidade
-            const token = await PushNotificationService.validateTokenWithSession(user.id);
-
+            // Registrar token automaticamente quando app volta
+            const token = await PushNotificationService.registerTokenAutomatically(user.id);
+            
             if (token) {
-                console.log('✅ Token validado com sessionId em background');
+                console.log('✅ Token registrado automaticamente em background');
             } else {
-                console.error('❌ Falha ao validar token com sessionId em background');
+                console.error('❌ Falha ao registrar token em background');
             }
         } catch (error) {
-            console.error('❌ Erro na validação de token em background:', error);
+            console.error('❌ Erro no registro de token em background:', error);
         }
     };
 
@@ -103,14 +103,14 @@ export default function NotificationManager() {
 
     const testNotification = async () => {
         try {
-            // Validar token usando sessionId antes do teste
-            console.log('🔄 Validando token com sessionId antes do teste...');
-            const token = await PushNotificationService.validateTokenWithSession(user.id);
+            // Registrar token antes do teste
+            console.log('🔄 Registrando token antes do teste...');
+            const token = await PushNotificationService.registerTokenAutomatically(user.id);
 
             if (token) {
-                console.log('✅ Token validado com sessionId:', token.substring(0, 30) + '...');
+                console.log('✅ Token registrado:', token.substring(0, 30) + '...');
             } else {
-                console.error('❌ Falha ao validar token com sessionId');
+                console.error('❌ Falha ao registrar token');
             }
 
             // Testar notificação local

@@ -7,15 +7,14 @@ export class NotificationService {
     }
 
     // Registrar token do dispositivo
-    async registerDeviceToken(token, userId, platform) {
+    async registerDeviceToken(token, userId, deviceInfo) {
         try {
             const { data, error } = await supabase
                 .from('device_tokens')
                 .upsert({
                     token,
                     user_id: userId,
-                    platform,
-                    created_at: new Date().toISOString(),
+                    device_info: deviceInfo,
                     updated_at: new Date().toISOString()
                 }, {
                     onConflict: 'token'
@@ -26,7 +25,7 @@ export class NotificationService {
                 return { success: false, error: error.message };
             }
 
-            console.log('✅ Token registrado com sucesso');
+            console.log('✅ Token registrado/atualizado com sucesso');
             return { success: true, data };
         } catch (error) {
             console.error('❌ Erro ao registrar token:', error);
