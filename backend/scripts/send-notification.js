@@ -25,7 +25,11 @@ async function sendNotification() {
 
         if (result.success) {
             console.log(`✅ Notificação ${type} enviada com sucesso!`);
-            console.log(`📊 Enviado para: ${result.sent}/${result.total} dispositivos`);
+            console.log(`📊 Enviado para: ${result.sent || 0}/${result.total || 0} dispositivos`);
+            
+            if (result.invalidTokensRemoved > 0) {
+                console.log(`🗑️ Tokens inválidos removidos: ${result.invalidTokensRemoved}`);
+            }
         } else {
             console.error(`❌ Erro ao enviar notificação ${type}:`, result.error);
             process.exit(1);
