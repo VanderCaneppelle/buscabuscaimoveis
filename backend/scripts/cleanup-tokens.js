@@ -2,12 +2,12 @@ import { NotificationService } from '../lib/notificationService.js';
 
 async function cleanupInvalidTokens() {
     console.log('🧹 Iniciando limpeza de tokens inválidos...');
-    
+
     const notificationService = new NotificationService();
-    
+
     try {
         const result = await notificationService.cleanupAllInvalidTokens();
-        
+
         if (result.success) {
             console.log(`✅ Limpeza concluída com sucesso!`);
             console.log(`🗑️ Tokens removidos: ${result.removed}`);

@@ -73,16 +73,16 @@ export default function NotificationManager() {
             // Primeiro, gerar um novo token válido
             console.log('🔄 Gerando novo token válido...');
             const newToken = await PushNotificationService.getExpoPushToken();
-            
+
             if (newToken) {
                 // Registrar o novo token no backend
                 const registered = await PushNotificationService.registerDeviceToken(newToken, user.id);
-                
+
                 if (registered) {
                     console.log('✅ Novo token registrado:', newToken.substring(0, 30) + '...');
                 }
             }
-            
+
             // Testar notificação local
             await PushNotificationService.sendLocalNotification(
                 '🧪 Teste Local',

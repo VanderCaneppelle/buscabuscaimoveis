@@ -200,9 +200,9 @@ async function handleCleanup(req, res, notificationService) {
 
     try {
         console.log('🧹 Iniciando limpeza de tokens inválidos...');
-        
+
         const result = await notificationService.cleanupAllInvalidTokens();
-        
+
         if (result.success) {
             return res.status(200).json({
                 message: 'Limpeza de tokens concluída',
