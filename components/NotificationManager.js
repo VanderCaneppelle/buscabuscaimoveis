@@ -41,7 +41,7 @@ export default function NotificationManager() {
 
                 if (token) {
                     console.log('✅ Token validado com sessionId:', token.substring(0, 30) + '...');
-                    
+
                     // Verificar se já existem notificações agendadas
                     const scheduledNotifications = await PushNotificationService.getScheduledNotifications();
                     setScheduledCount(scheduledNotifications.length);
@@ -63,7 +63,7 @@ export default function NotificationManager() {
         try {
             // Usar validação com sessionId para maior confiabilidade
             const token = await PushNotificationService.validateTokenWithSession(user.id);
-            
+
             if (token) {
                 console.log('✅ Token validado com sessionId em background');
             } else {
