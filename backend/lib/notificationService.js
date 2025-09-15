@@ -92,15 +92,23 @@ export class NotificationService {
     async sendPushNotification(token, title, body, data = {}) {
         try {
             // Verificar se é um token mock (desenvolvimento)
-            if (token.includes('ExponentPushToken[') && token.includes(']')) {
+            // Tokens mock conhecidos do desenvolvimento
+            const knownMockTokens = [
+                '2j39xi7l3', // Token mock conhecido
+                '3femvfllk'  // Outro token mock conhecido
+            ];
+            
+            const isMockToken = knownMockTokens.some(mockToken => token.includes(mockToken));
+
+            if (isMockToken) {
                 console.log('🧪 Token mock detectado - simulando envio bem-sucedido');
-                return {
-                    success: true,
-                    data: {
-                        status: 'ok',
+                return { 
+                    success: true, 
+                    data: { 
+                        status: 'ok', 
                         id: 'mock-' + Date.now(),
                         message: 'Mock notification sent successfully'
-                    }
+                    } 
                 };
             }
 
