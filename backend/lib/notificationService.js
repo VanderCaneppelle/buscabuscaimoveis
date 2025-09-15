@@ -39,13 +39,13 @@ export class NotificationService {
             // Verificar se é um token mock (desenvolvimento)
             if (token.includes('ExponentPushToken[') && token.includes(']')) {
                 console.log('🧪 Token mock detectado - simulando envio bem-sucedido');
-                return { 
-                    success: true, 
-                    data: { 
-                        status: 'ok', 
+                return {
+                    success: true,
+                    data: {
+                        status: 'ok',
                         id: 'mock-' + Date.now(),
                         message: 'Mock notification sent successfully'
-                    } 
+                    }
                 };
             }
 
@@ -96,7 +96,7 @@ export class NotificationService {
         try {
             const { data: tokens, error } = await supabase
                 .from('device_tokens')
-                .select('token, user_id, platform');
+                .select('token, user_id, device_info');
 
             if (error) {
                 console.error('❌ Erro ao buscar tokens:', error);
@@ -112,7 +112,7 @@ export class NotificationService {
             tokens.forEach((tokenData, index) => {
                 console.log(`   ${index + 1}. Token: ${tokenData.token}`);
                 console.log(`      User ID: ${tokenData.user_id}`);
-                console.log(`      Platform: ${tokenData.platform}`);
+                console.log(`      Device Info: ${JSON.stringify(tokenData.device_info)}`);
             });
 
             const results = [];
@@ -160,7 +160,7 @@ export class NotificationService {
         try {
             const { data: tokens, error } = await supabase
                 .from('device_tokens')
-                .select('token, platform')
+                .select('token, device_info')
                 .eq('user_id', userId);
 
             if (error) {
@@ -218,7 +218,7 @@ export class NotificationService {
                 console.log(`🔍 Token encontrado no banco:`, {
                     id: existingToken.id,
                     user_id: existingToken.user_id,
-                    platform: existingToken.platform,
+                    device_info: existingToken.device_info,
                     is_active: existingToken.is_active,
                     created_at: existingToken.created_at,
                     updated_at: existingToken.updated_at
