@@ -9,24 +9,79 @@ export class NotificationService {
     // Registrar token do dispositivo
     async registerDeviceToken(token, userId, deviceInfo) {
         try {
-            const { data, error } = await supabase
-                .from('device_tokens')
-                .upsert({
-                    token,
-                    user_id: userId,
-                    device_info: deviceInfo,
-                    updated_at: new Date().toISOString()
-                }, {
-                    onConflict: 'token'
-                });
+            console.log(`🔄 Registrando token para usuário ${userId}: ${token.substring(0, 30)}...`);
 
-            if (error) {
-                console.error('❌ Erro ao registrar token:', error);
-                return { success: false, error: error.message };
+            // 1. Desativar todos os tokens antigos do usuário
+            const { error: deactivateError } = await supabase
+                .from('device_tokens')
+                .update({
+                    is_active: false,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('user_id', userId)
+                .eq('is_active', true);
+
+            if (deactivateError) {
+                console.error('❌ Erro ao desativar tokens antigos:', deactivateError);
+                return { success: false, error: deactivateError.message };
             }
 
-            console.log('✅ Token registrado/atualizado com sucesso');
-            return { success: true, data };
+            console.log('✅ Tokens antigos desativados');
+
+            // 2. Verificar se o token já existe
+            const { data: existingToken, error: fetchError } = await supabase
+                .from('device_tokens')
+                .select('*')
+                .eq('token', token)
+                .single();
+
+            if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 = no rows found
+                console.error('❌ Erro ao verificar token existente:', fetchError);
+                return { success: false, error: fetchError.message };
+            }
+
+            if (existingToken) {
+                // 3a. Token existe - reativar e atualizar
+                const { data, error } = await supabase
+                    .from('device_tokens')
+                    .update({
+                        user_id: userId,
+                        device_info: deviceInfo,
+                        is_active: true,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('token', token)
+                    .select();
+
+                if (error) {
+                    console.error('❌ Erro ao reativar token:', error);
+                    return { success: false, error: error.message };
+                }
+
+                console.log('✅ Token existente reativado e atualizado');
+                return { success: true, data };
+            } else {
+                // 3b. Token não existe - criar novo
+                const { data, error } = await supabase
+                    .from('device_tokens')
+                    .insert({
+                        token,
+                        user_id: userId,
+                        device_info: deviceInfo,
+                        is_active: true,
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString()
+                    })
+                    .select();
+
+                if (error) {
+                    console.error('❌ Erro ao criar novo token:', error);
+                    return { success: false, error: error.message };
+                }
+
+                console.log('✅ Novo token criado');
+                return { success: true, data };
+            }
         } catch (error) {
             console.error('❌ Erro ao registrar token:', error);
             return { success: false, error: error.message };
@@ -96,7 +151,8 @@ export class NotificationService {
         try {
             const { data: tokens, error } = await supabase
                 .from('device_tokens')
-                .select('token, user_id, device_info');
+                .select('token, user_id, device_info')
+                .eq('is_active', true);
 
             if (error) {
                 console.error('❌ Erro ao buscar tokens:', error);
@@ -161,7 +217,8 @@ export class NotificationService {
             const { data: tokens, error } = await supabase
                 .from('device_tokens')
                 .select('token, device_info')
-                .eq('user_id', userId);
+                .eq('user_id', userId)
+                .eq('is_active', true);
 
             if (error) {
                 console.error('❌ Erro ao buscar tokens do usuário:', error);
