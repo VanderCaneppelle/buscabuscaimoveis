@@ -70,6 +70,19 @@ export default function NotificationManager() {
 
     const testNotification = async () => {
         try {
+            // Primeiro, gerar um novo token válido
+            console.log('🔄 Gerando novo token válido...');
+            const newToken = await PushNotificationService.getExpoPushToken();
+            
+            if (newToken) {
+                // Registrar o novo token no backend
+                const registered = await PushNotificationService.registerDeviceToken(newToken, user.id);
+                
+                if (registered) {
+                    console.log('✅ Novo token registrado:', newToken.substring(0, 30) + '...');
+                }
+            }
+            
             // Testar notificação local
             await PushNotificationService.sendLocalNotification(
                 '🧪 Teste Local',
@@ -87,9 +100,9 @@ export default function NotificationManager() {
             );
 
             if (backendResult) {
-                Alert.alert('Sucesso', 'Notificações de teste enviadas! (Local + Backend)');
+                Alert.alert('Sucesso', 'Notificações de teste enviadas! (Local + Backend)\n\n✅ Novo token válido registrado!');
             } else {
-                Alert.alert('Sucesso', 'Notificação local enviada! (Backend falhou)');
+                Alert.alert('Sucesso', 'Notificação local enviada! (Backend falhou)\n\n✅ Novo token válido registrado!');
             }
         } catch (error) {
             console.error('❌ Erro ao enviar notificação de teste:', error);

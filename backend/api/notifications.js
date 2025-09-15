@@ -27,9 +27,12 @@ export default async function handler(req, res) {
             case 'status':
                 return await handleStatus(req, res, notificationService);
 
+            case 'cleanup':
+                return await handleCleanup(req, res, notificationService);
+
             default:
                 return res.status(400).json({
-                    error: 'Ação não especificada. Use: register, send, schedule ou status'
+                    error: 'Ação não especificada. Use: register, send, schedule, status ou cleanup'
                 });
         }
     } catch (error) {
@@ -184,6 +187,38 @@ async function handleStatus(req, res, notificationService) {
     } catch (error) {
         return res.status(500).json({
             error: 'Erro ao verificar status',
+            details: error.message
+        });
+    }
+}
+
+// Limpar tokens inválidos
+async function handleCleanup(req, res, notificationService) {
+    if (req.method !== 'POST') {
+        return res.status(405).json({ error: 'Método não permitido' });
+    }
+
+    try {
+        console.log('🧹 Iniciando limpeza de tokens inválidos...');
+        
+        const result = await notificationService.cleanupAllInvalidTokens();
+        
+        if (result.success) {
+            return res.status(200).json({
+                message: 'Limpeza de tokens concluída',
+                tokensRemoved: result.removed,
+                timestamp: new Date().toISOString()
+            });
+        } else {
+            return res.status(500).json({
+                error: 'Erro na limpeza de tokens',
+                details: result.error
+            });
+        }
+    } catch (error) {
+        console.error('❌ Erro na limpeza de tokens:', error);
+        return res.status(500).json({
+            error: 'Erro interno na limpeza',
             details: error.message
         });
     }
