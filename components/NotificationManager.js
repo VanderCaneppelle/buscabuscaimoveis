@@ -41,7 +41,7 @@ export default function NotificationManager() {
 
                 if (token) {
                     console.log('✅ Token registrado automaticamente:', token.substring(0, 30) + '...');
-                    
+
                     // Verificar se já existem notificações agendadas
                     const scheduledNotifications = await PushNotificationService.getScheduledNotifications();
                     setScheduledCount(scheduledNotifications.length);
@@ -63,7 +63,7 @@ export default function NotificationManager() {
         try {
             // Registrar token automaticamente quando app volta
             const token = await PushNotificationService.registerTokenAutomatically(user.id);
-            
+
             if (token) {
                 console.log('✅ Token registrado automaticamente em background');
             } else {

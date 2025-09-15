@@ -1,6 +1,6 @@
 export default {
   expo: {
-    name: "BuscaBusca Imóveis",
+    name: "Busca Busca Imóveis",
     slug: "buscabuscaimoveis",
     version: "1.0.0",
     host: "lan",
