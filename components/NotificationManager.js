@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, AppState } from 'react-native';
 import { PushNotificationService } from '../lib/pushNotificationService';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -7,9 +7,25 @@ export default function NotificationManager() {
     const { user } = useAuth();
     const [notificationsEnabled, setNotificationsEnabled] = useState(false);
     const [scheduledCount, setScheduledCount] = useState(0);
+    const appState = useRef(AppState.currentState);
 
     useEffect(() => {
         initializeNotifications();
+
+        // Verificar token quando app volta do background
+        const handleAppStateChange = (nextAppState) => {
+            if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
+                console.log('📱 App voltou do background - verificando token...');
+                if (user) {
+                    validateTokenInBackground();
+                }
+            }
+            appState.current = nextAppState;
+        };
+
+        const subscription = AppState.addEventListener('change', handleAppStateChange);
+
+        return () => subscription?.remove();
     }, [user]);
 
     const initializeNotifications = async () => {
@@ -20,12 +36,11 @@ export default function NotificationManager() {
             const hasPermission = await PushNotificationService.requestPermissions();
 
             if (hasPermission) {
-                // Obter token do dispositivo
-                const token = await PushNotificationService.getExpoPushToken();
+                // Validar e atualizar token automaticamente
+                const token = await PushNotificationService.validateAndRefreshToken(user.id);
 
                 if (token) {
-                    // Registrar token no backend
-                    await PushNotificationService.registerDeviceToken(token, user.id);
+                    console.log('✅ Token validado e registrado:', token.substring(0, 30) + '...');
 
                     // Verificar se já existem notificações agendadas
                     const scheduledNotifications = await PushNotificationService.getScheduledNotifications();
@@ -34,10 +49,34 @@ export default function NotificationManager() {
                     if (scheduledNotifications.length > 0) {
                         setNotificationsEnabled(true);
                     }
+                } else {
+                    console.error('❌ Falha ao validar/registrar token');
                 }
             }
         } catch (error) {
             console.error('❌ Erro ao inicializar notificações:', error);
+        }
+    };
+
+    // Validar token quando app volta do background
+    const validateTokenInBackground = async () => {
+        try {
+            const isValid = await PushNotificationService.isCurrentTokenValid();
+
+            if (!isValid) {
+                console.log('🔄 Token inválido detectado - atualizando...');
+                const newToken = await PushNotificationService.validateAndRefreshToken(user.id);
+
+                if (newToken) {
+                    console.log('✅ Token atualizado automaticamente');
+                } else {
+                    console.error('❌ Falha ao atualizar token automaticamente');
+                }
+            } else {
+                console.log('✅ Token ainda válido');
+            }
+        } catch (error) {
+            console.error('❌ Erro na validação de token em background:', error);
         }
     };
 
@@ -70,17 +109,14 @@ export default function NotificationManager() {
 
     const testNotification = async () => {
         try {
-            // Primeiro, gerar um novo token válido
-            console.log('🔄 Gerando novo token válido...');
-            const newToken = await PushNotificationService.getExpoPushToken();
+            // Validar e atualizar token automaticamente
+            console.log('🔄 Validando token antes do teste...');
+            const token = await PushNotificationService.validateAndRefreshToken(user.id);
 
-            if (newToken) {
-                // Registrar o novo token no backend
-                const registered = await PushNotificationService.registerDeviceToken(newToken, user.id);
-
-                if (registered) {
-                    console.log('✅ Novo token registrado:', newToken.substring(0, 30) + '...');
-                }
+            if (token) {
+                console.log('✅ Token validado:', token.substring(0, 30) + '...');
+            } else {
+                console.error('❌ Falha ao validar token');
             }
 
             // Testar notificação local
