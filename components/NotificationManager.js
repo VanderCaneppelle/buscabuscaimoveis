@@ -36,12 +36,12 @@ export default function NotificationManager() {
             const hasPermission = await PushNotificationService.requestPermissions();
 
             if (hasPermission) {
-                // Validar e atualizar token automaticamente
-                const token = await PushNotificationService.validateAndRefreshToken(user.id);
+                // Validar token usando sessionId (mais confiável)
+                const token = await PushNotificationService.validateTokenWithSession(user.id);
 
                 if (token) {
-                    console.log('✅ Token validado e registrado:', token.substring(0, 30) + '...');
-
+                    console.log('✅ Token validado com sessionId:', token.substring(0, 30) + '...');
+                    
                     // Verificar se já existem notificações agendadas
                     const scheduledNotifications = await PushNotificationService.getScheduledNotifications();
                     setScheduledCount(scheduledNotifications.length);
@@ -50,7 +50,7 @@ export default function NotificationManager() {
                         setNotificationsEnabled(true);
                     }
                 } else {
-                    console.error('❌ Falha ao validar/registrar token');
+                    console.error('❌ Falha ao validar token com sessionId');
                 }
             }
         } catch (error) {
@@ -61,19 +61,13 @@ export default function NotificationManager() {
     // Validar token quando app volta do background
     const validateTokenInBackground = async () => {
         try {
-            const isValid = await PushNotificationService.isCurrentTokenValid();
-
-            if (!isValid) {
-                console.log('🔄 Token inválido detectado - atualizando...');
-                const newToken = await PushNotificationService.validateAndRefreshToken(user.id);
-
-                if (newToken) {
-                    console.log('✅ Token atualizado automaticamente');
-                } else {
-                    console.error('❌ Falha ao atualizar token automaticamente');
-                }
+            // Usar validação com sessionId para maior confiabilidade
+            const token = await PushNotificationService.validateTokenWithSession(user.id);
+            
+            if (token) {
+                console.log('✅ Token validado com sessionId em background');
             } else {
-                console.log('✅ Token ainda válido');
+                console.error('❌ Falha ao validar token com sessionId em background');
             }
         } catch (error) {
             console.error('❌ Erro na validação de token em background:', error);
@@ -109,14 +103,14 @@ export default function NotificationManager() {
 
     const testNotification = async () => {
         try {
-            // Validar e atualizar token automaticamente
-            console.log('🔄 Validando token antes do teste...');
-            const token = await PushNotificationService.validateAndRefreshToken(user.id);
+            // Validar token usando sessionId antes do teste
+            console.log('🔄 Validando token com sessionId antes do teste...');
+            const token = await PushNotificationService.validateTokenWithSession(user.id);
 
             if (token) {
-                console.log('✅ Token validado:', token.substring(0, 30) + '...');
+                console.log('✅ Token validado com sessionId:', token.substring(0, 30) + '...');
             } else {
-                console.error('❌ Falha ao validar token');
+                console.error('❌ Falha ao validar token com sessionId');
             }
 
             // Testar notificação local
