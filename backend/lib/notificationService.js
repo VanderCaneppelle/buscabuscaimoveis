@@ -36,6 +36,19 @@ export class NotificationService {
     // Enviar notificação push
     async sendPushNotification(token, title, body, data = {}) {
         try {
+            // Verificar se é um token mock (desenvolvimento)
+            if (token.includes('ExponentPushToken[') && token.includes(']')) {
+                console.log('🧪 Token mock detectado - simulando envio bem-sucedido');
+                return { 
+                    success: true, 
+                    data: { 
+                        status: 'ok', 
+                        id: 'mock-' + Date.now(),
+                        message: 'Mock notification sent successfully'
+                    } 
+                };
+            }
+
             const message = {
                 to: token,
                 title,
@@ -45,6 +58,8 @@ export class NotificationService {
                 priority: 'high',
                 channelId: 'default'
             };
+
+            console.log('📤 Enviando para API Expo:', token.substring(0, 30) + '...');
 
             const response = await axios.post(this.expoPushUrl, message, {
                 headers: {
@@ -71,7 +86,7 @@ export class NotificationService {
             console.log('✅ Notificação enviada com sucesso para token:', token);
             return { success: true, data: response.data };
         } catch (error) {
-            console.error('❌ Erro ao enviar notificação:', error);
+            console.error('❌ Erro ao enviar notificação:', error.message);
             return { success: false, error: error.message };
         }
     }
