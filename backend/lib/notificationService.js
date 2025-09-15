@@ -55,17 +55,21 @@ export class NotificationService {
                 }
             });
 
+            // Log detalhado da resposta
+            console.log('📊 Resposta da API Expo:', JSON.stringify(response.data, null, 2));
+
             // Verificar se o token é inválido
             if (response.data) {
                 // A API do Expo retorna: response.data.data.status = 'error'
                 if (response.data.data && response.data.data.status === 'error' && response.data.data.details && response.data.data.details.error === 'DeviceNotRegistered') {
-                    console.log(`🗑️ Token inválido detectado: ${token.substring(0, 20)}...`);
+                    console.log(`🗑️ Token inválido detectado: ${token}`);
+                    console.log(`📋 Detalhes do erro:`, response.data.data.details);
                     await this.removeInvalidToken(token);
                     return { success: false, error: 'DeviceNotRegistered', tokenRemoved: true };
                 }
             }
 
-            console.log('✅ Notificação enviada:', response.data);
+            console.log('✅ Notificação enviada com sucesso para token:', token);
             return { success: true, data: response.data };
         } catch (error) {
             console.error('❌ Erro ao enviar notificação:', error);
@@ -90,11 +94,19 @@ export class NotificationService {
                 return { success: true, sent: 0 };
             }
 
+            console.log(`📱 Tokens encontrados no banco: ${tokens.length}`);
+            tokens.forEach((tokenData, index) => {
+                console.log(`   ${index + 1}. Token: ${tokenData.token}`);
+                console.log(`      User ID: ${tokenData.user_id}`);
+                console.log(`      Platform: ${tokenData.platform}`);
+            });
+
             const results = [];
             let validTokensCount = 0;
             let invalidTokensRemoved = 0;
 
             for (const tokenData of tokens) {
+                console.log(`\n🔄 Processando token: ${tokenData.token}`);
                 const result = await this.sendPushNotification(
                     tokenData.token,
                     title,
@@ -176,6 +188,33 @@ export class NotificationService {
     // Remover token inválido do banco
     async removeInvalidToken(token) {
         try {
+            // Primeiro, verificar se o token existe no banco
+            const { data: existingToken, error: fetchError } = await supabase
+                .from('device_tokens')
+                .select('*')
+                .eq('token', token)
+                .single();
+
+            if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 = no rows found
+                console.error('❌ Erro ao buscar token no banco:', fetchError);
+                return { success: false, error: fetchError.message };
+            }
+
+            if (existingToken) {
+                console.log(`🔍 Token encontrado no banco:`, {
+                    id: existingToken.id,
+                    user_id: existingToken.user_id,
+                    platform: existingToken.platform,
+                    is_active: existingToken.is_active,
+                    created_at: existingToken.created_at,
+                    updated_at: existingToken.updated_at
+                });
+            } else {
+                console.log(`⚠️ Token não encontrado no banco: ${token}`);
+                return { success: true, message: 'Token não encontrado no banco' };
+            }
+
+            // Remover o token
             const { error } = await supabase
                 .from('device_tokens')
                 .delete()
@@ -186,7 +225,7 @@ export class NotificationService {
                 return { success: false, error: error.message };
             }
 
-            console.log(`🗑️ Token inválido removido do banco: ${token.substring(0, 20)}...`);
+            console.log(`🗑️ Token inválido removido do banco: ${token}`);
             return { success: true };
         } catch (error) {
             console.error('❌ Erro ao remover token inválido:', error);
