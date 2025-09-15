@@ -16,8 +16,9 @@ Este sistema implementa notificações push agendadas para lembrar os usuários 
 ### Backend (Vercel Functions)
 - `backend/lib/notificationService.js` - Serviço de notificações do backend
 - `backend/api/notifications.js` - API consolidada para todas as operações de notificação
-- `backend/scripts/send-scheduled-notifications.js` - Script para envio de notificações agendadas
-- `.github/workflows/scheduled-notifications.yml` - GitHub Actions para agendamento automático
+- `backend/scripts/send-notification.js` - Script para envio de notificações específicas
+- `backend/config/notifications.js` - Configurações centralizadas das notificações
+- `.github/workflows/notification-*.yml` - GitHub Actions para agendamento automático
 
 ### Banco de Dados
 - `database/device_tokens.sql` - Tabela para armazenar tokens dos dispositivos

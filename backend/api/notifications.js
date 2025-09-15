@@ -1,4 +1,5 @@
 import { NotificationService } from '../lib/notificationService.js';
+import { SCHEDULED_NOTIFICATIONS } from '../config/notifications.js';
 
 export default async function handler(req, res) {
     // Configurar CORS
@@ -27,12 +28,9 @@ export default async function handler(req, res) {
             case 'status':
                 return await handleStatus(req, res, notificationService);
 
-            case 'cleanup':
-                return await handleCleanup(req, res, notificationService);
-
             default:
                 return res.status(400).json({
-                    error: 'Ação não especificada. Use: register, send, schedule, status ou cleanup'
+                    error: 'Ação não especificada. Use: register, send, schedule ou status'
                 });
         }
     } catch (error) {
@@ -120,26 +118,7 @@ async function handleSchedule(req, res, notificationService) {
         return res.status(405).json({ error: 'Método não permitido' });
     }
 
-    const scheduledNotifications = [
-        {
-            time: '09:00',
-            title: '🌅 Bom dia!',
-            body: 'Que tal conferir as novidades no BuscaBusca Imóveis?',
-            data: { type: 'daily_reminder', time: 'morning' }
-        },
-        {
-            time: '15:00',
-            title: '☀️ Boa tarde!',
-            body: 'Novos imóveis podem ter chegado! Dê uma olhada no app.',
-            data: { type: 'daily_reminder', time: 'afternoon' }
-        },
-        {
-            time: '21:00',
-            title: '🌙 Boa noite!',
-            body: 'Não esqueça de conferir o BuscaBusca Imóveis antes de dormir!',
-            data: { type: 'daily_reminder', time: 'evening' }
-        }
-    ];
+    const scheduledNotifications = SCHEDULED_NOTIFICATIONS;
 
     const results = [];
 
@@ -192,34 +171,3 @@ async function handleStatus(req, res, notificationService) {
     }
 }
 
-// Limpar tokens inválidos
-async function handleCleanup(req, res, notificationService) {
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Método não permitido' });
-    }
-
-    try {
-        console.log('🧹 Iniciando limpeza de tokens inválidos...');
-
-        const result = await notificationService.cleanupAllInvalidTokens();
-
-        if (result.success) {
-            return res.status(200).json({
-                message: 'Limpeza de tokens concluída',
-                tokensRemoved: result.removed,
-                timestamp: new Date().toISOString()
-            });
-        } else {
-            return res.status(500).json({
-                error: 'Erro na limpeza de tokens',
-                details: result.error
-            });
-        }
-    } catch (error) {
-        console.error('❌ Erro na limpeza de tokens:', error);
-        return res.status(500).json({
-            error: 'Erro interno na limpeza',
-            details: error.message
-        });
-    }
-}

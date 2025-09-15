@@ -1,37 +1,20 @@
 // Script para enviar notificação específica
 import { NotificationService } from '../lib/notificationService.js';
+import { DAILY_NOTIFICATIONS } from '../config/notifications.js';
 
 const type = process.argv[2]; // morning, afternoon, evening
 
-const notifications = {
-    morning: {
-        title: '🌅 Bom dia!',
-        body: 'Que tal conferir as novidades no BuscaBusca Imóveis?',
-        data: { type: 'daily_reminder', time: 'morning' }
-    },
-    afternoon: {
-        title: '☀️ Boa tarde!',
-        body: 'Novos imóveis podem ter chegado! Dê uma olhada no app.',
-        data: { type: 'daily_reminder', time: 'afternoon' }
-    },
-    evening: {
-        title: '🌙 Boa noite!',
-        body: 'Não esqueça de conferir o BuscaBusca Imóveis antes de dormir!',
-        data: { type: 'daily_reminder', time: 'evening' }
-    }
-};
-
 async function sendNotification() {
-    if (!type || !notifications[type]) {
+    if (!type || !DAILY_NOTIFICATIONS[type]) {
         console.error('❌ Tipo de notificação inválido. Use: morning, afternoon, evening');
         process.exit(1);
     }
 
     try {
-        console.log(`🕐 Enviando notificação ${type}...`);
+        const notification = DAILY_NOTIFICATIONS[type];
+        console.log(`🕐 Enviando notificação ${type} (${notification.time})...`);
 
         const notificationService = new NotificationService();
-        const notification = notifications[type];
 
 
         const result = await notificationService.sendNotificationToAllDevices(

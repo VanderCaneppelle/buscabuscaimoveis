@@ -56,9 +56,9 @@ export class NotificationService {
             });
 
             // Verificar se o token é inválido
-            if (response.data && response.data.data) {
-                const receipt = response.data.data[0];
-                if (receipt && receipt.status === 'error' && receipt.details && receipt.details.error === 'DeviceNotRegistered') {
+            if (response.data) {
+                // A API do Expo retorna: response.data.data.status = 'error'
+                if (response.data.data && response.data.data.status === 'error' && response.data.data.details && response.data.data.details.error === 'DeviceNotRegistered') {
                     console.log(`🗑️ Token inválido detectado: ${token.substring(0, 20)}...`);
                     await this.removeInvalidToken(token);
                     return { success: false, error: 'DeviceNotRegistered', tokenRemoved: true };
@@ -101,9 +101,9 @@ export class NotificationService {
                     body,
                     { ...data, userId: tokenData.user_id }
                 );
-                
+
                 results.push(result);
-                
+
                 if (result.success) {
                     validTokensCount++;
                 } else if (result.tokenRemoved) {
@@ -111,7 +111,6 @@ export class NotificationService {
                 }
             }
 
-            const successCount = results.filter(r => r.success).length;
             console.log(`📊 Relatório de envio:`);
             console.log(`   ✅ Tokens válidos que receberam: ${validTokensCount}`);
             console.log(`   🗑️ Tokens inválidos removidos: ${invalidTokensRemoved}`);
@@ -195,47 +194,6 @@ export class NotificationService {
         }
     }
 
-    // Limpar todos os tokens inválidos (função de manutenção)
-    async cleanupAllInvalidTokens() {
-        try {
-            console.log('🧹 Iniciando limpeza de todos os tokens...');
-            
-            const { data: tokens, error } = await supabase
-                .from('device_tokens')
-                .select('token');
-
-            if (error) {
-                console.error('❌ Erro ao buscar tokens para limpeza:', error);
-                return { success: false, error: error.message };
-            }
-
-            if (!tokens || tokens.length === 0) {
-                console.log('✅ Nenhum token encontrado para limpeza');
-                return { success: true, removed: 0 };
-            }
-
-            let removedCount = 0;
-            for (const tokenData of tokens) {
-                // Enviar uma notificação de teste para verificar se o token é válido
-                const testResult = await this.sendPushNotification(
-                    tokenData.token,
-                    'Teste de Token',
-                    'Verificando se o token é válido...',
-                    { type: 'token_validation' }
-                );
-
-                if (testResult.tokenRemoved) {
-                    removedCount++;
-                }
-            }
-
-            console.log(`🧹 Limpeza concluída: ${removedCount} tokens inválidos removidos`);
-            return { success: true, removed: removedCount };
-        } catch (error) {
-            console.error('❌ Erro na limpeza de tokens:', error);
-            return { success: false, error: error.message };
-        }
-    }
 }
 
 export default NotificationService;
