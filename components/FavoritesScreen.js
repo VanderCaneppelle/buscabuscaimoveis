@@ -57,6 +57,7 @@ export default function FavoritesScreen({ navigation }) {
                         title,
                         description,
                         price,
+                        sale_price,
                         property_type,
                         transaction_type,
                         bedrooms,
@@ -267,9 +268,20 @@ export default function FavoritesScreen({ navigation }) {
                         {property.neighborhood ?? 'Bairro indisponível'}, {property.city ?? 'Cidade indisponível'}
                     </Text>
                     <View style={styles.propertyDetails}>
-                        <Text style={styles.propertyPrice}>
-                            R$ {property.price?.toLocaleString('pt-BR') ?? 'Preço indisponível'}
-                        </Text>
+                        {((property.sale_price ?? property.salePrice) && parseFloat(property.sale_price ?? property.salePrice) > 0) ? (
+                            <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+                                <Text style={{ fontSize: 14, color: '#dc2626', textDecorationLine: 'line-through', marginBottom: 2 }}>
+                                    R$ {property.price?.toLocaleString('pt-BR') ?? 'Preço indisponível'}
+                                </Text>
+                                <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#059669' }}>
+                                    R$ {(property.sale_price ?? property.salePrice)?.toLocaleString('pt-BR')}
+                                </Text>
+                            </View>
+                        ) : (
+                            <Text style={styles.propertyPrice}>
+                                R$ {property.price?.toLocaleString('pt-BR') ?? 'Preço indisponível'}
+                            </Text>
+                        )}
                         <View style={styles.propertyFeatures}>
                             {property.bedrooms != null && (
                                 <Text style={styles.propertyFeature}>

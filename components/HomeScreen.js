@@ -583,15 +583,15 @@ export default function HomeScreen({ navigation }) {
                         onScroll={handleImageScroll}
                         scrollEventThrottle={16}
                         style={styles.mediaList}
-                        nestedScrollEnabled={true}
-                        scrollEnabled={true}
+                        // nestedScrollEnabled={true}
+                        // scrollEnabled={true}
                         bounces={false}
                         decelerationRate="fast"
-                        removeClippedSubviews={false}
-                        maxToRenderPerBatch={1}
-                        windowSize={3}
-                        initialNumToRender={1}
-                        updateCellsBatchingPeriod={100}
+                        // removeClippedSubviews={false}
+                        maxToRenderPerBatch={3}
+                        windowSize={5}
+                        initialNumToRender={2}
+                        updateCellsBatchingPeriod={50}
                     />
 
                     {/* Indicadores de múltiplas imagens */}
@@ -662,9 +662,20 @@ export default function HomeScreen({ navigation }) {
                         {item.neighborhood ?? 'Bairro indisponível'}, {item.city ?? 'Cidade indisponível'}
                     </Text>
                     <View style={styles.propertyDetails}>
-                        <Text style={styles.propertyPrice}>
-                            R$ {item.price?.toLocaleString('pt-BR') ?? 'Preço indisponível'}
-                        </Text>
+                        {((item.sale_price ?? item.salePrice) && parseFloat(item.sale_price ?? item.salePrice) > 0) ? (
+                            <View style={styles.priceContainer}>
+                                <Text style={styles.originalPriceRed}>
+                                    R$ {item.price?.toLocaleString('pt-BR') ?? 'Preço indisponível'}
+                                </Text>
+                                <Text style={styles.salePriceGreen}>
+                                    R$ {(item.sale_price ?? item.salePrice)?.toLocaleString('pt-BR')}
+                                </Text>
+                            </View>
+                        ) : (
+                            <Text style={styles.propertyPrice}>
+                                R$ {item.price?.toLocaleString('pt-BR') ?? 'Preço indisponível'}
+                            </Text>
+                        )}
                         <View style={styles.propertyFeatures}>
                             {item.bedrooms != null && (
                                 <Text style={styles.propertyFeature}>
@@ -1413,6 +1424,32 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     propertyPrice: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#059669',
+    },
+    priceContainer: {
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+    },
+    originalPrice: {
+        fontSize: 14,
+        color: '#9ca3af',
+        textDecorationLine: 'line-through',
+        marginBottom: 2,
+    },
+    salePrice: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#dc2626',
+    },
+    originalPriceRed: {
+        fontSize: 14,
+        color: '#dc2626',
+        textDecorationLine: 'line-through',
+        marginBottom: 2,
+    },
+    salePriceGreen: {
         fontSize: 18,
         fontWeight: 'bold',
         color: '#059669',

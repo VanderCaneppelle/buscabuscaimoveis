@@ -48,6 +48,7 @@ export default function CreateAdScreen({ navigation, route }) {
         title: '',
         description: '',
         price: '',
+        salePrice: '',
         propertyType: '',
         transactionType: '',
         bedrooms: '',
@@ -174,13 +175,14 @@ export default function CreateAdScreen({ navigation, route }) {
 
 
     const validateForm = () => {
-        const requiredFields = ['title', 'price', 'propertyType', 'transactionType', 'address', 'city', 'state'];
+        const requiredFields = ['title', 'price', 'salePrice', 'propertyType', 'transactionType', 'address', 'city', 'state'];
 
         for (const field of requiredFields) {
             if (!formData[field].trim()) {
                 const fieldNames = {
                     title: 'Título',
                     price: 'Preço',
+                    salePrice: 'Preço de Venda',
                     propertyType: 'Tipo de Imóvel',
                     transactionType: 'Tipo de Transação',
                     address: 'Endereço',
@@ -193,8 +195,14 @@ export default function CreateAdScreen({ navigation, route }) {
         }
 
         const numericPrice = getNumericPrice(formData.price);
+        const numericSalePrice = getNumericPrice(formData.salePrice);
         if (isNaN(numericPrice) || numericPrice <= 0) {
             Alert.alert('Preço Inválido', 'Digite um preço válido');
+            return false;
+        }
+
+        if (isNaN(numericSalePrice) || numericSalePrice <= 0) {
+            Alert.alert('Preço de Venda Inválido', 'Digite um preço de venda válido');
             return false;
         }
 
@@ -320,7 +328,8 @@ export default function CreateAdScreen({ navigation, route }) {
             const propertyData = {
                 user_id: user.id,
                 ...formData,
-                price: getNumericPrice(formData.price).toString()
+                price: getNumericPrice(formData.price).toString(),
+                salePrice: getNumericPrice(formData.salePrice).toString()
             };
 
             // Callback para atualizar progresso
@@ -530,6 +539,19 @@ export default function CreateAdScreen({ navigation, route }) {
                                             onChangeText={handlePriceChange}
                                             placeholder="R$ 0,00"
                                             placeholderTextColor="#7f8c8d"
+                                            keyboardType="numeric"
+                                        />
+                                    </View>
+                                    <View style={[styles.inputGroup, styles.halfWidth]}>
+                                        <Text style={styles.inputLabel}>Preço de Venda</Text>
+                                        <TextInput
+                                            style={[styles.textInput, styles.textArea]}
+                                            value={formData.salePrice}
+                                            onChangeText={(value) => handleInputChange('salePrice', value)}
+                                            placeholder="R$ 0,00"
+                                            placeholderTextColor="#7f8c8d"
+                                            multiline
+                                            numberOfLines={4}
                                             keyboardType="numeric"
                                         />
                                     </View>

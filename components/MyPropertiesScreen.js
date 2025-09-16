@@ -36,7 +36,7 @@ export default function MyPropertiesScreen({ navigation }) {
     const [editingProperty, setEditingProperty] = useState(null);
     const [selectedProperty, setSelectedProperty] = useState(null);
     const [editForm, setEditForm] = useState({
-        title: '', description: '', price: '', propertyType: '', transactionType: '',
+        title: '', description: '', price: '', salePrice: '', propertyType: '', transactionType: '',
         bedrooms: '', bathrooms: '', parkingSpaces: '', area: '', address: '',
         neighborhood: '', city: '', state: '', zipCode: ''
     });
@@ -103,6 +103,14 @@ export default function MyPropertiesScreen({ navigation }) {
         setEditForm(prev => ({
             ...prev,
             price: formattedValue
+        }));
+    };
+
+    const handleEditSalePriceChange = (value) => {
+        const formattedValue = formatCurrency(value);
+        setEditForm(prev => ({
+            ...prev,
+            salePrice: formattedValue
         }));
     };
 
@@ -229,10 +237,18 @@ export default function MyPropertiesScreen({ navigation }) {
                 minimumFractionDigits: 2
             }).format(property.price) : '';
 
+        const formattedSalePrice = property.sale_price ?
+            new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
+                minimumFractionDigits: 2
+            }).format(property.sale_price) : '';
+
         setEditForm({
             title: property.title || '',
             description: property.description || '',
             price: formattedPrice,
+            salePrice: formattedSalePrice,
             propertyType: property.property_type || '',
             transactionType: property.transaction_type || '',
             bedrooms: property.bedrooms?.toString() || '',
@@ -267,6 +283,7 @@ export default function MyPropertiesScreen({ navigation }) {
             Alert.alert('Erro', 'O preço deve ser maior que zero');
             return;
         }
+        // salePrice é opcional; se vazio, manter null
         if (!editForm.address.trim()) {
             Alert.alert('Erro', 'O endereço é obrigatório');
             return;
@@ -299,6 +316,7 @@ export default function MyPropertiesScreen({ navigation }) {
             const updateData = {
                 ...editForm,
                 price: getNumericPrice(editForm.price).toString(), // Converter preço formatado para número
+                salePrice: editForm.salePrice ? getNumericPrice(editForm.salePrice).toString() : null,
                 status: 'pending' // Voltar para pendente após edição
             };
 
@@ -885,6 +903,20 @@ export default function MyPropertiesScreen({ navigation }) {
                                                 keyboardType="numeric"
                                             />
                                         </View>
+                                        <View style={[styles.inputGroup, styles.halfWidth]}>
+                                            <Text style={styles.inputLabel}>Preço Promocional</Text>
+                                            <TextInput
+                                                style={styles.textInput}
+                                                value={editForm.salePrice}
+                                                onChangeText={handleEditSalePriceChange}
+                                                placeholder="R$ 0,00"
+                                                placeholderTextColor="#7f8c8d"
+                                                keyboardType="numeric"
+                                            />
+                                        </View>
+                                    </View>
+
+                                    <View style={styles.row}>
                                         <View style={[styles.inputGroup, styles.halfWidth]}>
                                             <Text style={styles.inputLabel}>Área (m²)</Text>
                                             <TextInput
