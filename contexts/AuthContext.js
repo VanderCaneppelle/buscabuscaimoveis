@@ -78,6 +78,16 @@ export const AuthProvider = ({ children }) => {
             if (event === 'SIGNED_IN' && session?.user) {
                 console.log('Usuário fez login - registrando sessão');
                 await sessionManager.registerSession();
+                // Disparar registro de push em background para não bloquear login
+                (async () => {
+                    try {
+                        await PushNotificationService.requestPermissions();
+                        await PushNotificationService.registerTokenAutomatically(session.user.id);
+                        console.log('✅ Push token registrado pós-login (onAuthStateChange)');
+                    } catch (e) {
+                        console.log('⚠️ Erro ao registrar push token pós-login:', e?.message || e);
+                    }
+                })();
 
                 // // Associar plano gratuito automaticamente se for novo usuário
                 // try {
@@ -202,15 +212,17 @@ export const AuthProvider = ({ children }) => {
 
             if (error) throw error;
 
-            // Se o login foi bem-sucedido, configurar notificações locais
+            // Se o login foi bem-sucedido, configurar e registrar push em background
             if (data.user) {
-                try {
-                    // Solicitar permissões para notificações locais
-                    await PushNotificationService.requestPermissions();
-                    console.log('✅ Permissões de notificação configuradas');
-                } catch (pushError) {
-                    console.log('⚠️ Erro ao configurar notificações:', pushError.message);
-                }
+                (async () => {
+                    try {
+                        await PushNotificationService.requestPermissions();
+                        await PushNotificationService.registerTokenAutomatically(data.user.id);
+                        console.log('✅ Push token registrado pós-login (signIn)');
+                    } catch (pushError) {
+                        console.log('⚠️ Erro ao registrar push pós-login:', pushError.message);
+                    }
+                })();
             }
 
             return { data, error: null };

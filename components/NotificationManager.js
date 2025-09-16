@@ -11,20 +11,10 @@ export default function NotificationManager() {
 
     useEffect(() => {
         initializeNotifications();
-
-        // Registrar token quando app volta do background
-        const handleAppStateChange = (nextAppState) => {
-            if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
-                console.log('📱 App voltou do background - registrando token...');
-                if (user) {
-                    registerTokenInBackground();
-                }
-            }
-            appState.current = nextAppState;
-        };
-
-        const subscription = AppState.addEventListener('change', handleAppStateChange);
-
+        // Não registrar token automaticamente ao entrar nesta tela
+        // e nem quando o app volta do background. O registro agora ocorre no login.
+        const noop = () => { };
+        const subscription = AppState.addEventListener('change', noop);
         return () => subscription?.remove();
     }, [user]);
 
@@ -36,21 +26,11 @@ export default function NotificationManager() {
             const hasPermission = await PushNotificationService.requestPermissions();
 
             if (hasPermission) {
-                // Registrar token automaticamente
-                const token = await PushNotificationService.registerTokenAutomatically(user.id);
-
-                if (token) {
-                    console.log('✅ Token registrado automaticamente:', token.substring(0, 30) + '...');
-
-                    // Verificar se já existem notificações agendadas
-                    const scheduledNotifications = await PushNotificationService.getScheduledNotifications();
-                    setScheduledCount(scheduledNotifications.length);
-
-                    if (scheduledNotifications.length > 0) {
-                        setNotificationsEnabled(true);
-                    }
-                } else {
-                    console.error('❌ Falha ao registrar token automaticamente');
+                // Apenas consultar notificações agendadas; não registrar token aqui
+                const scheduledNotifications = await PushNotificationService.getScheduledNotifications();
+                setScheduledCount(scheduledNotifications.length);
+                if (scheduledNotifications.length > 0) {
+                    setNotificationsEnabled(true);
                 }
             }
         } catch (error) {
@@ -58,21 +38,7 @@ export default function NotificationManager() {
         }
     };
 
-    // Registrar token quando app volta do background
-    const registerTokenInBackground = async () => {
-        try {
-            // Registrar token automaticamente quando app volta
-            const token = await PushNotificationService.registerTokenAutomatically(user.id);
-
-            if (token) {
-                console.log('✅ Token registrado automaticamente em background');
-            } else {
-                console.error('❌ Falha ao registrar token em background');
-            }
-        } catch (error) {
-            console.error('❌ Erro no registro de token em background:', error);
-        }
-    };
+    // Removido: registro automático ao voltar do background
 
     const toggleNotifications = async () => {
         try {

@@ -15,7 +15,7 @@ import { supabase } from '../lib/supabase';
 import { PlanService } from '../lib/planService';
 import PropertyCacheService from '../lib/propertyCacheService';
 import { useFocusEffect } from '@react-navigation/native';
-import NotificationManager from './NotificationManager';
+// Removido: NotificationManager
 
 export default function AccountScreen({ navigation }) {
     console.log('Rendered AccountScreen');
@@ -339,13 +339,7 @@ export default function AccountScreen({ navigation }) {
                             () => Alert.alert('Em breve', 'Funcionalidade em desenvolvimento')
                         )}
 
-                        {renderMenuItem(
-                            'Notificações',
-                            'Configure suas preferências',
-                            'notifications',
-                            '#9b59b6',
-                            () => Alert.alert('Em breve', 'Funcionalidade em desenvolvimento')
-                        )}
+
 
                         {renderMenuItem(
                             'Privacidade',
@@ -380,8 +374,7 @@ export default function AccountScreen({ navigation }) {
                         )}
                     </View>
 
-                    {/* Notification Manager */}
-                    <NotificationManager />
+                    {/* Removido: Notification Manager */}
 
                     {/* Logout Button */}
                     <TouchableOpacity style={styles.logoutButton} onPress={handleSignOut}>
