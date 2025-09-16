@@ -3,7 +3,7 @@ name: Notificação da Manhã
 on:
   schedule:
     # 9:00 AM (horário de Brasília) = 12:00 UTC
-    - cron: '20 3 * * *'
+    - cron: '25 6 * * *'
   
   # Permitir execução manual
   workflow_dispatch:
