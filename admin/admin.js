@@ -373,6 +373,53 @@ function renderPropertyImages(images) {
     return `<img src="${imageFiles[0]}" alt="Imagem do imóvel" onerror="this.src='https://via.placeholder.com/400x200?text=Erro+ao+Carregar'">`;
 }
 
+// Helper: obter base URL do backend (fixo)
+function getBackendApiBase() {
+    return 'https://buscabusca.vercel.app';
+}
+
+// Helper: enviar push de aprovação para o dono do anúncio
+async function sendApprovalPushToOwner(propertyId) {
+    try {
+        // Tentar obter dados do anúncio já carregados em memória
+        let property = (properties || []).find(p => p.id === propertyId);
+        if (!property) {
+            // Buscar do banco apenas o necessário
+            const { data, error } = await supabase
+                .from('properties')
+                .select('id, user_id, title, city')
+                .eq('id', propertyId)
+                .single();
+            if (error) throw error;
+            property = data;
+        }
+
+        const backendBase = getBackendApiBase();
+        if (!backendBase) {
+            console.warn('Backend base URL não configurada. Pulei envio de push.');
+            return;
+        }
+
+        const url = `${backendBase}/api/notifications?action=property-approved`;
+        const payload = {
+            userId: property.user_id,
+            propertyId: property.id
+        };
+
+        const resp = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        const text = await resp.text();
+        try { console.log('📬 Resposta envio push:', resp.status, JSON.parse(text)); }
+        catch { console.log('📬 Resposta envio push (raw):', resp.status, text); }
+    } catch (err) {
+        console.error('❌ Falha ao enviar push de aprovação:', err);
+    }
+}
+
 // Aprovar propriedade
 async function approveProperty(propertyId) {
     if (!confirm('Tem certeza que deseja aprovar este anúncio?')) return;
@@ -394,6 +441,9 @@ async function approveProperty(propertyId) {
             .eq('id', propertyId);
 
         if (error) throw error;
+
+        // Enviar notificação de aprovação ao dono do anúncio (não bloquear UI)
+        sendApprovalPushToOwner(propertyId);
 
         showSuccess('Anúncio aprovado com sucesso!');
         await loadProperties();
