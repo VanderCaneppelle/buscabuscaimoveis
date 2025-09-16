@@ -312,6 +312,42 @@ export class NotificationService {
         }
     }
 
+    // Buscar dados mínimos do anúncio
+    async fetchPropertyMinimal(propertyId) {
+        try {
+            const { data, error } = await supabase
+                .from('properties')
+                .select('id, user_id, title, city')
+                .eq('id', propertyId)
+                .single();
+
+            if (error) {
+                console.error('❌ Erro ao buscar propriedade:', error);
+                return null;
+            }
+            return data;
+        } catch (error) {
+            console.error('❌ Erro inesperado ao buscar propriedade:', error);
+            return null;
+        }
+    }
+
+    // Enviar notificação padronizada de anúncio aprovado (com objeto property)
+    async sendPropertyApproved(userId, property) {
+        const title = '🏡 Anúncio aprovado! 🎉';
+        const body = `Seu anúncio "${property?.title || 'Imóvel'}" foi aprovado e já está no ar.`;
+        const data = { type: 'property_approved', propertyId: property?.id };
+        return this.sendNotificationToUser(userId, title, body, data);
+    }
+
+    // Enviar notificação padronizada de anúncio aprovado (via propertyId)
+    async sendPropertyApprovedById(userId, propertyId) {
+        const property = await this.fetchPropertyMinimal(propertyId);
+        if (!property) {
+            return { success: false, error: 'Propriedade não encontrada' };
+        }
+        return this.sendPropertyApproved(userId, property);
+    }
 }
 
 export default NotificationService;

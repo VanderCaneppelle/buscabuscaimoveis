@@ -28,9 +28,12 @@ export default async function handler(req, res) {
             case 'status':
                 return await handleStatus(req, res, notificationService);
 
+            case 'property-approved':
+                return await handlePropertyApproved(req, res, notificationService);
+
             default:
                 return res.status(400).json({
-                    error: 'Ação não especificada. Use: register, send, schedule ou status'
+                    error: 'Ação não especificada. Use: register, send, schedule, status ou property-approved'
                 });
         }
     } catch (error) {
@@ -107,6 +110,34 @@ async function handleSend(req, res, notificationService) {
     } else {
         return res.status(500).json({
             error: 'Erro ao enviar notificação',
+            details: result.error
+        });
+    }
+}
+
+// Enviar notificação de anúncio aprovado (centralizado)
+async function handlePropertyApproved(req, res, notificationService) {
+    if (req.method !== 'POST') {
+        return res.status(405).json({ error: 'Método não permitido' });
+    }
+
+    const { userId, propertyId } = req.body;
+    if (!userId || !propertyId) {
+        return res.status(400).json({ error: 'userId e propertyId são obrigatórios' });
+    }
+
+    const result = await notificationService.sendPropertyApprovedById(userId, propertyId);
+
+    if (result.success) {
+        return res.status(200).json({
+            message: 'Notificação de aprovação enviada com sucesso',
+            sent: result.sent,
+            total: result.total,
+            results: result.results
+        });
+    } else {
+        return res.status(500).json({
+            error: 'Erro ao enviar notificação de aprovação',
             details: result.error
         });
     }
