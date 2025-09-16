@@ -38,7 +38,6 @@ export default {
     plugins: [
       "expo-notifications",
       "expo-font",
-      "@react-native-firebase/messaging",
       "react-native-compressor"
     ],
     scheme: "buscabuscaimoveis",
