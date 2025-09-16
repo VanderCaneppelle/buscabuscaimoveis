@@ -1,0 +1,50 @@
+name: Notificação da Manhã
+
+on:
+  schedule:
+    # 9:00 AM (horário de Brasília) = 12:00 UTC
+    - cron: '20 3 * * *'
+  
+  # Permitir execução manual
+  workflow_dispatch:
+
+jobs:
+  send-morning-notification:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+      
+      - name: Instalar dependências
+        run: |
+          cd backend
+          npm ci
+      
+      - name: Configurar variáveis de ambiente
+        run: |
+          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> $GITHUB_ENV
+          echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> $GITHUB_ENV
+          echo "EXPO_PUBLIC_SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> $GITHUB_ENV
+          echo "SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> $GITHUB_ENV
+      
+      - name: Enviar notificação da manhã
+        run: |
+          cd backend
+          node scripts/send-notification.js morning
+      
+      - name: Notificar resultado
+        if: always()
+        run: |
+          if [ ${{ job.status }} == 'success' ]; then
+            echo "✅ Notificação da manhã enviada com sucesso"
+          else
+            echo "❌ Falha ao enviar notificação da manhã"
+          fi
