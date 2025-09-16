@@ -22,7 +22,7 @@ export default {
     android: {
       package: "com.buscabuscaimoveis.app",
       adaptiveIcon: {
-        foregroundImage: "./assets/adaptive-icon.png",
+        foregroundImage: "./assets/logo_bb.jpg",
         backgroundColor: "#ffffff"
       },
       googleServicesFile: "./google-services.json"
