@@ -11,77 +11,42 @@ export class NotificationService {
         try {
             console.log(`🔄 Registrando token para usuário ${userId}: ${token.substring(0, 30)}...`);
 
-            // 1. Desativar todos os tokens antigos do usuário
-            const { error: deactivateError } = await supabase
+            const nowIso = new Date().toISOString();
+
+            // 1) Upsert por token (garante reatribuição de token ao novo usuário)
+            const { data: upsertData, error: upsertError } = await supabase
                 .from('device_tokens')
-                .update({
-                    is_active: false,
-                    updated_at: new Date().toISOString()
-                })
+                .upsert({
+                    token,
+                    user_id: userId,
+                    device_info: deviceInfo,
+                    is_active: true,
+                    updated_at: nowIso,
+                    created_at: nowIso
+                }, { onConflict: 'token' })
+                .select();
+
+            if (upsertError) {
+                console.error('❌ Erro no upsert do token:', upsertError);
+                return { success: false, error: upsertError.message };
+            }
+
+            console.log('✅ Upsert de token concluído');
+
+            // 2) Desativar outros tokens do MESMO usuário (mantendo apenas este token ativo)
+            const { error: deactivateOthersError } = await supabase
+                .from('device_tokens')
+                .update({ is_active: false, updated_at: nowIso })
                 .eq('user_id', userId)
+                .neq('token', token)
                 .eq('is_active', true);
 
-            if (deactivateError) {
-                console.error('❌ Erro ao desativar tokens antigos:', deactivateError);
-                return { success: false, error: deactivateError.message };
+            if (deactivateOthersError) {
+                console.error('❌ Erro ao desativar outros tokens do usuário:', deactivateOthersError);
+                // continua mesmo assim
             }
 
-            console.log('✅ Tokens antigos desativados');
-
-            // 2. Verificar se o token já existe
-            const { data: existingToken, error: fetchError } = await supabase
-                .from('device_tokens')
-                .select('*')
-                .eq('token', token)
-                .single();
-
-            if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 = no rows found
-                console.error('❌ Erro ao verificar token existente:', fetchError);
-                return { success: false, error: fetchError.message };
-            }
-
-            if (existingToken) {
-                // 3a. Token existe - reativar e atualizar
-                const { data, error } = await supabase
-                    .from('device_tokens')
-                    .update({
-                        user_id: userId,
-                        device_info: deviceInfo,
-                        is_active: true,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('token', token)
-                    .select();
-
-                if (error) {
-                    console.error('❌ Erro ao reativar token:', error);
-                    return { success: false, error: error.message };
-                }
-
-                console.log('✅ Token existente reativado e atualizado');
-                return { success: true, data };
-            } else {
-                // 3b. Token não existe - criar novo
-                const { data, error } = await supabase
-                    .from('device_tokens')
-                    .insert({
-                        token,
-                        user_id: userId,
-                        device_info: deviceInfo,
-                        is_active: true,
-                        created_at: new Date().toISOString(),
-                        updated_at: new Date().toISOString()
-                    })
-                    .select();
-
-                if (error) {
-                    console.error('❌ Erro ao criar novo token:', error);
-                    return { success: false, error: error.message };
-                }
-
-                console.log('✅ Novo token criado');
-                return { success: true, data };
-            }
+            return { success: true, data: upsertData };
         } catch (error) {
             console.error('❌ Erro ao registrar token:', error);
             return { success: false, error: error.message };
