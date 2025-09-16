@@ -25,7 +25,7 @@ export default {
         foregroundImage: "./assets/adaptive-icon.png",
         backgroundColor: "#ffffff"
       },
-      googleServicesFile: "./android/app/google-services.json"
+      googleServicesFile: "./google-services.json"
     },
     web: {
       favicon: "./assets/logo_bb.jpg"
