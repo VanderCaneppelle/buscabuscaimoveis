@@ -37,8 +37,7 @@ export default {
     },
     plugins: [
       "expo-notifications",
-      "expo-font",
-      "react-native-compressor"
+      "expo-font"
     ],
     scheme: "buscabuscaimoveis",
     // Configurações do Mercado Pago
