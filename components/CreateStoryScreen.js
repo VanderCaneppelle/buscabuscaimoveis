@@ -19,7 +19,6 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import { Video } from 'expo-av';
-import { Video as VideoCompressor } from "react-native-compressor";
 import { useAdmin } from '../contexts/AdminContext';
 import { supabase } from '../lib/supabase';
 import { Platform } from 'react-native';
@@ -368,32 +367,6 @@ export default function CreateStoryScreen({ navigation }) {
     const [titleScale, setTitleScale] = useState(1.0); // Escala do título (0.5 a 2.0)
     const [linkScale, setLinkScale] = useState(1.0); // Escala do link (0.5 a 2.0)
 
-    // 🎬 Função centralizada para compressão de vídeo
-    const compressVideo = async (videoUri, context = 'vídeo') => {
-        try {
-            console.log(`🎬 Iniciando compressão do ${context}...`);
-            const compressedUri = await VideoCompressor.compress(
-                videoUri,
-                {
-                    compressionMethod: "auto",
-                    maxSize: 1080,
-                    minimumSize: 720,          // força no máximo 720p
-                    bitrate: 4 * 1000 * 1000, // ~2 Mbps → peso reduzido
-                    minimumBitrate: 1000000, // 1 Mbps mínimo
-                    getCancellationId: (cancellationId) => {
-                        console.log('Compressão cancelada:', cancellationId);
-                    }
-                }
-            );
-            console.log(`✅ Compressão do ${context} concluída:`, compressedUri);
-            return compressedUri;
-        } catch (compressionError) {
-            console.error(`❌ Erro na compressão do ${context}:`, compressionError);
-            // Fallback: retornar vídeo original se a compressão falhar
-            console.log(`🔄 Usando ${context} original como fallback`);
-            return videoUri;
-        }
-    };
 
     // Funções para editar e excluir elementos
     const handleEditTitle = () => {
@@ -508,9 +481,8 @@ export default function CreateStoryScreen({ navigation }) {
 
                 const result = await ImagePicker.launchCameraAsync(config);
                 if (!result.canceled && result.assets[0]) {
-                    // 🔽 Comprime antes de preview
-                    const compressedUri = await compressVideo(result.assets[0].uri, 'vídeo iOS');
-                    await checkVideoAndShowPreview(compressedUri);
+                    // ✅ Vai direto para preview sem compressão
+                    await checkVideoAndShowPreview(result.assets[0].uri);
                 }
             } else {
                 // ⚠️ Android: videoMaxDuration não funciona, usar timer visual
@@ -570,8 +542,7 @@ export default function CreateStoryScreen({ navigation }) {
                     return;
                 }
 
-                // ✅ Vídeo dentro do limite, comprimir antes de preview
-                //const compressedUri = await compressVideo(asset.uri, 'vídeo Android');
+                // ✅ Vídeo dentro do limite, vai direto para preview
                 await checkVideoAndShowPreview(asset.uri);
             }
         } catch (error) {
@@ -680,9 +651,8 @@ export default function CreateStoryScreen({ navigation }) {
                         return;
                     }
 
-                    // ✅ Vídeo dentro do limite, comprimir antes de verificar tamanho
-                    const compressedUri = await compressVideo(mediaAsset.uri, 'vídeo da galeria');
-                    await checkVideoAndShowPreview(compressedUri);
+                    // ✅ Vídeo dentro do limite, vai direto para preview
+                    await checkVideoAndShowPreview(mediaAsset.uri);
                 } else {
                     // É uma imagem, ir direto para preview
                     setCapturedMedia(mediaAsset);
