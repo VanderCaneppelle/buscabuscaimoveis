@@ -1,7 +1,7 @@
 // Script de Configuração do Painel Administrativo
 // Execute este script para configurar as credenciais do Supabase
 
-console.log('🔧 Configuração do Painel Administrativo - Buca Busca Imóveis');
+console.log('🔧 Configuração do Painel Administrativo - Busca Busca Imóveis');
 console.log('');
 
 // Função para obter credenciais do usuário

@@ -1,4 +1,4 @@
-# 🏠 Buca Busca Imóveis
+# 🏠 Busca Busca Imóveis
 
 Aplicativo React Native para compra, venda e aluguel de imóveis com sistema de planos e pagamentos integrado.
 

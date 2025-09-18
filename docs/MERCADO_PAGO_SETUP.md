@@ -1,6 +1,6 @@
 # 🏦 Configuração do Mercado Pago
 
-Este documento explica como configurar e usar a integração com Mercado Pago no Buca Busca Imóveis.
+Este documento explica como configurar e usar a integração com Mercado Pago no Busca Busca Imóveis.
 
 ## 📋 Pré-requisitos
 

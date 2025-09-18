@@ -1,4 +1,4 @@
-# Backend Buca Busca Imóveis - Mercado Pago
+# Backend Busca Busca Imóveis - Mercado Pago
 
 Backend para integração com Mercado Pago, construído com Vercel Functions.
 

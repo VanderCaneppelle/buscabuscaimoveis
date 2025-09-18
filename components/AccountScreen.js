@@ -362,7 +362,7 @@ export default function AccountScreen({ navigation }) {
                             'Versão 1.0.0',
                             'information-circle',
                             '#7f8c8d',
-                            () => Alert.alert('Sobre', 'Buca Busca Imóveis v1.0.0\n\nEncontre o imóvel dos seus sonhos!')
+                            () => Alert.alert('Sobre', 'Busca Busca Imóveis v1.0.0\n\nEncontre o imóvel dos seus sonhos!')
                         )}
 
                         {renderMenuItem(
