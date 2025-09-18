@@ -185,6 +185,40 @@ export default function PropertyDetailsScreen({ route, navigation }) {
         );
     }, [finalDisplayMedia.length]);
 
+    // Função para detectar scroll no modal fullscreen
+    const handleFullscreenScroll = useCallback((event) => {
+        const contentOffset = event.nativeEvent.contentOffset.x;
+        const imageIndex = Math.round(contentOffset / width);
+        setSelectedImageIndex(imageIndex);
+    }, []);
+
+    // Renderizar mídia no modal fullscreen
+    const renderFullscreenMedia = useCallback(({ item, index }) => {
+        const isVideo = isVideoFile(item);
+
+        return (
+            <View style={styles.fullscreenMediaItem}>
+                {isVideo ? (
+                    <Video
+                        source={{ uri: item }}
+                        style={styles.fullscreenVideo}
+                        useNativeControls={true}
+                        resizeMode="contain"
+                        shouldPlay={false}
+                        isLooping={false}
+                    />
+                ) : (
+                    <Image
+                        source={{ uri: item }}
+                        style={styles.fullscreenImage}
+                        contentFit="contain"
+                        cachePolicy="memory-disk"
+                    />
+                )}
+            </View>
+        );
+    }, [isVideoFile]);
+
     const renderThumbnail = useCallback(({ item, index }) => {
         const isVideo = isVideoFile(item);
         const totalImages = finalDisplayMedia.length;
@@ -375,18 +409,54 @@ export default function PropertyDetailsScreen({ route, navigation }) {
     return (
         <SafeAreaView style={styles.container}>
 
-            {/* Galeria de Mídia em Grid */}
-            <View style={styles.galleryContainer}>
-                <FlatList
-                    data={finalDisplayMedia.slice(0, 6)} // Mostrar apenas 6 tiles
-                    renderItem={renderThumbnail}
-                    keyExtractor={(item, index) => `thumbnail-${index}-${item.substring(0, 20)}`}
-                    numColumns={3}
-                    scrollEnabled={false}
-                    style={styles.thumbnailGrid}
-                    contentContainerStyle={styles.thumbnailGridContent}
-                />
-            </View>
+            {/* Galeria de Mídia - Condicional baseada na quantidade */}
+            {finalDisplayMedia.length === 1 ? (
+                // Uma única imagem - mostrar maior
+                <View style={styles.singleImageContainer}>
+                    <TouchableOpacity
+                        style={styles.singleImageWrapper}
+                        onPress={() => openFullscreenImage(0)}
+                        activeOpacity={0.9}
+                    >
+                        {isVideoFile(finalDisplayMedia[0]) ? (
+                            <Video
+                                source={{ uri: finalDisplayMedia[0] }}
+                                style={styles.singleVideo}
+                                useNativeControls={true}
+                                resizeMode="cover"
+                                shouldPlay={false}
+                                isLooping={false}
+                            />
+                        ) : (
+                            <Image
+                                source={{ uri: finalDisplayMedia[0] }}
+                                style={styles.singleImage}
+                                contentFit="cover"
+                                cachePolicy="memory-disk"
+                                placeholder={require('../assets/placeholder-image.png')}
+                            />
+                        )}
+
+                        {/* Ícone de expansão para indicar que é clicável */}
+                        <View style={styles.expandIcon}>
+                            <Ionicons name="expand" size={24} color="#fff" />
+                        </View>
+                    </TouchableOpacity>
+                </View>
+            ) : (
+                // Múltiplas imagens - mostrar grid
+                <View style={styles.galleryContainer}>
+                    <FlatList
+                        data={finalDisplayMedia.slice(0, 6)} // Mostrar apenas 6 tiles
+                        renderItem={renderThumbnail}
+                        keyExtractor={(item, index) => `thumbnail-${index}-${item.substring(0, 20)}`}
+                        numColumns={3}
+                        scrollEnabled={false}
+                        style={styles.thumbnailGrid}
+                        contentContainerStyle={styles.thumbnailGridContent}
+                    />
+                </View>
+            )}
 
             <ScrollView
                 style={styles.content}
@@ -537,47 +607,26 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                         </TouchableOpacity>
                     </View>
 
-                    {/* Imagem/Vídeo atual */}
-                    <View style={styles.fullscreenMediaContainer}>
-                        {isVideoFile(finalDisplayMedia[selectedImageIndex]) ? (
-                            <Video
-                                source={{ uri: finalDisplayMedia[selectedImageIndex] }}
-                                style={styles.fullscreenVideo}
-                                useNativeControls={true}
-                                resizeMode="contain"
-                                shouldPlay={true}
-                                isLooping={false}
-                            />
-                        ) : (
-                            <Image
-                                source={{ uri: finalDisplayMedia[selectedImageIndex] }}
-                                style={styles.fullscreenImage}
-                                contentFit="contain"
-                                cachePolicy="memory-disk"
-                            />
-                        )}
-                    </View>
-
-                    {/* Navegação com setas (apenas se há múltiplas mídias) */}
-                    {finalDisplayMedia.length > 1 && (
-                        <>
-                            <TouchableOpacity
-                                style={styles.navArrowLeft}
-                                onPress={handlePreviousFullscreen}
-                                activeOpacity={0.8}
-                            >
-                                <Ionicons name="chevron-back" size={40} color="#fff" />
-                            </TouchableOpacity>
-
-                            <TouchableOpacity
-                                style={styles.navArrowRight}
-                                onPress={handleNextFullscreen}
-                                activeOpacity={0.8}
-                            >
-                                <Ionicons name="chevron-forward" size={40} color="#fff" />
-                            </TouchableOpacity>
-                        </>
-                    )}
+                    {/* Galeria com swipe para navegação */}
+                    <FlatList
+                        data={finalDisplayMedia}
+                        renderItem={renderFullscreenMedia}
+                        keyExtractor={(item, index) => `fullscreen-${index}-${item.substring(0, 20)}`}
+                        horizontal
+                        pagingEnabled
+                        showsHorizontalScrollIndicator={false}
+                        onScroll={handleFullscreenScroll}
+                        scrollEventThrottle={16}
+                        initialScrollIndex={selectedImageIndex}
+                        getItemLayout={(data, index) => ({
+                            length: width,
+                            offset: width * index,
+                            index,
+                        })}
+                        style={styles.fullscreenGallery}
+                        bounces={false}
+                        decelerationRate="fast"
+                    />
                 </View>
             </Modal>
         </SafeAreaView>
@@ -589,7 +638,39 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#fff',
     },
-    // Galeria em Grid
+    // Imagem única (quando há apenas 1 mídia)
+    singleImageContainer: {
+        backgroundColor: '#f8f9fa',
+        paddingVertical: 15,
+        paddingHorizontal: 20,
+    },
+    singleImageWrapper: {
+        position: 'relative',
+        borderRadius: 12,
+        overflow: 'hidden',
+        backgroundColor: '#e9ecef',
+    },
+    singleImage: {
+        width: '100%',
+        height: 250, // Altura maior para imagem única
+    },
+    singleVideo: {
+        width: '100%',
+        height: 250, // Altura maior para vídeo único
+    },
+    expandIcon: {
+        position: 'absolute',
+        top: 15,
+        right: 15,
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        borderRadius: 20,
+        width: 40,
+        height: 40,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+
+    // Galeria em Grid (múltiplas imagens)
     galleryContainer: {
         backgroundColor: '#f8f9fa',
         paddingVertical: 15,
@@ -671,43 +752,28 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
-    fullscreenMediaContainer: {
+    fullscreenGallery: {
         flex: 1,
+    },
+    fullscreenMediaItem: {
+        width: width,
+        height: height,
         justifyContent: 'center',
         alignItems: 'center',
-        width: '100%',
+        paddingTop: 50, // Espaço para o header
+        paddingBottom: 50, // Espaço inferior
     },
     fullscreenImage: {
-        width: width,
-        height: height * 0.8,
+        width: width - 40,
+        height: height - 200,
+        maxWidth: width - 40,
+        maxHeight: height - 200,
     },
     fullscreenVideo: {
-        width: width,
-        height: height * 0.8,
-    },
-    navArrowLeft: {
-        position: 'absolute',
-        left: 20,
-        top: '50%',
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-        borderRadius: 25,
-        width: 50,
-        height: 50,
-        justifyContent: 'center',
-        alignItems: 'center',
-        zIndex: 10,
-    },
-    navArrowRight: {
-        position: 'absolute',
-        right: 20,
-        top: '50%',
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-        borderRadius: 25,
-        width: 50,
-        height: 50,
-        justifyContent: 'center',
-        alignItems: 'center',
-        zIndex: 10,
+        width: width - 40,
+        height: height - 200,
+        maxWidth: width - 40,
+        maxHeight: height - 200,
     },
     content: {
         flex: 1,
