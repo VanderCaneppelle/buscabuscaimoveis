@@ -11,6 +11,7 @@ import {
     Linking,
     ScrollView,
     StatusBar,
+    Modal,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { Video } from 'expo-av';
@@ -24,12 +25,10 @@ const { width, height } = Dimensions.get('window');
 export default function PropertyDetailsScreen({ route, navigation }) {
     const { property } = route.params;
     const { user } = useAuth();
-    const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isFavorite, setIsFavorite] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [videoRefs, setVideoRefs] = useState({});
-    const [imagesLoaded, setImagesLoaded] = useState({}); // ✅ Controle de imagens carregadas
-    const [isInitialLoad, setIsInitialLoad] = useState(true); // ✅ Estado inicial
+    const [showFullscreenModal, setShowFullscreenModal] = useState(false);
+    const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
     // Separar imagens e vídeos usando useMemo para evitar re-cálculos
     // Função para verificar se é vídeo
@@ -58,8 +57,8 @@ export default function PropertyDetailsScreen({ route, navigation }) {
     // Cleanup quando a tela for desmontada
     useEffect(() => {
         return () => {
-            // Limpar referências
-            setVideoRefs({});
+            // Cleanup básico
+            console.log('🧹 PropertyDetailsScreen: Limpeza ao desmontar');
         };
     }, []);
 
@@ -162,71 +161,68 @@ export default function PropertyDetailsScreen({ route, navigation }) {
 
 
 
-    const handleImageScroll = useCallback((event) => {
-        const contentOffset = event.nativeEvent.contentOffset.x;
-        const imageIndex = Math.round(contentOffset / width);
-        setCurrentImageIndex(imageIndex);
-    }, [width]);
+    // Função para abrir imagem em fullscreen
+    const openFullscreenImage = useCallback((index) => {
+        setSelectedImageIndex(index);
+        setShowFullscreenModal(true);
+    }, []);
 
-    const renderMedia = useCallback(({ item, index }) => {
+    // Função para fechar modal fullscreen
+    const closeFullscreenModal = useCallback(() => {
+        setShowFullscreenModal(false);
+    }, []);
+
+    // Navegação no modal fullscreen
+    const handlePreviousFullscreen = useCallback(() => {
+        setSelectedImageIndex(prev =>
+            prev > 0 ? prev - 1 : finalDisplayMedia.length - 1
+        );
+    }, [finalDisplayMedia.length]);
+
+    const handleNextFullscreen = useCallback(() => {
+        setSelectedImageIndex(prev =>
+            prev < finalDisplayMedia.length - 1 ? prev + 1 : 0
+        );
+    }, [finalDisplayMedia.length]);
+
+    const renderThumbnail = useCallback(({ item, index }) => {
         const isVideo = isVideoFile(item);
-        const isImageLoaded = imagesLoaded[index];
-
-        if (isVideo) {
-            return (
-                <View style={styles.mediaContainer}>
-                    <Video
-                        source={{ uri: item }}
-                        style={styles.video}
-                        useNativeControls={true}
-                        resizeMode="cover"
-                        shouldPlay={false}
-                        isLooping={false}
-                        isMuted={false}
-                        volume={1.0}
-                        onError={(error) => {
-                            console.error(`❌ Erro no vídeo ${index}:`, error);
-                        }}
-                    />
-                </View>
-            );
-        }
+        const totalImages = finalDisplayMedia.length;
+        const isLastTile = index === 5; // Último tile visível (6º)
+        const hasMoreImages = totalImages > 6;
+        const remainingCount = totalImages - 6;
 
         return (
-            <View style={styles.imageContainer}>
-                {/* Placeholder enquanto carrega */}
-                {!isImageLoaded && (
-                    <View style={styles.imagePlaceholder}>
-                        <Ionicons name="image-outline" size={48} color="#cbd5e1" />
-                        <Text style={styles.imagePlaceholderText}>Carregando...</Text>
+            <TouchableOpacity
+                style={styles.thumbnail}
+                onPress={() => openFullscreenImage(index)}
+                activeOpacity={0.8}
+            >
+                <Image
+                    source={{ uri: item }}
+                    style={styles.thumbnailImage}
+                    contentFit="cover"
+                    cachePolicy="memory-disk"
+                    placeholder={require('../assets/placeholder-image.png')}
+                />
+
+                {/* Overlay "+X" para o último tile se há mais imagens */}
+                {isLastTile && hasMoreImages && (
+                    <View style={styles.moreImagesOverlay}>
+                        <Text style={styles.moreImagesText}>+{remainingCount}</Text>
                     </View>
                 )}
 
-                {/* Imagem real */}
-                <Image
-                    source={{ uri: item }}
-                    style={[styles.image, !isImageLoaded && styles.imageHidden]}
-                    contentFit="cover"
-                    cachePolicy="disk"
-                    placeholder={require('../assets/icon.png')}
-                    transition={0} // ✅ Sem transição para carregar mais rápido
-                    priority={index === 0 ? "high" : "low"} // ✅ Prioridade para primeira imagem
-                    onLoad={() => {
-                        // ✅ Marcar imagem como carregada
-                        setImagesLoaded(prev => ({ ...prev, [index]: true }));
-                        if (index === 0) {
-                            setIsInitialLoad(false); // ✅ Primeira imagem carregada
-                        }
-                    }}
-                    onError={(error) => {
-                        console.error(`❌ Erro ao carregar imagem ${index}:`, error);
-                        // ✅ Marcar como carregada mesmo com erro para não ficar travado
-                        setImagesLoaded(prev => ({ ...prev, [index]: true }));
-                    }}
-                />
-            </View>
+                {/* Ícone de vídeo se for vídeo (apenas se não for o tile "+X") */}
+                {isVideo && !(isLastTile && hasMoreImages) && (
+                    <View style={styles.videoOverlay}>
+                        <Ionicons name="play-circle" size={32} color="#fff" />
+                    </View>
+                )}
+
+            </TouchableOpacity>
         );
-    }, [isVideoFile, imagesLoaded]);
+    }, [isVideoFile, openFullscreenImage, finalDisplayMedia.length]);
 
     const formatPrice = (price) => {
         return new Intl.NumberFormat('pt-BR', {
@@ -379,58 +375,17 @@ export default function PropertyDetailsScreen({ route, navigation }) {
     return (
         <SafeAreaView style={styles.container}>
 
-            {/* Galeria de Mídia */}
-            <View style={styles.imageContainer}>
-                {/* Indicador de carregamento inicial */}
-                {isInitialLoad && (
-                    <View style={styles.initialLoadingOverlay}>
-                        <View style={styles.initialLoadingContent}>
-                            <Ionicons name="images-outline" size={48} color="#00335e" />
-                            <Text style={styles.initialLoadingText}>Carregando galeria...</Text>
-                        </View>
-                    </View>
-                )}
+            {/* Galeria de Mídia em Grid */}
+            <View style={styles.galleryContainer}>
                 <FlatList
-                    data={finalDisplayMedia}
-                    renderItem={renderMedia}
-                    keyExtractor={(item, index) => `media-${index}-${item.substring(0, 20)}`}
-                    horizontal
-                    pagingEnabled
-                    showsHorizontalScrollIndicator={false}
-                    onScroll={handleImageScroll}
-                    scrollEventThrottle={16}
-                    nestedScrollEnabled={true}
-                    removeClippedSubviews={false} // ✅ Melhor performance
-                    maxToRenderPerBatch={2} // ✅ Renderizar apenas 2 itens por vez
-                    windowSize={3} // ✅ Janela de renderização pequena
-                    initialNumToRender={1} // ✅ Renderizar apenas 1 item inicialmente
-                    updateCellsBatchingPeriod={100} // ✅ Batch de atualizações
+                    data={finalDisplayMedia.slice(0, 6)} // Mostrar apenas 6 tiles
+                    renderItem={renderThumbnail}
+                    keyExtractor={(item, index) => `thumbnail-${index}-${item.substring(0, 20)}`}
+                    numColumns={3}
+                    scrollEnabled={false}
+                    style={styles.thumbnailGrid}
+                    contentContainerStyle={styles.thumbnailGridContent}
                 />
-
-                {/* Indicadores de mídia */}
-                {finalDisplayMedia.length > 1 && (
-                    <View style={styles.imageIndicators}>
-                        {finalDisplayMedia.map((_, index) => (
-                            <View
-                                key={index}
-                                style={[
-                                    styles.imageIndicator,
-                                    index === currentImageIndex && styles.imageIndicatorActive
-                                ]}
-                            />
-                        ))}
-                    </View>
-                )}
-
-                {/* Contador de mídia */}
-                {finalDisplayMedia.length > 1 && (
-                    <View style={styles.imageCounter}>
-                        <Text style={styles.imageCounterText}>
-                            {currentImageIndex + 1}/{finalDisplayMedia.length}
-                        </Text>
-                    </View>
-                )}
-
             </View>
 
             <ScrollView
@@ -558,6 +513,73 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                     <Text style={styles.contactButtonText}>Ligar</Text>
                 </TouchableOpacity>
             </View>
+
+            {/* Modal Fullscreen para Galeria */}
+            <Modal
+                visible={showFullscreenModal}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={closeFullscreenModal}
+                statusBarTranslucent={true}
+            >
+                <View style={styles.fullscreenContainer}>
+                    {/* Header com contador e botão fechar */}
+                    <View style={styles.fullscreenHeader}>
+                        <Text style={styles.fullscreenCounter}>
+                            {selectedImageIndex + 1} de {finalDisplayMedia.length}
+                        </Text>
+                        <TouchableOpacity
+                            style={styles.closeButton}
+                            onPress={closeFullscreenModal}
+                            activeOpacity={0.8}
+                        >
+                            <Ionicons name="close" size={28} color="#fff" />
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* Imagem/Vídeo atual */}
+                    <View style={styles.fullscreenMediaContainer}>
+                        {isVideoFile(finalDisplayMedia[selectedImageIndex]) ? (
+                            <Video
+                                source={{ uri: finalDisplayMedia[selectedImageIndex] }}
+                                style={styles.fullscreenVideo}
+                                useNativeControls={true}
+                                resizeMode="contain"
+                                shouldPlay={true}
+                                isLooping={false}
+                            />
+                        ) : (
+                            <Image
+                                source={{ uri: finalDisplayMedia[selectedImageIndex] }}
+                                style={styles.fullscreenImage}
+                                contentFit="contain"
+                                cachePolicy="memory-disk"
+                            />
+                        )}
+                    </View>
+
+                    {/* Navegação com setas (apenas se há múltiplas mídias) */}
+                    {finalDisplayMedia.length > 1 && (
+                        <>
+                            <TouchableOpacity
+                                style={styles.navArrowLeft}
+                                onPress={handlePreviousFullscreen}
+                                activeOpacity={0.8}
+                            >
+                                <Ionicons name="chevron-back" size={40} color="#fff" />
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                style={styles.navArrowRight}
+                                onPress={handleNextFullscreen}
+                                activeOpacity={0.8}
+                            >
+                                <Ionicons name="chevron-forward" size={40} color="#fff" />
+                            </TouchableOpacity>
+                        </>
+                    )}
+                </View>
+            </Modal>
         </SafeAreaView>
     );
 }
@@ -567,102 +589,125 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#fff',
     },
-    imageContainer: {
-        height: 300,
+    // Galeria em Grid
+    galleryContainer: {
+        backgroundColor: '#f8f9fa',
+        paddingVertical: 15,
+    },
+    thumbnailGrid: {
+        paddingHorizontal: 15,
+        alignSelf: 'center',
+    },
+    thumbnailGridContent: {
+        justifyContent: 'flex-start',
+        alignItems: 'flex-start',
+    },
+    thumbnail: {
+        width: (width - 60) / 3, // Largura fixa: (tela - padding) / 3 colunas
+        height: (width - 60) / 3, // Altura igual à largura (quadrado)
+        margin: 4,
+        borderRadius: 8,
+        overflow: 'hidden',
+        backgroundColor: '#e9ecef',
         position: 'relative',
     },
-    image: {
-        width: width,
-        height: 300,
+    thumbnailImage: {
+        width: '100%',
+        height: '100%',
     },
-    imageHidden: {
-        opacity: 0,
-    },
-    imagePlaceholder: {
+    videoOverlay: {
         position: 'absolute',
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: '#f8fafc',
+        backgroundColor: 'rgba(0, 0, 0, 0.3)',
         justifyContent: 'center',
         alignItems: 'center',
-        zIndex: 1,
     },
-    imagePlaceholderText: {
-        fontSize: 14,
-        color: '#64748b',
-        marginTop: 8,
-        fontWeight: '500',
-    },
-    initialLoadingOverlay: {
+    moreImagesOverlay: {
         position: 'absolute',
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: '#f8fafc',
-        justifyContent: 'center',
-        alignItems: 'center',
-        zIndex: 2,
-    },
-    initialLoadingContent: {
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    initialLoadingText: {
-        fontSize: 16,
-        color: '#00335e',
-        marginTop: 12,
-        fontWeight: '600',
-    },
-    video: {
-        width: width,
-        height: 300,
-    },
-    mediaContainer: {
-        width: width,
-        height: 300,
-        position: 'relative',
-        zIndex: 0,
-    },
-
-
-
-    imageIndicators: {
-        position: 'absolute',
-        bottom: 20,
-        left: 0,
-        right: 0,
-        flexDirection: 'row',
-        justifyContent: 'center',
-        gap: 8,
-        zIndex: 1,
-    },
-    imageIndicator: {
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-        backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    },
-    imageIndicatorActive: {
-        backgroundColor: '#fff',
-        width: 20,
-    },
-    imageCounter: {
-        position: 'absolute',
-        top: 20,
-        right: 20,
         backgroundColor: 'rgba(0, 0, 0, 0.7)',
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 15,
-        zIndex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
-    imageCounterText: {
+    moreImagesText: {
         color: '#fff',
-        fontSize: 14,
+        fontSize: 24,
+        fontWeight: 'bold',
+    },
+
+    // Modal Fullscreen
+    fullscreenContainer: {
+        flex: 1,
+        backgroundColor: '#000',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    fullscreenHeader: {
+        position: 'absolute',
+        top: 50,
+        left: 20,
+        right: 20,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        zIndex: 10,
+    },
+    fullscreenCounter: {
+        color: '#fff',
+        fontSize: 18,
         fontWeight: '600',
+    },
+    closeButton: {
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        borderRadius: 20,
+        width: 40,
+        height: 40,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    fullscreenMediaContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '100%',
+    },
+    fullscreenImage: {
+        width: width,
+        height: height * 0.8,
+    },
+    fullscreenVideo: {
+        width: width,
+        height: height * 0.8,
+    },
+    navArrowLeft: {
+        position: 'absolute',
+        left: 20,
+        top: '50%',
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        borderRadius: 25,
+        width: 50,
+        height: 50,
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 10,
+    },
+    navArrowRight: {
+        position: 'absolute',
+        right: 20,
+        top: '50%',
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        borderRadius: 25,
+        width: 50,
+        height: 50,
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 10,
     },
     content: {
         flex: 1,
