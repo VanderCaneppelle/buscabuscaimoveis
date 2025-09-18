@@ -3,7 +3,7 @@ export const DAILY_NOTIFICATIONS = {
     morning: {
         time: '09:00',
         title: '🌅 Bom dia!',
-        body: 'Que tal conferir as novidades no BuscaBusca Imóveis?',
+        body: 'Que tal conferir as novidades no Buca Busca Imóveis?',
         data: { type: 'daily_reminder', time: 'morning' }
     },
     afternoon: {
@@ -15,7 +15,7 @@ export const DAILY_NOTIFICATIONS = {
     evening: {
         time: '21:00',
         title: '🌙 Boa noite!',
-        body: 'Não esqueça de conferir o BuscaBusca Imóveis antes de dormir!',
+        body: 'Não esqueça de conferir o Buca Busca Imóveis antes de dormir!',
         data: { type: 'daily_reminder', time: 'evening' }
     }
 };

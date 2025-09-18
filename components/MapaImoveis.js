@@ -56,9 +56,29 @@ export default function MapaImoveis({ navigation, route }) {
         return property.transaction_type === 'rent' ? 'green' : 'red';
     };
 
+    // Função para validar região e evitar crashes
+    const isValidRegion = (region) => {
+        if (!region) return false;
+
+        const { latitude, longitude, latitudeDelta, longitudeDelta } = region;
+
+        return (
+            typeof latitude === 'number' && !isNaN(latitude) &&
+            typeof longitude === 'number' && !isNaN(longitude) &&
+            typeof latitudeDelta === 'number' && !isNaN(latitudeDelta) &&
+            typeof longitudeDelta === 'number' && !isNaN(longitudeDelta) &&
+            latitude >= -90 && latitude <= 90 &&
+            longitude >= -180 && longitude <= 180 &&
+            latitudeDelta > 0 && latitudeDelta <= 180 &&
+            longitudeDelta > 0 && longitudeDelta <= 360
+        );
+    };
+
     // Função otimizada para filtrar propriedades dentro do viewport
     const filterPropertiesInViewport = (allProperties, region) => {
-        if (!region) return allProperties.slice(0, 50); // Fallback com limite
+        // Limite mais restritivo para iOS para evitar crashes
+        const maxMarkers = Platform.OS === 'ios' ? 25 : 50;
+        if (!region) return allProperties.slice(0, maxMarkers); // Fallback com limite
 
         const { latitude, longitude, latitudeDelta, longitudeDelta } = region;
 
@@ -77,13 +97,13 @@ export default function MapaImoveis({ navigation, route }) {
         });
 
         // Filtro aplicado silenciosamente para performance
-        return filtered;
+        return filtered.slice(0, maxMarkers);
     };
 
-    // Debounce para evitar atualizações excessivas durante navegação
+    // Debounce para evitar atualizações excessivas durante navegação (iOS precisa de mais tempo)
     const debouncedRegionChange = debounce((region) => {
         setVisibleRegion(region);
-    }, 300);
+    }, Platform.OS === 'ios' ? 800 : 300);
 
     // Handler para mudanças de região com debounce
     const handleRegionChangeComplete = (region) => {
@@ -100,24 +120,36 @@ export default function MapaImoveis({ navigation, route }) {
             const lat = parseFloat(property.latitude);
             const lng = parseFloat(property.longitude);
 
-            if (isNaN(lat) || isNaN(lng)) {
+            // Validação robusta de coordenadas para evitar crashes no iOS
+            if (isNaN(lat) || isNaN(lng) ||
+                lat < -90 || lat > 90 ||
+                lng < -180 || lng > 180) {
+                console.log(`⚠️ Coordenadas inválidas ignoradas: ${property.title} (${lat}, ${lng})`);
                 return null;
             }
 
-            return (
-                <Marker
-                    key={`marker-${property.id}`}
-                    coordinate={{ latitude: lat, longitude: lng }}
-                    pinColor={getMarkerColor(property)}
-                    onPress={() => openPropertySheet(property)}
-                    tracksViewChanges={Platform.OS === 'ios' ? false : undefined}
-                    flat={Platform.OS === 'ios' ? true : false}
-                />
-            );
+            try {
+                return (
+                    <Marker
+                        key={`marker-${property.id}`}
+                        coordinate={{ latitude: lat, longitude: lng }}
+                        pinColor={getMarkerColor(property)}
+                        onPress={() => openPropertySheet(property)}
+                        tracksViewChanges={false}
+                        flat={Platform.OS === 'ios'}
+                        stopPropagation={true}
+                    />
+                );
+            } catch (error) {
+                console.error('❌ Erro ao criar marker:', error, property.title);
+                return null;
+            }
         }).filter(Boolean);
-    }, [properties, visibleRegion]);
+    }, [properties, visibleRegion?.latitude, visibleRegion?.longitude, visibleRegion?.latitudeDelta, visibleRegion?.longitudeDelta]);
 
 
+
+    // Error boundary removido para reduzir overhead no iOS
 
     useEffect(() => {
         console.log('🗺️ MapaImoveis: Componente montado');
@@ -194,14 +226,21 @@ export default function MapaImoveis({ navigation, route }) {
             console.log('📍 Localização atual obtida:', { latitude, longitude });
 
             // Atualizar região do mapa para a localização do usuário (suavemente)
-            setMapRegion(prevRegion => ({
+            const newRegion = {
                 latitude,
                 longitude,
                 latitudeDelta: 0.05, // Zoom próximo para ver propriedades locais
                 longitudeDelta: 0.05,
-            }));
+            };
 
-            console.log('🗺️ Região atualizada para localização do usuário');
+            // Validar região antes de aplicar (evitar crashes)
+            if (isValidRegion(newRegion)) {
+                setMapRegion(newRegion);
+                console.log('🗺️ Região atualizada para localização do usuário');
+            } else {
+                console.warn('⚠️ Região inválida ignorada:', newRegion);
+            }
+
             return true;
 
         } catch (error) {
@@ -304,7 +343,7 @@ export default function MapaImoveis({ navigation, route }) {
                         latitudeDelta: 0.1,
                         longitudeDelta: 0.1,
                     }}
-                    region={mapRegion}
+                    region={mapRegion && isValidRegion(mapRegion) ? mapRegion : undefined}
                     showsUserLocation={true}
                     showsMyLocationButton={true}
                     showsCompass={true}

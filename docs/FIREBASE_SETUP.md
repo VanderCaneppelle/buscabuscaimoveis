@@ -20,13 +20,13 @@ Default FirebaseApp is not initialized in this process com.buscabuscaimoveis.app
 #### **Passo 1: Criar Projeto Firebase**
 1. Acesse: https://console.firebase.google.com/
 2. Clique em "Adicionar projeto"
-3. Nome: "BuscaBusca Imóveis"
+3. Nome: "Buca Busca Imóveis"
 4. Habilite Google Analytics (opcional)
 
 #### **Passo 2: Configurar Android**
 1. No Firebase Console, clique em "Adicionar app" → Android
 2. **Nome do pacote**: `com.buscabuscaimoveis.app`
-3. **Apelido do app**: BuscaBusca Imóveis
+3. **Apelido do app**: Buca Busca Imóveis
 4. Baixe o arquivo `google-services.json`
 5. Coloque o arquivo na raiz do projeto
 
