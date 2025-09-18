@@ -41,10 +41,11 @@ export default {
       "./plugins/withMaps.js"
     ],
     scheme: "buscabuscaimoveis",
-    // Configurações do Mercado Pago
+    // Configurações de APIs
     env: {
       EXPO_PUBLIC_MERCADO_PAGO_ACCESS_TOKEN: process.env.EXPO_PUBLIC_MERCADO_PAGO_ACCESS_TOKEN,
       EXPO_PUBLIC_MERCADO_PAGO_PUBLIC_KEY: process.env.EXPO_PUBLIC_MERCADO_PAGO_PUBLIC_KEY,
+      GOOGLE_MAPS_API_KEY: process.env.GOOGLE_MAPS_API_KEY || "YOUR_GOOGLE_MAPS_API_KEY_HERE",
     }
   }
 }; 

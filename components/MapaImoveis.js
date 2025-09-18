@@ -12,10 +12,12 @@ import {
     ActivityIndicator,
     Alert,
     Dimensions,
+    Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import MapView, { Marker } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE, PROVIDER_DEFAULT } from 'react-native-maps';
+import * as Location from 'expo-location';
 
 import { PropertyService } from '../lib/propertyService';
 
@@ -24,6 +26,7 @@ const { width, height } = Dimensions.get('window');
 export default function MapaImoveis({ navigation, route }) {
     const [properties, setProperties] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [mapReady, setMapReady] = useState(false);
     const [mapRegion, setMapRegion] = useState({
         latitude: -23.5505, // São Paulo como padrão
         longitude: -46.6333,
@@ -36,15 +39,91 @@ export default function MapaImoveis({ navigation, route }) {
 
     useEffect(() => {
         console.log('🗺️ MapaImoveis: Componente montado');
-        loadProperties();
+        initializeMap();
     }, []);
+
+    const initializeMap = async () => {
+        // Carregar propriedades primeiro
+        await loadProperties();
+
+        // Depois tentar obter localização
+        await requestLocationPermission();
+
+        // Se não conseguiu localização, usar localização da primeira propriedade
+        if (properties.length > 0) {
+            const firstProperty = properties[0];
+            const lat = parseFloat(firstProperty.latitude);
+            const lng = parseFloat(firstProperty.longitude);
+
+            if (!isNaN(lat) && !isNaN(lng)) {
+                setMapRegion({
+                    latitude: lat,
+                    longitude: lng,
+                    latitudeDelta: 0.1,
+                    longitudeDelta: 0.1,
+                });
+            }
+        }
+
+        // Garantir que loading seja false
+        setLoading(false);
+
+        // Timeout de segurança - se mapa não carregar em 10s, forçar loading = false
+        setTimeout(() => {
+            if (loading) {
+                console.log('⏰ Timeout do mapa - forçando carregamento');
+                setLoading(false);
+            }
+        }, 10000);
+    };
+
+    useEffect(() => {
+        console.log('🗺️ Região do mapa atualizada:', mapRegion);
+    }, [mapRegion]);
+
+    /**
+     * Solicitar permissão de localização e obter posição atual
+     */
+    const requestLocationPermission = async () => {
+        try {
+            console.log('📍 Solicitando permissão de localização...');
+
+            const { status } = await Location.requestForegroundPermissionsAsync();
+
+            if (status !== 'granted') {
+                console.log('⚠️ Permissão de localização negada');
+                return;
+            }
+
+            console.log('✅ Permissão de localização concedida');
+
+            // Obter localização atual
+            const location = await Location.getCurrentPositionAsync({
+                accuracy: Location.Accuracy.Balanced,
+            });
+
+            const { latitude, longitude } = location.coords;
+            console.log('📍 Localização atual:', { latitude, longitude });
+
+            // Atualizar região para a localização do usuário
+            setMapRegion(prev => ({
+                ...prev,
+                latitude,
+                longitude,
+                latitudeDelta: 0.1,
+                longitudeDelta: 0.1,
+            }));
+
+        } catch (error) {
+            console.error('❌ Erro ao obter localização:', error);
+        }
+    };
 
     /**
      * Carregar propriedades do Supabase
      */
     const loadProperties = async () => {
         try {
-            setLoading(true);
             console.log('📍 Buscando propriedades para o mapa...');
 
             // Usar método otimizado para mapa
@@ -53,11 +132,26 @@ export default function MapaImoveis({ navigation, route }) {
 
             setProperties(data);
 
+            // Ajustar região do mapa para as propriedades encontradas
+            if (data && data.length > 0) {
+                const firstProperty = data[0];
+                const lat = parseFloat(firstProperty.latitude);
+                const lng = parseFloat(firstProperty.longitude);
+
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    console.log('🗺️ Ajustando região do mapa para:', { lat, lng });
+                    setMapRegion({
+                        latitude: lat,
+                        longitude: lng,
+                        latitudeDelta: 0.05,
+                        longitudeDelta: 0.05,
+                    });
+                }
+            }
+
         } catch (error) {
             console.error('❌ Erro ao carregar propriedades:', error);
             Alert.alert('Erro', 'Não foi possível carregar os imóveis no mapa');
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -87,62 +181,113 @@ export default function MapaImoveis({ navigation, route }) {
 
                 <TouchableOpacity
                     style={styles.styleButton}
-                    onPress={loadProperties}
+                    onPress={() => {
+                        // Centralizar em todas as propriedades
+                        if (properties.length > 0) {
+                            setMapRegion({
+                                latitude: -27.147157,
+                                longitude: -48.5866543,
+                                latitudeDelta: 0.05,
+                                longitudeDelta: 0.05,
+                            });
+                        }
+                    }}
                 >
-                    <Ionicons name="refresh" size={24} color="#00335e" />
+                    <Ionicons name="locate" size={24} color="#00335e" />
                 </TouchableOpacity>
             </View>
 
             {/* Mapa Real */}
             <View style={styles.mapContainer}>
-                <MapView
-                    style={styles.map}
-                    initialRegion={mapRegion}
-                    showsUserLocation={true}
-                    showsMyLocationButton={true}
-                    showsCompass={true}
-                    loadingEnabled={true}
-                    loadingIndicatorColor="#00335e"
-                    loadingBackgroundColor="#fff"
-                >
-                    {/* Renderizar markers das propriedades */}
-                    {properties.map((property, index) => {
-                        // Validar coordenadas
-                        const lat = parseFloat(property.latitude);
-                        const lng = parseFloat(property.longitude);
+                {Platform.OS === 'android' ? (
+                    // Android: Implementação alternativa sem Google Maps
+                    <View style={styles.androidMapPlaceholder}>
+                        <Ionicons name="map" size={80} color="#bdc3c7" />
+                        <Text style={styles.placeholderTitle}>Mapa Android</Text>
+                        <Text style={styles.placeholderText}>
+                            {properties.length} propriedades encontradas
+                        </Text>
 
-                        if (isNaN(lat) || isNaN(lng)) {
-                            console.log(`⚠️ Coordenadas inválidas para ${property.title}:`, { lat, lng });
-                            return null;
-                        }
-
-                        // Determinar cor do marker
-                        let pinColor = '#059669'; // Verde padrão (venda)
-                        if (property.transaction_type === 'rent' || property.transaction_type === 'aluguel') {
-                            pinColor = '#3b82f6'; // Azul para aluguel
-                        }
-                        if (property.sale_price && property.sale_price > 0) {
-                            pinColor = '#dc2626'; // Vermelho para promoção
-                        }
-
-                        return (
-                            <Marker
-                                key={`marker-${property.id}`}
-                                coordinate={{
-                                    latitude: lat,
-                                    longitude: lng,
-                                }}
-                                title={property.title}
-                                description={`R$ ${property.price?.toLocaleString('pt-BR')} - ${property.city}`}
-                                pinColor={pinColor}
+                        {/* Lista das propriedades com botão para abrir no Google Maps */}
+                        {properties.map((property, index) => (
+                            <TouchableOpacity
+                                key={property.id}
+                                style={styles.propertyMapItem}
                                 onPress={() => {
-                                    console.log('📍 Marker pressionado:', property.title);
+                                    const url = `https://www.google.com/maps/search/?api=1&query=${property.latitude},${property.longitude}`;
+                                    console.log('🗺️ Abrindo no Google Maps:', url);
+                                    // Aqui poderia usar Linking.openURL(url) para abrir no app do Google Maps
                                     navigation.navigate('PropertyDetails', { property });
                                 }}
-                            />
-                        );
-                    })}
-                </MapView>
+                            >
+                                <View style={styles.propertyMapInfo}>
+                                    <Text style={styles.propertyMapTitle}>{property.title}</Text>
+                                    <Text style={styles.propertyMapPrice}>
+                                        R$ {property.price?.toLocaleString('pt-BR')}
+                                    </Text>
+                                    <Text style={styles.propertyMapLocation}>
+                                        📍 {property.city} - {property.neighborhood}
+                                    </Text>
+                                </View>
+                                <Ionicons name="location" size={24} color="#059669" />
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                ) : (
+                    // iOS: MapView normal
+                    <MapView
+                        style={styles.map}
+                        provider={PROVIDER_DEFAULT}
+                        initialRegion={{
+                            latitude: -27.147157,
+                            longitude: -48.5866543,
+                            latitudeDelta: 0.01,
+                            longitudeDelta: 0.01,
+                        }}
+                        showsUserLocation={true}
+                        showsMyLocationButton={true}
+                        showsCompass={true}
+                        loadingEnabled={false}
+                        onMapReady={() => {
+                            console.log('🗺️ Mapa iOS carregado!');
+                            setMapReady(true);
+                            setLoading(false);
+                        }}
+                        mapType="standard"
+                    >
+                        {/* Marker de teste fixo */}
+                        <Marker
+                            coordinate={{
+                                latitude: -26.91884,
+                                longitude: -48.673108,
+                            }}
+                            title="Propriedade Teste"
+                            description="Itajaí - SC"
+                            pinColor="red"
+                        />
+
+                        {/* Markers das propriedades */}
+                        {properties.map((property, index) => {
+                            const lat = parseFloat(property.latitude);
+                            const lng = parseFloat(property.longitude);
+
+                            if (isNaN(lat) || isNaN(lng)) return null;
+
+                            return (
+                                <Marker
+                                    key={`marker-${property.id}`}
+                                    coordinate={{ latitude: lat, longitude: lng }}
+                                    title={property.title}
+                                    description={`R$ ${property.price?.toLocaleString('pt-BR')}`}
+                                    pinColor="green"
+                                    onPress={() => {
+                                        navigation.navigate('PropertyDetails', { property });
+                                    }}
+                                />
+                            );
+                        })}
+                    </MapView>
+                )}
 
                 {/* Informações sobre o mapa */}
                 <View style={styles.mapInfo}>
@@ -216,5 +361,62 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#374151',
         fontWeight: '500',
+    },
+    // Estilos para versão Android alternativa
+    androidMapPlaceholder: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#f8f9fa',
+        padding: 20,
+    },
+    placeholderTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#374151',
+        marginTop: 15,
+        marginBottom: 10,
+    },
+    placeholderText: {
+        fontSize: 16,
+        color: '#6b7280',
+        textAlign: 'center',
+        marginBottom: 20,
+    },
+    propertyMapItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+        padding: 15,
+        borderRadius: 8,
+        marginBottom: 10,
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
+        width: '100%',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        elevation: 2,
+    },
+    propertyMapInfo: {
+        flex: 1,
+        marginRight: 10,
+    },
+    propertyMapTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#1f2937',
+        marginBottom: 4,
+    },
+    propertyMapPrice: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#059669',
+        marginBottom: 4,
+    },
+    propertyMapLocation: {
+        fontSize: 14,
+        color: '#6b7280',
     },
 });
