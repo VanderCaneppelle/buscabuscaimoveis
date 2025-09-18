@@ -836,7 +836,10 @@ export default function HomeScreen({ navigation }) {
                                 <Ionicons name="swap-vertical" size={16} color="#00335e" />
                                 <Text style={styles.filtersText}>Ordenar</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity style={styles.filtersButton}>
+                            <TouchableOpacity
+                                style={styles.filtersButton}
+                                onPress={() => navigation.navigate('MapaImoveis', { filters: filters })}
+                            >
                                 <Ionicons name="map" size={16} color="#00335e" />
                                 <Text style={styles.filtersText}>Ver Mapa</Text>
                             </TouchableOpacity>
