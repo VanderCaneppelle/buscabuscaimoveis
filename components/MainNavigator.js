@@ -22,6 +22,7 @@ import StoryViewerScreen from './StoryViewerScreen';
 import VideoUploadTestScreen from './VideoUploadTestScreen';
 import MyPropertiesScreen from './MyPropertiesScreen';
 import MapaImoveis from './MapaImoveis';
+import MapaImovelUnico from './MapaImovelUnico';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -425,6 +426,36 @@ export default function MainNavigator() {
                     presentation: 'fullScreenModal',
                     headerShown: false,
                     cardStyle: { backgroundColor: '#ffcc1e' },
+                    animation: 'none',
+                    tabBarStyle: { display: 'none' },
+                }}
+            />
+
+            {/* MapaImoveis como modal - acessível de qualquer tela */}
+            <Stack.Screen
+                name="MapaImoveis"
+                component={MapaImoveis}
+                options={{
+                    title: 'Mapa de Imóveis',
+                    headerBackTitle: 'Voltar',
+                    presentation: 'fullScreenModal',
+                    headerShown: false,
+                    cardStyle: { backgroundColor: 'white' },
+                    animation: 'none',
+                    tabBarStyle: { display: 'none' },
+                }}
+            />
+
+            {/* MapaImovelUnico - mapa focado em uma propriedade específica */}
+            <Stack.Screen
+                name="MapaImovelUnico"
+                component={MapaImovelUnico}
+                options={{
+                    title: 'Localização do Imóvel',
+                    headerBackTitle: 'Voltar',
+                    presentation: 'fullScreenModal',
+                    headerShown: false,
+                    cardStyle: { backgroundColor: 'white' },
                     animation: 'none',
                     tabBarStyle: { display: 'none' },
                 }}
