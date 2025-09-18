@@ -199,95 +199,71 @@ export default function MapaImoveis({ navigation, route }) {
 
             {/* Mapa Real */}
             <View style={styles.mapContainer}>
-                {Platform.OS === 'android' ? (
-                    // Android: Implementação alternativa sem Google Maps
-                    <View style={styles.androidMapPlaceholder}>
-                        <Ionicons name="map" size={80} color="#bdc3c7" />
-                        <Text style={styles.placeholderTitle}>Mapa Android</Text>
-                        <Text style={styles.placeholderText}>
-                            {properties.length} propriedades encontradas
-                        </Text>
+                <MapView
+                    style={styles.map}
+                    provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : PROVIDER_DEFAULT}
+                    initialRegion={{
+                        latitude: -26.91884,
+                        longitude: -48.673108,
+                        latitudeDelta: 0.05,
+                        longitudeDelta: 0.05,
+                    }}
+                    showsUserLocation={true}
+                    showsMyLocationButton={true}
+                    showsCompass={true}
+                    loadingEnabled={false}
+                    onMapReady={() => {
+                        console.log('🗺️ Mapa carregado com API key!');
+                        setMapReady(true);
+                        setLoading(false);
+                    }}
+                    onError={(error) => {
+                        console.error('❌ Erro no mapa:', error);
+                        setLoading(false);
+                    }}
+                    mapType="standard"
+                >
+                    {/* Marker de teste fixo */}
+                    <Marker
+                        coordinate={{
+                            latitude: -26.91884,
+                            longitude: -48.673108,
+                        }}
+                        title="🏠 Propriedade Teste"
+                        description="Itajaí - SC - R$ 450.000"
+                        pinColor="red"
+                        onPress={() => {
+                            console.log('📍 Marker de teste pressionado!');
+                        }}
+                    />
 
-                        {/* Lista das propriedades com botão para abrir no Google Maps */}
-                        {properties.map((property, index) => (
-                            <TouchableOpacity
-                                key={property.id}
-                                style={styles.propertyMapItem}
+                    {/* Markers das propriedades reais */}
+                    {properties.map((property, index) => {
+                        const lat = parseFloat(property.latitude);
+                        const lng = parseFloat(property.longitude);
+
+                        if (isNaN(lat) || isNaN(lng)) {
+                            console.log(`⚠️ Coordenadas inválidas para ${property.title}`);
+                            return null;
+                        }
+
+                        console.log(`📍 Renderizando marker: ${property.title} (${lat}, ${lng})`);
+
+                        return (
+                            <Marker
+                                key={`marker-${property.id}`}
+                                coordinate={{ latitude: lat, longitude: lng }}
+                                title={property.title}
+                                description={`R$ ${property.price?.toLocaleString('pt-BR')}`}
+                                pinColor="green"
                                 onPress={() => {
-                                    const url = `https://www.google.com/maps/search/?api=1&query=${property.latitude},${property.longitude}`;
-                                    console.log('🗺️ Abrindo no Google Maps:', url);
-                                    // Aqui poderia usar Linking.openURL(url) para abrir no app do Google Maps
+                                    console.log('📍 Marker pressionado:', property.title);
                                     navigation.navigate('PropertyDetails', { property });
                                 }}
-                            >
-                                <View style={styles.propertyMapInfo}>
-                                    <Text style={styles.propertyMapTitle}>{property.title}</Text>
-                                    <Text style={styles.propertyMapPrice}>
-                                        R$ {property.price?.toLocaleString('pt-BR')}
-                                    </Text>
-                                    <Text style={styles.propertyMapLocation}>
-                                        📍 {property.city} - {property.neighborhood}
-                                    </Text>
-                                </View>
-                                <Ionicons name="location" size={24} color="#059669" />
-                            </TouchableOpacity>
-                        ))}
-                    </View>
-                ) : (
-                    // iOS: MapView normal
-                    <MapView
-                        style={styles.map}
-                        provider={PROVIDER_DEFAULT}
-                        initialRegion={{
-                            latitude: -27.147157,
-                            longitude: -48.5866543,
-                            latitudeDelta: 0.01,
-                            longitudeDelta: 0.01,
-                        }}
-                        showsUserLocation={true}
-                        showsMyLocationButton={true}
-                        showsCompass={true}
-                        loadingEnabled={false}
-                        onMapReady={() => {
-                            console.log('🗺️ Mapa iOS carregado!');
-                            setMapReady(true);
-                            setLoading(false);
-                        }}
-                        mapType="standard"
-                    >
-                        {/* Marker de teste fixo */}
-                        <Marker
-                            coordinate={{
-                                latitude: -26.91884,
-                                longitude: -48.673108,
-                            }}
-                            title="Propriedade Teste"
-                            description="Itajaí - SC"
-                            pinColor="red"
-                        />
-
-                        {/* Markers das propriedades */}
-                        {properties.map((property, index) => {
-                            const lat = parseFloat(property.latitude);
-                            const lng = parseFloat(property.longitude);
-
-                            if (isNaN(lat) || isNaN(lng)) return null;
-
-                            return (
-                                <Marker
-                                    key={`marker-${property.id}`}
-                                    coordinate={{ latitude: lat, longitude: lng }}
-                                    title={property.title}
-                                    description={`R$ ${property.price?.toLocaleString('pt-BR')}`}
-                                    pinColor="green"
-                                    onPress={() => {
-                                        navigation.navigate('PropertyDetails', { property });
-                                    }}
-                                />
-                            );
-                        })}
-                    </MapView>
-                )}
+                            />
+                        );
+                    })}
+                </MapView>
 
                 {/* Informações sobre o mapa */}
                 <View style={styles.mapInfo}>
