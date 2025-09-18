@@ -25,6 +25,7 @@ import { MediaServiceOptimized } from '../lib/mediaServiceOptimized';
 import { useAuth } from '../contexts/AuthContext';
 import { useFocusEffect } from '@react-navigation/native';
 import { searchAddresses } from '../lib/geocodingService';
+import MapaEscolherEndereco from './MapaEscolherEndereco';
 
 const { width } = Dimensions.get('window');
 
@@ -52,6 +53,7 @@ export default function CreateAdScreen({ navigation, route }) {
     const [showAddressSuggestions, setShowAddressSuggestions] = useState(false);
     const [searchingAddress, setSearchingAddress] = useState(false);
     const [selectedAddress, setSelectedAddress] = useState(null);
+    const [showMapPicker, setShowMapPicker] = useState(false);
 
     const [formData, setFormData] = useState({
         title: '',
@@ -189,6 +191,38 @@ export default function CreateAdScreen({ navigation, route }) {
             currency: 'BRL',
             minimumFractionDigits: 2
         });
+    };
+
+    // Função para seleção de endereço no mapa
+    const handleMapAddressSelect = (address) => {
+        console.log('📍 Endereço selecionado no mapa:', address);
+
+        setSelectedAddress(address);
+        setAddressQuery(address.formattedAddress || address.address);
+        setShowMapPicker(false);
+
+        // Preencher campos automaticamente
+        setFormData(prev => ({
+            ...prev,
+            address: address.address || address.formattedAddress,
+            neighborhood: address.neighborhood || '',
+            city: address.city || '',
+            state: address.state || '',
+            zipCode: address.zipCode || '',
+            latitude: address.latitude,
+            longitude: address.longitude
+        }));
+    };
+
+    // Função para abrir seleção no mapa
+    const handleOpenMapPicker = () => {
+        setShowAddressSuggestions(false);
+        setShowMapPicker(true);
+    };
+
+    // Função para fechar seleção no mapa
+    const handleCloseMapPicker = () => {
+        setShowMapPicker(false);
     };
 
     const handlePriceChange = (value) => {
@@ -586,12 +620,12 @@ export default function CreateAdScreen({ navigation, route }) {
                             </View>
 
                             {/* Localização - Movida para depois da mídia */}
-                            <View style={styles.formSection}>
+                            <View style={[styles.formSection, styles.addressSection]}>
                                 <Text style={styles.sectionTitle}>Localização</Text>
 
                                 <TouchableWithoutFeedback onPress={handlePressOutside}>
-                                    <View>
-                                        <View style={styles.inputGroup}>
+                                    <View style={styles.addressOuterContainer}>
+                                        <View style={[styles.inputGroup, styles.addressInputGroup]}>
                                             <Text style={styles.inputLabel}>Buscar Endereço *</Text>
                                             <View style={styles.addressSearchContainer}>
                                                 <TextInput
@@ -641,7 +675,29 @@ export default function CreateAdScreen({ navigation, route }) {
                                                             </TouchableOpacity>
                                                         ))}
                                                     </ScrollView>
+
+                                                    {/* Botão para escolher no mapa */}
+                                                    <TouchableOpacity
+                                                        style={styles.mapPickerButton}
+                                                        onPress={handleOpenMapPicker}
+                                                    >
+                                                        <Ionicons name="map-outline" size={16} color="#007AFF" />
+                                                        <Text style={styles.mapPickerButtonText}>
+                                                            Não encontrou? Escolher no mapa
+                                                        </Text>
+                                                    </TouchableOpacity>
                                                 </View>
+                                            )}
+
+                                            {/* Botão alternativo quando não há sugestões */}
+                                            {!showAddressSuggestions && !selectedAddress && addressQuery.length > 2 && (
+                                                <TouchableOpacity
+                                                    style={styles.mapPickerButtonAlternative}
+                                                    onPress={handleOpenMapPicker}
+                                                >
+                                                    <Ionicons name="map-outline" size={18} color="#007AFF" />
+                                                    <Text style={styles.mapPickerButtonText}>Escolher endereço no mapa</Text>
+                                                </TouchableOpacity>
                                             )}
                                         </View>
 
@@ -697,14 +753,6 @@ export default function CreateAdScreen({ navigation, route }) {
                                                             editable={false}
                                                         />
                                                     </View>
-                                                    <View style={[styles.inputGroup, styles.halfWidth]}>
-                                                        <Text style={styles.inputLabel}>Coordenadas</Text>
-                                                        <TextInput
-                                                            style={[styles.textInput, styles.readOnlyInput]}
-                                                            value={`${formData.latitude?.toFixed(6)}, ${formData.longitude?.toFixed(6)}`}
-                                                            editable={false}
-                                                        />
-                                                    </View>
                                                 </View>
 
                                                 <TouchableOpacity
@@ -729,7 +777,7 @@ export default function CreateAdScreen({ navigation, route }) {
                             </View>
 
                             {/* Form Fields - Unificado */}
-                            <View style={styles.formSection}>
+                            <View style={[styles.formSection, styles.belowAddressSection]}>
                                 {/* Informações Básicas */}
                                 <Text style={styles.sectionTitle}>Informações Básicas</Text>
 
@@ -799,7 +847,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                 <Text style={[styles.sectionTitle, styles.sectionTitleWithMargin]}>Tipo de Imóvel</Text>
 
                                 <View style={styles.row}>
-                                    <View style={[styles.inputGroup, styles.halfWidth]}>
+                                    <View style={[styles.inputGroup, styles.halfWidth, styles.dropdownContainer]}>
                                         <Text style={styles.inputLabel}>Tipo *</Text>
                                         <TouchableOpacity
                                             style={styles.dropdownButton}
@@ -845,7 +893,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                             </View>
                                         )}
                                     </View>
-                                    <View style={[styles.inputGroup, styles.halfWidth]}>
+                                    <View style={[styles.inputGroup, styles.halfWidth, styles.dropdownContainer]}>
                                         <Text style={styles.inputLabel}>Transação *</Text>
                                         <TouchableOpacity
                                             style={styles.dropdownButton}
@@ -894,7 +942,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                 </View>
 
                                 <View style={styles.row}>
-                                    <View style={[styles.inputGroup, styles.thirdWidth]}>
+                                    <View style={[styles.inputGroup, styles.thirdWidth, styles.dropdownContainer]}>
                                         <Text style={styles.inputLabel}>Quartos</Text>
                                         <TouchableOpacity
                                             style={styles.dropdownButton}
@@ -940,7 +988,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                             </View>
                                         )}
                                     </View>
-                                    <View style={[styles.inputGroup, styles.thirdWidth]}>
+                                    <View style={[styles.inputGroup, styles.thirdWidth, styles.dropdownContainer]}>
                                         <Text style={styles.inputLabel}>Banheiros</Text>
                                         <TouchableOpacity
                                             style={styles.dropdownButton}
@@ -986,7 +1034,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                             </View>
                                         )}
                                     </View>
-                                    <View style={[styles.inputGroup, styles.thirdWidth]}>
+                                    <View style={[styles.inputGroup, styles.thirdWidth, styles.dropdownContainer]}>
                                         <Text style={styles.inputLabel}>Vagas</Text>
                                         <TouchableOpacity
                                             style={styles.dropdownButton}
@@ -1178,6 +1226,19 @@ export default function CreateAdScreen({ navigation, route }) {
                         </View>
                     </View>
                 </Modal>
+
+                {/* Modal para escolher endereço no mapa */}
+                <Modal
+                    visible={showMapPicker}
+                    animationType="slide"
+                    presentationStyle="fullScreen"
+                    onRequestClose={handleCloseMapPicker}
+                >
+                    <MapaEscolherEndereco
+                        onAddressSelect={handleMapAddressSelect}
+                        onCancel={handleCloseMapPicker}
+                    />
+                </Modal>
             </View>
         </View>
     );
@@ -1350,6 +1411,29 @@ const styles = StyleSheet.create({
     },
     inputGroup: {
         marginBottom: 15,
+        position: 'relative',
+        zIndex: 1,
+    },
+    dropdownContainer: {
+        zIndex: 10, // Containers com dropdown têm prioridade maior
+    },
+    // Estilos específicos para seção de endereço
+    addressSection: {
+        zIndex: 100, // Seção de endereço tem prioridade máxima
+        position: 'relative',
+    },
+    addressOuterContainer: {
+        position: 'relative',
+        zIndex: 100,
+    },
+    addressInputGroup: {
+        zIndex: 101, // Input group do endereço
+        marginBottom: 25, // Mais espaço para as sugestões
+    },
+    belowAddressSection: {
+        zIndex: 1, // Seções abaixo do endereço ficam atrás
+        position: 'relative',
+        marginTop: 10,
     },
     inputLabel: {
         fontSize: 14,
@@ -1578,12 +1662,12 @@ const styles = StyleSheet.create({
         borderColor: '#e0e0e0',
         borderRadius: 8,
         maxHeight: 200,
-        zIndex: 9999,
-        elevation: 10,
+        zIndex: 99999,
+        elevation: 50,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 6,
         marginTop: 2,
         overflow: 'hidden',
     },
@@ -1622,13 +1706,15 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         backgroundColor: '#fff',
+        borderWidth: 1,
+        borderColor: '#ddd',
         borderRadius: 8,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
         shadowRadius: 8,
-        elevation: 5,
-        zIndex: 1000,
+        elevation: 999,
+        zIndex: 999999,
         maxHeight: 200,
     },
     suggestionsFlatList: {
@@ -1693,6 +1779,38 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: '#e74c3c',
         marginLeft: 5,
+        fontWeight: '500',
+    },
+
+    // Estilos para botões do mapa
+    mapPickerButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 12,
+        paddingHorizontal: 15,
+        backgroundColor: '#f8f9fa',
+        borderTopWidth: 1,
+        borderTopColor: '#e9ecef',
+        borderBottomLeftRadius: 8,
+        borderBottomRightRadius: 8,
+    },
+    mapPickerButtonAlternative: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 15,
+        paddingHorizontal: 20,
+        backgroundColor: '#f0f8ff',
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#007AFF',
+        marginTop: 10,
+    },
+    mapPickerButtonText: {
+        fontSize: 14,
+        color: '#007AFF',
+        marginLeft: 8,
         fontWeight: '500',
     },
 

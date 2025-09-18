@@ -1,4 +1,4 @@
-# Sistema de Notificações Push - BuscaBusca Imóveis
+# Sistema de Notificações Push - Buca Busca Imóveis
 
 ## 📱 Visão Geral
 

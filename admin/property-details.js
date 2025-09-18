@@ -217,7 +217,7 @@ async function setupWhatsAppLink(property) {
         // Mensagem personalizada para o admin
         const message = `Olá ${userProfile.full_name || 'usuário'}! 
 
-Sou administrador do BuscaBusca Imóveis e estou analisando o anúncio "${property.title}" (ID: ${property.id}).
+Sou administrador do Buca Busca Imóveis e estou analisando o anúncio "${property.title}" (ID: ${property.id}).
 
 Para prosseguir com a aprovação, preciso de algumas informações adicionais:
 
@@ -252,7 +252,7 @@ function setupDefaultWhatsApp(property) {
 
     const message = `Olá! 
 
-Sou administrador do BuscaBusca Imóveis e estou analisando o anúncio "${property.title}" (ID: ${property.id}).
+Sou administrador do Buca Busca Imóveis e estou analisando o anúncio "${property.title}" (ID: ${property.id}).
 
 Para prosseguir com a aprovação, preciso de algumas informações adicionais:
 

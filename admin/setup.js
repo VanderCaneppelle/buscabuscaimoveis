@@ -1,22 +1,22 @@
 // Script de Configuração do Painel Administrativo
 // Execute este script para configurar as credenciais do Supabase
 
-console.log('🔧 Configuração do Painel Administrativo - BuscaBusca Imóveis');
+console.log('🔧 Configuração do Painel Administrativo - Buca Busca Imóveis');
 console.log('');
 
 // Função para obter credenciais do usuário
 function setupCredentials() {
     console.log('📋 Por favor, forneça suas credenciais do Supabase:');
     console.log('');
-    
+
     const supabaseUrl = prompt('🔗 URL do Supabase (ex: https://your-project.supabase.co):');
     const supabaseKey = prompt('🔑 Chave Anônima do Supabase:');
-    
+
     if (!supabaseUrl || !supabaseKey) {
         console.log('❌ Credenciais inválidas. Tente novamente.');
         return;
     }
-    
+
     // Criar arquivo de configuração
     const configContent = `// Configuração automática do Supabase
 // Gerado em: ${new Date().toISOString()}
@@ -60,12 +60,12 @@ window.supabaseConfig = {
     // Criar arquivo de configuração
     const blob = new Blob([configContent], { type: 'text/javascript' });
     const url = URL.createObjectURL(blob);
-    
+
     const link = document.createElement('a');
     link.href = url;
     link.download = 'supabase-config.js';
     link.click();
-    
+
     console.log('✅ Arquivo de configuração criado: supabase-config.js');
     console.log('');
     console.log('📝 Próximos passos:');
