@@ -531,42 +531,51 @@ export default function HomeScreen({ navigation }) {
             setCurrentIndex(imageIndex);
         }, []);
 
-        const renderMediaItem = useCallback(({ item: mediaItem, mediaIndex }) => {
+        const renderMediaItem = useCallback(({ item: mediaItem, index: mediaIndex }) => {
             return (
                 <Image
                     source={{ uri: mediaItem }}
                     style={styles.mediaItem}
                     contentFit="cover"
-                    cachePolicy="disk"
-                    placeholder={require('../assets/icon.png')}
-                    transition={0} // Remover transição para melhor performance
-                    priority="low"
+                    cachePolicy="memory-disk"
+                    placeholder={require('../assets/placeholder-image.png')}
+                    transition={200}
+                    priority="normal"
+                    recyclingKey={`${item.id}-${mediaIndex}`}
                 />
             );
-        }, []);
+        }, [item.id]);
 
         return (
-            <View style={styles.propertyCard}>
+            <TouchableOpacity
+                style={styles.propertyCard}
+                onPress={handlePress}
+                activeOpacity={0.8}
+            >
+
                 <View style={styles.mediaSection}>
                     <FlatList
                         data={displayMediaFiles}
                         renderItem={renderMediaItem}
-                        keyExtractor={(mediaItem, mediaIndex) => `${index}-${mediaIndex}`}
+                        keyExtractor={(mediaItem, mediaIndex) => `${item.id}-media-${mediaIndex}`}
                         horizontal
                         pagingEnabled
                         showsHorizontalScrollIndicator={false}
                         onScroll={handleImageScroll}
                         scrollEventThrottle={16}
                         style={styles.mediaList}
-                        // nestedScrollEnabled={true}
-                        // scrollEnabled={true}
+                        nestedScrollEnabled={true}
+                        scrollEnabled={true}
                         bounces={false}
                         decelerationRate="fast"
-                        // removeClippedSubviews={false}
-                        maxToRenderPerBatch={3}
-                        windowSize={5}
-                        initialNumToRender={2}
-                        updateCellsBatchingPeriod={50}
+                        removeClippedSubviews={false}
+                        maxToRenderPerBatch={2}
+                        windowSize={3}
+                        initialNumToRender={1}
+                        updateCellsBatchingPeriod={100}
+                        directionalLockEnabled={true}
+                        alwaysBounceHorizontal={false}
+                        alwaysBounceVertical={false}
                     />
 
                     {/* Indicadores de múltiplas imagens */}
@@ -628,7 +637,7 @@ export default function HomeScreen({ navigation }) {
                     </TouchableOpacity>
                 </View>
 
-                <View style={styles.propertyInfo}>
+                <View style={styles.propertyInfo} onPress={handlePress} activeOpacity={0.8}>
                     <Text style={styles.propertyTitle} numberOfLines={2}>
                         {item.title ?? 'Título indisponível'}
                     </Text>
@@ -674,16 +683,18 @@ export default function HomeScreen({ navigation }) {
                     </Text>
 
                     {/* Botão "Ver detalhes" para indicar que o card é clicável */}
-                    <TouchableOpacity
+                    {/* <TouchableOpacity
                         style={styles.verDetalhesButton}
+                        activeOpacity={0.8}
                         onPress={handlePress}
                         activeOpacity={0.8}
                     >
                         <Text style={styles.verDetalhesText}>Ver detalhes</Text>
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
                 </View>
 
-            </View>
+
+            </TouchableOpacity>
         );
     }, (prevProps, nextProps) => {
         // Comparação personalizada para evitar re-renderizações desnecessárias
@@ -832,7 +843,7 @@ export default function HomeScreen({ navigation }) {
                 <FlatList
                     data={properties}
                     renderItem={renderProperty}
-                    keyExtractor={(item) => item.id.toString()}
+                    keyExtractor={(item) => `property-${item.id}`}
                     refreshControl={
                         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
                     }
@@ -865,22 +876,20 @@ export default function HomeScreen({ navigation }) {
                         </View>
                     }
                     contentContainerStyle={styles.listContainer}
-                    // Otimizações de performance
+                    // Otimizações de performance para scroll aninhado
                     removeClippedSubviews={false}
-                    maxToRenderPerBatch={3}
+                    maxToRenderPerBatch={2}
                     windowSize={5}
-                    initialNumToRender={3}
-                    updateCellsBatchingPeriod={100}
-                    scrollEventThrottle={16}
+                    initialNumToRender={2}
+                    updateCellsBatchingPeriod={150}
+                    scrollEventThrottle={32}
                     showsVerticalScrollIndicator={false}
                     bounces={true}
                     decelerationRate="normal"
                     scrollEnabled={true}
-                    nestedScrollEnabled={true}
-                    maintainVisibleContentPosition={{
-                        minIndexForVisible: 0,
-                        autoscrollToTopThreshold: 10,
-                    }}
+                    nestedScrollEnabled={false}
+                    directionalLockEnabled={true}
+                    alwaysBounceVertical={false}
                     onEndReached={loadMoreProperties}
                     onEndReachedThreshold={0.3}
                     ListFooterComponent={
@@ -1278,13 +1287,16 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 12,
         borderTopRightRadius: 12,
         overflow: 'hidden',
+        backgroundColor: '#f8f9fa',
     },
     mediaList: {
         height: 200,
+        flex: 1,
     },
     mediaItem: {
         width: width - 40, // 40 é o padding horizontal
         height: 200,
+        backgroundColor: '#e9ecef',
     },
 
     mediaIndicators: {

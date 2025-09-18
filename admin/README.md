@@ -1,4 +1,4 @@
-# 🏠 Painel Administrativo - Buca Busca Imóveis
+# 🏠 Painel Administrativo - Busca Busca Imóveis
 
 ## 📋 Visão Geral
 
@@ -155,4 +155,4 @@ Para dúvidas ou problemas:
 
 ---
 
-**Desenvolvido para Buca Busca Imóveis** 🏠 
+**Desenvolvido para Busca Busca Imóveis** 🏠 

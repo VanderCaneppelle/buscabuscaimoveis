@@ -343,7 +343,7 @@ export default function MapaImoveis({ navigation, route }) {
                         latitudeDelta: 0.1,
                         longitudeDelta: 0.1,
                     }}
-                    region={mapRegion && isValidRegion(mapRegion) ? mapRegion : undefined}
+                    region={mapRegion}
                     showsUserLocation={true}
                     showsMyLocationButton={true}
                     showsCompass={true}

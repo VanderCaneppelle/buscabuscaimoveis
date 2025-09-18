@@ -269,7 +269,7 @@ export default function PropertyDetailsScreen({ route, navigation }) {
 
             const phoneNumber = userProfile.phone;
             const userName = userProfile.full_name || 'Anunciante';
-            const message = `Olá ${userName}! Vi seu anúncio "${property.title}" no Buca Busca Imóveis e gostaria de mais informações.`;
+            const message = `Olá ${userName}! Vi seu anúncio "${property.title}" no Busca Busca Imóveis e gostaria de mais informações.`;
 
             // Formatar número de telefone (remover caracteres especiais)
             const cleanPhone = phoneNumber.replace(/\D/g, '');
@@ -319,7 +319,7 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                                 if (userProfile?.phone) {
                                     const cleanPhone = userProfile.phone.replace(/\D/g, '');
                                     const userName = userProfile.full_name || 'Anunciante';
-                                    const message = `Olá ${userName}! Vi seu anúncio "${property.title}" no Buca Busca Imóveis e gostaria de mais informações.`;
+                                    const message = `Olá ${userName}! Vi seu anúncio "${property.title}" no Busca Busca Imóveis e gostaria de mais informações.`;
                                     const webUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
                                     Linking.openURL(webUrl);
                                 }
