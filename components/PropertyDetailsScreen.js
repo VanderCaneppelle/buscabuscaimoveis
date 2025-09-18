@@ -531,7 +531,7 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                     </View>
                 )}
 
-                {/* Informações Adicionais */}
+                {/* Informações Adicionais
                 <View style={styles.additionalInfo}>
                     <Text style={styles.sectionTitle}>Informações Adicionais</Text>
                     <View style={styles.infoList}>
@@ -560,7 +560,7 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                             </View>
                         )}
                     </View>
-                </View>
+                </View> */}
 
 
             </ScrollView>
