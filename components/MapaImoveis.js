@@ -3,7 +3,8 @@
  * Versão simplificada para evitar problemas de dependências
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { debounce } from 'lodash';
 import {
     View,
     Text,
@@ -13,10 +14,13 @@ import {
     Alert,
     Dimensions,
     Platform,
+    Modal,
+    ScrollView,
+    Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import MapView, { Marker, PROVIDER_GOOGLE, PROVIDER_DEFAULT } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE, PROVIDER_DEFAULT, Callout } from 'react-native-maps';
 import * as Location from 'expo-location';
 
 import { PropertyService } from '../lib/propertyService';
@@ -27,15 +31,91 @@ export default function MapaImoveis({ navigation, route }) {
     const [properties, setProperties] = useState([]);
     const [loading, setLoading] = useState(true);
     const [mapReady, setMapReady] = useState(false);
-    const [mapRegion, setMapRegion] = useState({
-        latitude: -23.5505, // São Paulo como padrão
-        longitude: -46.6333,
-        latitudeDelta: 0.5,
-        longitudeDelta: 0.5,
-    });
+    const [mapRegion, setMapRegion] = useState(null); // Começar sem região definida
+    const [selectedProperty, setSelectedProperty] = useState(null);
+    const [visibleRegion, setVisibleRegion] = useState(null);
 
     // Receber filtros da HomeScreen (se houver)
     const filters = route?.params?.filters || {};
+
+    // Função para abrir bottom sheet com detalhes da propriedade
+    const openPropertySheet = (property) => {
+        console.log('📍 Abrindo bottom sheet para:', property.title);
+        setSelectedProperty(property);
+    };
+
+    // Função para fechar bottom sheet
+    const closeSheet = () => {
+        setSelectedProperty(null);
+    };
+
+    // Função para obter cor do marker baseada no tipo de transação
+    const getMarkerColor = (property) => {
+        return property.transaction_type === 'rent' ? 'green' : 'red';
+    };
+
+    // Função otimizada para filtrar propriedades dentro do viewport
+    const filterPropertiesInViewport = (allProperties, region) => {
+        if (!region) return allProperties.slice(0, 50); // Fallback com limite
+
+        const { latitude, longitude, latitudeDelta, longitudeDelta } = region;
+
+        const minLat = latitude - latitudeDelta / 2;
+        const maxLat = latitude + latitudeDelta / 2;
+        const minLng = longitude - longitudeDelta / 2;
+        const maxLng = longitude + longitudeDelta / 2;
+
+        const filtered = allProperties.filter(property => {
+            const lat = parseFloat(property.latitude);
+            const lng = parseFloat(property.longitude);
+
+            return !isNaN(lat) && !isNaN(lng) &&
+                lat >= minLat && lat <= maxLat &&
+                lng >= minLng && lng <= maxLng;
+        });
+
+        // Filtro aplicado silenciosamente para performance
+        return filtered;
+    };
+
+    // Debounce para evitar atualizações excessivas durante navegação
+    const debouncedRegionChange = debounce((region) => {
+        setVisibleRegion(region);
+    }, 300);
+
+    // Handler para mudanças de região com debounce
+    const handleRegionChangeComplete = (region) => {
+        debouncedRegionChange(region);
+    };
+
+    // Memoizar markers para evitar re-renderizações desnecessárias
+    const markersToRender = useMemo(() => {
+        if (!visibleRegion) return [];
+
+        const filtered = filterPropertiesInViewport(properties, visibleRegion);
+
+        return filtered.map((property, index) => {
+            const lat = parseFloat(property.latitude);
+            const lng = parseFloat(property.longitude);
+
+            if (isNaN(lat) || isNaN(lng)) {
+                return null;
+            }
+
+            return (
+                <Marker
+                    key={`marker-${property.id}`}
+                    coordinate={{ latitude: lat, longitude: lng }}
+                    pinColor={getMarkerColor(property)}
+                    onPress={() => openPropertySheet(property)}
+                    tracksViewChanges={Platform.OS === 'ios' ? false : undefined}
+                    flat={Platform.OS === 'ios' ? true : false}
+                />
+            );
+        }).filter(Boolean);
+    }, [properties, visibleRegion]);
+
+
 
     useEffect(() => {
         console.log('🗺️ MapaImoveis: Componente montado');
@@ -43,15 +123,17 @@ export default function MapaImoveis({ navigation, route }) {
     }, []);
 
     const initializeMap = async () => {
-        // Carregar propriedades primeiro
+        // Primeiro: tentar obter localização do usuário para região inicial
+        console.log('🗺️ Iniciando mapa - buscando localização do usuário...');
+        const locationObtained = await requestLocationPermission();
+
+        // Segundo: carregar propriedades
         await loadProperties();
 
-        // Depois tentar obter localização
-        await requestLocationPermission();
-
-        // Se não conseguiu localização, usar localização da primeira propriedade
-        if (properties.length > 0) {
+        // Se não conseguiu localização do usuário, usar localização da primeira propriedade como fallback
+        if (!locationObtained && properties.length > 0) {
             const firstProperty = properties[0];
+            console.log('🗺️ Fallback: ajustando região para primeira propriedade');
             const lat = parseFloat(firstProperty.latitude);
             const lng = parseFloat(firstProperty.longitude);
 
@@ -59,8 +141,8 @@ export default function MapaImoveis({ navigation, route }) {
                 setMapRegion({
                     latitude: lat,
                     longitude: lng,
-                    latitudeDelta: 0.1,
-                    longitudeDelta: 0.1,
+                    latitudeDelta: 0.05,
+                    longitudeDelta: 0.05,
                 });
             }
         }
@@ -81,6 +163,20 @@ export default function MapaImoveis({ navigation, route }) {
         console.log('🗺️ Região do mapa atualizada:', mapRegion);
     }, [mapRegion]);
 
+    // Definir região inicial quando o mapa carrega
+    useEffect(() => {
+        if (properties.length > 0 && mapReady && !visibleRegion) {
+            // Definir região inicial baseada na localização do usuário ou primeira propriedade
+            const initialRegion = mapRegion || {
+                latitude: -26.91884,
+                longitude: -48.673108,
+                latitudeDelta: 0.05,
+                longitudeDelta: 0.05,
+            };
+            setVisibleRegion(initialRegion);
+        }
+    }, [properties, mapReady, mapRegion]);
+
     /**
      * Solicitar permissão de localização e obter posição atual
      */
@@ -92,7 +188,7 @@ export default function MapaImoveis({ navigation, route }) {
 
             if (status !== 'granted') {
                 console.log('⚠️ Permissão de localização negada');
-                return;
+                return false;
             }
 
             console.log('✅ Permissão de localização concedida');
@@ -103,19 +199,22 @@ export default function MapaImoveis({ navigation, route }) {
             });
 
             const { latitude, longitude } = location.coords;
-            console.log('📍 Localização atual:', { latitude, longitude });
+            console.log('📍 Localização atual obtida:', { latitude, longitude });
 
-            // Atualizar região para a localização do usuário
-            setMapRegion(prev => ({
-                ...prev,
+            // Definir região inicial do mapa na localização do usuário
+            setMapRegion({
                 latitude,
                 longitude,
-                latitudeDelta: 0.1,
-                longitudeDelta: 0.1,
-            }));
+                latitudeDelta: 0.05, // Zoom próximo para ver propriedades locais
+                longitudeDelta: 0.05,
+            });
+
+            console.log('🗺️ Região inicial definida na localização do usuário');
+            return true;
 
         } catch (error) {
             console.error('❌ Erro ao obter localização:', error);
+            return false;
         }
     };
 
@@ -202,8 +301,8 @@ export default function MapaImoveis({ navigation, route }) {
                 <MapView
                     style={styles.map}
                     provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : PROVIDER_DEFAULT}
-                    initialRegion={{
-                        latitude: -26.91884,
+                    initialRegion={mapRegion || {
+                        latitude: -26.91884, // Fallback para Itajaí
                         longitude: -48.673108,
                         latitudeDelta: 0.05,
                         longitudeDelta: 0.05,
@@ -213,7 +312,7 @@ export default function MapaImoveis({ navigation, route }) {
                     showsCompass={true}
                     loadingEnabled={false}
                     onMapReady={() => {
-                        console.log('🗺️ Mapa carregado com API key!');
+                        console.log('🗺️ Mapa com viewport loading carregado!');
                         setMapReady(true);
                         setLoading(false);
                     }}
@@ -221,57 +320,126 @@ export default function MapaImoveis({ navigation, route }) {
                         console.error('❌ Erro no mapa:', error);
                         setLoading(false);
                     }}
+                    onRegionChangeComplete={handleRegionChangeComplete}
                     mapType="standard"
                 >
-                    {/* Marker de teste fixo */}
-                    <Marker
-                        coordinate={{
-                            latitude: -26.91884,
-                            longitude: -48.673108,
-                        }}
-                        title="🏠 Propriedade Teste"
-                        description="Itajaí - SC - R$ 450.000"
-                        pinColor="red"
-                        onPress={() => {
-                            console.log('📍 Marker de teste pressionado!');
-                        }}
-                    />
-
-                    {/* Markers das propriedades reais */}
-                    {properties.map((property, index) => {
-                        const lat = parseFloat(property.latitude);
-                        const lng = parseFloat(property.longitude);
-
-                        if (isNaN(lat) || isNaN(lng)) {
-                            console.log(`⚠️ Coordenadas inválidas para ${property.title}`);
-                            return null;
-                        }
-
-                        console.log(`📍 Renderizando marker: ${property.title} (${lat}, ${lng})`);
-
-                        return (
-                            <Marker
-                                key={`marker-${property.id}`}
-                                coordinate={{ latitude: lat, longitude: lng }}
-                                title={property.title}
-                                description={`R$ ${property.price?.toLocaleString('pt-BR')}`}
-                                pinColor="green"
-                                onPress={() => {
-                                    console.log('📍 Marker pressionado:', property.title);
-                                    navigation.navigate('PropertyDetails', { property });
-                                }}
-                            />
-                        );
-                    })}
+                    {/* Markers memoizados para máxima performance */}
+                    {markersToRender}
                 </MapView>
 
-                {/* Informações sobre o mapa */}
-                <View style={styles.mapInfo}>
-                    <Text style={styles.mapInfoText}>
-                        📍 {properties.length} imóveis no mapa
-                    </Text>
-                </View>
             </View>
+
+            {/* Bottom Sheet com preview da propriedade */}
+            {selectedProperty && (
+                <View style={styles.bottomSheet}>
+                    {/* Handle para indicar que é arrastável */}
+                    <View style={styles.bottomSheetHandle} />
+
+                    <TouchableOpacity
+                        style={styles.bottomSheetContent}
+                        onPress={() => {
+                            closeSheet();
+                            navigation.navigate('PropertyDetails', { property: selectedProperty });
+                        }}
+                        activeOpacity={0.8}
+                    >
+                        {/* Botão fechar */}
+                        <TouchableOpacity
+                            style={styles.closeButtonSheet}
+                            onPress={closeSheet}
+                            activeOpacity={0.7}
+                        >
+                            <Ionicons name="close" size={20} color="#6b7280" />
+                        </TouchableOpacity>
+
+                        <View style={styles.sheetRow}>
+                            {/* Imagem pequena */}
+                            <View style={styles.sheetImageContainer}>
+                                {selectedProperty.images && selectedProperty.images.length > 0 ? (
+                                    <Image
+                                        source={{ uri: selectedProperty.images[0] }}
+                                        style={styles.sheetImage}
+                                        resizeMode="cover"
+                                    />
+                                ) : (
+                                    <View style={styles.sheetPlaceholderImage}>
+                                        <Ionicons name="home" size={30} color="#bdc3c7" />
+                                    </View>
+                                )}
+                            </View>
+
+                            {/* Informações resumidas */}
+                            <View style={styles.sheetInfo}>
+                                <Text style={styles.sheetTitle} numberOfLines={2}>
+                                    {selectedProperty.title}
+                                </Text>
+
+                                {/* Preço */}
+                                <View style={styles.sheetPriceContainer}>
+                                    {selectedProperty.sale_price && selectedProperty.sale_price > 0 ? (
+                                        <>
+                                            <Text style={styles.sheetOriginalPrice}>
+                                                R$ {selectedProperty.price?.toLocaleString('pt-BR')}
+                                            </Text>
+                                            <Text style={styles.sheetSalePrice}>
+                                                R$ {selectedProperty.sale_price.toLocaleString('pt-BR')}
+                                            </Text>
+                                        </>
+                                    ) : (
+                                        <Text style={styles.sheetMainPrice}>
+                                            R$ {selectedProperty.price?.toLocaleString('pt-BR')}
+                                        </Text>
+                                    )}
+                                    <Text style={styles.sheetTransactionType}>
+                                        {selectedProperty.transaction_type === 'rent' ? 'Aluguel' : 'Venda'}
+                                    </Text>
+                                </View>
+
+                                {/* Localização resumida */}
+                                <View style={styles.sheetLocation}>
+                                    <Ionicons name="location" size={14} color="#6b7280" />
+                                    <Text style={styles.sheetLocationText} numberOfLines={1}>
+                                        {selectedProperty.neighborhood} - {selectedProperty.city}
+                                    </Text>
+                                </View>
+
+                                {/* Características resumidas */}
+                                <View style={styles.sheetFeatures}>
+                                    {selectedProperty.bedrooms && (
+                                        <View style={styles.sheetFeature}>
+                                            <Ionicons name="bed" size={12} color="#6b7280" />
+                                            <Text style={styles.sheetFeatureText}>{selectedProperty.bedrooms}</Text>
+                                        </View>
+                                    )}
+                                    {selectedProperty.bathrooms && (
+                                        <View style={styles.sheetFeature}>
+                                            <Ionicons name="water" size={12} color="#6b7280" />
+                                            <Text style={styles.sheetFeatureText}>{selectedProperty.bathrooms}</Text>
+                                        </View>
+                                    )}
+                                    {selectedProperty.parking_spaces && (
+                                        <View style={styles.sheetFeature}>
+                                            <Ionicons name="car" size={12} color="#6b7280" />
+                                            <Text style={styles.sheetFeatureText}>{selectedProperty.parking_spaces}</Text>
+                                        </View>
+                                    )}
+                                    {selectedProperty.area && (
+                                        <View style={styles.sheetFeature}>
+                                            <Ionicons name="resize" size={12} color="#6b7280" />
+                                            <Text style={styles.sheetFeatureText}>{selectedProperty.area}m²</Text>
+                                        </View>
+                                    )}
+                                </View>
+                            </View>
+
+                            {/* Seta indicando que é clicável */}
+                            <View style={styles.sheetArrow}>
+                                <Ionicons name="chevron-forward" size={20} color="#6b7280" />
+                            </View>
+                        </View>
+                    </TouchableOpacity>
+                </View>
+            )}
         </SafeAreaView>
     );
 }
@@ -322,21 +490,6 @@ const styles = StyleSheet.create({
     },
     map: {
         flex: 1,
-    },
-    mapInfo: {
-        position: 'absolute',
-        bottom: 20,
-        left: 20,
-        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-        padding: 10,
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: '#e2e8f0',
-    },
-    mapInfoText: {
-        fontSize: 14,
-        color: '#374151',
-        fontWeight: '500',
     },
     // Estilos para versão Android alternativa
     androidMapPlaceholder: {
@@ -394,5 +547,131 @@ const styles = StyleSheet.create({
     propertyMapLocation: {
         fontSize: 14,
         color: '#6b7280',
+    },
+    // Estilos para bottom sheet
+    bottomSheet: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: '#fff',
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -3 },
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+        elevation: 10,
+    },
+    bottomSheetHandle: {
+        width: 40,
+        height: 4,
+        backgroundColor: '#d1d5db',
+        borderRadius: 2,
+        alignSelf: 'center',
+        marginTop: 8,
+        marginBottom: 5,
+    },
+    bottomSheetContent: {
+        padding: 16,
+    },
+    closeButtonSheet: {
+        position: 'absolute',
+        top: 12,
+        right: 12,
+        zIndex: 1,
+        backgroundColor: '#f3f4f6',
+        borderRadius: 15,
+        width: 30,
+        height: 30,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    sheetRow: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+    },
+    sheetImageContainer: {
+        marginRight: 12,
+    },
+    sheetImage: {
+        width: 80,
+        height: 80,
+        borderRadius: 8,
+    },
+    sheetPlaceholderImage: {
+        width: 80,
+        height: 80,
+        borderRadius: 8,
+        backgroundColor: '#f3f4f6',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    sheetInfo: {
+        flex: 1,
+        paddingRight: 8,
+    },
+    sheetTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#1f2937',
+        marginBottom: 8,
+        lineHeight: 20,
+    },
+    sheetPriceContainer: {
+        marginBottom: 8,
+    },
+    sheetMainPrice: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#059669',
+    },
+    sheetOriginalPrice: {
+        fontSize: 14,
+        color: '#dc2626',
+        textDecorationLine: 'line-through',
+    },
+    sheetSalePrice: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#059669',
+        marginTop: 2,
+    },
+    sheetTransactionType: {
+        fontSize: 12,
+        color: '#6b7280',
+        marginTop: 2,
+        textTransform: 'uppercase',
+    },
+    sheetLocation: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    sheetLocationText: {
+        fontSize: 14,
+        color: '#6b7280',
+        marginLeft: 4,
+        flex: 1,
+    },
+    sheetFeatures: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    sheetFeature: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginRight: 12,
+    },
+    sheetFeatureText: {
+        fontSize: 12,
+        color: '#6b7280',
+        marginLeft: 2,
+    },
+    sheetArrow: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: 24,
+        height: 24,
     },
 });
