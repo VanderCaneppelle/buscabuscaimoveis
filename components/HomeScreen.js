@@ -119,7 +119,6 @@ export default function HomeScreen({ navigation }) {
             // Carregar dados apenas uma vez
             if (user?.id) {
                 fetchProfile();
-                fetchFavorites();
             }
             fetchProperties();
             fetchCities(); // Buscar cidades disponíveis
@@ -135,7 +134,6 @@ export default function HomeScreen({ navigation }) {
                 console.log('👤👤👤 HomeScreen: CARREGANDO DADOS NO FOCUS 👤👤👤');
                 if (user?.id) {
                     fetchProfile();
-                    fetchFavorites();
                 }
                 fetchProperties();
                 setHasInitialData(true);
@@ -245,8 +243,7 @@ export default function HomeScreen({ navigation }) {
         setCurrentPage(0);
         await Promise.all([
             fetchProperties(filters, searchTerm, 0, true), // Forçar refresh
-            fetchProfile(),
-            fetchFavorites()
+            fetchProfile()
         ]);
         setRefreshing(false);
         console.log('✅✅✅ HomeScreen: REFRESH MANUAL FINALIZADO ✅✅✅');
@@ -394,28 +391,6 @@ export default function HomeScreen({ navigation }) {
 
 
 
-    const fetchFavorites = async () => {
-        if (!user?.id) return;
-
-        try {
-            const { data, error } = await supabase
-                .from('favorites')
-                .select('property_id')
-                .eq('user_id', user.id);
-
-            if (error) {
-                console.error('❌ Erro ao buscar favoritos:', error);
-            } else {
-                const favoritesMap = {};
-                data.forEach(fav => {
-                    favoritesMap[fav.property_id] = true;
-                });
-                setFavorites(favoritesMap);
-            }
-        } catch (error) {
-            console.error('❌ Erro ao buscar favoritos:', error);
-        }
-    };
 
     const fetchCities = async () => {
         try {

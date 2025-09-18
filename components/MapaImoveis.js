@@ -12,20 +12,22 @@ import {
     TouchableOpacity,
     ActivityIndicator,
     Alert,
-    Dimensions,
     Platform,
-    Modal,
     ScrollView,
     Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import MapView, { Marker, PROVIDER_GOOGLE, PROVIDER_DEFAULT, Callout } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE, PROVIDER_DEFAULT } from 'react-native-maps';
 import * as Location from 'expo-location';
 
 import { PropertyService } from '../lib/propertyService';
 
-const { width, height } = Dimensions.get('window');
+
+// Cache estático para propriedades do mapa
+let mapPropertiesCache = null;
+let cacheTimestamp = 0;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
 
 export default function MapaImoveis({ navigation, route }) {
     const [properties, setProperties] = useState([]);
@@ -123,40 +125,31 @@ export default function MapaImoveis({ navigation, route }) {
     }, []);
 
     const initializeMap = async () => {
-        // Primeiro: tentar obter localização do usuário para região inicial
-        console.log('🗺️ Iniciando mapa - buscando localização do usuário...');
-        const locationObtained = await requestLocationPermission();
+        console.log('🗺️ Iniciando mapa geral...');
 
-        // Segundo: carregar propriedades
-        await loadProperties();
-
-        // Se não conseguiu localização do usuário, usar localização da primeira propriedade como fallback
-        if (!locationObtained && properties.length > 0) {
-            const firstProperty = properties[0];
-            console.log('🗺️ Fallback: ajustando região para primeira propriedade');
-            const lat = parseFloat(firstProperty.latitude);
-            const lng = parseFloat(firstProperty.longitude);
-
-            if (!isNaN(lat) && !isNaN(lng)) {
-                setMapRegion({
-                    latitude: lat,
-                    longitude: lng,
-                    latitudeDelta: 0.05,
-                    longitudeDelta: 0.05,
-                });
-            }
+        // Definir região padrão imediatamente para abrir o mapa rápido
+        if (!mapRegion) {
+            setMapRegion({
+                latitude: -27.096666, // Itajaí como padrão
+                longitude: -48.616408,
+                latitudeDelta: 0.1,
+                longitudeDelta: 0.1,
+            });
+            console.log('🗺️ Região padrão definida - mapa abre instantaneamente');
         }
 
-        // Garantir que loading seja false
+        // Carregar propriedades (pode usar cache)
+        await loadProperties();
+
+        // Parar loading para mostrar o mapa
         setLoading(false);
 
-        // Timeout de segurança - se mapa não carregar em 10s, forçar loading = false
-        setTimeout(() => {
-            if (loading) {
-                console.log('⏰ Timeout do mapa - forçando carregamento');
-                setLoading(false);
-            }
-        }, 10000);
+        // Buscar localização do usuário em background
+        requestLocationPermission().then(() => {
+            console.log('📍 Localização obtida em background');
+        }).catch(error => {
+            console.log('📍 Erro ao obter localização em background:', error);
+        });
     };
 
     useEffect(() => {
@@ -166,12 +159,11 @@ export default function MapaImoveis({ navigation, route }) {
     // Definir região inicial quando o mapa carrega
     useEffect(() => {
         if (properties.length > 0 && mapReady && !visibleRegion) {
-            // Definir região inicial baseada na localização do usuário ou primeira propriedade
             const initialRegion = mapRegion || {
-                latitude: -26.91884,
-                longitude: -48.673108,
-                latitudeDelta: 0.05,
-                longitudeDelta: 0.05,
+                latitude: -27.096666,
+                longitude: -48.616408,
+                latitudeDelta: 0.1,
+                longitudeDelta: 0.1,
             };
             setVisibleRegion(initialRegion);
         }
@@ -201,15 +193,15 @@ export default function MapaImoveis({ navigation, route }) {
             const { latitude, longitude } = location.coords;
             console.log('📍 Localização atual obtida:', { latitude, longitude });
 
-            // Definir região inicial do mapa na localização do usuário
-            setMapRegion({
+            // Atualizar região do mapa para a localização do usuário (suavemente)
+            setMapRegion(prevRegion => ({
                 latitude,
                 longitude,
                 latitudeDelta: 0.05, // Zoom próximo para ver propriedades locais
                 longitudeDelta: 0.05,
-            });
+            }));
 
-            console.log('🗺️ Região inicial definida na localização do usuário');
+            console.log('🗺️ Região atualizada para localização do usuário');
             return true;
 
         } catch (error) {
@@ -219,38 +211,43 @@ export default function MapaImoveis({ navigation, route }) {
     };
 
     /**
-     * Carregar propriedades do Supabase
+     * Carregar propriedades do Supabase com cache otimizado
      */
     const loadProperties = async () => {
         try {
-            console.log('📍 Buscando propriedades para o mapa...');
+            // Verificar se o cache ainda é válido
+            const now = Date.now();
+            const cacheAge = now - cacheTimestamp;
+            const isCacheValid = mapPropertiesCache && cacheAge < CACHE_DURATION;
 
-            // Usar método otimizado para mapa
+            if (isCacheValid) {
+                console.log(`📦 Usando cache do mapa (${Math.round(cacheAge / 1000)}s atrás)`);
+                setProperties(mapPropertiesCache);
+                return;
+            }
+
+            console.log('🗺️ Buscando propriedades para o mapa...');
+
+            // Buscar do servidor
             const data = await PropertyService.getPropertiesForMap(filters);
-            console.log(`✅ ${data.length} propriedades carregadas para o mapa`);
+            console.log(`✅ ${data.length} propriedades carregadas do servidor`);
+
+            // Atualizar cache
+            mapPropertiesCache = data;
+            cacheTimestamp = now;
 
             setProperties(data);
 
-            // Ajustar região do mapa para as propriedades encontradas
-            if (data && data.length > 0) {
-                const firstProperty = data[0];
-                const lat = parseFloat(firstProperty.latitude);
-                const lng = parseFloat(firstProperty.longitude);
-
-                if (!isNaN(lat) && !isNaN(lng)) {
-                    console.log('🗺️ Ajustando região do mapa para:', { lat, lng });
-                    setMapRegion({
-                        latitude: lat,
-                        longitude: lng,
-                        latitudeDelta: 0.05,
-                        longitudeDelta: 0.05,
-                    });
-                }
-            }
-
         } catch (error) {
             console.error('❌ Erro ao carregar propriedades:', error);
-            Alert.alert('Erro', 'Não foi possível carregar os imóveis no mapa');
+
+            // Se houver cache, usar como fallback
+            if (mapPropertiesCache) {
+                console.log('📦 Usando cache como fallback após erro');
+                setProperties(mapPropertiesCache);
+            } else {
+                Alert.alert('Erro', 'Não foi possível carregar os imóveis no mapa');
+            }
         }
     };
 
@@ -300,13 +297,14 @@ export default function MapaImoveis({ navigation, route }) {
             <View style={styles.mapContainer}>
                 <MapView
                     style={styles.map}
-                    provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : PROVIDER_DEFAULT}
-                    initialRegion={mapRegion || {
-                        latitude: -26.91884, // Fallback para Itajaí
+                    provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : PROVIDER_GOOGLE}
+                    initialRegion={{
+                        latitude: -26.91884, // Itajaí como região inicial padrão
                         longitude: -48.673108,
-                        latitudeDelta: 0.05,
-                        longitudeDelta: 0.05,
+                        latitudeDelta: 0.1,
+                        longitudeDelta: 0.1,
                     }}
+                    region={mapRegion}
                     showsUserLocation={true}
                     showsMyLocationButton={true}
                     showsCompass={true}
@@ -339,6 +337,7 @@ export default function MapaImoveis({ navigation, route }) {
                         style={styles.bottomSheetContent}
                         onPress={() => {
                             closeSheet();
+                            console.log('📍 Navegando para PropertyDetails');
                             navigation.navigate('PropertyDetails', { property: selectedProperty });
                         }}
                         activeOpacity={0.8}
@@ -490,63 +489,6 @@ const styles = StyleSheet.create({
     },
     map: {
         flex: 1,
-    },
-    // Estilos para versão Android alternativa
-    androidMapPlaceholder: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#f8f9fa',
-        padding: 20,
-    },
-    placeholderTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#374151',
-        marginTop: 15,
-        marginBottom: 10,
-    },
-    placeholderText: {
-        fontSize: 16,
-        color: '#6b7280',
-        textAlign: 'center',
-        marginBottom: 20,
-    },
-    propertyMapItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#fff',
-        padding: 15,
-        borderRadius: 8,
-        marginBottom: 10,
-        borderWidth: 1,
-        borderColor: '#e2e8f0',
-        width: '100%',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-        elevation: 2,
-    },
-    propertyMapInfo: {
-        flex: 1,
-        marginRight: 10,
-    },
-    propertyMapTitle: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#1f2937',
-        marginBottom: 4,
-    },
-    propertyMapPrice: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#059669',
-        marginBottom: 4,
-    },
-    propertyMapLocation: {
-        fontSize: 14,
-        color: '#6b7280',
     },
     // Estilos para bottom sheet
     bottomSheet: {

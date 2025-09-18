@@ -457,7 +457,23 @@ export default function PropertyDetailsScreen({ route, navigation }) {
             >
                 {/* Informações Principais */}
                 <View style={styles.mainInfo}>
-                    <Text style={styles.title}>{property.title}</Text>
+                    <View style={styles.titleRow}>
+                        <Text style={[styles.title, styles.titleWithButton]}>{property.title}</Text>
+
+                        {/* Botão Ver no Mapa - discreto ao lado do título */}
+                        <TouchableOpacity
+                            style={styles.mapIconButton}
+                            onPress={() => {
+                                console.log('🎯 Navegando para mapa único do imóvel:', property.title);
+                                navigation.navigate('MapaImovelUnico', {
+                                    property: property
+                                });
+                            }}
+                        >
+                            <Ionicons name="map" size={24} color="#00335e" />
+                        </TouchableOpacity>
+                    </View>
+
                     <Text style={styles.location}>
                         <Ionicons name="location" size={16} color="#64748b" />
                         {' '}{property.neighborhood}, {property.city}
@@ -693,11 +709,35 @@ const styles = StyleSheet.create({
     mainInfo: {
         marginBottom: 25,
     },
+    titleRow: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        justifyContent: 'space-between',
+        marginBottom: 8,
+    },
     title: {
         fontSize: 24,
         fontWeight: 'bold',
         color: '#00335e',
-        marginBottom: 8,
+    },
+    titleWithButton: {
+        flex: 1,
+        marginRight: 12, // Espaço para o botão
+    },
+    mapIconButton: {
+        backgroundColor: '#ffcc1e',
+        borderRadius: 20,
+        width: 40,
+        height: 40,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 2,
+        borderColor: '#00335e',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+        elevation: 3,
     },
     location: {
         fontSize: 16,
