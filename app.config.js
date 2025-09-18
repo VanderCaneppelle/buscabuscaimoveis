@@ -37,7 +37,13 @@ export default {
     },
     plugins: [
       "expo-notifications",
-      "expo-font"
+      "expo-font",
+      [
+        "react-native-maps",
+        {
+          "enableGoogleMapsOnAndroid": true
+        }
+      ]
     ],
     scheme: "buscabuscaimoveis",
     // Configurações do Mercado Pago

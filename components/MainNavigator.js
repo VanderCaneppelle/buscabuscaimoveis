@@ -21,6 +21,7 @@ import CreateStoryScreen from './CreateStoryScreen';
 import StoryViewerScreen from './StoryViewerScreen';
 import VideoUploadTestScreen from './VideoUploadTestScreen';
 import MyPropertiesScreen from './MyPropertiesScreen';
+import MapaImoveis from './MapaImoveis';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -102,6 +103,14 @@ function HomeStack() {
             }}
         >
             <Stack.Screen name="HomeMain" component={HomeScreen} />
+
+            <Stack.Screen
+                name="MapaImoveis"
+                component={MapaImoveis}
+                options={{
+                    headerShown: false,
+                }}
+            />
 
             <Stack.Screen
                 name="CreateStory"

@@ -24,6 +24,7 @@ import { PropertyService } from '../lib/propertyService';
 import { MediaServiceOptimized } from '../lib/mediaServiceOptimized';
 import { useAuth } from '../contexts/AuthContext';
 import { useFocusEffect } from '@react-navigation/native';
+import { searchAddresses } from '../lib/geocodingService';
 
 const { width } = Dimensions.get('window');
 
@@ -44,6 +45,14 @@ export default function CreateAdScreen({ navigation, route }) {
     const [showBedroomsDropdown, setShowBedroomsDropdown] = useState(false);
     const [showBathroomsDropdown, setShowBathroomsDropdown] = useState(false);
     const [showParkingDropdown, setShowParkingDropdown] = useState(false);
+
+    // Estados para autocomplete de endereço
+    const [addressQuery, setAddressQuery] = useState('');
+    const [addressSuggestions, setAddressSuggestions] = useState([]);
+    const [showAddressSuggestions, setShowAddressSuggestions] = useState(false);
+    const [searchingAddress, setSearchingAddress] = useState(false);
+    const [selectedAddress, setSelectedAddress] = useState(null);
+
     const [formData, setFormData] = useState({
         title: '',
         description: '',
@@ -59,7 +68,9 @@ export default function CreateAdScreen({ navigation, route }) {
         neighborhood: '',
         city: '',
         state: '',
-        zipCode: ''
+        zipCode: '',
+        latitude: null,
+        longitude: null
     });
 
     useEffect(() => {
@@ -96,6 +107,70 @@ export default function CreateAdScreen({ navigation, route }) {
             ...prev,
             [field]: value
         }));
+    };
+
+    // Função para buscar endereços com debounce
+    const searchAddressWithDebounce = React.useRef(null);
+
+    const handleAddressSearch = (query) => {
+        setAddressQuery(query);
+
+        if (query.length < 3) {
+            setAddressSuggestions([]);
+            setShowAddressSuggestions(false);
+            return;
+        }
+
+        // Limpar timeout anterior
+        if (searchAddressWithDebounce.current) {
+            clearTimeout(searchAddressWithDebounce.current);
+        }
+
+        // Definir novo timeout para debounce
+        searchAddressWithDebounce.current = setTimeout(async () => {
+            try {
+                setSearchingAddress(true);
+                console.log('🔍 Buscando endereços para:', query);
+
+                const suggestions = await searchAddresses(query, { limit: 5 });
+                setAddressSuggestions(suggestions);
+                setShowAddressSuggestions(suggestions.length > 0);
+
+                console.log(`✅ ${suggestions.length} sugestões encontradas`);
+            } catch (error) {
+                console.error('❌ Erro na busca de endereços:', error);
+                setAddressSuggestions([]);
+                setShowAddressSuggestions(false);
+            } finally {
+                setSearchingAddress(false);
+            }
+        }, 500); // 500ms de debounce
+    };
+
+    // Função para selecionar um endereço da lista
+    const handleAddressSelect = (selectedSuggestion) => {
+        console.log('📍 Endereço selecionado:', selectedSuggestion);
+
+        setSelectedAddress(selectedSuggestion);
+        setAddressQuery(selectedSuggestion.formattedAddress);
+        setShowAddressSuggestions(false);
+
+        // Preencher campos automaticamente
+        setFormData(prev => ({
+            ...prev,
+            address: selectedSuggestion.address || selectedSuggestion.formattedAddress,
+            neighborhood: selectedSuggestion.neighborhood || '',
+            city: selectedSuggestion.city || '',
+            state: selectedSuggestion.state || '',
+            zipCode: selectedSuggestion.zipCode || '',
+            latitude: selectedSuggestion.coordinates.latitude,
+            longitude: selectedSuggestion.coordinates.longitude
+        }));
+    };
+
+    // Fechar sugestões quando tocar fora
+    const handlePressOutside = () => {
+        setShowAddressSuggestions(false);
     };
 
     // Formatar preço para moeda brasileira
@@ -175,7 +250,7 @@ export default function CreateAdScreen({ navigation, route }) {
 
 
     const validateForm = () => {
-        const requiredFields = ['title', 'price', 'salePrice', 'propertyType', 'transactionType', 'address', 'city', 'state'];
+        const requiredFields = ['title', 'price', 'salePrice', 'propertyType', 'transactionType'];
 
         for (const field of requiredFields) {
             if (!formData[field].trim()) {
@@ -184,14 +259,23 @@ export default function CreateAdScreen({ navigation, route }) {
                     price: 'Preço',
                     salePrice: 'Preço de Venda',
                     propertyType: 'Tipo de Imóvel',
-                    transactionType: 'Tipo de Transação',
-                    address: 'Endereço',
-                    city: 'Cidade',
-                    state: 'Estado'
+                    transactionType: 'Tipo de Transação'
                 };
                 Alert.alert('Campo Obrigatório', `O campo "${fieldNames[field]}" é obrigatório`);
                 return false;
             }
+        }
+
+        // Validar endereço selecionado
+        if (!selectedAddress) {
+            Alert.alert('Endereço Obrigatório', 'Selecione um endereço da lista de sugestões');
+            return false;
+        }
+
+        // Validar coordenadas
+        if (!formData.latitude || !formData.longitude) {
+            Alert.alert('Erro de Localização', 'Endereço sem coordenadas válidas. Selecione outro endereço.');
+            return false;
         }
 
         const numericPrice = getNumericPrice(formData.price);
@@ -807,66 +891,140 @@ export default function CreateAdScreen({ navigation, route }) {
                                     </View>
                                 </View>
 
-                                {/* Localização */}
+                                {/* Localização com Autocomplete */}
                                 <Text style={[styles.sectionTitle, styles.sectionTitleWithMargin]}>Localização</Text>
 
-                                <View style={styles.inputGroup}>
-                                    <Text style={styles.inputLabel}>Endereço *</Text>
-                                    <TextInput
-                                        style={styles.textInput}
-                                        value={formData.address}
-                                        onChangeText={(value) => handleInputChange('address', value)}
-                                        placeholder="Rua, número..."
-                                        placeholderTextColor="#7f8c8d"
-                                    />
-                                </View>
+                                <TouchableWithoutFeedback onPress={handlePressOutside}>
+                                    <View>
+                                        <View style={styles.inputGroup}>
+                                            <Text style={styles.inputLabel}>Buscar Endereço *</Text>
+                                            <View style={styles.addressSearchContainer}>
+                                                <TextInput
+                                                    style={[styles.textInput, styles.addressSearchInput]}
+                                                    value={addressQuery}
+                                                    onChangeText={handleAddressSearch}
+                                                    placeholder="Digite o endereço (ex: Rua Augusta, 123, São Paulo)"
+                                                    placeholderTextColor="#7f8c8d"
+                                                    autoComplete="off"
+                                                    autoCorrect={false}
+                                                />
+                                                {searchingAddress && (
+                                                    <View style={styles.searchingIndicator}>
+                                                        <ActivityIndicator size="small" color="#00335e" />
+                                                    </View>
+                                                )}
+                                            </View>
 
-                                <View style={styles.row}>
-                                    <View style={[styles.inputGroup, styles.halfWidth]}>
-                                        <Text style={styles.inputLabel}>Bairro</Text>
-                                        <TextInput
-                                            style={styles.textInput}
-                                            value={formData.neighborhood}
-                                            onChangeText={(value) => handleInputChange('neighborhood', value)}
-                                            placeholder="Nome do bairro"
-                                            placeholderTextColor="#7f8c8d"
-                                        />
-                                    </View>
-                                    <View style={[styles.inputGroup, styles.halfWidth]}>
-                                        <Text style={styles.inputLabel}>CEP</Text>
-                                        <TextInput
-                                            style={styles.textInput}
-                                            value={formData.zipCode}
-                                            onChangeText={(value) => handleInputChange('zipCode', value)}
-                                            placeholder="00000-000"
-                                            placeholderTextColor="#7f8c8d"
-                                            keyboardType="numeric"
-                                        />
-                                    </View>
-                                </View>
+                                            {/* Lista de Sugestões */}
+                                            {showAddressSuggestions && (
+                                                <View style={styles.suggestionsList}>
+                                                    <ScrollView
+                                                        style={styles.suggestionsFlatList}
+                                                        keyboardShouldPersistTaps="handled"
+                                                        nestedScrollEnabled={true}
+                                                    >
+                                                        {addressSuggestions.map((item, index) => (
+                                                            <TouchableOpacity
+                                                                key={`suggestion_${index}`}
+                                                                style={styles.suggestionItem}
+                                                                onPress={() => handleAddressSelect(item)}
+                                                            >
+                                                                <Ionicons
+                                                                    name="location-outline"
+                                                                    size={16}
+                                                                    color="#00335e"
+                                                                    style={styles.suggestionIcon}
+                                                                />
+                                                                <View style={styles.suggestionContent}>
+                                                                    <Text style={styles.suggestionAddress}>
+                                                                        {item.address || item.formattedAddress.split(',')[0]}
+                                                                    </Text>
+                                                                    <Text style={styles.suggestionLocation}>
+                                                                        {[item.neighborhood, item.city, item.state].filter(Boolean).join(', ')}
+                                                                    </Text>
+                                                                </View>
+                                                            </TouchableOpacity>
+                                                        ))}
+                                                    </ScrollView>
+                                                </View>
+                                            )}
+                                        </View>
 
-                                <View style={styles.row}>
-                                    <View style={[styles.inputGroup, styles.halfWidth]}>
-                                        <Text style={styles.inputLabel}>Cidade *</Text>
-                                        <TextInput
-                                            style={styles.textInput}
-                                            value={formData.city}
-                                            onChangeText={(value) => handleInputChange('city', value)}
-                                            placeholder="Nome da cidade"
-                                            placeholderTextColor="#7f8c8d"
-                                        />
+                                        {/* Campos Preenchidos Automaticamente */}
+                                        {selectedAddress && (
+                                            <View style={styles.addressPreviewContainer}>
+                                                <Text style={styles.addressPreviewTitle}>Endereço Selecionado:</Text>
+
+                                                <View style={styles.row}>
+                                                    <View style={[styles.inputGroup, styles.halfWidth]}>
+                                                        <Text style={styles.inputLabel}>Bairro</Text>
+                                                        <TextInput
+                                                            style={[styles.textInput, styles.readOnlyInput]}
+                                                            value={formData.neighborhood}
+                                                            editable={false}
+                                                            placeholder="Não informado"
+                                                            placeholderTextColor="#bdc3c7"
+                                                        />
+                                                    </View>
+                                                    <View style={[styles.inputGroup, styles.halfWidth]}>
+                                                        <Text style={styles.inputLabel}>CEP</Text>
+                                                        <TextInput
+                                                            style={[styles.textInput, styles.readOnlyInput]}
+                                                            value={formData.zipCode}
+                                                            editable={false}
+                                                            placeholder="Não informado"
+                                                            placeholderTextColor="#bdc3c7"
+                                                        />
+                                                    </View>
+                                                </View>
+
+                                                <View style={styles.row}>
+                                                    <View style={[styles.inputGroup, styles.halfWidth]}>
+                                                        <Text style={styles.inputLabel}>Cidade</Text>
+                                                        <TextInput
+                                                            style={[styles.textInput, styles.readOnlyInput]}
+                                                            value={formData.city}
+                                                            editable={false}
+                                                            placeholder="Não informado"
+                                                            placeholderTextColor="#bdc3c7"
+                                                        />
+                                                    </View>
+                                                    <View style={[styles.inputGroup, styles.halfWidth]}>
+                                                        <Text style={styles.inputLabel}>Estado</Text>
+                                                        <TextInput
+                                                            style={[styles.textInput, styles.readOnlyInput]}
+                                                            value={formData.state}
+                                                            editable={false}
+                                                            placeholder="Não informado"
+                                                            placeholderTextColor="#bdc3c7"
+                                                        />
+                                                    </View>
+                                                </View>
+
+                                                <TouchableOpacity
+                                                    style={styles.changeAddressButton}
+                                                    onPress={() => {
+                                                        setSelectedAddress(null);
+                                                        setAddressQuery('');
+                                                        setFormData(prev => ({
+                                                            ...prev,
+                                                            address: '',
+                                                            neighborhood: '',
+                                                            city: '',
+                                                            state: '',
+                                                            zipCode: '',
+                                                            latitude: null,
+                                                            longitude: null
+                                                        }));
+                                                    }}
+                                                >
+                                                    <Ionicons name="refresh-outline" size={16} color="#e74c3c" />
+                                                    <Text style={styles.changeAddressText}>Alterar Endereço</Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                        )}
                                     </View>
-                                    <View style={[styles.inputGroup, styles.halfWidth]}>
-                                        <Text style={styles.inputLabel}>Estado *</Text>
-                                        <TextInput
-                                            style={styles.textInput}
-                                            value={formData.state}
-                                            onChangeText={(value) => handleInputChange('state', value)}
-                                            placeholder="UF"
-                                            placeholderTextColor="#7f8c8d"
-                                        />
-                                    </View>
-                                </View>
+                                </TouchableWithoutFeedback>
                             </View>
 
                             {/* Submit Button */}
@@ -1435,6 +1593,99 @@ const styles = StyleSheet.create({
     dropdownItemText: {
         fontSize: 16,
         color: '#2c3e50',
+    },
+
+    // Estilos para Autocomplete de Endereços
+    addressSearchContainer: {
+        position: 'relative',
+    },
+    addressSearchInput: {
+        paddingRight: 40, // Espaço para o indicador de loading
+    },
+    searchingIndicator: {
+        position: 'absolute',
+        right: 12,
+        top: '50%',
+        transform: [{ translateY: -10 }],
+    },
+    suggestionsList: {
+        position: 'absolute',
+        top: '100%',
+        left: 0,
+        right: 0,
+        backgroundColor: '#fff',
+        borderRadius: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 5,
+        zIndex: 1000,
+        maxHeight: 200,
+    },
+    suggestionsFlatList: {
+        borderRadius: 8,
+    },
+    suggestionItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 12,
+        paddingHorizontal: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: '#f0f0f0',
+    },
+    suggestionIcon: {
+        marginRight: 12,
+    },
+    suggestionContent: {
+        flex: 1,
+    },
+    suggestionAddress: {
+        fontSize: 14,
+        color: '#2c3e50',
+        fontWeight: '500',
+    },
+    suggestionLocation: {
+        fontSize: 12,
+        color: '#7f8c8d',
+        marginTop: 2,
+    },
+    addressPreviewContainer: {
+        backgroundColor: '#f8f9fa',
+        padding: 15,
+        borderRadius: 8,
+        marginTop: 15,
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
+    },
+    addressPreviewTitle: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#00335e',
+        marginBottom: 10,
+    },
+    readOnlyInput: {
+        backgroundColor: '#f8f9fa',
+        color: '#64748b',
+        fontStyle: 'italic',
+    },
+    changeAddressButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 10,
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        backgroundColor: '#fff',
+        borderRadius: 6,
+        borderWidth: 1,
+        borderColor: '#e74c3c',
+    },
+    changeAddressText: {
+        fontSize: 12,
+        color: '#e74c3c',
+        marginLeft: 5,
+        fontWeight: '500',
     },
 
 }); 
