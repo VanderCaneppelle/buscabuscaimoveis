@@ -28,6 +28,7 @@
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="buscabuscaimoveis"/>
+        <data android:scheme="exp+buscabuscaimoveis"/>
       </intent-filter>
     </activity>
   </application>
