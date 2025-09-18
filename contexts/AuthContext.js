@@ -119,24 +119,48 @@ export const AuthProvider = ({ children }) => {
         // Escutar deep links
         const subscriptionLinking = Linking.addEventListener('url', handleDeepLink);
 
-        // Verificar sessão quando o app volta ao foco
+        // Verificar sessão quando o app volta ao foco (com throttle para evitar verificações excessivas)
+        let lastSessionCheck = 0;
+        const SESSION_CHECK_INTERVAL = 5 * 60 * 1000; // 5 minutos
+
         const handleAppStateChange = async (nextAppState) => {
-            console.log('🔄 Mudança de estado do app:', nextAppState);
+            // Só fazer log em desenvolvimento
+            if (__DEV__) {
+                console.log('🔄 Mudança de estado do app:', nextAppState);
+            }
 
             if (nextAppState === 'active') {
-                console.log('📱 App voltou ao foco - verificando sessão...');
+                const now = Date.now();
+
+                // Só verificar sessão se passou mais de 5 minutos da última verificação
+                if (now - lastSessionCheck < SESSION_CHECK_INTERVAL) {
+                    if (__DEV__) {
+                        console.log('📱 Verificação de sessão ignorada - muito recente');
+                    }
+                    return;
+                }
+
+                lastSessionCheck = now;
+
+                if (__DEV__) {
+                    console.log('📱 App voltou ao foco - verificando sessão...');
+                }
 
                 // Verificar se há sessão no Supabase primeiro
                 const { data: { session } } = await supabase.auth.getSession();
 
                 if (session?.user) {
-                    console.log('📱 Usuário encontrado no Supabase:', session.user.email);
+                    if (__DEV__) {
+                        console.log('📱 Usuário encontrado no Supabase:', session.user.email);
+                    }
 
                     // Verificar se há sessão local no sessionManager
                     const hasLocalSession = await sessionManager.hasValidSession();
 
                     if (hasLocalSession) {
-                        console.log('📱 Sessão local encontrada - verificando validade...');
+                        if (__DEV__) {
+                            console.log('📱 Sessão local encontrada - verificando validade...');
+                        }
                         await checkAndLogoutIfInvalid();
                     } else {
                         console.log('📱 Sessão local inválida ou não encontrada - fazendo logout automático');
@@ -164,7 +188,9 @@ export const AuthProvider = ({ children }) => {
                         );
                     }
                 } else {
-                    console.log('📱 Nenhum usuário logado no Supabase');
+                    if (__DEV__) {
+                        console.log('📱 Nenhum usuário logado no Supabase');
+                    }
                 }
             }
         };
