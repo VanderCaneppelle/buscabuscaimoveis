@@ -44,7 +44,7 @@ const withMaps = (config) => {
             mainApplication['meta-data'].push({
                 $: {
                     'android:name': 'com.google.android.geo.API_KEY',
-                    'android:value': process.env.GOOGLE_MAPS_API_KEY || 'YOUR_GOOGLE_MAPS_API_KEY'
+                    'android:value': 'AIzaSyBDJgM6JO1tRJioBp8V8DQBteC4VKyySeQ'
                 }
             });
         }
@@ -59,6 +59,9 @@ const withMaps = (config) => {
             'Este app precisa acessar sua localização para mostrar imóveis próximos no mapa.';
         config.modResults.NSLocationAlwaysAndWhenInUseUsageDescription =
             'Este app precisa acessar sua localização para mostrar imóveis próximos no mapa.';
+
+        // Adicionar Google Maps API Key para iOS
+        config.modResults.GMSApiKey = 'AIzaSyCOF3YQjjpE4JrkmpSH6o-aYWBPmaW5Jus';
 
         return config;
     });
