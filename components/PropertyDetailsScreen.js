@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { Image } from 'expo-image';
 import { Video } from 'expo-av';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -434,7 +434,7 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                         )}
                         {property.bathrooms && (
                             <View style={styles.characteristicItem}>
-                                <Ionicons name="water" size={24} color="#1e3a8a" />
+                                <MaterialCommunityIcons name="toilet" size={24} color="#1e3a8a" />
                                 <Text style={styles.characteristicText}>{property.bathrooms} banheiros</Text>
                             </View>
                         )}
