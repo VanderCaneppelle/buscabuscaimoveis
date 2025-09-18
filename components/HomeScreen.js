@@ -496,16 +496,18 @@ export default function HomeScreen({ navigation }) {
 
     // Componente simplificado para renderizar propriedades
     const PropertyItem = React.memo(({ item, index, favorites, handleToggleFavorite, navigation }) => {
+        const mediaFiles = item.images || [];
+        const [currentIndex, setCurrentIndex] = useState(0);
+
         // Memoizar o onPress para evitar re-renderizações
         const handlePress = useCallback(() => {
             navigation.navigate('PropertyDetails', { property: item });
         }, [navigation, item]);
 
-        const handleFavoritePress = useCallback(() => {
+        const handleFavoritePress = useCallback((event) => {
+            event.stopPropagation(); // Não propagar para o card
             handleToggleFavorite(item.id);
         }, [handleToggleFavorite, item.id]);
-        const mediaFiles = item.images || [];
-        const [currentIndex, setCurrentIndex] = useState(0);
 
         // Separar imagens e vídeos (simplificado)
         const imageFiles = mediaFiles.filter(file =>
@@ -525,26 +527,16 @@ export default function HomeScreen({ navigation }) {
         const defaultImage = 'https://via.placeholder.com/300x200?text=Sem+Imagem';
         const displayMediaFiles = imageFiles.length > 0 ? imageFiles : [defaultImage];
 
-        const handleImageScroll = useCallback((event) => {
-            const contentOffset = event.nativeEvent.contentOffset.x;
-            const imageIndex = Math.round(contentOffset / (width - 40));
-            setCurrentIndex(imageIndex);
-        }, []);
+        // Navegação com setas
+        const handlePreviousImage = useCallback((event) => {
+            event.stopPropagation();
+            setCurrentIndex(prev => prev > 0 ? prev - 1 : displayMediaFiles.length - 1);
+        }, [displayMediaFiles.length]);
 
-        const renderMediaItem = useCallback(({ item: mediaItem, index: mediaIndex }) => {
-            return (
-                <Image
-                    source={{ uri: mediaItem }}
-                    style={styles.mediaItem}
-                    contentFit="cover"
-                    cachePolicy="memory-disk"
-                    placeholder={require('../assets/placeholder-image.png')}
-                    transition={200}
-                    priority="normal"
-                    recyclingKey={`${item.id}-${mediaIndex}`}
-                />
-            );
-        }, [item.id]);
+        const handleNextImage = useCallback((event) => {
+            event.stopPropagation();
+            setCurrentIndex(prev => prev < displayMediaFiles.length - 1 ? prev + 1 : 0);
+        }, [displayMediaFiles.length]);
 
         return (
             <TouchableOpacity
@@ -554,51 +546,39 @@ export default function HomeScreen({ navigation }) {
             >
 
                 <View style={styles.mediaSection}>
-                    <FlatList
-                        data={displayMediaFiles}
-                        renderItem={renderMediaItem}
-                        keyExtractor={(mediaItem, mediaIndex) => `${item.id}-media-${mediaIndex}`}
-                        horizontal
-                        pagingEnabled
-                        showsHorizontalScrollIndicator={false}
-                        onScroll={handleImageScroll}
-                        scrollEventThrottle={16}
-                        style={styles.mediaList}
-                        nestedScrollEnabled={true}
-                        scrollEnabled={true}
-                        bounces={false}
-                        decelerationRate="fast"
-                        removeClippedSubviews={false}
-                        maxToRenderPerBatch={2}
-                        windowSize={3}
-                        initialNumToRender={1}
-                        updateCellsBatchingPeriod={100}
-                        directionalLockEnabled={true}
-                        alwaysBounceHorizontal={false}
-                        alwaysBounceVertical={false}
+                    {/* Imagem atual */}
+                    <Image
+                        source={{ uri: displayMediaFiles[currentIndex] }}
+                        style={styles.mediaItem}
+                        contentFit="cover"
+                        cachePolicy="memory-disk"
+                        placeholder={require('../assets/placeholder-image.png')}
+                        transition={200}
+                        priority="normal"
                     />
 
-                    {/* Indicadores de múltiplas imagens */}
+                    {/* Navegação integrada com contador (apenas se há múltiplas imagens) */}
                     {hasMultipleMedia && (
-                        <View style={styles.mediaIndicators}>
-                            {displayMediaFiles.map((_, mediaIndex) => (
-                                <View
-                                    key={mediaIndex}
-                                    style={[
-                                        styles.mediaIndicator,
-                                        mediaIndex === currentIndex && styles.mediaIndicatorActive
-                                    ]}
-                                />
-                            ))}
-                        </View>
-                    )}
+                        <View style={styles.imageNavigationCompact}>
+                            <TouchableOpacity
+                                style={styles.navButtonCompact}
+                                onPress={handlePreviousImage}
+                                activeOpacity={0.7}
+                            >
+                                <Ionicons name="chevron-back" size={24} color="#fff" />
+                            </TouchableOpacity>
 
-                    {/* Indicador de quantidade de mídias */}
-                    {hasMultipleMedia && (
-                        <View style={styles.mediaCountBadge}>
-                            <Text style={styles.mediaCountText}>
+                            <Text style={styles.imageCounterCompact}>
                                 {currentIndex + 1}/{displayMediaFiles.length}
                             </Text>
+
+                            <TouchableOpacity
+                                style={styles.navButtonCompact}
+                                onPress={handleNextImage}
+                                activeOpacity={0.7}
+                            >
+                                <Ionicons name="chevron-forward" size={24} color="#fff" />
+                            </TouchableOpacity>
                         </View>
                     )}
 
@@ -637,7 +617,7 @@ export default function HomeScreen({ navigation }) {
                     </TouchableOpacity>
                 </View>
 
-                <View style={styles.propertyInfo} onPress={handlePress} activeOpacity={0.8}>
+                <View style={styles.propertyInfo}>
                     <Text style={styles.propertyTitle} numberOfLines={2}>
                         {item.title ?? 'Título indisponível'}
                     </Text>
@@ -692,7 +672,6 @@ export default function HomeScreen({ navigation }) {
                         <Text style={styles.verDetalhesText}>Ver detalhes</Text>
                     </TouchableOpacity> */}
                 </View>
-
 
             </TouchableOpacity>
         );
@@ -1299,38 +1278,40 @@ const styles = StyleSheet.create({
         backgroundColor: '#e9ecef',
     },
 
-    mediaIndicators: {
+    imageNavigationCompact: {
         position: 'absolute',
         bottom: 15,
-        left: 15,
-        right: 15,
+        alignSelf: 'center',
         flexDirection: 'row',
-        justifyContent: 'center',
-        gap: 8,
-    },
-    mediaIndicator: {
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-        backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    },
-    mediaIndicatorActive: {
-        backgroundColor: '#fff',
-        width: 20,
-    },
-    mediaCountBadge: {
-        position: 'absolute',
-        bottom: 15,
-        left: 15,
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        alignItems: 'center',
+        backgroundColor: 'rgba(62, 60, 60, 0)',
+        borderRadius: 25,
         paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 12,
+        paddingVertical: 6,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+        elevation: 6,
     },
-    mediaCountText: {
+    navButtonCompact: {
+        width: 44,
+        height: 44,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 22,
+        backgroundColor: 'rgba(18, 17, 17, 0.38)',
+    },
+    imageCounterCompact: {
         color: '#fff',
-        fontSize: 12,
-        fontWeight: '600',
+        fontSize: 16,
+        fontWeight: '700',
+        marginHorizontal: 16,
+        textAlign: 'center',
+        minWidth: 40,
     },
     mediaTypeBadge: {
         position: 'absolute',

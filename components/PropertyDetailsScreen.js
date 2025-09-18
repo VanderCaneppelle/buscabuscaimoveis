@@ -431,23 +431,6 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                     </View>
                 )}
 
-                {/* Indicadores de tipo de mídia */}
-                {finalDisplayMedia.length > 1 && (
-                    <View style={styles.mediaTypeIndicators}>
-                        {finalDisplayMedia.map((item, index) => {
-                            const isVideo = isVideoFile(item);
-                            return (
-                                <View key={index} style={styles.mediaTypeIndicator}>
-                                    <Ionicons
-                                        name={isVideo ? "videocam" : "image"}
-                                        size={12}
-                                        color={index === currentImageIndex ? "#1e3a8a" : "#64748b"}
-                                    />
-                                </View>
-                            );
-                        })}
-                    </View>
-                )}
             </View>
 
             <ScrollView
@@ -646,24 +629,6 @@ const styles = StyleSheet.create({
 
 
 
-    mediaTypeIndicators: {
-        position: 'absolute',
-        bottom: 60,
-        left: 0,
-        right: 0,
-        flexDirection: 'row',
-        justifyContent: 'center',
-        gap: 8,
-        zIndex: 1,
-    },
-    mediaTypeIndicator: {
-        width: 20,
-        height: 20,
-        borderRadius: 10,
-        backgroundColor: 'rgba(255, 255, 255, 0.8)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
     imageIndicators: {
         position: 'absolute',
         bottom: 20,
