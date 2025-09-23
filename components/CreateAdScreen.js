@@ -713,18 +713,43 @@ export default function CreateAdScreen({ navigation, route }) {
                                 <TouchableWithoutFeedback onPress={handlePressOutside}>
                                     <View style={styles.addressOuterContainer}>
                                         <View style={[styles.inputGroup, styles.addressInputGroup]}>
-                                            <Text style={styles.inputLabel}>Buscar Endereço *</Text>
-                                            <TouchableOpacity
-                                                activeOpacity={0.7}
-                                                onPress={() => setShowAddressModal(true)}
-                                            >
-                                                <View style={[styles.textInput, styles.addressSearchInput, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}>
-                                                    <Text style={{ color: addressQuery ? '#2c3e50' : '#7f8c8d' }}>
-                                                        {addressQuery || 'Digite o endereço (ex: Rua Augusta, 123, São Paulo)'}
-                                                    </Text>
-                                                    <Ionicons name="search" size={18} color="#7f8c8d" />
-                                                </View>
-                                            </TouchableOpacity>
+                                            <Text style={styles.inputLabel}>Endereço *</Text>
+                                            <TextInput
+                                                style={[styles.textInput, styles.addressSearchInput, styles.multilineAddressInput, selectedAddress && styles.readOnlyInput]}
+                                                value={selectedAddress ?
+                                                    `${selectedAddress.address || ''}\n${selectedAddress.neighborhood || ''}\n${selectedAddress.city || ''}, ${selectedAddress.state || ''}`.trim() :
+                                                    ''
+                                                }
+                                                placeholder="Digite o endereço (ex: Rua Augusta, 123, São Paulo)"
+                                                placeholderTextColor="#7f8c8d"
+                                                editable={!selectedAddress}
+                                                multiline={true}
+                                                numberOfLines={3}
+                                                textAlignVertical="top"
+                                                onFocus={() => {
+                                                    if (!selectedAddress) {
+                                                        setShowAddressModal(true);
+                                                    }
+                                                }}
+                                                onPressIn={() => {
+                                                    if (!selectedAddress) {
+                                                        setShowAddressModal(true);
+                                                    }
+                                                }}
+                                            />
+
+                                            {/* Botão de editar endereço quando há endereço selecionado */}
+                                            {selectedAddress && (
+                                                <TouchableOpacity
+                                                    style={styles.editAddressButton}
+                                                    onPress={() => {
+                                                        setShowAddressModal(true);
+                                                    }}
+                                                >
+                                                    <Ionicons name="create-outline" size={16} color="#007AFF" />
+                                                    <Text style={styles.editAddressText}>Editar Endereço</Text>
+                                                </TouchableOpacity>
+                                            )}
 
                                             {/* Botão alternativo quando não há sugestões */}
                                             {!showAddressSuggestions && !selectedAddress && addressQuery.length > 2 && (
@@ -741,77 +766,6 @@ export default function CreateAdScreen({ navigation, route }) {
                                             )}
                                         </View>
 
-                                        {/* Campos Preenchidos Automaticamente */}
-                                        {selectedAddress && (
-                                            <View style={styles.addressPreviewContainer}>
-                                                <Text style={styles.addressPreviewTitle}>Endereço Selecionado:</Text>
-
-                                                <View style={styles.row}>
-                                                    <View style={[styles.inputGroup, styles.halfWidth]}>
-                                                        <Text style={styles.inputLabel}>Endereço</Text>
-                                                        <TextInput
-                                                            style={[styles.textInput, styles.readOnlyInput]}
-                                                            value={selectedAddress.address || ''}
-                                                            editable={false}
-                                                        />
-                                                    </View>
-                                                    <View style={[styles.inputGroup, styles.halfWidth]}>
-                                                        <Text style={styles.inputLabel}>Bairro</Text>
-                                                        <TextInput
-                                                            style={[styles.textInput, styles.readOnlyInput]}
-                                                            value={selectedAddress.neighborhood || ''}
-                                                            editable={false}
-                                                        />
-                                                    </View>
-                                                </View>
-
-                                                <View style={styles.row}>
-                                                    <View style={[styles.inputGroup, styles.halfWidth]}>
-                                                        <Text style={styles.inputLabel}>Cidade</Text>
-                                                        <TextInput
-                                                            style={[styles.textInput, styles.readOnlyInput]}
-                                                            value={selectedAddress.city || ''}
-                                                            editable={false}
-                                                        />
-                                                    </View>
-                                                    <View style={[styles.inputGroup, styles.halfWidth]}>
-                                                        <Text style={styles.inputLabel}>Estado</Text>
-                                                        <TextInput
-                                                            style={[styles.textInput, styles.readOnlyInput]}
-                                                            value={selectedAddress.state || ''}
-                                                            editable={false}
-                                                        />
-                                                    </View>
-                                                </View>
-
-                                                <View style={styles.row}>
-                                                    <View style={[styles.inputGroup, styles.halfWidth]}>
-                                                        <Text style={styles.inputLabel}>CEP</Text>
-                                                        <TextInput
-                                                            style={[styles.textInput, styles.readOnlyInput]}
-                                                            value={selectedAddress.zipCode || ''}
-                                                            editable={false}
-                                                        />
-                                                    </View>
-                                                </View>
-
-                                                <TouchableOpacity
-                                                    style={styles.changeAddressButton}
-                                                    onPress={() => {
-                                                        setSelectedAddress(null);
-                                                        setAddressQuery('');
-                                                        setFormData(prev => ({
-                                                            ...prev,
-                                                            latitude: null,
-                                                            longitude: null
-                                                        }));
-                                                    }}
-                                                >
-                                                    <Ionicons name="refresh-outline" size={16} color="#e74c3c" />
-                                                    <Text style={styles.changeAddressText}>Alterar Endereço</Text>
-                                                </TouchableOpacity>
-                                            </View>
-                                        )}
                                     </View>
                                 </TouchableWithoutFeedback>
                             </View>
@@ -2082,6 +2036,34 @@ const styles = StyleSheet.create({
         color: '#e74c3c',
         marginLeft: 5,
         fontWeight: '500',
+    },
+    fullAddressInput: {
+        minHeight: 60,
+        textAlignVertical: 'top',
+        paddingTop: 12,
+    },
+    editAddressButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 10,
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        backgroundColor: '#fff',
+        borderRadius: 6,
+        borderWidth: 1,
+        borderColor: '#007AFF',
+    },
+    editAddressText: {
+        fontSize: 12,
+        color: '#007AFF',
+        marginLeft: 5,
+        fontWeight: '500',
+    },
+    multilineAddressInput: {
+        minHeight: 80,
+        paddingTop: 12,
+        textAlignVertical: 'top',
     },
 
     // Estilos para botões do mapa
