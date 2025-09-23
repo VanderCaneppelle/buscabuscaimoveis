@@ -6,13 +6,15 @@ import {
     TouchableOpacity,
     Alert,
     ActivityIndicator,
-    Platform
+    Platform,
+    Modal
 } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE, PROVIDER_DEFAULT } from 'react-native-maps';
 import * as Location from 'expo-location';
-import { reverseGeocode } from '../lib/geocodingService';
+import { reverseGeocode, testMapboxToken } from '../lib/geocodingService';
 
 const MapaEscolherEndereco = ({ onAddressSelect, onCancel }) => {
+
     const [mapRegion, setMapRegion] = useState({
         latitude: -26.91884, // Itajaí como padrão
         longitude: -48.673108,
@@ -30,11 +32,18 @@ const MapaEscolherEndereco = ({ onAddressSelect, onCancel }) => {
 
     const requestLocationPermission = async () => {
         try {
-            const { status } = await Location.requestForegroundPermissionsAsync();
+            // Verificar se já temos permissão
+            let { status } = await Location.getForegroundPermissionsAsync();
+
+            if (status !== 'granted') {
+                status = (await Location.requestForegroundPermissionsAsync()).status;
+            }
 
             if (status === 'granted') {
                 const location = await Location.getCurrentPositionAsync({
-                    accuracy: Location.Accuracy.Balanced,
+                    accuracy: Platform.OS === 'ios' ? Location.Accuracy.High : Location.Accuracy.Balanced,
+                    timeout: 10000,
+                    maximumAge: 60000,
                 });
 
                 const { latitude, longitude } = location.coords;
@@ -47,7 +56,8 @@ const MapaEscolherEndereco = ({ onAddressSelect, onCancel }) => {
 
                 setMapRegion(newRegion);
                 setSelectedCoordinate({ latitude, longitude });
-                console.log('📍 Localização atual obtida para seleção:', { latitude, longitude });
+            } else {
+                console.log('📍 Permissão de localização negada, usando localização padrão');
             }
         } catch (error) {
             console.error('❌ Erro ao obter localização:', error);
@@ -65,7 +75,14 @@ const MapaEscolherEndereco = ({ onAddressSelect, onCancel }) => {
         setLoading(true);
 
         try {
-            const address = await reverseGeocode(coordinate.latitude, coordinate.longitude);
+            // Adicionar timeout para evitar travamento
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Timeout: operação demorou muito')), 10000)
+            );
+
+            const addressPromise = reverseGeocode(coordinate.latitude, coordinate.longitude);
+            const address = await Promise.race([addressPromise, timeoutPromise]);
+
             if (address) {
                 setAddressInfo(address);
                 console.log('✅ Endereço obtido:', address);
@@ -74,7 +91,11 @@ const MapaEscolherEndereco = ({ onAddressSelect, onCancel }) => {
             }
         } catch (error) {
             console.error('❌ Erro ao obter endereço:', error);
-            Alert.alert('Erro', 'Falha ao obter endereço. Tente novamente.');
+            if (error.message.includes('Timeout')) {
+                Alert.alert('Timeout', 'A operação demorou muito. Tente novamente.');
+            } else {
+                Alert.alert('Erro', 'Falha ao obter endereço. Tente novamente.');
+            }
         } finally {
             setLoading(false);
         }
@@ -89,13 +110,23 @@ const MapaEscolherEndereco = ({ onAddressSelect, onCancel }) => {
         setLoading(true);
 
         try {
-            const address = await reverseGeocode(coordinate.latitude, coordinate.longitude);
+            // Adicionar timeout para evitar travamento
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Timeout: operação demorou muito')), 10000)
+            );
+
+            const addressPromise = reverseGeocode(coordinate.latitude, coordinate.longitude);
+            const address = await Promise.race([addressPromise, timeoutPromise]);
+
             if (address) {
                 setAddressInfo(address);
                 console.log('✅ Endereço atualizado:', address);
             }
         } catch (error) {
             console.error('❌ Erro ao atualizar endereço:', error);
+            if (error.message.includes('Timeout')) {
+                Alert.alert('Timeout', 'A operação demorou muito. Tente novamente.');
+            }
         } finally {
             setLoading(false);
         }
@@ -112,6 +143,7 @@ const MapaEscolherEndereco = ({ onAddressSelect, onCancel }) => {
             Alert.alert('Aviso', 'Selecione uma localização no mapa primeiro.');
         }
     };
+
 
     if (loadingLocation) {
         return (
@@ -143,11 +175,16 @@ const MapaEscolherEndereco = ({ onAddressSelect, onCancel }) => {
             <MapView
                 style={styles.map}
                 provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : PROVIDER_DEFAULT}
-                region={mapRegion}
+                initialRegion={mapRegion}
                 onPress={handleMapPress}
                 showsUserLocation={true}
                 showsMyLocationButton={true}
                 showsCompass={true}
+                loadingEnabled={false}
+                onMapReady={() => {
+                    console.log('🗺️ Mapa carregado!');
+                }}
+                mapType="standard"
             >
                 {selectedCoordinate && (
                     <Marker
@@ -187,6 +224,7 @@ const MapaEscolherEndereco = ({ onAddressSelect, onCancel }) => {
                     </View>
                 )}
             </View>
+
         </View>
     );
 };
