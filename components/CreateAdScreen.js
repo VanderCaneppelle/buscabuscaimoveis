@@ -10,6 +10,7 @@ import {
     ActivityIndicator,
     Modal,
     KeyboardAvoidingView,
+    Keyboard,
     Platform,
     FlatList,
     Dimensions,
@@ -41,11 +42,12 @@ export default function CreateAdScreen({ navigation, route }) {
     const [mediaFiles, setMediaFiles] = useState([]);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [showProgressModal, setShowProgressModal] = useState(false);
-    const [showPropertyTypeDropdown, setShowPropertyTypeDropdown] = useState(false);
-    const [showTransactionTypeDropdown, setShowTransactionTypeDropdown] = useState(false);
-    const [showBedroomsDropdown, setShowBedroomsDropdown] = useState(false);
-    const [showBathroomsDropdown, setShowBathroomsDropdown] = useState(false);
-    const [showParkingDropdown, setShowParkingDropdown] = useState(false);
+    // Modais de seleção
+    const [showPropertyTypeModal, setShowPropertyTypeModal] = useState(false);
+    const [showTransactionTypeModal, setShowTransactionTypeModal] = useState(false);
+    const [showBedroomsModal, setShowBedroomsModal] = useState(false);
+    const [showBathroomsModal, setShowBathroomsModal] = useState(false);
+    const [showParkingModal, setShowParkingModal] = useState(false);
 
     // Estados para autocomplete de endereço
     const [addressQuery, setAddressQuery] = useState('');
@@ -54,6 +56,19 @@ export default function CreateAdScreen({ navigation, route }) {
     const [searchingAddress, setSearchingAddress] = useState(false);
     const [selectedAddress, setSelectedAddress] = useState(null);
     const [showMapPicker, setShowMapPicker] = useState(false);
+
+    // Visibilidade do teclado para permitir dismiss com um toque
+    const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+
+    // Controla se algum dropdown/sugestão está aberto para desabilitar o scroll do pai
+    const anyDropdownOpen = (
+        showAddressSuggestions ||
+        showPropertyTypeModal ||
+        showTransactionTypeModal ||
+        showBedroomsModal ||
+        showBathroomsModal ||
+        showParkingModal
+    );
 
     const [formData, setFormData] = useState({
         title: '',
@@ -77,6 +92,15 @@ export default function CreateAdScreen({ navigation, route }) {
 
     useEffect(() => {
         checkUserPermissions();
+    }, []);
+
+    useEffect(() => {
+        const showSub = Keyboard.addListener('keyboardDidShow', () => setIsKeyboardVisible(true));
+        const hideSub = Keyboard.addListener('keyboardDidHide', () => setIsKeyboardVisible(false));
+        return () => {
+            showSub.remove();
+            hideSub.remove();
+        };
     }, []);
 
     // Atualizar dados sempre que a tela ganhar foco
@@ -214,6 +238,12 @@ export default function CreateAdScreen({ navigation, route }) {
         }));
     };
 
+    // Dismiss teclado e dropdowns ao tocar fora
+    const handleTapOutside = () => {
+        Keyboard.dismiss();
+        closeAllDropdowns();
+    };
+
     // Função para abrir seleção no mapa
     const handleOpenMapPicker = () => {
         setShowAddressSuggestions(false);
@@ -230,6 +260,14 @@ export default function CreateAdScreen({ navigation, route }) {
         setFormData(prev => ({
             ...prev,
             price: formattedValue
+        }));
+    };
+
+    const handleSalePriceChange = (value) => {
+        const formattedValue = formatCurrency(value);
+        setFormData(prev => ({
+            ...prev,
+            salePrice: formattedValue
         }));
     };
 
@@ -264,13 +302,14 @@ export default function CreateAdScreen({ navigation, route }) {
     // Opções numéricas para dropdowns (0 a 8)
     const numericOptions = Array.from({ length: 9 }, (_, i) => i.toString()); // 0 a 8
 
-    // Função para fechar todos os dropdowns
+    // Função para fechar todos os seletores/modais e sugestões
     const closeAllDropdowns = () => {
-        setShowPropertyTypeDropdown(false);
-        setShowTransactionTypeDropdown(false);
-        setShowBedroomsDropdown(false);
-        setShowBathroomsDropdown(false);
-        setShowParkingDropdown(false);
+        setShowPropertyTypeModal(false);
+        setShowTransactionTypeModal(false);
+        setShowBedroomsModal(false);
+        setShowBathroomsModal(false);
+        setShowParkingModal(false);
+        setShowAddressSuggestions(false);
     };
 
     // Função para selecionar valor numérico
@@ -284,14 +323,13 @@ export default function CreateAdScreen({ navigation, route }) {
 
 
     const validateForm = () => {
-        const requiredFields = ['title', 'price', 'salePrice', 'propertyType', 'transactionType'];
+        const requiredFields = ['title', 'price', 'propertyType', 'transactionType'];
 
         for (const field of requiredFields) {
             if (!formData[field].trim()) {
                 const fieldNames = {
                     title: 'Título',
                     price: 'Preço',
-                    salePrice: 'Preço de Venda',
                     propertyType: 'Tipo de Imóvel',
                     transactionType: 'Tipo de Transação'
                 };
@@ -313,15 +351,18 @@ export default function CreateAdScreen({ navigation, route }) {
         }
 
         const numericPrice = getNumericPrice(formData.price);
-        const numericSalePrice = getNumericPrice(formData.salePrice);
         if (isNaN(numericPrice) || numericPrice <= 0) {
             Alert.alert('Preço Inválido', 'Digite um preço válido');
             return false;
         }
 
-        if (isNaN(numericSalePrice) || numericSalePrice <= 0) {
-            Alert.alert('Preço de Venda Inválido', 'Digite um preço de venda válido');
-            return false;
+        // Validar preço promocional apenas se preenchido
+        if (formData.salePrice.trim()) {
+            const numericSalePrice = getNumericPrice(formData.salePrice);
+            if (isNaN(numericSalePrice) || numericSalePrice <= 0) {
+                Alert.alert('Preço Promocional Inválido', 'Digite um preço promocional válido');
+                return false;
+            }
         }
 
         // Verificar se há arquivos muito grandes
@@ -447,7 +488,7 @@ export default function CreateAdScreen({ navigation, route }) {
                 user_id: user.id,
                 ...formData,
                 price: getNumericPrice(formData.price).toString(),
-                salePrice: getNumericPrice(formData.salePrice).toString()
+                salePrice: formData.salePrice.trim() ? getNumericPrice(formData.salePrice).toString() : ''
             };
 
             // Callback para atualizar progresso
@@ -558,14 +599,22 @@ export default function CreateAdScreen({ navigation, route }) {
             </View>
 
             {/* Conteúdo Principal */}
-            <View style={styles.contentContainer}>
+            <View
+                style={styles.contentContainer}
+                onStartShouldSetResponderCapture={() => isKeyboardVisible}
+                onResponderRelease={handleTapOutside}
+            >
 
                 <KeyboardAvoidingView
                     style={styles.keyboardView}
                     behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 >
-                    <TouchableWithoutFeedback onPress={closeAllDropdowns}>
-                        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+                    <TouchableWithoutFeedback onPress={handleTapOutside} accessible={false}>
+                        <ScrollView style={styles.content}
+                            showsVerticalScrollIndicator={false}
+                            keyboardShouldPersistTaps="always"
+                            nestedScrollEnabled
+                            scrollEnabled={!anyDropdownOpen}>
                             {/* Plan Info Card */}
                             {userPlanInfo?.plan && (
                                 <View style={styles.planInfoCard}>
@@ -818,18 +867,19 @@ export default function CreateAdScreen({ navigation, route }) {
                                         />
                                     </View>
                                     <View style={[styles.inputGroup, styles.halfWidth]}>
-                                        <Text style={styles.inputLabel}>Preço de Venda</Text>
+                                        <Text style={styles.inputLabel}>Preço Promocional</Text>
                                         <TextInput
-                                            style={[styles.textInput, styles.textArea]}
+                                            style={styles.textInput}
                                             value={formData.salePrice}
-                                            onChangeText={(value) => handleInputChange('salePrice', value)}
+                                            onChangeText={handleSalePriceChange}
                                             placeholder="R$ 0,00"
                                             placeholderTextColor="#7f8c8d"
-                                            multiline
-                                            numberOfLines={4}
                                             keyboardType="numeric"
                                         />
                                     </View>
+                                </View>
+
+                                <View style={styles.row}>
                                     <View style={[styles.inputGroup, styles.halfWidth]}>
                                         <Text style={styles.inputLabel}>Área (m²)</Text>
                                         <TextInput
@@ -843,17 +893,14 @@ export default function CreateAdScreen({ navigation, route }) {
                                     </View>
                                 </View>
 
-                                {/* Tipo de Imóvel */}
-                                <Text style={[styles.sectionTitle, styles.sectionTitleWithMargin]}>Tipo de Imóvel</Text>
-
                                 <View style={styles.row}>
-                                    <View style={[styles.inputGroup, styles.halfWidth, styles.dropdownContainer]}>
+                                    <View style={[styles.inputGroup, styles.halfWidth, styles.primaryDropdownContainer]}>
                                         <Text style={styles.inputLabel}>Tipo *</Text>
                                         <TouchableOpacity
                                             style={styles.dropdownButton}
                                             onPress={() => {
                                                 closeAllDropdowns();
-                                                setShowPropertyTypeDropdown(!showPropertyTypeDropdown);
+                                                setShowPropertyTypeModal(true);
                                             }}
                                         >
                                             <Text style={[
@@ -863,43 +910,21 @@ export default function CreateAdScreen({ navigation, route }) {
                                                 {formData.propertyType || 'Selecione o tipo'}
                                             </Text>
                                             <Ionicons
-                                                name={showPropertyTypeDropdown ? 'chevron-up' : 'chevron-down'}
+                                                name={showPropertyTypeModal ? 'chevron-up' : 'chevron-down'}
                                                 size={20}
                                                 color="#7f8c8d"
                                             />
                                         </TouchableOpacity>
 
-                                        {showPropertyTypeDropdown && (
-                                            <View style={styles.dropdownList}>
-                                                <ScrollView
-                                                    style={styles.dropdownScroll}
-                                                    showsVerticalScrollIndicator={true}
-                                                    indicatorStyle="black"
-                                                    nestedScrollEnabled={true}
-                                                >
-                                                    {propertyTypes.map((type, index) => (
-                                                        <TouchableOpacity
-                                                            key={index}
-                                                            style={styles.dropdownItem}
-                                                            onPress={() => {
-                                                                handleInputChange('propertyType', type);
-                                                                setShowPropertyTypeDropdown(false);
-                                                            }}
-                                                        >
-                                                            <Text style={styles.dropdownItemText}>{type}</Text>
-                                                        </TouchableOpacity>
-                                                    ))}
-                                                </ScrollView>
-                                            </View>
-                                        )}
+                                        {/* Dropdown de Tipo via Modal - removido inline */}
                                     </View>
-                                    <View style={[styles.inputGroup, styles.halfWidth, styles.dropdownContainer]}>
+                                    <View style={[styles.inputGroup, styles.halfWidth, styles.primaryDropdownContainer]}>
                                         <Text style={styles.inputLabel}>Transação *</Text>
                                         <TouchableOpacity
                                             style={styles.dropdownButton}
                                             onPress={() => {
                                                 closeAllDropdowns();
-                                                setShowTransactionTypeDropdown(!showTransactionTypeDropdown);
+                                                setShowTransactionTypeModal(true);
                                             }}
                                         >
                                             <Text style={[
@@ -909,46 +934,23 @@ export default function CreateAdScreen({ navigation, route }) {
                                                 {formData.transactionType || 'Selecione a transação'}
                                             </Text>
                                             <Ionicons
-                                                name={showTransactionTypeDropdown ? 'chevron-up' : 'chevron-down'}
+                                                name={showTransactionTypeModal ? 'chevron-up' : 'chevron-down'}
                                                 size={20}
                                                 color="#7f8c8d"
                                             />
                                         </TouchableOpacity>
-
-                                        {showTransactionTypeDropdown && (
-                                            <View style={styles.dropdownList}>
-                                                <ScrollView
-                                                    style={styles.dropdownScroll}
-                                                    showsVerticalScrollIndicator={true}
-                                                    indicatorStyle="black"
-                                                    nestedScrollEnabled={true}
-                                                >
-                                                    {transactionTypes.map((type, index) => (
-                                                        <TouchableOpacity
-                                                            key={index}
-                                                            style={styles.dropdownItem}
-                                                            onPress={() => {
-                                                                handleInputChange('transactionType', type);
-                                                                setShowTransactionTypeDropdown(false);
-                                                            }}
-                                                        >
-                                                            <Text style={styles.dropdownItemText}>{type}</Text>
-                                                        </TouchableOpacity>
-                                                    ))}
-                                                </ScrollView>
-                                            </View>
-                                        )}
+                                        {/* Dropdown de Transação via Modal */}
                                     </View>
                                 </View>
 
                                 <View style={styles.row}>
-                                    <View style={[styles.inputGroup, styles.thirdWidth, styles.dropdownContainer]}>
+                                    <View style={[styles.inputGroup, styles.thirdWidth, styles.secondaryDropdownContainer]}>
                                         <Text style={styles.inputLabel}>Quartos</Text>
                                         <TouchableOpacity
                                             style={styles.dropdownButton}
                                             onPress={() => {
                                                 closeAllDropdowns();
-                                                setShowBedroomsDropdown(!showBedroomsDropdown);
+                                                setShowBedroomsModal(true);
                                             }}
                                         >
                                             <Text style={[
@@ -958,43 +960,20 @@ export default function CreateAdScreen({ navigation, route }) {
                                                 {formData.bedrooms || '0'}
                                             </Text>
                                             <Ionicons
-                                                name={showBedroomsDropdown ? 'chevron-up' : 'chevron-down'}
+                                                name={showBedroomsModal ? 'chevron-up' : 'chevron-down'}
                                                 size={20}
                                                 color="#7f8c8d"
                                             />
                                         </TouchableOpacity>
-
-                                        {showBedroomsDropdown && (
-                                            <View style={styles.dropdownList}>
-                                                <ScrollView
-                                                    style={styles.dropdownScroll}
-                                                    showsVerticalScrollIndicator={true}
-                                                    indicatorStyle="black"
-                                                    nestedScrollEnabled={true}
-                                                >
-                                                    {numericOptions.map((value, index) => (
-                                                        <TouchableOpacity
-                                                            key={index}
-                                                            style={styles.dropdownItem}
-                                                            onPress={() => {
-                                                                selectNumericValue('bedrooms', value);
-                                                                setShowBedroomsDropdown(false);
-                                                            }}
-                                                        >
-                                                            <Text style={styles.dropdownItemText}>{value}</Text>
-                                                        </TouchableOpacity>
-                                                    ))}
-                                                </ScrollView>
-                                            </View>
-                                        )}
+                                        {/* Quartos via Modal */}
                                     </View>
-                                    <View style={[styles.inputGroup, styles.thirdWidth, styles.dropdownContainer]}>
+                                    <View style={[styles.inputGroup, styles.thirdWidth, styles.secondaryDropdownContainer]}>
                                         <Text style={styles.inputLabel}>Banheiros</Text>
                                         <TouchableOpacity
                                             style={styles.dropdownButton}
                                             onPress={() => {
                                                 closeAllDropdowns();
-                                                setShowBathroomsDropdown(!showBathroomsDropdown);
+                                                setShowBathroomsModal(true);
                                             }}
                                         >
                                             <Text style={[
@@ -1004,43 +983,20 @@ export default function CreateAdScreen({ navigation, route }) {
                                                 {formData.bathrooms || '0'}
                                             </Text>
                                             <Ionicons
-                                                name={showBathroomsDropdown ? 'chevron-up' : 'chevron-down'}
+                                                name={showBathroomsModal ? 'chevron-up' : 'chevron-down'}
                                                 size={20}
                                                 color="#7f8c8d"
                                             />
                                         </TouchableOpacity>
-
-                                        {showBathroomsDropdown && (
-                                            <View style={styles.dropdownList}>
-                                                <ScrollView
-                                                    style={styles.dropdownScroll}
-                                                    showsVerticalScrollIndicator={true}
-                                                    indicatorStyle="black"
-                                                    nestedScrollEnabled={true}
-                                                >
-                                                    {numericOptions.map((value, index) => (
-                                                        <TouchableOpacity
-                                                            key={index}
-                                                            style={styles.dropdownItem}
-                                                            onPress={() => {
-                                                                selectNumericValue('bathrooms', value);
-                                                                setShowBathroomsDropdown(false);
-                                                            }}
-                                                        >
-                                                            <Text style={styles.dropdownItemText}>{value}</Text>
-                                                        </TouchableOpacity>
-                                                    ))}
-                                                </ScrollView>
-                                            </View>
-                                        )}
+                                        {/* Banheiros via Modal */}
                                     </View>
-                                    <View style={[styles.inputGroup, styles.thirdWidth, styles.dropdownContainer]}>
+                                    <View style={[styles.inputGroup, styles.thirdWidth, styles.secondaryDropdownContainer]}>
                                         <Text style={styles.inputLabel}>Vagas</Text>
                                         <TouchableOpacity
                                             style={styles.dropdownButton}
                                             onPress={() => {
                                                 closeAllDropdowns();
-                                                setShowParkingDropdown(!showParkingDropdown);
+                                                setShowParkingModal(true);
                                             }}
                                         >
                                             <Text style={[
@@ -1050,35 +1006,12 @@ export default function CreateAdScreen({ navigation, route }) {
                                                 {formData.parkingSpaces || '0'}
                                             </Text>
                                             <Ionicons
-                                                name={showParkingDropdown ? 'chevron-up' : 'chevron-down'}
+                                                name={showParkingModal ? 'chevron-up' : 'chevron-down'}
                                                 size={20}
                                                 color="#7f8c8d"
                                             />
                                         </TouchableOpacity>
-
-                                        {showParkingDropdown && (
-                                            <View style={styles.dropdownList}>
-                                                <ScrollView
-                                                    style={styles.dropdownScroll}
-                                                    showsVerticalScrollIndicator={true}
-                                                    indicatorStyle="black"
-                                                    nestedScrollEnabled={true}
-                                                >
-                                                    {numericOptions.map((value, index) => (
-                                                        <TouchableOpacity
-                                                            key={index}
-                                                            style={styles.dropdownItem}
-                                                            onPress={() => {
-                                                                selectNumericValue('parkingSpaces', value);
-                                                                setShowParkingDropdown(false);
-                                                            }}
-                                                        >
-                                                            <Text style={styles.dropdownItemText}>{value}</Text>
-                                                        </TouchableOpacity>
-                                                    ))}
-                                                </ScrollView>
-                                            </View>
-                                        )}
+                                        {/* Vagas via Modal */}
                                     </View>
                                 </View>
                             </View>
@@ -1153,6 +1086,256 @@ export default function CreateAdScreen({ navigation, route }) {
                             </View>
                         </View>
                     </View>
+                </Modal>
+
+                {/* Modal - Seletor de Tipo de Imóvel */}
+                <Modal
+                    visible={showPropertyTypeModal}
+                    transparent
+                    animationType="fade"
+                    onRequestClose={() => setShowPropertyTypeModal(false)}
+                >
+                    <TouchableWithoutFeedback onPress={() => setShowPropertyTypeModal(false)}>
+                        <View style={styles.typeModalOverlay}>
+                            <TouchableWithoutFeedback>
+                                <View style={styles.typeModalCard}>
+                                    <View style={styles.typeModalHandleWrap}>
+                                        <View style={styles.typeModalHandle} />
+                                    </View>
+                                    <View style={styles.typeModalHeader}>
+                                        <Text style={styles.typeModalHeaderText}>Selecione o tipo</Text>
+                                    </View>
+
+                                    <FlatList
+                                        data={propertyTypes}
+                                        keyExtractor={(item, index) => `${index}-${item}`}
+                                        renderItem={({ item }) => (
+                                            <TouchableOpacity
+                                                style={styles.typeModalItem}
+                                                onPress={() => {
+                                                    handleInputChange('propertyType', item);
+                                                    setShowPropertyTypeModal(false);
+                                                }}
+                                            >
+                                                <Text style={styles.typeModalItemText}>{item}</Text>
+                                            </TouchableOpacity>
+                                        )}
+                                        showsVerticalScrollIndicator={true}
+                                        persistentScrollbar={true}
+                                        initialNumToRender={12}
+                                        style={styles.typeModalList}
+                                    />
+
+                                    <TouchableOpacity
+                                        style={styles.typeModalCloseButton}
+                                        onPress={() => setShowPropertyTypeModal(false)}
+                                    >
+                                        <Text style={styles.typeModalCloseText}>Fechar</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </TouchableWithoutFeedback>
+                        </View>
+                    </TouchableWithoutFeedback>
+                </Modal>
+
+                {/* Modal - Seletor de Transação */}
+                <Modal
+                    visible={showTransactionTypeModal}
+                    transparent
+                    animationType="fade"
+                    onRequestClose={() => setShowTransactionTypeModal(false)}
+                >
+                    <TouchableWithoutFeedback onPress={() => setShowTransactionTypeModal(false)}>
+                        <View style={styles.typeModalOverlay}>
+                            <TouchableWithoutFeedback>
+                                <View style={styles.typeModalCard}>
+                                    <View style={styles.typeModalHandleWrap}>
+                                        <View style={styles.typeModalHandle} />
+                                    </View>
+                                    <View style={styles.typeModalHeader}>
+                                        <Text style={styles.typeModalHeaderText}>Selecione a transação</Text>
+                                    </View>
+
+                                    <FlatList
+                                        data={transactionTypes}
+                                        keyExtractor={(item, index) => `${index}-${item}`}
+                                        renderItem={({ item }) => (
+                                            <TouchableOpacity
+                                                style={styles.typeModalItem}
+                                                onPress={() => {
+                                                    handleInputChange('transactionType', item);
+                                                    setShowTransactionTypeModal(false);
+                                                }}
+                                            >
+                                                <Text style={styles.typeModalItemText}>{item}</Text>
+                                            </TouchableOpacity>
+                                        )}
+                                        showsVerticalScrollIndicator
+                                        persistentScrollbar
+                                        initialNumToRender={12}
+                                        style={styles.typeModalList}
+                                    />
+
+                                    <TouchableOpacity
+                                        style={styles.typeModalCloseButton}
+                                        onPress={() => setShowTransactionTypeModal(false)}
+                                    >
+                                        <Text style={styles.typeModalCloseText}>Fechar</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </TouchableWithoutFeedback>
+                        </View>
+                    </TouchableWithoutFeedback>
+                </Modal>
+
+                {/* Modal - Seletor de Quartos */}
+                <Modal
+                    visible={showBedroomsModal}
+                    transparent
+                    animationType="fade"
+                    onRequestClose={() => setShowBedroomsModal(false)}
+                >
+                    <TouchableWithoutFeedback onPress={() => setShowBedroomsModal(false)}>
+                        <View style={styles.typeModalOverlay}>
+                            <TouchableWithoutFeedback>
+                                <View style={styles.typeModalCard}>
+                                    <View style={styles.typeModalHandleWrap}>
+                                        <View style={styles.typeModalHandle} />
+                                    </View>
+                                    <View style={styles.typeModalHeader}>
+                                        <Text style={styles.typeModalHeaderText}>Selecione quartos</Text>
+                                    </View>
+
+                                    <FlatList
+                                        data={numericOptions}
+                                        keyExtractor={(item, index) => `${index}-${item}`}
+                                        renderItem={({ item }) => (
+                                            <TouchableOpacity
+                                                style={styles.typeModalItem}
+                                                onPress={() => {
+                                                    selectNumericValue('bedrooms', item);
+                                                    setShowBedroomsModal(false);
+                                                }}
+                                            >
+                                                <Text style={styles.typeModalItemText}>{item}</Text>
+                                            </TouchableOpacity>
+                                        )}
+                                        showsVerticalScrollIndicator
+                                        persistentScrollbar
+                                        initialNumToRender={12}
+                                        style={styles.typeModalList}
+                                    />
+
+                                    <TouchableOpacity
+                                        style={styles.typeModalCloseButton}
+                                        onPress={() => setShowBedroomsModal(false)}
+                                    >
+                                        <Text style={styles.typeModalCloseText}>Fechar</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </TouchableWithoutFeedback>
+                        </View>
+                    </TouchableWithoutFeedback>
+                </Modal>
+
+                {/* Modal - Seletor de Banheiros */}
+                <Modal
+                    visible={showBathroomsModal}
+                    transparent
+                    animationType="fade"
+                    onRequestClose={() => setShowBathroomsModal(false)}
+                >
+                    <TouchableWithoutFeedback onPress={() => setShowBathroomsModal(false)}>
+                        <View style={styles.typeModalOverlay}>
+                            <TouchableWithoutFeedback>
+                                <View style={styles.typeModalCard}>
+                                    <View style={styles.typeModalHandleWrap}>
+                                        <View style={styles.typeModalHandle} />
+                                    </View>
+                                    <View style={styles.typeModalHeader}>
+                                        <Text style={styles.typeModalHeaderText}>Selecione banheiros</Text>
+                                    </View>
+
+                                    <FlatList
+                                        data={numericOptions}
+                                        keyExtractor={(item, index) => `${index}-${item}`}
+                                        renderItem={({ item }) => (
+                                            <TouchableOpacity
+                                                style={styles.typeModalItem}
+                                                onPress={() => {
+                                                    selectNumericValue('bathrooms', item);
+                                                    setShowBathroomsModal(false);
+                                                }}
+                                            >
+                                                <Text style={styles.typeModalItemText}>{item}</Text>
+                                            </TouchableOpacity>
+                                        )}
+                                        showsVerticalScrollIndicator
+                                        persistentScrollbar
+                                        initialNumToRender={12}
+                                        style={styles.typeModalList}
+                                    />
+
+                                    <TouchableOpacity
+                                        style={styles.typeModalCloseButton}
+                                        onPress={() => setShowBathroomsModal(false)}
+                                    >
+                                        <Text style={styles.typeModalCloseText}>Fechar</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </TouchableWithoutFeedback>
+                        </View>
+                    </TouchableWithoutFeedback>
+                </Modal>
+
+                {/* Modal - Seletor de Vagas */}
+                <Modal
+                    visible={showParkingModal}
+                    transparent
+                    animationType="fade"
+                    onRequestClose={() => setShowParkingModal(false)}
+                >
+                    <TouchableWithoutFeedback onPress={() => setShowParkingModal(false)}>
+                        <View style={styles.typeModalOverlay}>
+                            <TouchableWithoutFeedback>
+                                <View style={styles.typeModalCard}>
+                                    <View style={styles.typeModalHandleWrap}>
+                                        <View style={styles.typeModalHandle} />
+                                    </View>
+                                    <View style={styles.typeModalHeader}>
+                                        <Text style={styles.typeModalHeaderText}>Selecione vagas</Text>
+                                    </View>
+
+                                    <FlatList
+                                        data={numericOptions}
+                                        keyExtractor={(item, index) => `${index}-${item}`}
+                                        renderItem={({ item }) => (
+                                            <TouchableOpacity
+                                                style={styles.typeModalItem}
+                                                onPress={() => {
+                                                    selectNumericValue('parkingSpaces', item);
+                                                    setShowParkingModal(false);
+                                                }}
+                                            >
+                                                <Text style={styles.typeModalItemText}>{item}</Text>
+                                            </TouchableOpacity>
+                                        )}
+                                        showsVerticalScrollIndicator
+                                        persistentScrollbar
+                                        initialNumToRender={12}
+                                        style={styles.typeModalList}
+                                    />
+
+                                    <TouchableOpacity
+                                        style={styles.typeModalCloseButton}
+                                        onPress={() => setShowParkingModal(false)}
+                                    >
+                                        <Text style={styles.typeModalCloseText}>Fechar</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </TouchableWithoutFeedback>
+                        </View>
+                    </TouchableWithoutFeedback>
                 </Modal>
 
                 {/* Plan Upgrade Modal */}
@@ -1414,8 +1597,22 @@ const styles = StyleSheet.create({
         position: 'relative',
         zIndex: 1,
     },
+    // Estilos para campos que não são dropdowns
+    regularInputGroup: {
+        marginBottom: 15,
+        position: 'relative',
+        zIndex: 1,
+    },
     dropdownContainer: {
-        zIndex: 10, // Containers com dropdown têm prioridade maior
+        zIndex: 999999, // Containers com dropdown têm prioridade máxima
+    },
+    // Estilos específicos para dropdowns principais (Tipo e Transação)
+    primaryDropdownContainer: {
+        zIndex: 9999999, // Prioridade ainda maior para dropdowns principais
+    },
+    // Estilos para dropdowns secundários (Quartos, Banheiros, Vagas)
+    secondaryDropdownContainer: {
+        zIndex: 1, // Prioridade menor para não interferir com os principais
     },
     // Estilos específicos para seção de endereço
     addressSection: {
@@ -1662,16 +1859,15 @@ const styles = StyleSheet.create({
         borderColor: '#e0e0e0',
         borderRadius: 8,
         maxHeight: 200,
-        zIndex: 99999,
-        elevation: 50,
+        zIndex: 999999,
+        elevation: 999,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 6,
         marginTop: 2,
-        overflow: 'hidden',
+        overflow: 'hidden', // garante que a lista não vaze
     },
-
     dropdownScroll: {
         maxHeight: 200,
         flexGrow: 0,
@@ -1812,6 +2008,76 @@ const styles = StyleSheet.create({
         color: '#007AFF',
         marginLeft: 8,
         fontWeight: '500',
+    },
+
+    // Modal de Tipo (dropdown via modal)
+    typeModalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.3)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+    },
+    typeModalCard: {
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        maxHeight: 380,
+        width: '70%',
+        maxWidth: 360,
+        overflow: 'hidden',
+        elevation: 6,
+        shadowColor: '#000',
+        shadowOpacity: 0.15,
+        shadowOffset: { width: 0, height: 4 },
+        shadowRadius: 12,
+    },
+    typeModalHandleWrap: {
+        alignItems: 'center',
+        paddingTop: 8,
+    },
+    typeModalHandle: {
+        width: 34,
+        height: 4,
+        borderRadius: 2,
+        backgroundColor: '#E5E7EB',
+    },
+    typeModalHeader: {
+        alignItems: 'center',
+        paddingVertical: 10,
+        paddingHorizontal: 14,
+        borderBottomWidth: 1,
+        borderBottomColor: '#f1f5f9',
+    },
+    typeModalHeaderText: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: '#00335e',
+    },
+    typeModalList: {
+        maxHeight: 215,
+    },
+    typeModalItem: {
+        shadowColor: '#000',
+        paddingVertical: 10,
+        paddingHorizontal: 14,
+        borderBottomWidth: 1,
+        borderBottomColor: '#f3f4f6',
+    },
+    typeModalItemText: {
+        textAlign: 'center',
+        fontSize: 16,
+        color: '#1f2937',
+    },
+    typeModalCloseButton: {
+        paddingVertical: 10,
+        alignItems: 'center',
+        borderTopWidth: 1,
+        borderTopColor: '#f1f5f9',
+    },
+    typeModalCloseText: {
+        color: '#2563EB',
+        fontWeight: '700',
+        fontSize: 14,
     },
 
 }); 
