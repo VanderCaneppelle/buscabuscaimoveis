@@ -11,24 +11,36 @@ import {
 } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE, PROVIDER_DEFAULT } from 'react-native-maps';
 import * as Location from 'expo-location';
+import { Ionicons } from '@expo/vector-icons';
 import { reverseGeocode, testMapboxToken } from '../lib/geocodingService';
 
 const MapaEscolherEndereco = ({ onAddressSelect, onCancel }) => {
 
     const [mapRegion, setMapRegion] = useState({
-        latitude: -26.91884, // Itajaí como padrão
-        longitude: -48.673108,
+        latitude: -27.0903, // Itapema-SC como padrão
+        longitude: -48.6114,
         latitudeDelta: 0.01,
         longitudeDelta: 0.01,
     });
     const [selectedCoordinate, setSelectedCoordinate] = useState(null);
     const [addressInfo, setAddressInfo] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [loadingLocation, setLoadingLocation] = useState(true);
+    const [loadingLocation, setLoadingLocation] = useState(false); // Não mostrar loading inicial
+    const [userLocation, setUserLocation] = useState(null); // Armazenar localização do usuário
 
     useEffect(() => {
         requestLocationPermission();
     }, []);
+
+    // Monitorar mudanças no userLocation para debug
+    useEffect(() => {
+        console.log('📍 userLocation state mudou:', userLocation);
+    }, [userLocation]);
+
+    // Monitorar mudanças no mapRegion para debug
+    useEffect(() => {
+        console.log('📍 mapRegion state mudou:', mapRegion);
+    }, [mapRegion]);
 
     const requestLocationPermission = async () => {
         try {
@@ -40,29 +52,27 @@ const MapaEscolherEndereco = ({ onAddressSelect, onCancel }) => {
             }
 
             if (status === 'granted') {
-                const location = await Location.getCurrentPositionAsync({
+                console.log('📍 Permissão concedida, obtendo localização...');
+                // Buscar localização em segundo plano sem redirecionar
+                Location.getCurrentPositionAsync({
                     accuracy: Platform.OS === 'ios' ? Location.Accuracy.High : Location.Accuracy.Balanced,
-                    timeout: 10000,
-                    maximumAge: 60000,
+                    timeout: 15000,
+                    maximumAge: 30000,
+                }).then(location => {
+                    const { latitude, longitude } = location.coords;
+                    const userLoc = { latitude, longitude };
+                    setUserLocation(userLoc);
+                    console.log('📍 Localização do usuário obtida em segundo plano:', userLoc);
+                    console.log('📍 userLocation state atualizado:', userLoc);
+                }).catch(error => {
+                    console.log('📍 Erro ao obter localização em segundo plano:', error);
+                    console.log('📍 Tipo do erro:', error.message);
                 });
-
-                const { latitude, longitude } = location.coords;
-                const newRegion = {
-                    latitude,
-                    longitude,
-                    latitudeDelta: 0.01,
-                    longitudeDelta: 0.01,
-                };
-
-                setMapRegion(newRegion);
-                setSelectedCoordinate({ latitude, longitude });
             } else {
                 console.log('📍 Permissão de localização negada, usando localização padrão');
             }
         } catch (error) {
-            console.error('❌ Erro ao obter localização:', error);
-        } finally {
-            setLoadingLocation(false);
+            console.error('❌ Erro ao verificar permissões:', error);
         }
     };
 
@@ -145,14 +155,7 @@ const MapaEscolherEndereco = ({ onAddressSelect, onCancel }) => {
     };
 
 
-    if (loadingLocation) {
-        return (
-            <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#007AFF" />
-                <Text style={styles.loadingText}>Obtendo sua localização...</Text>
-            </View>
-        );
-    }
+
 
     return (
         <View style={styles.container}>
@@ -172,19 +175,53 @@ const MapaEscolherEndereco = ({ onAddressSelect, onCancel }) => {
                 </TouchableOpacity>
             </View>
 
+            {/* Botão de localização personalizado apenas para iOS */}
+            {Platform.OS === 'ios' && (
+                <View style={styles.iosLocationButtonContainer}>
+                    <TouchableOpacity
+                        style={styles.iosLocationButton}
+                        onPress={() => {
+                            console.log('📍 Botão de localização pressionado');
+                            console.log('📍 userLocation disponível:', !!userLocation);
+                            console.log('📍 userLocation:', userLocation);
+
+                            if (userLocation) {
+                                const newRegion = {
+                                    latitude: userLocation.latitude,
+                                    longitude: userLocation.longitude,
+                                    latitudeDelta: 0.01,
+                                    longitudeDelta: 0.01,
+                                };
+                                console.log('📍 Atualizando região do mapa para:', newRegion);
+                                setMapRegion(newRegion);
+                                setSelectedCoordinate(userLocation);
+                                console.log('📍 Coordenada selecionada atualizada para:', userLocation);
+                            } else {
+                                console.log('📍 Localização não disponível');
+                                Alert.alert('Localização não disponível', 'A localização ainda não foi obtida. Aguarde um momento e tente novamente.');
+                            }
+                        }}
+                    >
+                        <Ionicons name="locate" size={20} color="#007AFF" />
+                    </TouchableOpacity>
+                </View>
+            )}
+
             <MapView
                 style={styles.map}
                 provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : PROVIDER_DEFAULT}
-                initialRegion={mapRegion}
+                region={mapRegion}
                 onPress={handleMapPress}
                 showsUserLocation={true}
-                showsMyLocationButton={true}
+                showsMyLocationButton={Platform.OS === 'ios' ? false : true}
                 showsCompass={true}
                 loadingEnabled={false}
                 onMapReady={() => {
                     console.log('🗺️ Mapa carregado!');
                 }}
                 mapType="standard"
+                followsUserLocation={false}
+                userLocationAnnotationTitle="Sua localização"
             >
                 {selectedCoordinate && (
                     <Marker
@@ -333,6 +370,27 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: '#888',
         marginBottom: 2,
+    },
+    iosLocationButtonContainer: {
+        position: 'absolute',
+        top: 120,
+        right: 20,
+        zIndex: 1000,
+    },
+    iosLocationButton: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#007AFF',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 5,
     },
 });
 
