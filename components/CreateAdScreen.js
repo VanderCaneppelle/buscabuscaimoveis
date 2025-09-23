@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     View,
     Text,
@@ -18,6 +18,7 @@ import {
     Pressable,
     Image,
 } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PlanService } from '../lib/planService';
@@ -48,6 +49,7 @@ export default function CreateAdScreen({ navigation, route }) {
     const [showBedroomsModal, setShowBedroomsModal] = useState(false);
     const [showBathroomsModal, setShowBathroomsModal] = useState(false);
     const [showParkingModal, setShowParkingModal] = useState(false);
+    const [showAddressModal, setShowAddressModal] = useState(false);
 
     // Estados para autocomplete de endereço
     const [addressQuery, setAddressQuery] = useState('');
@@ -67,8 +69,32 @@ export default function CreateAdScreen({ navigation, route }) {
         showTransactionTypeModal ||
         showBedroomsModal ||
         showBathroomsModal ||
-        showParkingModal
+        showParkingModal ||
+        showAddressModal
     );
+
+    // Refs e utilitários para focos/scroll com teclado
+    const scrollRef = useRef(null);
+    const contentRef = useRef(null);
+    const titleInputRef = useRef(null);
+    const descriptionInputRef = useRef(null);
+    const priceInputRef = useRef(null);
+    const salePriceInputRef = useRef(null);
+    const areaInputRef = useRef(null);
+
+    const scrollToInput = (inputRef, extraOffset = 100) => {
+        if (!inputRef?.current || !contentRef?.current || !scrollRef?.current) return;
+        try {
+            inputRef.current.measureLayout(
+                contentRef.current,
+                (x, y) => {
+                    const yOffset = Math.max(0, y - extraOffset);
+                    scrollRef.current.scrollTo({ y: yOffset, animated: true });
+                },
+                () => { }
+            );
+        } catch (e) { }
+    };
 
     const [formData, setFormData] = useState({
         title: '',
@@ -610,11 +636,19 @@ export default function CreateAdScreen({ navigation, route }) {
                     behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 >
                     <TouchableWithoutFeedback onPress={handleTapOutside} accessible={false}>
-                        <ScrollView style={styles.content}
+                        <KeyboardAwareScrollView
+                            style={styles.content}
                             showsVerticalScrollIndicator={false}
+                            enableOnAndroid
+                            keyboardOpeningTime={0}
+                            extraScrollHeight={100}
+                            extraHeight={140}
                             keyboardShouldPersistTaps="always"
                             nestedScrollEnabled
-                            scrollEnabled={!anyDropdownOpen}>
+                            scrollEnabled={!anyDropdownOpen}
+                            innerRef={(ref) => { if (ref) scrollRef.current = ref.getScrollResponder ? ref.getScrollResponder() : ref; }}
+                            contentContainerStyle={{ paddingBottom: 30 }}
+                        >
                             {/* Plan Info Card */}
                             {userPlanInfo?.plan && (
                                 <View style={styles.planInfoCard}>
@@ -669,74 +703,24 @@ export default function CreateAdScreen({ navigation, route }) {
                             </View>
 
                             {/* Localização - Movida para depois da mídia */}
-                            <View style={[styles.formSection, styles.addressSection]}>
+                            <View style={[styles.formSection, styles.addressSection]} ref={contentRef}>
                                 <Text style={styles.sectionTitle}>Localização</Text>
 
                                 <TouchableWithoutFeedback onPress={handlePressOutside}>
                                     <View style={styles.addressOuterContainer}>
                                         <View style={[styles.inputGroup, styles.addressInputGroup]}>
                                             <Text style={styles.inputLabel}>Buscar Endereço *</Text>
-                                            <View style={styles.addressSearchContainer}>
-                                                <TextInput
-                                                    style={[styles.textInput, styles.addressSearchInput]}
-                                                    value={addressQuery}
-                                                    onChangeText={handleAddressSearch}
-                                                    placeholder="Digite o endereço (ex: Rua Augusta, 123, São Paulo)"
-                                                    placeholderTextColor="#7f8c8d"
-                                                    autoComplete="off"
-                                                    autoCorrect={false}
-                                                />
-                                                {searchingAddress && (
-                                                    <View style={styles.searchingIndicator}>
-                                                        <ActivityIndicator size="small" color="#00335e" />
-                                                    </View>
-                                                )}
-                                            </View>
-
-                                            {/* Lista de Sugestões */}
-                                            {showAddressSuggestions && (
-                                                <View style={styles.suggestionsList}>
-                                                    <ScrollView
-                                                        style={styles.suggestionsFlatList}
-                                                        keyboardShouldPersistTaps="handled"
-                                                        nestedScrollEnabled={true}
-                                                    >
-                                                        {addressSuggestions.map((item, index) => (
-                                                            <TouchableOpacity
-                                                                key={`suggestion_${index}`}
-                                                                style={styles.suggestionItem}
-                                                                onPress={() => handleAddressSelect(item)}
-                                                            >
-                                                                <Ionicons
-                                                                    name="location-outline"
-                                                                    size={16}
-                                                                    color="#00335e"
-                                                                    style={styles.suggestionIcon}
-                                                                />
-                                                                <View style={styles.suggestionContent}>
-                                                                    <Text style={styles.suggestionAddress}>
-                                                                        {item.address || item.formattedAddress.split(',')[0]}
-                                                                    </Text>
-                                                                    <Text style={styles.suggestionLocation}>
-                                                                        {[item.neighborhood, item.city, item.state].filter(Boolean).join(', ')}
-                                                                    </Text>
-                                                                </View>
-                                                            </TouchableOpacity>
-                                                        ))}
-                                                    </ScrollView>
-
-                                                    {/* Botão para escolher no mapa */}
-                                                    <TouchableOpacity
-                                                        style={styles.mapPickerButton}
-                                                        onPress={handleOpenMapPicker}
-                                                    >
-                                                        <Ionicons name="map-outline" size={16} color="#007AFF" />
-                                                        <Text style={styles.mapPickerButtonText}>
-                                                            Não encontrou? Escolher no mapa
-                                                        </Text>
-                                                    </TouchableOpacity>
+                                            <TouchableOpacity
+                                                activeOpacity={0.7}
+                                                onPress={() => setShowAddressModal(true)}
+                                            >
+                                                <View style={[styles.textInput, styles.addressSearchInput, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}>
+                                                    <Text style={{ color: addressQuery ? '#2c3e50' : '#7f8c8d' }}>
+                                                        {addressQuery || 'Digite o endereço (ex: Rua Augusta, 123, São Paulo)'}
+                                                    </Text>
+                                                    <Ionicons name="search" size={18} color="#7f8c8d" />
                                                 </View>
-                                            )}
+                                            </TouchableOpacity>
 
                                             {/* Botão alternativo quando não há sugestões */}
                                             {!showAddressSuggestions && !selectedAddress && addressQuery.length > 2 && (
@@ -1033,7 +1017,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                     )}
                                 </TouchableOpacity>
                             </View>
-                        </ScrollView>
+                        </KeyboardAwareScrollView>
                     </TouchableWithoutFeedback>
                 </KeyboardAvoidingView>
 
@@ -1329,6 +1313,112 @@ export default function CreateAdScreen({ navigation, route }) {
                                     <TouchableOpacity
                                         style={styles.typeModalCloseButton}
                                         onPress={() => setShowParkingModal(false)}
+                                    >
+                                        <Text style={styles.typeModalCloseText}>Fechar</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </TouchableWithoutFeedback>
+                        </View>
+                    </TouchableWithoutFeedback>
+                </Modal>
+
+                {/* Modal - Buscar Endereço */}
+                <Modal
+                    visible={showAddressModal}
+                    transparent
+                    animationType="fade"
+                    onRequestClose={() => setShowAddressModal(false)}
+                >
+                    <TouchableWithoutFeedback onPress={() => setShowAddressModal(false)}>
+                        <View style={styles.typeModalOverlay}>
+                            <TouchableWithoutFeedback>
+                                <View style={styles.AddressModalCard}>
+                                    <View style={styles.typeModalHandleWrap}>
+                                        <View style={styles.typeModalHandle} />
+                                    </View>
+                                    <View style={styles.typeModalHeader}>
+                                        <Text style={styles.typeModalHeaderText}>Buscar Endereço</Text>
+                                    </View>
+
+                                    <View style={{ padding: 12 }}>
+                                        <View style={styles.addressSearchContainer}>
+                                            <TextInput
+                                                style={[styles.textInput, styles.addressSearchInput, styles.addressSearchInputWithClear]}
+                                                value={addressQuery}
+                                                onChangeText={handleAddressSearch}
+                                                placeholder="Digite o endereço"
+                                                placeholderTextColor="#7f8c8d"
+                                                autoComplete="off"
+                                                autoCorrect={false}
+                                                autoFocus
+                                            />
+                                            {addressQuery && addressQuery.length > 0 && (
+                                                <TouchableOpacity
+                                                    onPress={() => {
+                                                        setAddressQuery('');
+                                                        setAddressSuggestions([]);
+                                                        setSelectedAddress(null);
+                                                    }}
+                                                    style={styles.addressClearButton}
+                                                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                                                >
+                                                    <Ionicons name="close-circle" size={18} color="#9CA3AF" />
+                                                </TouchableOpacity>
+                                            )}
+                                            {searchingAddress && (
+                                                <View style={styles.searchingIndicator}>
+                                                    <ActivityIndicator size="small" color="#00335e" />
+                                                </View>
+                                            )}
+                                        </View>
+                                    </View>
+
+                                    <FlatList
+                                        data={addressSuggestions}
+                                        keyExtractor={(_, i) => `sugg_${i}`}
+                                        renderItem={({ item, index }) => (
+                                            <Pressable
+                                                key={`suggestion_${index}`}
+                                                style={styles.suggestionItem}
+                                                android_disableSound
+                                                onPressIn={() => {
+                                                    handleAddressSelect(item);
+                                                    setShowAddressModal(false);
+                                                    Keyboard.dismiss();
+                                                }}
+                                            >
+                                                <Ionicons
+                                                    name="location-outline"
+                                                    size={16}
+                                                    color="#00335e"
+                                                    style={styles.suggestionIcon}
+                                                />
+                                                <View style={styles.suggestionContent}>
+                                                    <Text style={styles.suggestionAddress}>
+                                                        {item.address || item.formattedAddress.split(',')[0]}
+                                                    </Text>
+                                                    <Text style={styles.suggestionLocation}>
+                                                        {[item.neighborhood, item.city, item.state].filter(Boolean).join(', ')}
+                                                    </Text>
+                                                </View>
+                                            </Pressable>
+                                        )}
+                                        keyboardShouldPersistTaps="always"
+                                        keyboardDismissMode="interactive"
+                                        showsVerticalScrollIndicator
+                                        persistentScrollbar
+                                        style={styles.typeModalList}
+                                        ListFooterComponent={
+                                            <TouchableOpacity style={styles.mapPickerButton} onPress={() => { Keyboard.dismiss(); handleOpenMapPicker(); }}>
+                                                <Ionicons name="map-outline" size={16} color="#007AFF" />
+                                                <Text style={styles.mapPickerButtonText}>Não encontrou? Escolher no mapa</Text>
+                                            </TouchableOpacity>
+                                        }
+                                    />
+
+                                    <TouchableOpacity
+                                        style={styles.typeModalCloseButton}
+                                        onPress={() => setShowAddressModal(false)}
                                     >
                                         <Text style={styles.typeModalCloseText}>Fechar</Text>
                                     </TouchableOpacity>
@@ -1887,8 +1977,18 @@ const styles = StyleSheet.create({
     addressSearchContainer: {
         position: 'relative',
     },
+    addressClearButton: {
+        position: 'absolute',
+        right: 40,
+        top: '50%',
+        transform: [{ translateY: -10 }],
+        zIndex: 2,
+    },
     addressSearchInput: {
         paddingRight: 40, // Espaço para o indicador de loading
+    },
+    addressSearchInputWithClear: {
+        paddingRight: 68, // mais espaço para não sobrepor o botão limpar
     },
     searchingIndicator: {
         position: 'absolute',
@@ -2017,6 +2117,19 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         padding: 20,
+    },
+    AddressModalCard: {
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        maxHeight: 380,
+        width: '90%',
+        maxWidth: 360,
+        overflow: 'hidden',
+        elevation: 6,
+        shadowColor: '#000',
+        shadowOpacity: 0.15,
+        shadowOffset: { width: 0, height: 4 },
+        shadowRadius: 12,
     },
     typeModalCard: {
         backgroundColor: '#fff',
