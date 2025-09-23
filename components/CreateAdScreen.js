@@ -70,7 +70,8 @@ export default function CreateAdScreen({ navigation, route }) {
         showBedroomsModal ||
         showBathroomsModal ||
         showParkingModal ||
-        showAddressModal
+        showAddressModal ||
+        showMapPicker
     );
 
     // Refs e utilitários para focos/scroll com teclado
@@ -273,7 +274,10 @@ export default function CreateAdScreen({ navigation, route }) {
     // Função para abrir seleção no mapa
     const handleOpenMapPicker = () => {
         setShowAddressSuggestions(false);
-        setShowMapPicker(true);
+        // Pequeno delay para garantir que o modal anterior feche completamente
+        setTimeout(() => {
+            setShowMapPicker(true);
+        }, 100);
     };
 
     // Função para fechar seleção no mapa
@@ -726,7 +730,10 @@ export default function CreateAdScreen({ navigation, route }) {
                                             {!showAddressSuggestions && !selectedAddress && addressQuery.length > 2 && (
                                                 <TouchableOpacity
                                                     style={styles.mapPickerButtonAlternative}
-                                                    onPress={handleOpenMapPicker}
+                                                    onPress={() => {
+                                                        setShowAddressModal(false); // Fechar modal de endereço
+                                                        handleOpenMapPicker();
+                                                    }}
                                                 >
                                                     <Ionicons name="map-outline" size={18} color="#007AFF" />
                                                     <Text style={styles.mapPickerButtonText}>Escolher endereço no mapa</Text>
@@ -1377,14 +1384,12 @@ export default function CreateAdScreen({ navigation, route }) {
                                         data={addressSuggestions}
                                         keyExtractor={(_, i) => `sugg_${i}`}
                                         renderItem={({ item, index }) => (
-                                            <Pressable
+                                            <TouchableOpacity
                                                 key={`suggestion_${index}`}
                                                 style={styles.suggestionItem}
-                                                android_disableSound
-                                                onPressIn={() => {
+                                                onPress={() => {
                                                     handleAddressSelect(item);
                                                     setShowAddressModal(false);
-                                                    Keyboard.dismiss();
                                                 }}
                                             >
                                                 <Ionicons
@@ -1401,15 +1406,16 @@ export default function CreateAdScreen({ navigation, route }) {
                                                         {[item.neighborhood, item.city, item.state].filter(Boolean).join(', ')}
                                                     </Text>
                                                 </View>
-                                            </Pressable>
+                                            </TouchableOpacity>
                                         )}
-                                        keyboardShouldPersistTaps="always"
-                                        keyboardDismissMode="interactive"
                                         showsVerticalScrollIndicator
                                         persistentScrollbar
                                         style={styles.typeModalList}
                                         ListFooterComponent={
-                                            <TouchableOpacity style={styles.mapPickerButton} onPress={() => { Keyboard.dismiss(); handleOpenMapPicker(); }}>
+                                            <TouchableOpacity style={styles.mapPickerButton} onPress={() => {
+                                                setShowAddressModal(false); // Fechar modal de endereço
+                                                handleOpenMapPicker();
+                                            }}>
                                                 <Ionicons name="map-outline" size={16} color="#007AFF" />
                                                 <Text style={styles.mapPickerButtonText}>Não encontrou? Escolher no mapa</Text>
                                             </TouchableOpacity>
@@ -1504,7 +1510,7 @@ export default function CreateAdScreen({ navigation, route }) {
                 <Modal
                     visible={showMapPicker}
                     animationType="slide"
-                    presentationStyle="fullScreen"
+                    presentationStyle={Platform.OS === 'ios' ? 'pageSheet' : 'fullScreen'}
                     onRequestClose={handleCloseMapPicker}
                 >
                     <MapaEscolherEndereco
