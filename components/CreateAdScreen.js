@@ -754,59 +754,59 @@ export default function CreateAdScreen({ navigation, route }) {
                             <View style={[styles.formSection, styles.addressSection]} ref={contentRef}>
                                 <Text style={styles.sectionTitle}>Localização</Text>
 
-                                <TouchableWithoutFeedback onPress={handlePressOutside}>
-                                    <View style={styles.addressOuterContainer}>
-                                        <View style={[styles.inputGroup, styles.addressInputGroup]}>
-                                            <Text style={styles.inputLabel}>Endereço *</Text>
+                                <View style={styles.addressOuterContainer}>
+                                    <View style={[styles.inputGroup, styles.addressInputGroup]}>
+                                        <Text style={styles.inputLabel}>Endereço *</Text>
+                                        <TouchableOpacity
+                                            activeOpacity={0.7}
+                                            onPress={() => setShowAddressModal(true)}
+                                            style={{ flex: 1 }}
+                                        >
+                                            <TextInput
+                                                style={[styles.textInput, styles.addressSearchInput, styles.multilineAddressInput, selectedAddress && styles.readOnlyInput]}
+                                                value={selectedAddress ?
+                                                    `${selectedAddress.address || ''}\n${selectedAddress.neighborhood || ''}\n${selectedAddress.city || ''}, ${selectedAddress.state || ''}`.trim() :
+                                                    ''
+                                                }
+                                                placeholder="Digite o endereço (ex: Rua Augusta, 123, São Paulo)"
+                                                placeholderTextColor="#7f8c8d"
+                                                editable={false}
+                                                multiline={true}
+                                                numberOfLines={3}
+                                                textAlignVertical="top"
+                                                pointerEvents="none"
+                                            />
+                                        </TouchableOpacity>
+
+                                        {/* Botão de editar endereço quando há endereço selecionado */}
+                                        {selectedAddress && (
                                             <TouchableOpacity
-                                                activeOpacity={0.7}
-                                                onPress={() => setShowAddressModal(true)}
+                                                style={styles.editAddressButton}
+                                                onPress={() => {
+                                                    setShowAddressModal(true);
+                                                }}
                                             >
-                                                <TextInput
-                                                    style={[styles.textInput, styles.addressSearchInput, styles.multilineAddressInput, selectedAddress && styles.readOnlyInput]}
-                                                    value={selectedAddress ?
-                                                        `${selectedAddress.address || ''}\n${selectedAddress.neighborhood || ''}\n${selectedAddress.city || ''}, ${selectedAddress.state || ''}`.trim() :
-                                                        ''
-                                                    }
-                                                    placeholder="Digite o endereço (ex: Rua Augusta, 123, São Paulo)"
-                                                    placeholderTextColor="#7f8c8d"
-                                                    editable={false}
-                                                    multiline={true}
-                                                    numberOfLines={3}
-                                                    textAlignVertical="top"
-                                                />
+                                                <Ionicons name="create-outline" size={16} color="#007AFF" />
+                                                <Text style={styles.editAddressText}>Editar Endereço</Text>
                                             </TouchableOpacity>
+                                        )}
 
-                                            {/* Botão de editar endereço quando há endereço selecionado */}
-                                            {selectedAddress && (
-                                                <TouchableOpacity
-                                                    style={styles.editAddressButton}
-                                                    onPress={() => {
-                                                        setShowAddressModal(true);
-                                                    }}
-                                                >
-                                                    <Ionicons name="create-outline" size={16} color="#007AFF" />
-                                                    <Text style={styles.editAddressText}>Editar Endereço</Text>
-                                                </TouchableOpacity>
-                                            )}
-
-                                            {/* Botão alternativo quando não há sugestões */}
-                                            {!showAddressSuggestions && !selectedAddress && addressQuery.length > 2 && (
-                                                <TouchableOpacity
-                                                    style={styles.mapPickerButtonAlternative}
-                                                    onPress={() => {
-                                                        setShowAddressModal(false); // Fechar modal de endereço
-                                                        handleOpenMapPicker();
-                                                    }}
-                                                >
-                                                    <Ionicons name="map-outline" size={18} color="#007AFF" />
-                                                    <Text style={styles.mapPickerButtonText}>Escolher endereço no mapa</Text>
-                                                </TouchableOpacity>
-                                            )}
-                                        </View>
-
+                                        {/* Botão alternativo quando não há sugestões */}
+                                        {!showAddressSuggestions && !selectedAddress && addressQuery.length > 2 && (
+                                            <TouchableOpacity
+                                                style={styles.mapPickerButtonAlternative}
+                                                onPress={() => {
+                                                    setShowAddressModal(false); // Fechar modal de endereço
+                                                    handleOpenMapPicker();
+                                                }}
+                                            >
+                                                <Ionicons name="map-outline" size={18} color="#007AFF" />
+                                                <Text style={styles.mapPickerButtonText}>Escolher endereço no mapa</Text>
+                                            </TouchableOpacity>
+                                        )}
                                     </View>
-                                </TouchableWithoutFeedback>
+
+                                </View>
                             </View>
 
                             {/* Form Fields - Unificado */}
