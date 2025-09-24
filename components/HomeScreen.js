@@ -83,6 +83,8 @@ export default function HomeScreen({ navigation }) {
     });
     const [minSliderValue, setMinSliderValue] = useState(0);
     const [maxSliderValue, setMaxSliderValue] = useState(5000000);
+    const [sortOption, setSortOption] = useState('date_desc');
+    const [showSortSheet, setShowSortSheet] = useState(false);
 
     // Estados para dropdown de cidades
     const [cities, setCities] = useState([]);
@@ -111,6 +113,13 @@ export default function HomeScreen({ navigation }) {
         buttonBg: '#00335e',
         buttonText: '#ffffff',
     };
+
+    // Sempre incluir sortOption no fetch do cache-service
+    useEffect(() => {
+        if (hasInitialData) {
+            fetchProperties(filters, searchTerm, 0, true, true);
+        }
+    }, [sortOption]);
 
     useEffect(() => {
         console.log('🏠 HomeScreen: useEffect dados - user?.id:', !!user?.id, 'hasInitialData:', hasInitialData);
@@ -202,7 +211,8 @@ export default function HomeScreen({ navigation }) {
                 filters: activeFilters,
                 searchTerm: activeSearch,
                 forceRefresh,
-                enableParallelUpdate: true // Habilitar atualização em background (SWR)
+                enableParallelUpdate: true, // Habilitar atualização em background (SWR)
+                sortOption
             });
 
             console.log('🏠 HomeScreen: Resultado recebido:', {
@@ -797,9 +807,9 @@ export default function HomeScreen({ navigation }) {
                                 <Ionicons name="options-outline" size={16} color="#00335e" />
                                 <Text style={styles.filtersText}>Filtros</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity style={styles.filtersButton}>
+                            <TouchableOpacity style={styles.filtersButton} onPress={() => setShowSortSheet(true)}>
                                 <Ionicons name="swap-vertical" size={16} color="#00335e" />
-                                <Text style={styles.filtersText}>Ordenar</Text>
+                                <Text style={styles.filtersText}>{sortOption === 'price_asc' ? 'Preço ↑' : sortOption === 'price_desc' ? 'Preço ↓' : sortOption === 'date_asc' ? 'Antigas' : 'Recentes'}</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={styles.filtersButton}
@@ -882,6 +892,48 @@ export default function HomeScreen({ navigation }) {
                         </>
                     }
                 />
+
+                {/* ActionSheet de Ordenação */}
+                <Modal
+                    visible={showSortSheet}
+                    transparent
+                    animationType="fade"
+                    onRequestClose={() => setShowSortSheet(false)}
+                >
+                    <TouchableOpacity style={styles.sortOverlay} activeOpacity={1} onPress={() => setShowSortSheet(false)}>
+                        <View style={styles.sortSheet}>
+                            <Text style={styles.sortTitle}>Ordenar por</Text>
+
+                            <TouchableOpacity style={styles.sortItem} onPress={async () => { setSortOption('price_asc'); setShowSortSheet(false); await fetchProperties(filters, searchTerm, 0, true, true); }}>
+                                <Ionicons name="arrow-up" size={16} color="#00335e" />
+                                <Text style={styles.sortItemText}>Preço (menor → maior)</Text>
+                                {sortOption === 'price_asc' && <Ionicons name="checkmark" size={16} color="#059669" />}
+                            </TouchableOpacity>
+
+                            <TouchableOpacity style={styles.sortItem} onPress={async () => { setSortOption('price_desc'); setShowSortSheet(false); await fetchProperties(filters, searchTerm, 0, true, true); }}>
+                                <Ionicons name="arrow-down" size={16} color="#00335e" />
+                                <Text style={styles.sortItemText}>Preço (maior → menor)</Text>
+                                {sortOption === 'price_desc' && <Ionicons name="checkmark" size={16} color="#059669" />}
+                            </TouchableOpacity>
+
+                            <TouchableOpacity style={styles.sortItem} onPress={async () => { setSortOption('date_desc'); setShowSortSheet(false); await fetchProperties(filters, searchTerm, 0, true, true); }}>
+                                <Ionicons name="time" size={16} color="#00335e" />
+                                <Text style={styles.sortItemText}>Mais recentes</Text>
+                                {sortOption === 'date_desc' && <Ionicons name="checkmark" size={16} color="#059669" />}
+                            </TouchableOpacity>
+
+                            <TouchableOpacity style={styles.sortItem} onPress={async () => { setSortOption('date_asc'); setShowSortSheet(false); await fetchProperties(filters, searchTerm, 0, true, true); }}>
+                                <Ionicons name="timer-outline" size={16} color="#00335e" />
+                                <Text style={styles.sortItemText}>Mais antigas</Text>
+                                {sortOption === 'date_asc' && <Ionicons name="checkmark" size={16} color="#059669" />}
+                            </TouchableOpacity>
+
+                            <TouchableOpacity style={styles.sortCancel} onPress={() => setShowSortSheet(false)}>
+                                <Text style={styles.sortCancelText}>Cancelar</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </TouchableOpacity>
+                </Modal>
 
                 {/* Modal de Filtros */}
                 <Modal
@@ -1812,6 +1864,56 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '500',
         color: '#00335e',
+    },
+
+    // Sort ActionSheet
+    sortOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.3)',
+        justifyContent: 'flex-end',
+    },
+    sortSheet: {
+        backgroundColor: '#fff',
+        paddingTop: 12,
+        paddingBottom: 8,
+        borderTopLeftRadius: 12,
+        borderTopRightRadius: 12,
+        borderColor: '#e2e8f0',
+        borderTopWidth: 1,
+    },
+    sortTitle: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#00335e',
+        paddingHorizontal: 16,
+        paddingBottom: 8,
+    },
+    sortItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        borderTopWidth: 1,
+        borderTopColor: '#f1f5f9',
+    },
+    sortItemText: {
+        flex: 1,
+        marginLeft: 8,
+        fontSize: 14,
+        color: '#00335e',
+        fontWeight: '500',
+    },
+    sortCancel: {
+        padding: 14,
+        alignItems: 'center',
+        borderTopWidth: 8,
+        borderTopColor: '#f1f5f9',
+    },
+    sortCancelText: {
+        fontSize: 14,
+        color: '#7f8c8d',
+        fontWeight: '600',
     },
 
     // Story Modal Styles
