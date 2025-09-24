@@ -468,19 +468,21 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                     <View style={styles.titleRow}>
                         <Text style={[styles.title, styles.titleWithButton]}>{property.title}</Text>
 
-                        {/* Botão Ver no Mapa - discreto ao lado do título */}
+                        {/* Botão Ver Mapa - estilo discreto cinza, como na Home */}
                         <TouchableOpacity
                             style={styles.mapIconButton}
                             onPress={() => {
-                                console.log('🎯 Navegando para mapa único do imóvel:', property.title);
                                 navigation.navigate('MapaImovelUnico', {
                                     property: property
                                 });
                             }}
+                            activeOpacity={0.8}
                         >
-                            <Ionicons name="map" size={24} color="#00335e" />
+                            <Ionicons name="location" size={16} color="#00335e" />
+                            <Text style={styles.mapIconText}>Ver no Mapa</Text>
                         </TouchableOpacity>
                     </View>
+
 
                     <Text style={styles.location}>
                         <Ionicons name="location" size={16} color="#64748b" />
@@ -801,19 +803,18 @@ const styles = StyleSheet.create({
         marginRight: 12, // Espaço para o botão
     },
     mapIconButton: {
-        backgroundColor: '#ffcc1e',
-        borderRadius: 20,
-        width: 40,
-        height: 40,
-        justifyContent: 'center',
+        flexDirection: 'row',
         alignItems: 'center',
-        borderWidth: 2,
-        borderColor: '#00335e',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
-        elevation: 3,
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        backgroundColor: '#f8f9fa',
+        borderRadius: 6,
+        gap: 4,
+    },
+    mapIconText: {
+        fontSize: 14,
+        fontWeight: '500',
+        color: '#00335e',
     },
     location: {
         fontSize: 16,
