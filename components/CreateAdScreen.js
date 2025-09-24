@@ -758,29 +758,24 @@ export default function CreateAdScreen({ navigation, route }) {
                                     <View style={styles.addressOuterContainer}>
                                         <View style={[styles.inputGroup, styles.addressInputGroup]}>
                                             <Text style={styles.inputLabel}>Endereço *</Text>
-                                            <TextInput
-                                                style={[styles.textInput, styles.addressSearchInput, styles.multilineAddressInput, selectedAddress && styles.readOnlyInput]}
-                                                value={selectedAddress ?
-                                                    `${selectedAddress.address || ''}\n${selectedAddress.neighborhood || ''}\n${selectedAddress.city || ''}, ${selectedAddress.state || ''}`.trim() :
-                                                    ''
-                                                }
-                                                placeholder="Digite o endereço (ex: Rua Augusta, 123, São Paulo)"
-                                                placeholderTextColor="#7f8c8d"
-                                                editable={!selectedAddress}
-                                                multiline={true}
-                                                numberOfLines={3}
-                                                textAlignVertical="top"
-                                                onFocus={() => {
-                                                    if (!selectedAddress) {
-                                                        setShowAddressModal(true);
+                                            <TouchableOpacity
+                                                activeOpacity={0.7}
+                                                onPress={() => setShowAddressModal(true)}
+                                            >
+                                                <TextInput
+                                                    style={[styles.textInput, styles.addressSearchInput, styles.multilineAddressInput, selectedAddress && styles.readOnlyInput]}
+                                                    value={selectedAddress ?
+                                                        `${selectedAddress.address || ''}\n${selectedAddress.neighborhood || ''}\n${selectedAddress.city || ''}, ${selectedAddress.state || ''}`.trim() :
+                                                        ''
                                                     }
-                                                }}
-                                                onPressIn={() => {
-                                                    if (!selectedAddress) {
-                                                        setShowAddressModal(true);
-                                                    }
-                                                }}
-                                            />
+                                                    placeholder="Digite o endereço (ex: Rua Augusta, 123, São Paulo)"
+                                                    placeholderTextColor="#7f8c8d"
+                                                    editable={false}
+                                                    multiline={true}
+                                                    numberOfLines={3}
+                                                    textAlignVertical="top"
+                                                />
+                                            </TouchableOpacity>
 
                                             {/* Botão de editar endereço quando há endereço selecionado */}
                                             {selectedAddress && (
