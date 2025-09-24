@@ -623,16 +623,16 @@ export default function HomeScreen({ navigation }) {
                     </Text>
 
                     <Text style={styles.propertyLocation}>
-                        {item.neighborhood ?? 'Bairro indisponível'}, {item.city ?? 'Cidade indisponível'}
+                        {item.neighborhood ?? item.address}, {item.city ?? item.state}
                     </Text>
                     <View style={styles.propertyDetails}>
                         {((item.sale_price ?? item.salePrice) && parseFloat(item.sale_price ?? item.salePrice) > 0) ? (
                             <View style={styles.priceContainer}>
                                 <Text style={styles.originalPriceRed}>
-                                    R$ {item.price?.toLocaleString('pt-BR') ?? 'Preço indisponível'}
+                                    De: R$ {item.price?.toLocaleString('pt-BR') ?? 'Preço indisponível'}
                                 </Text>
                                 <Text style={styles.salePriceGreen}>
-                                    R$ {(item.sale_price ?? item.salePrice)?.toLocaleString('pt-BR')}
+                                    Por: R$ {(item.sale_price ?? item.salePrice)?.toLocaleString('pt-BR')}
                                 </Text>
                             </View>
                         ) : (
