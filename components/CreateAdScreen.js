@@ -508,6 +508,8 @@ export default function CreateAdScreen({ navigation, route }) {
 
     const handleSubmit = async () => {
         if (!validateForm()) return;
+        const withinLimits = await validateMediaLimitsByPlan();
+        if (!withinLimits) return;
 
         try {
             setSubmitting(true);
@@ -569,6 +571,48 @@ export default function CreateAdScreen({ navigation, route }) {
     const handleUpgradePlan = () => {
         setShowPlanModal(false);
         navigation.navigate('Plans', { fromAdvertise: true });
+    };
+
+    // Verifica limites de imagens e vídeos de acordo com o plano do usuário (assíncrono e com fallback)
+    const validateMediaLimitsByPlan = async () => {
+        const imagesCount = mediaFiles.filter(file => file.type !== 'video').length;
+        const videosCount = mediaFiles.filter(file => file.type === 'video').length;
+
+        let maxImages = userPlanInfo?.plan?.max_images;
+        let maxVideos = userPlanInfo?.plan?.max_videos;
+
+        // Fallback: buscar plano no banco se limites não vierem no objeto do plano
+        if ((maxImages === undefined || maxImages === null) || (maxVideos === undefined || maxVideos === null)) {
+            const planName = userPlanInfo?.plan?.plan_name || userPlanInfo?.plan?.name;
+            if (planName) {
+                const planFromDb = await PlanService.getPlanByName(planName);
+                if (planFromDb) {
+                    maxImages = planFromDb.max_images;
+                    maxVideos = planFromDb.max_videos;
+                }
+            }
+        }
+
+        const hasImagesLimit = typeof maxImages === 'number' && !Number.isNaN(maxImages);
+        const hasVideosLimit = typeof maxVideos === 'number' && !Number.isNaN(maxVideos);
+
+        if (hasImagesLimit && imagesCount > maxImages) {
+            Alert.alert(
+                'Limite de imagens excedido',
+                `Seu plano permite no máximo ${maxImages} imagens por anúncio. Você adicionou ${imagesCount}. Remova ${imagesCount - maxImages} imagem(ns) para continuar.`
+            );
+            return false;
+        }
+
+        if (hasVideosLimit && videosCount > maxVideos) {
+            Alert.alert(
+                'Limite de vídeos excedido',
+                `Seu plano permite no máximo ${maxVideos} vídeo(s) por anúncio. Você adicionou ${videosCount}. Remova ${videosCount - maxVideos} vídeo(s) para continuar.`
+            );
+            return false;
+        }
+
+        return true;
     };
 
     const renderMediaItem = ({ item, index }) => {
