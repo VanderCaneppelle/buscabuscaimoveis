@@ -26,6 +26,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Carregar detalhes da propriedade
         await loadPropertyDetails(propertyId);
 
+        // Wire moderation buttons
+        setupModerationActions(propertyId);
+
         // Configurar nome do admin
         await setupAdminName();
 
@@ -57,6 +60,12 @@ async function loadPropertyDetails(propertyId) {
         // Preencher os dados na página
         populatePropertyData(data);
 
+        // Buscar dados do anunciante e preencher barra
+        await populateOwnerData(data);
+
+        // Carregar notas do admin
+        setupAdminNotes(propertyId, data.admin_notes || '');
+
         // Mostrar conteúdo
         showMainContent();
 
@@ -65,67 +74,257 @@ async function loadPropertyDetails(propertyId) {
         throw error;
     }
 }
+// Buscar e preencher dados do anunciante (nome, telefone, CRECI)
+async function populateOwnerData(property) {
+    try {
+        const ownerNameEl = document.getElementById('owner-name');
+        const ownerEmailEl = document.getElementById('owner-email');
+        const ownerPhoneEl = document.getElementById('owner-phone');
+        const ownerCreciWrap = document.getElementById('owner-creci-wrap');
+        const ownerCreciEl = document.getElementById('owner-creci');
+
+        // Buscar dados do perfil (nome, telefone, CRECI)
+        const { data: userProfile, error } = await supabase
+            .from('profiles')
+            .select('full_name, phone, creci')
+            .eq('id', property.user_id)
+            .single();
+
+        if (error) {
+            console.error('Erro ao buscar perfil:', error);
+            // Fallback para dados básicos
+            ownerNameEl.textContent = 'Usuário não encontrado';
+            ownerEmailEl.textContent = '—';
+            ownerPhoneEl.textContent = '—';
+            ownerCreciWrap.style.display = 'none';
+            return;
+        }
+
+        ownerNameEl.textContent = userProfile?.full_name || '—';
+        ownerPhoneEl.textContent = userProfile?.phone || '—';
+
+        if (userProfile?.creci) {
+            ownerCreciEl.textContent = userProfile.creci;
+            ownerCreciWrap.style.display = 'flex';
+        } else {
+            ownerCreciWrap.style.display = 'none';
+        }
+
+        // Buscar email usando função RPC
+        try {
+            const { data: userEmail, error: emailError } = await supabase
+                .rpc('get_user_email', { user_id: property.user_id });
+
+            if (!emailError && userEmail) {
+                ownerEmailEl.textContent = userEmail;
+            } else {
+                console.warn('Função RPC get_user_email não encontrada ou erro:', emailError);
+                ownerEmailEl.textContent = `ID: ${generateShortId(property.user_id)}`;
+            }
+        } catch (emailErr) {
+            console.error('Erro ao buscar email via RPC:', emailErr);
+            ownerEmailEl.textContent = `ID: ${generateShortId(property.user_id)}`;
+        }
+
+    } catch (err) {
+        console.error('Erro ao carregar dados do anunciante:', err);
+        // Fallback para dados básicos
+        const ownerNameEl = document.getElementById('owner-name');
+        const ownerEmailEl = document.getElementById('owner-email');
+        const ownerPhoneEl = document.getElementById('owner-phone');
+        const ownerCreciWrap = document.getElementById('owner-creci-wrap');
+
+        ownerNameEl.textContent = 'Erro ao carregar';
+        ownerEmailEl.textContent = `ID: ${generateShortId(property.user_id)}`;
+        ownerPhoneEl.textContent = '—';
+        ownerCreciWrap.style.display = 'none';
+    }
+}
 
 // Preencher dados da propriedade
 function populatePropertyData(property) {
     // Header
-    document.getElementById('property-title').textContent = property.title || 'Sem título';
-    document.getElementById('property-location').innerHTML = `
-        <i class="fas fa-map-marker-alt me-2"></i>
-        ${property.neighborhood || 'N/A'}, ${property.city || 'N/A'}
-    `;
-    document.getElementById('property-price').textContent = formatPrice(property.price);
+    const titleEl = document.getElementById('property-title');
+    const locationEl = document.getElementById('property-location');
 
-    // Status badge
-    const statusBadge = document.getElementById('status-badge');
-    statusBadge.textContent = getStatusText(property.status);
-    statusBadge.className = `badge status-badge ${getStatusBadgeClass(property.status)}`;
+    if (titleEl) titleEl.textContent = property.title || 'Sem título';
+    if (locationEl) {
+        locationEl.innerHTML = `
+            <i class="fas fa-map-marker-alt me-2"></i>
+            ${property.neighborhood || '-'}, ${property.city || '-'}
+        `;
+    }
 
     // Imagens
     setupPropertyImages(property.images);
 
     // Informações básicas
-    document.getElementById('property-type').textContent = property.property_type || 'N/A';
-    document.getElementById('transaction-type').textContent = property.transaction_type || 'N/A';
-    document.getElementById('price-display').textContent = formatPrice(property.price);
-    document.getElementById('status-display').textContent = getStatusText(property.status);
+    const propertyTypeEl = document.getElementById('property-type');
+    const transactionTypeEl = document.getElementById('transaction-type');
+    const priceDisplayEl = document.getElementById('price-display');
+    const statusDisplayEl = document.getElementById('status-display');
+
+    if (propertyTypeEl) propertyTypeEl.textContent = property.property_type || '-';
+    if (transactionTypeEl) transactionTypeEl.textContent = property.transaction_type || '-';
+    if (priceDisplayEl) priceDisplayEl.textContent = formatPrice(property.price);
+    if (statusDisplayEl) statusDisplayEl.textContent = getStatusText(property.status);
+
+    const statusInline = document.getElementById('status-display-inline');
+    if (statusInline) {
+        statusInline.textContent = getStatusText(property.status);
+        statusInline.className = `badge ${getStatusBadgeClass(property.status)}`;
+    }
+
+    updateModerationButtonsVisibility(property.status);
 
     // Características
-    document.getElementById('bedrooms').textContent = property.bedrooms || 'N/A';
-    document.getElementById('bathrooms').textContent = property.bathrooms || 'N/A';
-    document.getElementById('parking-spaces').textContent = property.parking_spaces || 'N/A';
-    document.getElementById('area').textContent = property.area ? `${property.area}m²` : 'N/A';
+    const bedroomsEl = document.getElementById('bedrooms');
+    const bathroomsEl = document.getElementById('bathrooms');
+    const parkingEl = document.getElementById('parking-spaces');
+    const areaEl = document.getElementById('area');
+
+    if (bedroomsEl) bedroomsEl.textContent = property.bedrooms || '-';
+    if (bathroomsEl) bathroomsEl.textContent = property.bathrooms || '-';
+    if (parkingEl) parkingEl.textContent = property.parking_spaces || '-';
+    if (areaEl) areaEl.textContent = property.area ? `${property.area}m²` : '-';
 
     // Localização
-    document.getElementById('city').textContent = property.city || 'N/A';
-    document.getElementById('neighborhood').textContent = property.neighborhood || 'N/A';
-    document.getElementById('zip-code').textContent = property.zip_code || 'N/A';
-    document.getElementById('created-date').textContent = formatDate(property.created_at);
+    const cityEl = document.getElementById('city');
+    const neighborhoodEl = document.getElementById('neighborhood');
+    const zipCodeEl = document.getElementById('zip-code');
+    const createdDateEl = document.getElementById('created-date');
+
+    if (cityEl) cityEl.textContent = property.city || '-';
+    if (neighborhoodEl) neighborhoodEl.textContent = property.neighborhood || '-';
+    if (zipCodeEl) zipCodeEl.textContent = property.zip_code || '-';
+    if (createdDateEl) createdDateEl.textContent = formatDate(property.created_at);
 
     // Descrição
     if (property.description) {
-        document.getElementById('description-text').textContent = property.description;
-        document.getElementById('description-section').style.display = 'block';
+        const descriptionTextEl = document.getElementById('description-text');
+        const descriptionSectionEl = document.getElementById('description-section');
+
+        if (descriptionTextEl) descriptionTextEl.textContent = property.description;
+        if (descriptionSectionEl) descriptionSectionEl.style.display = 'block';
     }
 
     // WhatsApp link
     setupWhatsAppLink(property);
+
+    // Property ID (formato curto)
+    const propertyIdEl = document.getElementById('property-id');
+    if (propertyIdEl) propertyIdEl.textContent = generateShortId(property.id);
+}
+
+// Notas do Admin
+function setupAdminNotes(propertyId, initialNotes) {
+    const notesEl = document.getElementById('admin-notes');
+    const saveBtn = document.getElementById('save-admin-notes');
+    if (!notesEl || !saveBtn) return;
+
+    notesEl.value = initialNotes || '';
+
+    saveBtn.onclick = async () => {
+        const notes = notesEl.value || null;
+        try {
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Salvando...';
+
+            const { error } = await supabase
+                .from('properties')
+                .update({ admin_notes: notes })
+                .eq('id', propertyId);
+
+            if (error) throw error;
+
+            alert('Notas salvas com sucesso');
+        } catch (err) {
+            console.error('Erro ao salvar notas do admin:', err);
+            alert('Falha ao salvar notas. Tente novamente.');
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="fas fa-save me-1"></i>Salvar Notas';
+        }
+    };
+}
+
+// Aprovação/Rejeição
+function setupModerationActions(propertyId) {
+    const approveBtn = document.getElementById('approve-button');
+    const rejectBtn = document.getElementById('reject-button');
+
+    if (approveBtn) {
+        approveBtn.addEventListener('click', async () => {
+            const ok = confirm('Confirmar aprovação deste anúncio?');
+            if (!ok) return;
+            await updatePropertyStatus(propertyId, 'approved');
+        });
+    }
+    if (rejectBtn) {
+        rejectBtn.addEventListener('click', async () => {
+            const reason = prompt('Motivo da rejeição (opcional):');
+            await updatePropertyStatus(propertyId, 'rejected', reason);
+        });
+    }
+}
+
+async function updatePropertyStatus(propertyId, newStatus, reason) {
+    try {
+        const updates = { status: newStatus };
+        const { error } = await supabase
+            .from('properties')
+            .update(updates)
+            .eq('id', propertyId);
+        if (error) throw error;
+
+        // Atualizar UI
+        const statusInline = document.getElementById('status-display-inline');
+        if (statusInline) {
+            statusInline.textContent = getStatusText(newStatus);
+            statusInline.className = `badge ${getStatusBadgeClass(newStatus)}`;
+        }
+
+        const statusDisplayEl = document.getElementById('status-display');
+        if (statusDisplayEl) {
+            statusDisplayEl.textContent = getStatusText(newStatus);
+        }
+
+        updateModerationButtonsVisibility(newStatus);
+        alert(`Status atualizado para: ${getStatusText(newStatus)}`);
+    } catch (err) {
+        console.error('Erro ao atualizar status:', err);
+        alert('Falha ao atualizar status. Tente novamente.');
+    }
+}
+
+function updateModerationButtonsVisibility(status) {
+    const approveBtn = document.getElementById('approve-button');
+    const rejectBtn = document.getElementById('reject-button');
+    if (!approveBtn || !rejectBtn) return;
+
+    // Normalizar
+    const s = (status || '').toString();
+    const isPending = s === 'pending';
+    const isApproved = s === 'approved';
+    const isRejected = s === 'rejected';
+
+    approveBtn.style.display = (isPending || isRejected) ? 'inline-block' : 'none';
+    rejectBtn.style.display = (isPending || isApproved) ? 'inline-block' : 'none';
 }
 
 // Configurar imagens da propriedade
 function setupPropertyImages(images) {
-    const imagesContainer = document.getElementById('property-images');
-    const imageCounter = document.getElementById('image-counter');
+    const viewImagesBtn = document.getElementById('view-images-btn');
+    const lightbox = initLightbox();
 
     if (!images || images.length === 0) {
-        imagesContainer.innerHTML = `
-            <img src="https://via.placeholder.com/800x400?text=Sem+Imagem" alt="Sem imagem">
-        `;
+        viewImagesBtn.style.display = 'none';
         return;
     }
 
     // Filtrar apenas imagens (excluir vídeos)
     const imageFiles = images.filter(img =>
+        typeof img === 'string' &&
         !img.includes('.mp4') &&
         !img.includes('.mov') &&
         !img.includes('.avi') &&
@@ -134,56 +333,77 @@ function setupPropertyImages(images) {
     );
 
     if (imageFiles.length === 0) {
-        imagesContainer.innerHTML = `
-            <img src="https://via.placeholder.com/800x400?text=Sem+Imagem" alt="Sem imagem">
-        `;
+        viewImagesBtn.style.display = 'none';
         return;
     }
 
-    // Se há apenas uma imagem
-    if (imageFiles.length === 1) {
-        imagesContainer.innerHTML = `
-            <img src="${imageFiles[0]}" alt="Imagem do imóvel" onerror="this.src='https://via.placeholder.com/800x400?text=Erro+ao+Carregar'">
-        `;
-        return;
+    // Mostrar botão e configurar click handler
+    viewImagesBtn.style.display = 'inline-block';
+    viewImagesBtn.onclick = () => {
+        lightbox.open(imageFiles, 0);
+    };
+}
+
+// Inicializa e retorna controladores do lightbox
+function initLightbox() {
+    const overlay = document.getElementById('lightbox');
+    const imgEl = document.getElementById('lightbox-image');
+    const closeBtn = document.getElementById('lightbox-close');
+    const prevBtn = document.getElementById('lightbox-prev');
+    const nextBtn = document.getElementById('lightbox-next');
+    const counterEl = document.getElementById('lightbox-counter');
+
+    let sources = [];
+    let current = 0;
+
+    function update() {
+        if (!sources.length) return;
+        imgEl.src = sources[current];
+        counterEl.textContent = `${current + 1}/${sources.length}`;
     }
 
-    // Se há múltiplas imagens, criar carrossel
-    let imagesHTML = '';
-    imageFiles.forEach((image, index) => {
-        const activeClass = index === 0 ? 'active' : '';
-        imagesHTML += `
-            <div class="carousel-item ${activeClass}">
-                <img src="${image}" class="d-block w-100" alt="Imagem ${index + 1}" onerror="this.src='https://via.placeholder.com/800x400?text=Erro+ao+Carregar'">
-            </div>
-        `;
+    function open(newSources, startIndex = 0) {
+        sources = newSources || [];
+        current = Math.min(Math.max(0, startIndex), Math.max(0, sources.length - 1));
+        update();
+        overlay.style.display = 'flex';
+        overlay.setAttribute('aria-hidden', 'false');
+        document.addEventListener('keydown', onKey);
+    }
+
+    function close() {
+        overlay.style.display = 'none';
+        overlay.setAttribute('aria-hidden', 'true');
+        document.removeEventListener('keydown', onKey);
+    }
+
+    function prev() {
+        if (!sources.length) return;
+        current = (current - 1 + sources.length) % sources.length;
+        update();
+    }
+
+    function next() {
+        if (!sources.length) return;
+        current = (current + 1) % sources.length;
+        update();
+    }
+
+    function onKey(e) {
+        if (e.key === 'Escape') return close();
+        if (e.key === 'ArrowLeft') return prev();
+        if (e.key === 'ArrowRight') return next();
+    }
+
+    // Eventos de UI
+    closeBtn.addEventListener('click', close);
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) close();
     });
+    prevBtn.addEventListener('click', prev);
+    nextBtn.addEventListener('click', next);
 
-    imagesContainer.innerHTML = `
-        <div id="propertyCarousel" class="carousel slide" data-bs-ride="carousel">
-            <div class="carousel-inner">
-                ${imagesHTML}
-            </div>
-            <button class="carousel-control-prev" type="button" data-bs-target="#propertyCarousel" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Anterior</span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#propertyCarousel" data-bs-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Próximo</span>
-            </button>
-        </div>
-        <div class="image-counter">1/${imageFiles.length}</div>
-    `;
-
-    // Atualizar contador quando o carrossel muda
-    const carousel = document.getElementById('propertyCarousel');
-    if (carousel) {
-        carousel.addEventListener('slid.bs.carousel', function (event) {
-            const currentSlide = event.to + 1;
-            imageCounter.textContent = `${currentSlide}/${imageFiles.length}`;
-        });
-    }
+    return { open, close, prev, next };
 }
 
 // Configurar link do WhatsApp
@@ -222,8 +442,9 @@ Sou administrador do Busca Busca Imóveis e estou analisando o anúncio "${prope
 Para prosseguir com a aprovação, preciso de algumas informações adicionais:
 
 1. Documentos do imóvel (matrícula, IPTU, etc.)
-2. Mais fotos do imóvel (se possível)
-3. Confirmação dos dados cadastrados
+2. Construtora responsável
+3. Registro de incorporação
+4. Confirmação dos dados cadastrados
 
 Poderia me enviar essas informações?`;
 
@@ -354,4 +575,23 @@ function formatPrice(price) {
 function formatDate(dateString) {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('pt-BR');
+}
+
+// Gerar ID curto e apresentável baseado no UUID
+function generateShortId(uuid) {
+    if (!uuid) return 'BB000000';
+
+    // Remover hífens e converter para maiúsculo
+    const cleanUuid = uuid.replace(/-/g, '').toUpperCase();
+
+    // Usar os primeiros 6 caracteres alfanuméricos
+    const shortPart = cleanUuid.substring(0, 6);
+
+    // Garantir que seja alfanumérico (remover caracteres especiais se houver)
+    const alphanumeric = shortPart.replace(/[^A-Z0-9]/g, '');
+
+    // Se for menor que 6, completar com zeros
+    const padded = alphanumeric.padEnd(6, '0');
+
+    return `BB${padded}`;
 } 
