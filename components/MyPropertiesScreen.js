@@ -11,6 +11,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { PropertyService } from '../lib/propertyService';
+
+import { validateMediaLimitsByPlan } from '../lib/validation/mediaLimits';
 import { supabase } from '../lib/supabase';
 import { MediaServiceOptimized } from '../lib/mediaServiceOptimized';
 import * as ImagePicker from 'expo-image-picker';
@@ -293,6 +295,16 @@ export default function MyPropertiesScreen({ navigation }) {
             return;
         }
 
+        // Validação de limites de mídias por plano (util compartilhado)
+        const withinLimits = await validateMediaLimitsByPlan({
+            imagesCount: (editImages || []).filter(uri => !isVideoFile(uri)).length,
+            videosCount: (editImages || []).filter(uri => isVideoFile(uri)).length,
+            userPlan,
+        });
+        if (!withinLimits) {
+            return;
+        }
+
         setEditLoading(true);
         try {
             // Separar imagens existentes (URLs) de novas imagens (URIs locais)
@@ -337,6 +349,8 @@ export default function MyPropertiesScreen({ navigation }) {
             setEditLoading(false);
         }
     };
+
+    // Removido: validação local substituída por util compartilhado
 
     const handleDeleteProperty = async () => {
         if (!selectedProperty) return;
