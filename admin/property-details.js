@@ -12,6 +12,9 @@ const errorText = document.getElementById('error-text');
 const mainContent = document.getElementById('main-content');
 const adminName = document.getElementById('admin-name');
 
+// Variáveis do mapa
+let propertyMap = null;
+
 // Inicializar aplicação
 document.addEventListener('DOMContentLoaded', async () => {
     try {
@@ -143,15 +146,26 @@ async function populateOwnerData(property) {
 
 // Preencher dados da propriedade
 function populatePropertyData(property) {
+    // Armazenar dados da propriedade globalmente para uso no mapa
+    currentProperty = property;
+
     // Header
     const titleEl = document.getElementById('property-title');
     const locationEl = document.getElementById('property-location');
 
     if (titleEl) titleEl.textContent = property.title || 'Sem título';
     if (locationEl) {
+        // Tratar exibição da localização
+        let locationText = '';
+        if (property.neighborhood && property.neighborhood !== '-' && property.neighborhood.trim() !== '') {
+            locationText = `${property.neighborhood}, ${property.city || '-'}`;
+        } else {
+            locationText = property.city || '-';
+        }
+
         locationEl.innerHTML = `
             <i class="fas fa-map-marker-alt me-2"></i>
-            ${property.neighborhood || '-'}, ${property.city || '-'}
+            ${locationText}
         `;
     }
 
@@ -594,4 +608,76 @@ function generateShortId(uuid) {
     const padded = alphanumeric.padEnd(6, '0');
 
     return `BB${padded}`;
+}
+
+// Funções do Mapa
+function toggleMap() {
+    const mapContainer = document.getElementById('property-map');
+    const toggleBtn = document.getElementById('toggle-map-btn');
+
+    if (mapContainer.style.display === 'none') {
+        // Mostrar mapa
+        mapContainer.style.display = 'block';
+        toggleBtn.innerHTML = '<i class="fas fa-eye-slash"></i> Ocultar Mapa';
+
+        // Inicializar mapa se ainda não foi criado
+        if (!propertyMap) {
+            initializeMap();
+        }
+    } else {
+        // Ocultar mapa
+        mapContainer.style.display = 'none';
+        toggleBtn.innerHTML = '<i class="fas fa-map"></i> Ver Localização no Mapa';
+    }
+}
+
+function initializeMap() {
+    if (!currentProperty || !currentProperty.latitude || !currentProperty.longitude) {
+        console.log('Coordenadas não disponíveis para o mapa');
+        return;
+    }
+
+    const mapContainer = document.getElementById('property-map');
+
+    // Coordenadas do imóvel
+    const lat = parseFloat(currentProperty.latitude);
+    const lng = parseFloat(currentProperty.longitude);
+
+    // Criar mapa
+    propertyMap = L.map('property-map').setView([lat, lng], 15);
+
+    // Adicionar camada de tiles (OpenStreetMap)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+    }).addTo(propertyMap);
+
+    // Adicionar marcador do imóvel
+    const marker = L.marker([lat, lng]).addTo(propertyMap);
+
+    // Adicionar popup com informações do imóvel
+    const popupContent = `
+        <div style="text-align: center;">
+            <h6 style="margin: 0 0 8px 0; color: #1e40af;">${currentProperty.title || 'Imóvel'}</h6>
+            <p style="margin: 0; font-size: 0.9rem; color: #64748b;">
+                ${currentProperty.neighborhood || ''}${currentProperty.neighborhood && currentProperty.city ? ', ' : ''}${currentProperty.city || ''}
+            </p>
+            ${currentProperty.price ? `<p style="margin: 8px 0 0 0; font-weight: bold; color: #10b981;">R$ ${formatPrice(currentProperty.price)}</p>` : ''}
+        </div>
+    `;
+
+    marker.bindPopup(popupContent);
+
+    // Ajustar zoom para mostrar o marcador adequadamente
+    propertyMap.fitBounds([[lat, lng], [lat, lng]], { padding: [20, 20] });
+
+    console.log('Mapa inicializado com sucesso');
+}
+
+function formatPrice(price) {
+    if (!price) return '0';
+    return new Intl.NumberFormat('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(price);
 } 
