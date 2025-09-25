@@ -8,249 +8,557 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        :root {
+            --primary-color: #1e40af;
+            --secondary-color: #64748b;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --info-color: #06b6d4;
+            --light-bg: #f8fafc;
+            --dark-bg: #0f172a;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            background-color: #f8f9fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
         }
 
-        .navbar-brand {
-            font-weight: bold;
-        }
-
-        .back-button {
-            background: none;
-            border: none;
-            color: #fff;
-            font-size: 1.2rem;
-            padding: 0.5rem;
-            margin-right: 1rem;
-        }
-
-        .property-header {
-            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+        /* Header */
+        .main-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #1e3a8a 100%);
             color: white;
             padding: 2rem 0;
-            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .main-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 2;
         }
 
         .property-title {
             font-size: 2.5rem;
-            font-weight: bold;
+            font-weight: 800;
             margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .property-location {
             font-size: 1.2rem;
             opacity: 0.9;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .property-price {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #28a745;
-        }
-
-        .property-card {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 2rem;
-            overflow: hidden;
-        }
-
-        .property-images {
-            position: relative;
-            height: 400px;
-            overflow: hidden;
-        }
-
-        .property-images img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .image-counter {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.9rem;
-        }
-
-        .property-info {
-            padding: 2rem;
-        }
-
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .info-item {
-            text-align: center;
-            padding: 1rem;
-            background: #f8f9fa;
-            border-radius: 10px;
-        }
-
-        .info-item i {
-            font-size: 2rem;
-            color: #667eea;
-            margin-bottom: 0.5rem;
-        }
-
-        .info-label {
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 0.25rem;
-        }
-
-        .info-value {
-            color: #666;
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--success-color);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .status-badge {
-            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
             padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .whatsapp-button {
-            background: #25d366;
-            color: white;
-            border: none;
-            padding: 1rem 2rem;
-            border-radius: 50px;
+        .status-badge.approved {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success-color);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .status-badge.pending {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning-color);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .status-badge.rejected {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger-color);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        /* Navigation */
+        .navbar {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 3rem 0;
+        }
+
+        .content-section {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .content-section:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .section-title i {
+            color: var(--primary-color);
+            font-size: 1.25rem;
+        }
+
+        /* Info Grid */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            padding: 1rem;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+
+        .info-item:hover {
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            transform: translateY(-1px);
+        }
+
+        /* Simple Info Grid - sem cards internos */
+        .info-grid-simple {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .info-item-simple {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+
+        .info-item-simple:hover {
+            background: rgba(30, 64, 175, 0.05);
+            padding-left: 0.5rem;
+            border-radius: 6px;
+        }
+
+        .info-item-simple i {
             font-size: 1.1rem;
-            font-weight: bold;
+            width: 24px;
+            text-align: center;
+        }
+
+        .info-item-simple .info-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-item-simple .info-value {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .info-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .info-value.price {
+            color: var(--success-color);
+            font-size: 1.3rem;
+        }
+
+        /* Owner Section */
+        .owner-section {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 1px solid rgba(6, 182, 212, 0.2);
+        }
+
+        .owner-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .owner-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid rgba(6, 182, 212, 0.1);
+        }
+
+        .owner-item i {
+            color: var(--info-color);
+            font-size: 1.1rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .owner-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .owner-value {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Actions */
+        .actions-section {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border-radius: 8px;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            transition: all 0.2s ease;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
         }
 
-        .whatsapp-button:hover {
-            background: #128c7e;
-            color: white;
+        .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
-        .description-card {
-            background: white;
-            border-radius: 15px;
-            padding: 2rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        .btn-success {
+            background: var(--success-color);
+            color: white;
         }
 
-        .description-title {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 1rem;
-            color: #333;
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* Description */
+        .description-section {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border: 1px solid rgba(16, 185, 129, 0.2);
         }
 
         .description-text {
+            font-size: 1.1rem;
             line-height: 1.8;
-            color: #666;
+            color: var(--text-primary);
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid rgba(16, 185, 129, 0.1);
         }
 
-        .loading {
+        /* Admin Notes */
+        .admin-notes-section {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .form-control {
+            border-radius: 8px;
+            border: 2px solid var(--border-color);
+            padding: 1rem;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+            outline: none;
+        }
+
+        /* View Images Button */
+        .view-images-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .view-images-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Lightbox */
+        .lightbox-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .lightbox-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+        }
+
+        .lightbox-image {
+            max-width: 100%;
+            max-height: 80vh;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: -50px;
+            right: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            padding: 0.5rem;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .lightbox-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            padding: 1rem;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .lightbox-prev {
+            left: -60px;
+        }
+
+        .lightbox-next {
+            right: -60px;
+        }
+
+        .lightbox-nav:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .lightbox-counter {
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 1rem;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+        }
+
+        /* Loading and Error States */
+        .loading-spinner {
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            font-size: 1.2rem;
-            color: #666;
+            height: 200px;
         }
 
         .error-message {
             text-align: center;
-            padding: 2rem;
-            color: #dc3545;
+            padding: 3rem;
+            color: var(--danger-color);
         }
 
-        .property-details-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-bottom: 2rem;
+        /* Responsive */
+        @media (max-width: 768px) {
+            .property-title {
+                font-size: 2rem;
+            }
+
+            .property-price {
+                font-size: 1.8rem;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .info-grid-simple {
+                grid-template-columns: 1fr;
+            }
+
+            .owner-info {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
         }
 
-        .detail-section {
-            background: white;
-            border-radius: 15px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
-        .section-title {
-            font-size: 1.3rem;
-            font-weight: bold;
-            margin-bottom: 1rem;
-            color: #1e3a8a;
-            border-bottom: 2px solid #1e3a8a;
-            padding-bottom: 0.5rem;
+        .content-section {
+            animation: fadeInUp 0.6s ease-out;
         }
 
-        .detail-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.75rem 0;
-            border-bottom: 1px solid #eee;
+        .content-section:nth-child(2) {
+            animation-delay: 0.1s;
         }
 
-        .detail-item:last-child {
-            border-bottom: none;
+        .content-section:nth-child(3) {
+            animation-delay: 0.2s;
         }
 
-        .detail-label {
-            font-weight: 500;
-            color: #666;
+        .content-section:nth-child(4) {
+            animation-delay: 0.3s;
         }
 
-        .detail-value {
-            font-weight: bold;
-            color: #333;
-        }
-
-        .contact-section {
-            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
-            color: white;
-            border-radius: 15px;
-            padding: 2rem;
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        .contact-title {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 1rem;
-        }
-
-        .contact-text {
-            margin-bottom: 1.5rem;
-            opacity: 0.9;
+        .content-section:nth-child(5) {
+            animation-delay: 0.4s;
         }
     </style>
 </head>
 
 <body>
-    <!-- Loading -->
-    <div id="loading" class="loading">
-        <div class="spinner-border text-primary me-3" role="status">
+    <!-- Loading Screen -->
+    <div id="loading" class="loading-spinner">
+        <div class="spinner-border text-primary" role="status">
             <span class="visually-hidden">Carregando...</span>
         </div>
-        Carregando detalhes do imóvel...
     </div>
 
     <!-- Error Message -->
@@ -258,18 +566,44 @@
         <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
         <h4>Erro ao carregar detalhes</h4>
         <p id="error-text">Não foi possível carregar os detalhes do imóvel.</p>
-        <button class="btn btn-primary" onclick="window.history.back()">Voltar</button>
+        <button class="btn btn-primary" onclick="window.location.href='index.html'">Home</button>
     </div>
 
     <!-- Main Content -->
     <div id="main-content" style="display: none;">
-        <!-- Navigation -->
-        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <!-- Header -->
+        <header class="main-header">
             <div class="container">
-                <button class="back-button" onclick="window.history.back()">
-                    <i class="fas fa-arrow-left"></i>
-                </button>
-                <a class="navbar-brand" href="#">
+                <div class="header-content">
+                    <div class="row align-items-center">
+                        <div class="col-lg-8">
+                            <h1 id="property-title" class="property-title">Carregando...</h1>
+                            <div class="property-location">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span id="property-location">Carregando localização...</span>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 text-lg-end">
+                            <div class="property-price mb-3" id="price-display">R$ --</div>
+                            <div class="status-badge" id="status-display-inline">--</div>
+                        </div>
+                    </div>
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <button id="view-images-btn" class="view-images-btn" style="display: none;">
+                                <i class="fas fa-images"></i>
+                                Ver Imagens do Imóvel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="navbar navbar-expand-lg navbar-dark">
+            <div class="container">
+                <a class="navbar-brand" href="index.html">
                     <i class="fas fa-home me-2"></i>
                     Busca Busca Imóveis
                 </a>
@@ -282,135 +616,206 @@
             </div>
         </nav>
 
-        <!-- Property Header -->
-        <div class="property-header">
+        <!-- Main Content -->
+        <main class="main-content">
             <div class="container">
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <h1 id="property-title" class="property-title">Carregando...</h1>
-                        <p id="property-location" class="property-location">
-                            <i class="fas fa-map-marker-alt me-2"></i>
-                            Carregando localização...
-                        </p>
+                <!-- Actions Bar -->
+                <section class="content-section actions-section">
+                    <div class="action-buttons">
+                        <a href="#" id="whatsapp-link" class="btn btn-success" target="_blank">
+                            <i class="fab fa-whatsapp"></i>
+                            Solicitar Informações
+                        </a>
+                        <button id="approve-button" class="btn btn-success">
+                            <i class="fas fa-check"></i>
+                            Aprovar Anúncio
+                        </button>
+                        <button id="reject-button" class="btn btn-danger">
+                            <i class="fas fa-times"></i>
+                            Rejeitar Anúncio
+                        </button>
                     </div>
-                    <div class="col-md-4 text-end">
-                        <div id="property-price" class="property-price">R$ --</div>
-                        <span id="status-badge" class="badge status-badge bg-warning">Carregando...</span>
+                </section>
+
+                <!-- Owner Information -->
+                <section class="content-section owner-section">
+                    <h2 class="section-title">
+                        <i class="fas fa-user"></i>
+                        Informações do Anunciante
+                    </h2>
+                    <div class="owner-info">
+                        <div class="owner-item">
+                            <i class="fas fa-hashtag"></i>
+                            <div>
+                                <div class="owner-label">ID do Anúncio</div>
+                                <div class="owner-value text-primary" id="property-id">--</div>
+                            </div>
+                        </div>
+                        <div class="owner-item">
+                            <i class="fas fa-user"></i>
+                            <div>
+                                <div class="owner-label">Nome</div>
+                                <div class="owner-value" id="owner-name">--</div>
+                            </div>
+                        </div>
+                        <div class="owner-item">
+                            <i class="fas fa-envelope"></i>
+                            <div>
+                                <div class="owner-label">Email</div>
+                                <div class="owner-value" id="owner-email">--</div>
+                            </div>
+                        </div>
+                        <div class="owner-item">
+                            <i class="fas fa-phone"></i>
+                            <div>
+                                <div class="owner-label">Telefone</div>
+                                <div class="owner-value" id="owner-phone">--</div>
+                            </div>
+                        </div>
+                        <div class="owner-item" id="owner-creci-wrap" style="display:none;">
+                            <i class="fas fa-id-card"></i>
+                            <div>
+                                <div class="owner-label">CRECI</div>
+                                <div class="owner-value" id="owner-creci">--</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Property Information -->
+                <section class="content-section">
+                    <h2 class="section-title">
+                        <i class="fas fa-info-circle"></i>
+                        Informações do Imóvel
+                    </h2>
+                    <div class="info-grid-simple">
+                        <div class="info-item-simple">
+                            <i class="fas fa-home text-primary"></i>
+                            <div>
+                                <div class="info-label">Tipo de Imóvel</div>
+                                <div class="info-value" id="property-type">--</div>
+                            </div>
+                        </div>
+                        <div class="info-item-simple">
+                            <i class="fas fa-exchange-alt text-success"></i>
+                            <div>
+                                <div class="info-label">Transação</div>
+                                <div class="info-value" id="transaction-type">--</div>
+                            </div>
+                        </div>
+                        <div class="info-item-simple">
+                            <i class="fas fa-bed text-info"></i>
+                            <div>
+                                <div class="info-label">Quartos</div>
+                                <div class="info-value" id="bedrooms">--</div>
+                            </div>
+                        </div>
+                        <div class="info-item-simple">
+                            <i class="fas fa-bath text-info"></i>
+                            <div>
+                                <div class="info-label">Banheiros</div>
+                                <div class="info-value" id="bathrooms">--</div>
+                            </div>
+                        </div>
+                        <div class="info-item-simple">
+                            <i class="fas fa-car text-warning"></i>
+                            <div>
+                                <div class="info-label">Vagas de Garagem</div>
+                                <div class="info-value" id="parking-spaces">--</div>
+                            </div>
+                        </div>
+                        <div class="info-item-simple">
+                            <i class="fas fa-ruler-combined text-danger"></i>
+                            <div>
+                                <div class="info-label">Área Total</div>
+                                <div class="info-value" id="area">--</div>
+                            </div>
+                        </div>
+                        <div class="info-item-simple">
+                            <i class="fas fa-city text-secondary"></i>
+                            <div>
+                                <div class="info-label">Cidade</div>
+                                <div class="info-value" id="city">--</div>
+                            </div>
+                        </div>
+                        <div class="info-item-simple">
+                            <i class="fas fa-map-pin text-secondary"></i>
+                            <div>
+                                <div class="info-label">Bairro</div>
+                                <div class="info-value" id="neighborhood">--</div>
+                            </div>
+                        </div>
+                        <div class="info-item-simple">
+                            <i class="fas fa-mail-bulk text-secondary"></i>
+                            <div>
+                                <div class="info-label">CEP</div>
+                                <div class="info-value" id="zip-code">--</div>
+                            </div>
+                        </div>
+                        <div class="info-item-simple">
+                            <i class="fas fa-calendar text-secondary"></i>
+                            <div>
+                                <div class="info-label">Data de Criação</div>
+                                <div class="info-value" id="created-date">--</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Description and Admin Notes Row -->
+                <div class="row g-4">
+                    <!-- Description -->
+                    <div class="col-lg-6">
+                        <section class="content-section description-section" id="description-section"
+                            style="display: none;">
+                            <h2 class="section-title">
+                                <i class="fas fa-align-left"></i>
+                                Descrição do Imóvel
+                            </h2>
+                            <p id="description-text" class="description-text">
+                                Carregando descrição...
+                            </p>
+                        </section>
+                    </div>
+
+                    <!-- Admin Notes -->
+                    <div class="col-lg-6">
+                        <section class="content-section admin-notes-section">
+                            <h2 class="section-title">
+                                <i class="fas fa-sticky-note"></i>
+                                Notas Administrativas
+                            </h2>
+                            <div class="mb-3">
+                                <textarea id="admin-notes" class="form-control" rows="6"
+                                    placeholder="Escreva observações internas sobre este anúncio (visível apenas para administradores)"></textarea>
+                            </div>
+                            <div class="d-flex justify-content-end">
+                                <button id="save-admin-notes" class="btn btn-primary">
+                                    <i class="fas fa-save"></i>
+                                    Salvar Notas
+                                </button>
+                            </div>
+                        </section>
                     </div>
                 </div>
             </div>
-        </div>
+        </main>
+    </div>
 
-        <div class="container">
-            <!-- Property Images -->
-            <div class="property-card">
-                <div class="property-images" id="property-images">
-                    <img src="https://via.placeholder.com/800x400?text=Carregando+Imagem" alt="Imagem do imóvel">
-                    <div class="image-counter" id="image-counter" style="display: none;">1/1</div>
-                </div>
-            </div>
-
-            <!-- Property Details Grid -->
-            <div class="property-details-grid">
-                <!-- Basic Info -->
-                <div class="detail-section">
-                    <h3 class="section-title">
-                        <i class="fas fa-info-circle me-2"></i>
-                        Informações Básicas
-                    </h3>
-                    <div class="detail-item">
-                        <span class="detail-label">Tipo de Imóvel</span>
-                        <span class="detail-value" id="property-type">--</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Tipo de Transação</span>
-                        <span class="detail-value" id="transaction-type">--</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Preço</span>
-                        <span class="detail-value" id="price-display">R$ --</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Status</span>
-                        <span class="detail-value" id="status-display">--</span>
-                    </div>
-                </div>
-
-                <!-- Property Features -->
-                <div class="detail-section">
-                    <h3 class="section-title">
-                        <i class="fas fa-home me-2"></i>
-                        Características
-                    </h3>
-                    <div class="detail-item">
-                        <span class="detail-label">Quartos</span>
-                        <span class="detail-value" id="bedrooms">--</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Banheiros</span>
-                        <span class="detail-value" id="bathrooms">--</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Vagas</span>
-                        <span class="detail-value" id="parking-spaces">--</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Área</span>
-                        <span class="detail-value" id="area">--</span>
-                    </div>
-                </div>
-
-                <!-- Location Info -->
-                <div class="detail-section">
-                    <h3 class="section-title">
-                        <i class="fas fa-map-marker-alt me-2"></i>
-                        Localização
-                    </h3>
-                    <div class="detail-item">
-                        <span class="detail-label">Cidade</span>
-                        <span class="detail-value" id="city">--</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Bairro</span>
-                        <span class="detail-value" id="neighborhood">--</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">CEP</span>
-                        <span class="detail-value" id="zip-code">--</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Data de Criação</span>
-                        <span class="detail-value" id="created-date">--</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Contact Section -->
-            <div class="contact-section">
-                <h3 class="contact-title">
-                    <i class="fab fa-whatsapp me-2"></i>
-                    Solicitar Informações
-                </h3>
-                <p class="contact-text">
-                    Para aprovar este anúncio, entre em contato com o usuário que o publicou para solicitar documentos e
-                    informações adicionais.
-                </p>
-                <a href="#" id="whatsapp-link" class="whatsapp-button" target="_blank">
-                    <i class="fab fa-whatsapp"></i>
-                    Solicitar Informações
-                </a>
-            </div>
-
-            <!-- Description -->
-            <div class="description-card" id="description-section" style="display: none;">
-                <h3 class="description-title">
-                    <i class="fas fa-align-left me-2"></i>
-                    Descrição
-                </h3>
-                <p id="description-text" class="description-text">
-                    Carregando descrição...
-                </p>
-            </div>
+    <!-- Lightbox Modal -->
+    <div id="lightbox" class="lightbox-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+        <div class="lightbox-content">
+            <button id="lightbox-close" class="lightbox-close" aria-label="Fechar">
+                <i class="fas fa-times"></i>
+            </button>
+            <button id="lightbox-prev" class="lightbox-nav lightbox-prev" aria-label="Anterior">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <img id="lightbox-image" class="lightbox-image" src="" alt="Visualização da imagem" />
+            <button id="lightbox-next" class="lightbox-nav lightbox-next" aria-label="Próximo">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+            <div id="lightbox-counter" class="lightbox-counter">1/1</div>
         </div>
     </div>
 

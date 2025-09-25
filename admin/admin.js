@@ -11,6 +11,10 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // Estado da aplicação
 let properties = [];
 let filteredProperties = [];
+let totalCount = 0;
+const PAGE_SIZE = 5;
+let currentPage = 1; // 1-based
+let listenersBound = false;
 let currentFilters = {
     status: '',
     propertyType: '',
@@ -27,6 +31,13 @@ const typeFilter = document.getElementById('type-filter');
 const cityFilter = document.getElementById('city-filter');
 const applyFiltersBtn = document.getElementById('apply-filters');
 const loginForm = document.getElementById('login-form');
+// Pagination elements
+const paginationEl = document.getElementById('pagination');
+const prevPageBtn = document.getElementById('prev-page');
+const nextPageBtn = document.getElementById('next-page');
+const currentPageEl = document.getElementById('current-page');
+const totalPagesEl = document.getElementById('total-pages');
+const totalCountEl = document.getElementById('total-count');
 const logoutBtn = document.getElementById('logout-btn');
 const adminName = document.getElementById('admin-name');
 const loginError = document.getElementById('login-error');
@@ -94,14 +105,15 @@ async function checkIfUserIsAdmin(userId) {
 // Inicializar painel admin
 async function initializeAdminPanel(user) {
     try {
-        console.log('📊 Carregando propriedades...');
-        await loadProperties();
+        console.log('📊 Carregando propriedades (paginado)...');
+        await fetchPropertiesServer();
 
         console.log('🎯 Configurando event listeners...');
         setupEventListeners();
 
         console.log('📈 Atualizando estatísticas...');
-        updateStats();
+        await updateStatsServer();
+        bindStatsCardClicks();
 
         console.log('🖥️ Mostrando painel principal...');
         showMainApp();
@@ -124,26 +136,44 @@ async function initializeAdminPanel(user) {
 }
 
 // Carregar propriedades
-async function loadProperties() {
+async function fetchPropertiesServer() {
     try {
-        const { data, error } = await supabase
-            .from('properties')
-            .select('*')
-            .order('created_at', { ascending: false });
+        const from = (currentPage - 1) * PAGE_SIZE;
+        const to = from + PAGE_SIZE - 1;
 
+        let query = supabase
+            .from('properties')
+            .select('*', { count: 'exact' })
+            .order('created_at', { ascending: false })
+            .range(from, to);
+
+        // Apply server-side filters
+        const status = statusFilter.value;
+        const propertyType = typeFilter.value;
+        const city = cityFilter.value.trim();
+
+        if (status) query = query.eq('status', status);
+        if (propertyType) query = query.eq('property_type', propertyType);
+        if (city) query = query.ilike('city', `%${city}%`);
+
+        const { data, error, count } = await query;
         if (error) throw error;
 
         properties = data || [];
-        filteredProperties = [...properties];
+        filteredProperties = properties; // already filtered server-side
+        totalCount = count || 0;
+
         renderProperties();
+        updatePaginationUI();
     } catch (error) {
-        console.error('Erro ao carregar propriedades:', error);
-        throw error;
+        console.error('Erro ao buscar propriedades (server):', error);
+        showError('Erro ao carregar lista.');
     }
 }
 
 // Configurar event listeners
 function setupEventListeners() {
+    if (listenersBound) return; // evitar listeners duplicados
     console.log('🎯 Configurando event listeners...');
 
     // Login
@@ -159,12 +189,22 @@ function setupEventListeners() {
     }
 
     // Filtros
-    applyFiltersBtn.addEventListener('click', applyFilters);
+    applyFiltersBtn.addEventListener('click', () => { currentPage = 1; fetchPropertiesServer().then(updateStatsServer); });
 
     // Filtros em tempo real
-    statusFilter.addEventListener('change', applyFilters);
-    typeFilter.addEventListener('change', applyFilters);
-    cityFilter.addEventListener('input', debounce(applyFilters, 300));
+    statusFilter.addEventListener('change', () => { currentPage = 1; fetchPropertiesServer().then(updateStatsServer); });
+    typeFilter.addEventListener('change', () => { currentPage = 1; fetchPropertiesServer().then(updateStatsServer); });
+    cityFilter.addEventListener('input', debounce(() => { currentPage = 1; fetchPropertiesServer().then(updateStatsServer); }, 400));
+
+    if (prevPageBtn) prevPageBtn.addEventListener('click', () => {
+        if (currentPage > 1) { currentPage -= 1; fetchPropertiesServer(); }
+    });
+    if (nextPageBtn) nextPageBtn.addEventListener('click', () => {
+        const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+        if (currentPage < totalPages) { currentPage += 1; fetchPropertiesServer(); }
+    });
+
+    listenersBound = true;
 }
 
 // Handle login
@@ -240,23 +280,8 @@ function hideLoginError() {
     loginError.style.display = 'none';
 }
 
-// Aplicar filtros
-function applyFilters() {
-    const status = statusFilter.value;
-    const propertyType = typeFilter.value;
-    const city = cityFilter.value.toLowerCase();
-
-    filteredProperties = properties.filter(property => {
-        const matchesStatus = !status || property.status === status;
-        const matchesType = !propertyType || property.property_type === propertyType;
-        const matchesCity = !city || property.city.toLowerCase().includes(city);
-
-        return matchesStatus && matchesType && matchesCity;
-    });
-
-    renderProperties();
-    updateStats();
-}
+// Aplicar filtros (server-side)
+function applyFilters() { currentPage = 1; fetchPropertiesServer().then(updateStatsServer); }
 
 // Renderizar propriedades
 function renderProperties() {
@@ -272,7 +297,7 @@ function renderProperties() {
     }
 
     propertiesContainer.innerHTML = filteredProperties.map(property => `
-        <div class="property-card">
+        <div class="property-card" data-id="${property.id}">
             <div class="row">
                 <div class="col-md-4">
                     <div class="property-images">
@@ -343,6 +368,75 @@ function renderProperties() {
             </div>
         </div>
     `).join('');
+
+    // Tornar card inteiro clicável para abrir detalhes
+    Array.from(propertiesContainer.querySelectorAll('.property-card')).forEach(card => {
+        card.addEventListener('click', (e) => {
+            // Evitar conflito com botões internos
+            const isButton = e.target.closest('button');
+            if (isButton) return;
+            const id = card.getAttribute('data-id');
+            if (id) viewPropertyDetails(id);
+        });
+    });
+}
+
+function updatePaginationUI() {
+    const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+    if (paginationEl) paginationEl.style.display = totalCount > PAGE_SIZE ? 'flex' : 'none';
+    if (currentPageEl) currentPageEl.textContent = currentPage;
+    if (totalPagesEl) totalPagesEl.textContent = totalPages;
+    if (totalCountEl) totalCountEl.textContent = totalCount;
+    if (prevPageBtn) prevPageBtn.disabled = currentPage <= 1;
+    if (nextPageBtn) nextPageBtn.disabled = currentPage >= totalPages;
+}
+
+// Estatísticas via servidor (contagens reais, sem depender da página atual)
+async function updateStatsServer() {
+    try {
+        const totalPromise = supabase
+            .from('properties')
+            .select('id', { count: 'exact', head: true });
+
+        const pendingPromise = supabase
+            .from('properties')
+            .select('id', { count: 'exact', head: true })
+            .eq('status', 'pending');
+
+        const approvedPromise = supabase
+            .from('properties')
+            .select('id', { count: 'exact', head: true })
+            .eq('status', 'approved');
+
+        const rejectedPromise = supabase
+            .from('properties')
+            .select('id', { count: 'exact', head: true })
+            .eq('status', 'rejected');
+
+        const [{ count: total }, { count: pending }, { count: approved }, { count: rejected }] = await Promise.all([
+            totalPromise, pendingPromise, approvedPromise, rejectedPromise
+        ]);
+
+        document.getElementById('total-properties').textContent = total ?? 0;
+        document.getElementById('pending-properties').textContent = pending ?? 0;
+        document.getElementById('approved-properties').textContent = approved ?? 0;
+        document.getElementById('rejected-properties').textContent = rejected ?? 0;
+    } catch (err) {
+        console.error('Erro ao atualizar estatísticas:', err);
+    }
+}
+
+function bindStatsCardClicks() {
+    // Deixar cards clicáveis para aplicar filtros (server-side)
+    const totalCard = document.getElementById('total-properties').closest('.stats-card');
+    const pendingCard = document.getElementById('pending-properties').closest('.stats-card');
+    const approvedCard = document.getElementById('approved-properties').closest('.stats-card');
+    const rejectedCard = document.getElementById('rejected-properties').closest('.stats-card');
+
+    if (totalCard) totalCard.onclick = () => { statusFilter.value = ''; applyFilters(); };
+    if (pendingCard) pendingCard.onclick = () => { statusFilter.value = 'pending'; applyFilters(); };
+    if (approvedCard) approvedCard.onclick = () => { statusFilter.value = 'approved'; applyFilters(); };
+    if (rejectedCard) rejectedCard.onclick = () => { statusFilter.value = 'rejected'; applyFilters(); };
 }
 
 // Renderizar imagens da propriedade
@@ -503,6 +597,29 @@ function updateStats() {
     document.getElementById('pending-properties').textContent = pending;
     document.getElementById('approved-properties').textContent = approved;
     document.getElementById('rejected-properties').textContent = rejected;
+
+    // Deixar cards clicáveis para aplicar filtros
+    const totalCard = document.getElementById('total-properties').closest('.stats-card');
+    const pendingCard = document.getElementById('pending-properties').closest('.stats-card');
+    const approvedCard = document.getElementById('approved-properties').closest('.stats-card');
+    const rejectedCard = document.getElementById('rejected-properties').closest('.stats-card');
+
+    if (totalCard) totalCard.onclick = () => {
+        statusFilter.value = '';
+        applyFilters();
+    };
+    if (pendingCard) pendingCard.onclick = () => {
+        statusFilter.value = 'pending';
+        applyFilters();
+    };
+    if (approvedCard) approvedCard.onclick = () => {
+        statusFilter.value = 'approved';
+        applyFilters();
+    };
+    if (rejectedCard) rejectedCard.onclick = () => {
+        statusFilter.value = 'rejected';
+        applyFilters();
+    };
 }
 
 // Funções auxiliares

@@ -13,6 +13,13 @@
             border-radius: 8px;
             margin-bottom: 20px;
             overflow: hidden;
+            transition: box-shadow .2s ease, transform .12s ease;
+            cursor: pointer;
+        }
+
+        .property-card:hover {
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+            transform: translateY(-1px);
         }
 
         .property-images {
@@ -75,6 +82,13 @@
             border-radius: 10px;
             padding: 20px;
             margin-bottom: 20px;
+            cursor: pointer;
+            transition: transform .12s ease, box-shadow .2s ease;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 24px rgba(30, 64, 175, .25);
         }
 
         .filter-section {
@@ -242,6 +256,21 @@
                 <!-- Properties List -->
                 <div id="properties-container">
                     <!-- Properties will be loaded here -->
+                </div>
+
+                <!-- Pagination -->
+                <div id="pagination" class="d-flex justify-content-between align-items-center mt-3"
+                    style="display:none;">
+                    <button id="prev-page" class="btn btn-outline-primary btn-sm" disabled>
+                        <i class="fas fa-chevron-left me-1"></i>Anterior
+                    </button>
+                    <div class="text-muted small">
+                        Página <span id="current-page">1</span> de <span id="total-pages">1</span>
+                        • <span id="total-count">0</span> registros
+                    </div>
+                    <button id="next-page" class="btn btn-outline-primary btn-sm" disabled>
+                        Próxima<i class="fas fa-chevron-right ms-1"></i>
+                    </button>
                 </div>
             </div>
         </div>
