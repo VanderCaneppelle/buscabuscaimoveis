@@ -434,13 +434,15 @@ export default function MyPropertiesScreen({ navigation }) {
             return false;
         }
 
-        // Verificar se a URL contém apenas caracteres alfanuméricos e alguns especiais (não malformada)
-        const urlPattern = /^https?:\/\/.+\..+/;
+        // Aceitar http/https com domínio e URIs locais file://
+        const httpPattern = /^https?:\/\/.+\..+/;
+        const filePattern = /^file:\/\//;
 
         // Verificar se não tem caracteres estranhos que podem causar erro
-        const hasInvalidChars = /[^\w\-._~:/?#[\]@!$&'()*+,;=%]/.test(url);
+        const hasInvalidChars = /[^\w\-._~:\/?#[\]@!$&'()*+,;=%]/.test(url);
 
-        return urlPattern.test(url) && !hasInvalidChars;
+        const matchesKnownScheme = httpPattern.test(url) || filePattern.test(url);
+        return matchesKnownScheme && !hasInvalidChars;
     }, []);
 
     // Função para renderizar mídia (imagem ou vídeo)
