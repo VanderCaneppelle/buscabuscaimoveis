@@ -20,7 +20,7 @@ import {
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Ionicons } from '@expo/vector-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PlanService } from '../lib/planService';
 import { PropertyService } from '../lib/propertyService';
 import { MediaServiceOptimized } from '../lib/mediaServiceOptimized';
@@ -35,6 +35,7 @@ export default function CreateAdScreen({ navigation, route }) {
     console.log('Rendered CreateAdScreen');
 
     const { user } = useAuth();
+    const insets = useSafeAreaInsets();
     const [userPlanInfo, setUserPlanInfo] = useState(null);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
@@ -658,15 +659,21 @@ export default function CreateAdScreen({ navigation, route }) {
     }
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { paddingTop: insets.top }]}>
             {/* Header Amarelo com Título */}
             <View style={styles.headerContainer}>
                 <View style={styles.titleContainer}>
+
                     <TouchableOpacity
                         style={styles.backButton}
                         onPress={() => navigation.goBack()}>
                         <Ionicons name="arrow-back" size={24} color="#00335e" />
                     </TouchableOpacity>
+                    <Image
+                        source={require('../assets/logo_bb.jpg')}
+                        style={styles.titleLogo}
+                        resizeMode="contain"
+                    />
                     <Text style={styles.headerTitle}>Criar Anúncio</Text>
                     <View style={styles.placeholder} />
                 </View>
@@ -1523,10 +1530,16 @@ const styles = StyleSheet.create({
     },
 
     headerContainer: {
-        paddingTop: 60,
+        paddingTop: 10,
         paddingBottom: 15,
         backgroundColor: '#ffcc1e',
         paddingHorizontal: 20,
+    },
+    titleLogo: {
+        width: 30,
+        height: 30,
+        borderRadius: 15,
+        marginRight: 10,
     },
     titleContainer: {
         flexDirection: 'row',
