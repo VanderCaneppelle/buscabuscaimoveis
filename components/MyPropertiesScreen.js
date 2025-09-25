@@ -1254,7 +1254,7 @@ export default function MyPropertiesScreen({ navigation }) {
                                                             style={styles.removeMediaButton}
                                                             onPress={() => removeImage(index)}
                                                         >
-                                                            <Ionicons name="close-circle" size={20} color="#ef4444" />
+                                                            <Ionicons name="close-circle" size={26} color="#ef4444" />
                                                         </TouchableOpacity>
                                                         {/* Ícone indicativo de tipo de mídia */}
                                                         <View style={styles.editMediaTypeIcon}>
@@ -1605,8 +1605,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: '#00335e',
-        paddingHorizontal: 12,
-        paddingVertical: 8,
+        paddingHorizontal: 8,
+        paddingVertical: 4,
         borderRadius: 6,
         gap: 5,
     },
@@ -1623,8 +1623,8 @@ const styles = StyleSheet.create({
     },
     removeMediaButton: {
         position: 'absolute',
-        top: -5,
-        right: -5,
+        top: 0,
+        right: 0,
         backgroundColor: '#fff',
         borderRadius: 10,
         zIndex: 1,
