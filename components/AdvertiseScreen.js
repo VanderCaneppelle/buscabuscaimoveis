@@ -131,9 +131,9 @@ export default function AdvertiseScreen({ navigation }) {
                         style={styles.titleLogo}
                         resizeMode="contain"
                     />
-                    <Text style={styles.headerTitle}>Anunciar</Text>
+                    <Text style={styles.headerTitle}>Minha Conta</Text>
                 </View>
-                <Text style={styles.headerSubtitle}>Gerencie seus anúncios</Text>
+                <Text style={styles.headerSubtitle}>Gerencie seu perfil e configurações</Text>
             </View>
 
             {/* Conteúdo Principal */}
@@ -255,9 +255,9 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     titleLogo: {
-        width: 30,
-        height: 30,
-        borderRadius: 15,
+        width: 50,
+        height: 50,
+        borderRadius: 25,
         marginRight: 10,
     },
     headerTitle: {
