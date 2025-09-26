@@ -25,6 +25,8 @@ export default function PaymentDetailsScreen({ route, navigation }) {
     const [checkoutUrl, setCheckoutUrl] = useState('');
     const [currentPlan, setCurrentPlan] = useState(null);
     const [currentAdsCount, setCurrentAdsCount] = useState(0);
+    const [currentPaymentId, setCurrentPaymentId] = useState(null);
+    const [checkingStatus, setCheckingStatus] = useState(false);
 
     // Função para verificar se pode fazer downgrade
     const checkDowngradePossibility = async () => {
@@ -123,6 +125,10 @@ export default function PaymentDetailsScreen({ route, navigation }) {
             // Criar pagamento no backend
             const result = await BackendService.createPayment(plan, user);
             console.log('✅ Pagamento criado:', result);
+            // Guardar paymentId para acompanhar via polling
+            if (result?.payment?.id) {
+                setCurrentPaymentId(result.payment.id);
+            }
 
             // Abrir Mercado Pago dentro do app (WebView)
             const paymentUrl = result?.preference?.init_point || result?.preference?.sandbox_init_point;
@@ -161,6 +167,49 @@ export default function PaymentDetailsScreen({ route, navigation }) {
             });
         }
     };
+
+    // Polling do status enquanto a WebView está aberta
+    useEffect(() => {
+        if (!webViewVisible || !currentPaymentId) return;
+
+        let isCancelled = false;
+        setCheckingStatus(true);
+
+        const start = Date.now();
+        const POLL_INTERVAL_MS = 2000;
+        const MAX_DURATION_MS = 120000; // 2 minutos
+
+        const poll = async () => {
+            if (isCancelled) return;
+            try {
+                const result = await BackendService.checkPaymentStatus(currentPaymentId);
+                const status = result?.payment?.status;
+                // console.log('⏱️ Poll status:', status);
+                if (status === 'approved') {
+                    if (!isCancelled) {
+                        setCheckingStatus(false);
+                        setWebViewVisible(false);
+                        Alert.alert('Pagamento aprovado', 'Sua assinatura foi ativada com sucesso.');
+                        navigation.navigate('PaymentConfirmation', { plan });
+                    }
+                    return;
+                }
+            } catch (e) {
+                // silenciar erros intermitentes de rede
+            }
+            if (Date.now() - start < MAX_DURATION_MS) {
+                setTimeout(poll, POLL_INTERVAL_MS);
+            } else {
+                setCheckingStatus(false);
+            }
+        };
+
+        const timer = setTimeout(poll, POLL_INTERVAL_MS);
+        return () => {
+            isCancelled = true;
+            clearTimeout(timer);
+        };
+    }, [webViewVisible, currentPaymentId]);
 
     const getPlanFeatures = () => {
         // Se o plano tem features definidas, usar elas
@@ -380,6 +429,11 @@ export default function PaymentDetailsScreen({ route, navigation }) {
                         ) : (
                             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
                                 <ActivityIndicator size="large" color="#27ae60" />
+                            </View>
+                        )}
+                        {checkingStatus && (
+                            <View style={{ position: 'absolute', bottom: 16, left: 16, right: 16, backgroundColor: 'rgba(0,0,0,0.7)', padding: 12, borderRadius: 8 }}>
+                                <Text style={{ color: '#fff', textAlign: 'center' }}>Aguardando confirmação do pagamento...</Text>
                             </View>
                         )}
                     </SafeAreaView>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
     View,
     Text,
@@ -9,155 +9,15 @@ import {
     SafeAreaView
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import BackendService from '../lib/backendService';
-import { PlanService } from '../lib/planService';
-
-import { PushNotificationService } from '../lib/pushNotificationService';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function PaymentConfirmationScreen({ route, navigation }) {
     console.log('Rendered PaymentConfirmationScreen');
 
-    const { paymentData, plan } = route.params;
+    const { plan } = route.params;
     const { user } = useAuth();
 
-    const [timeLeft, setTimeLeft] = useState(180); // 3 minutos
-    const [status, setStatus] = useState('waiting'); // waiting, success, error
-    const [errorMessage, setErrorMessage] = useState('');
-    const [checkCount, setCheckCount] = useState(0);
-    const [isInitialized, setIsInitialized] = useState(false);
-
-    // Resetar estado quando a tela for montada
-    useEffect(() => {
-        setIsInitialized(false);
-        setCheckCount(0);
-        setStatus('waiting');
-        setTimeLeft(180);
-        setErrorMessage('');
-    }, []);
-
-    // Timer regressivo
-    useEffect(() => {
-        if (status === 'waiting' && timeLeft > 0) {
-            const timer = setTimeout(() => {
-                setTimeLeft(prev => prev - 1);
-            }, 1000);
-            return () => clearTimeout(timer);
-        } else if (timeLeft === 0 && status === 'waiting') {
-            setStatus('error');
-            setErrorMessage('Tempo limite excedido. O pagamento não foi confirmado.');
-        }
-    }, [timeLeft, status]);
-
-    // Configurar polling e notificações - começa imediatamente
-    useEffect(() => {
-        console.log('🔄 useEffect de polling executado:', {
-            status,
-            hasPaymentData: !!paymentData?.payment?.id,
-            isInitialized
-        });
-
-        if (status === 'waiting' && paymentData?.payment?.id && !isInitialized) {
-            console.log('✅ Iniciando sistema de polling');
-            console.log('🔍 Payment Data:', paymentData);
-            console.log('🔍 Payment ID para polling:', paymentData.payment.id);
-            setIsInitialized(true);
-
-            // Solicitar permissões de notificação
-            PushNotificationService.requestPermissions();
-
-            // Fazer uma verificação inicial
-            const checkInitialStatus = async () => {
-                try {
-                    console.log('🔍 Verificação inicial do status...');
-                    console.log('🔍 Payment ID:', paymentData.payment.id);
-
-                    const statusResult = await BackendService.checkPaymentStatus(paymentData.payment.id);
-                    console.log('📊 Status inicial:', statusResult);
-
-                    if (statusResult.payment.status === 'approved') {
-                        console.log('✅ Pagamento já estava aprovado!');
-                        setStatus('success');
-                        PlanService.loadUserInfo();
-
-                        // Enviar notificação local
-                        PushNotificationService.sendLocalNotification(
-                            'Pagamento Aprovado! 🎉',
-                            'Seu pagamento foi confirmado com sucesso!'
-                        );
-                    } else if (statusResult.payment.status === 'rejected') {
-                        console.log('❌ Pagamento já estava rejeitado!');
-                        setStatus('error');
-                        setErrorMessage('Pagamento rejeitado. Tente novamente com outro método de pagamento.');
-                    } else {
-                        console.log('⏳ Pagamento ainda pendente, iniciando polling...');
-                    }
-                } catch (error) {
-                    console.error('❌ Erro na verificação inicial:', error);
-                }
-            };
-
-            checkInitialStatus();
-        }
-    }, [paymentData, isInitialized]);
-
-    // Polling a cada 10 segundos
-    useEffect(() => {
-        if (status === 'waiting' && paymentData?.payment?.id) {
-            console.log('⏰ Iniciando polling a cada 10 segundos...');
-
-            const interval = setInterval(async () => {
-                try {
-                    console.log('🔍 Verificando status do pagamento...');
-                    const statusResult = await BackendService.checkPaymentStatus(paymentData.payment.id);
-                    console.log('📊 Status atual:', statusResult);
-
-                    if (statusResult.payment.status === 'approved') {
-                        console.log('✅ Pagamento aprovado via polling!');
-                        setStatus('success');
-                        // Atualizar informações do usuário
-                        try {
-                            await PlanService.getUserPlanInfo(user.id);
-                        } catch (error) {
-                            console.error('❌ Erro ao atualizar informações do usuário:', error);
-                        }
-
-                        // Enviar notificação local
-                        PushNotificationService.sendLocalNotification(
-                            'Pagamento Aprovado! 🎉',
-                            'Seu pagamento foi confirmado com sucesso!'
-                        );
-
-                        // Parar o polling
-                        clearInterval(interval);
-                    } else if (statusResult.payment.status === 'rejected') {
-                        console.log('❌ Pagamento rejeitado via polling!');
-                        setStatus('error');
-                        setErrorMessage('Pagamento rejeitado. Tente novamente com outro método de pagamento.');
-
-                        // Parar o polling
-                        clearInterval(interval);
-                    } else {
-                        console.log('⏳ Pagamento ainda pendente, continuando polling...');
-                    }
-                } catch (error) {
-                    console.error('❌ Erro no polling:', error);
-                }
-            }, 10000); // 10 segundos
-
-            // Cleanup: parar o polling quando o componente for desmontado ou status mudar
-            return () => {
-                console.log('🧹 Parando polling');
-                clearInterval(interval);
-            };
-        }
-    }, [status, paymentData]);
-
-    const formatTime = (seconds) => {
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${mins}:${secs.toString().padStart(2, '0')}`;
-    };
+    const [status] = useState('success');
 
     const handleAnunciar = () => {
         navigation.navigate('CreateAd');
@@ -175,57 +35,6 @@ export default function PaymentConfirmationScreen({ route, navigation }) {
     const handleTentarNovamente = () => {
         navigation.goBack();
     };
-
-    const renderWaitingContent = () => (
-        <>
-            {/* Info Card Verde */}
-            <View style={styles.infoCard}>
-                <Ionicons name="time" size={24} color="#27ae60" />
-                <View style={styles.infoContent}>
-                    <Text style={styles.infoTitle}>Aguardando Confirmação</Text>
-                    <Text style={styles.infoText}>
-                        Seu pagamento foi processado e está sendo confirmado.
-                        <Text style={styles.importantText}> Não saia desta tela!</Text>
-                    </Text>
-                </View>
-            </View>
-
-            {/* Timer Card */}
-            <View style={styles.timerCard}>
-                <View style={styles.timerHeader}>
-                    <Ionicons name="hourglass" size={32} color="#27ae60" />
-                    <Text style={styles.timerTitle}>Tempo Restante</Text>
-                </View>
-                <Text style={styles.timerValue}>{formatTime(timeLeft)}</Text>
-                <Text style={styles.timerSubtitle}>Aguarde a confirmação automática</Text>
-            </View>
-
-            {/* Status Card */}
-            <View style={styles.statusCard}>
-                <View style={styles.statusHeader}>
-                    <Ionicons name="refresh" size={20} color="#27ae60" />
-                    <Text style={styles.statusTitle}>Status da Verificação</Text>
-                </View>
-                <View style={styles.statusDetails}>
-                    <Text style={styles.statusText}>
-                        Status: <Text style={styles.statusHighlight}>Aguardando confirmação</Text>
-                    </Text>
-                    <Text style={styles.statusText}>
-                        Verificação: <Text style={styles.statusHighlight}>A cada 10 segundos</Text>
-                    </Text>
-                </View>
-                <ActivityIndicator size="small" color="#27ae60" style={styles.loadingIndicator} />
-            </View>
-
-            {/* Warning Card */}
-            <View style={styles.warningCard}>
-                <Ionicons name="warning" size={20} color="#f39c12" />
-                <Text style={styles.warningText}>
-                    Importante: Mantenha esta tela aberta até a confirmação do pagamento
-                </Text>
-            </View>
-        </>
-    );
 
     const renderSuccessContent = () => (
         <>
@@ -257,25 +66,6 @@ export default function PaymentConfirmationScreen({ route, navigation }) {
         </>
     );
 
-    const renderErrorContent = () => (
-        <>
-            {/* Error Card */}
-            <View style={styles.errorCard}>
-                <View style={styles.errorHeader}>
-                    <Ionicons name="close-circle" size={48} color="#e74c3c" />
-                    <Text style={styles.errorTitle}>Pagamento Não Confirmado</Text>
-                </View>
-                <Text style={styles.errorText}>{errorMessage}</Text>
-            </View>
-
-            {/* Action Button */}
-            <TouchableOpacity style={styles.primaryButton} onPress={handleTentarNovamente}>
-                <Ionicons name="refresh" size={20} color="#fff" />
-                <Text style={styles.primaryButtonText}>Tentar Novamente</Text>
-            </TouchableOpacity>
-        </>
-    );
-
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.headerContainer}>
@@ -283,19 +73,14 @@ export default function PaymentConfirmationScreen({ route, navigation }) {
                     <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                         <Ionicons name="arrow-back" size={24} color="#00335e" />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>
-                        {status === 'waiting' ? 'Confirmação de Pagamento' :
-                            status === 'success' ? 'Pagamento Aprovado' : 'Erro no Pagamento'}
-                    </Text>
+                    <Text style={styles.headerTitle}>Pagamento Aprovado</Text>
                     <View style={styles.placeholder} />
                 </View>
             </View>
 
             <View style={styles.contentContainer}>
                 <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-                    {status === 'waiting' && renderWaitingContent()}
-                    {status === 'success' && renderSuccessContent()}
-                    {status === 'error' && renderErrorContent()}
+                    {renderSuccessContent()}
                 </ScrollView>
             </View>
         </SafeAreaView>
