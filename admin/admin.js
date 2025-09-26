@@ -244,7 +244,7 @@ async function handleLogin(event) {
         }
     } catch (error) {
         console.error('❌ Erro no login:', error);
-        showLoginError('Email ou senha incorretos');
+        showLoginError('Email ou senha incorretosss');
     }
 }
 
