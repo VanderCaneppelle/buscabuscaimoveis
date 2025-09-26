@@ -101,7 +101,7 @@ async function createMercadoPagoPreference(plan, user) {
             failure: 'https://buscabusca.vercel.app/api/payments/failure',
             pending: 'https://buscabusca.vercel.app/api/payments/pending'
         },
-        notification_url: 'https://buscabusca.vercel.app/api/webhook/test',
+        notification_url: 'https://buscabusca.vercel.app/api/webhook/mercadopago',
         external_reference: `plan_${plan.id}_user_${user.id}`,
         auto_return: 'approved',
         expires: true,
