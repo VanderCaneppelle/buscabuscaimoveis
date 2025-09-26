@@ -12,6 +12,6 @@ jobs:
       - name: Trigger tests repo
         uses: peter-evans/repository-dispatch@v2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.TESTS_REPO_PAT }}
           repository: VanderCaneppelle/buscabusca-tests
           event-type: run-tests
