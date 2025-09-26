@@ -3,7 +3,7 @@ import { View, StyleSheet, Animated } from 'react-native';
 import StoryImage from './StoryImage';
 import StoryVideo from './StoryVideo';
 
-const IMAGE_DURATION = 5000; // 5 segundossss
+const IMAGE_DURATION = 5000; // 5 segundos
 
 export default function StoryItem({
     story,
