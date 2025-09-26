@@ -7,10 +7,11 @@ import {
     TouchableOpacity,
     Alert,
     ActivityIndicator,
-    SafeAreaView
+    SafeAreaView,
+    Modal
 } from 'react-native';
+import { WebView } from 'react-native-webview';
 import { Ionicons } from '@expo/vector-icons';
-import * as WebBrowser from 'expo-web-browser';
 import BackendService from '../lib/backendService';
 import { PushNotificationService } from '../lib/pushNotificationService';
 import { useAuth } from '../contexts/AuthContext';
@@ -20,6 +21,8 @@ export default function PaymentDetailsScreen({ route, navigation }) {
     const { user } = useAuth();
 
     const [loading, setLoading] = useState(false);
+    const [webViewVisible, setWebViewVisible] = useState(false);
+    const [checkoutUrl, setCheckoutUrl] = useState('');
     const [currentPlan, setCurrentPlan] = useState(null);
     const [currentAdsCount, setCurrentAdsCount] = useState(0);
 
@@ -121,18 +124,15 @@ export default function PaymentDetailsScreen({ route, navigation }) {
             const result = await BackendService.createPayment(plan, user);
             console.log('✅ Pagamento criado:', result);
 
-            // Abrir Mercado Pago no navegador
-            const paymentUrl = result.preference.sandbox_init_point;
-            console.log('🔗 Abrindo URL:', paymentUrl);
+            // Abrir Mercado Pago dentro do app (WebView)
+            const paymentUrl = result?.preference?.init_point || result?.preference?.sandbox_init_point;
+            console.log('🔗 Abrindo URL no WebView:', paymentUrl);
+            if (!paymentUrl) {
+                throw new Error('URL de checkout não encontrada na preferência');
+            }
 
-            const result_browser = await WebBrowser.openBrowserAsync(paymentUrl);
-            console.log('🔙 Navegador fechado:', result_browser.type);
-
-            // Redirecionar para confirmação
-            navigation.navigate('PaymentConfirmation', {
-                paymentData: result,
-                plan: plan
-            });
+            setCheckoutUrl(paymentUrl);
+            setWebViewVisible(true);
 
         } catch (error) {
             console.error('❌ Erro no pagamento:', error);
@@ -142,6 +142,23 @@ export default function PaymentDetailsScreen({ route, navigation }) {
             );
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleWebViewNavChange = (navState) => {
+        const url = navState?.url || '';
+        // Detectar finalização via deep links (se configurados) ou back_urls do backend
+        const isSuccess = url.startsWith('buscabuscaimoveis://payment/success') || url.includes('/api/payments/success');
+        const isFailure = url.startsWith('buscabuscaimoveis://payment/error') || url.includes('/api/payments/failure');
+        const isPending = url.startsWith('buscabuscaimoveis://payment/pending') || url.includes('/api/payments/pending');
+
+        if (isSuccess || isFailure || isPending) {
+            setWebViewVisible(false);
+            // Após fechar, seguir para tela de confirmação mantendo o mesmo comportamento atual
+            navigation.navigate('PaymentConfirmation', {
+                // Opcional: poderíamos passar o status detectado; manteremos fluxo existente
+                plan: plan
+            });
         }
     };
 
@@ -334,6 +351,39 @@ export default function PaymentDetailsScreen({ route, navigation }) {
                         </TouchableOpacity>
                     </ScrollView>
                 </View>
+
+                {/* WebView - Checkout Mercado Pago */}
+                <Modal
+                    visible={webViewVisible}
+                    animationType="slide"
+                    onRequestClose={() => setWebViewVisible(false)}
+                >
+                    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+                        <View style={{ height: 56, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, borderBottomWidth: 1, borderBottomColor: '#eee' }}>
+                            <TouchableOpacity onPress={() => setWebViewVisible(false)} style={{ padding: 8 }}>
+                                <Ionicons name="close" size={24} color="#00335e" />
+                            </TouchableOpacity>
+                            <Text style={{ marginLeft: 8, fontSize: 16, fontWeight: '600', color: '#00335e' }}>Pagamento Seguro</Text>
+                        </View>
+                        {checkoutUrl ? (
+                            <WebView
+                                source={{ uri: checkoutUrl }}
+                                onNavigationStateChange={handleWebViewNavChange}
+                                startInLoadingState
+                                renderLoading={() => (
+                                    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                                        <ActivityIndicator size="large" color="#27ae60" />
+                                        <Text style={{ marginTop: 12, color: '#7f8c8d' }}>Carregando checkout...</Text>
+                                    </View>
+                                )}
+                            />
+                        ) : (
+                            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                                <ActivityIndicator size="large" color="#27ae60" />
+                            </View>
+                        )}
+                    </SafeAreaView>
+                </Modal>
             </View>
         </SafeAreaView>
     );
