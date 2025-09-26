@@ -13,5 +13,5 @@ jobs:
         uses: peter-evans/repository-dispatch@v2
         with:
           token: ${{ secrets.TESTS_REPO_PAT }}
-          repository: VanderCaneppelle/buscabusca-tests
+          repository: VanderCaneppelle/buscabusca_tests
           event-type: run-tests
