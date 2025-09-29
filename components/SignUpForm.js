@@ -69,26 +69,43 @@ export default function SignUpForm({ onBack }) {
         setIsLoading(true);
 
         try {
-            // 1. Criar o usuário no Supabase Auth
-            const { data: authData, error: authError } = await supabase.auth.signUp({
-                email: formData.email,
-                password: formData.password,
-                options: {
-                    emailRedirectTo: CONFIRM_EMAIL_URL,
-                    data: {
-                        full_name: formData.fullName,
-                    },
-                },
+            // Normalizar e-mail
+            const normalizedEmail = (formData.email || '').trim().toLowerCase();
+
+            // Chamada à Edge Function (200 sempre)
+            const { data, error } = await supabase.functions.invoke('signup-proxy', {
+                body: { email: normalizedEmail, password: formData.password }
             });
 
-            if (authError) throw authError;
+            if (error) {
+                Alert.alert('Erro', 'Falha ao comunicar com o servidor. Tente novamente.');
+                return;
+            }
 
-            // 2. Criar o perfil na tabela profiles
-            if (authData.user) {
+            // Tratar resposta padronizada
+            if (!data?.success) {
+                if (data?.code === 'EMAIL_TAKEN') {
+                    Alert.alert('E-mail já cadastrado', 'Este e-mail já possui uma conta. Faça login.');
+                    return;
+                }
+                if (data?.code === 'EMAIL_PENDING') {
+                    Alert.alert('Cadastro pendente', 'Reenviamos o e-mail de confirmação para você.');
+                    return;
+                }
+                Alert.alert('Erro', data?.message || 'Não foi possível criar sua conta.');
+                return;
+            }
+
+
+            // Se quiser capturar o id retornado:
+            const userId = data.userId || null;
+
+            if (userId) {
+                // Caso a confirmação esteja desativada no projeto e haja sessão, criamos o profile agora.
                 const { error: profileError } = await supabase
                     .from('profiles')
                     .insert({
-                        id: authData.user.id,
+                        id: userId,
                         full_name: formData.fullName,
                         phone: formData.phone,
                         is_realtor: formData.isRealtor,
@@ -98,27 +115,24 @@ export default function SignUpForm({ onBack }) {
 
                 if (profileError) {
                     console.error('Erro ao criar perfil:', profileError);
-                    // Não vamos falhar o cadastro por causa do perfil, mas vamos logar o erro
                 } else {
-                    // 3. Salvar o aceite dos termos
                     try {
-                        await saveTermsAcceptance(supabase, authData.user.id);
+                        await saveTermsAcceptance(supabase, userId);
                         console.log('✅ Aceite dos termos salvo no cadastro');
                     } catch (termsError) {
                         console.error('Erro ao salvar aceite dos termos:', termsError);
-                        // Não vamos falhar o cadastro por causa dos termos, mas vamos logar o erro
                     }
                 }
             }
 
             Alert.alert(
                 'Sucesso!',
-                'Conta criada! Verifique seu email para confirmar a conta.',
+                'Conta criada! Enviamos um e-mail para confirmação. Verifique sua caixa de entrada.',
                 [{ text: 'OK', onPress: onBack }]
             );
 
         } catch (error) {
-            Alert.alert('Erro', error.message);
+            Alert.alert('Erro', error?.message || 'Falha ao criar conta.');
         } finally {
             setIsLoading(false);
         }
