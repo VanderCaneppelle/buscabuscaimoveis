@@ -89,9 +89,6 @@ export default function LoginScreen() {
 
         setIsLoading(true);
         try {
-            // Delay de 2.5 segundos para mostrar o vídeo
-            // await new Promise(resolve => setTimeout(resolve, 2500));
-
             const { error } = await supabase.auth.resetPasswordForEmail(email, {
                 redirectTo: RESET_PASSWORD_URL,
             });
@@ -111,7 +108,6 @@ export default function LoginScreen() {
         } finally {
             setIsLoading(false);
         }
-
     };
 
     // Se está no modo de cadastro, mostrar o formulário completo
