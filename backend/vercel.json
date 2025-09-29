@@ -1,6 +1,9 @@
 {
     "version": 2,
     "functions": {
+        "api/env.js": {
+            "maxDuration": 10
+        },
         "api/webhook/mercadopago.js": {
             "maxDuration": 30
         },
@@ -16,5 +19,18 @@
         "api/notifications.js": {
             "maxDuration": 30
         }
-    }
+    },
+    "routes": [
+        {
+            "handle": "filesystem"
+        },
+        {
+            "src": "/reset-password",
+            "dest": "/reset-password.html"
+        },
+        {
+            "src": "/logo_bb.jpg",
+            "dest": "/logo_bb.jpg"
+        }
+    ]
 }

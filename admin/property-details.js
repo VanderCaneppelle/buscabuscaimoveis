@@ -164,7 +164,7 @@ function populatePropertyData(property) {
         }
 
         locationEl.innerHTML = `
-            <i class="fas fa-map-marker-alt me-2"></i>
+        <i class="fas fa-map-marker-alt me-2"></i>
             ${locationText}
         `;
     }
