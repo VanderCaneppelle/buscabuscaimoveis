@@ -346,7 +346,7 @@ export default function FavoritesScreen({ navigation }) {
                     <Text style={styles.headerTitle}>Favoritos</Text>
                 </View>
                 <Text style={styles.headerSubtitle}>
-                    {favorites.length} imóvel{favorites.length !== 1 ? 'eis' : ''} favoritado{favorites.length !== 1 ? 's' : ''}
+                    {favorites.length} imóv{favorites.length > 1 ? 'eis' : 'el'} favoritado{favorites.length !== 1 ? 's' : ''}
                 </Text>
             </View>
 
