@@ -25,6 +25,8 @@ const FavoriteButton = React.memo(({ isFavorited, onPress, disabled, propertyId 
             .finally(() => { inFlight.current = false; });
     }, [disabled, localOn, onPress, toggleFavorite, propertyId]);
 
+    // Removida animação para simplificar (voltar ao comportamento original)
+
     return (
         <View>
             <TouchableOpacity
