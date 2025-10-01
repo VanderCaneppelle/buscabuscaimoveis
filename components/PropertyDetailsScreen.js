@@ -16,8 +16,9 @@ import {
 import { Image } from 'expo-image';
 import { Video } from 'expo-av';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useFocusEffect } from '@react-navigation/native';
+import FavoriteButton from './FavoriteButton';
 import { useAuth } from '../contexts/AuthContext';
+import { useFavorites } from '../contexts/FavoritesContext';
 import { supabase } from '../lib/supabase';
 
 const { width, height } = Dimensions.get('window');
@@ -25,7 +26,7 @@ const { width, height } = Dimensions.get('window');
 export default function PropertyDetailsScreen({ route, navigation }) {
     const { property } = route.params;
     const { user } = useAuth();
-    const [isFavorite, setIsFavorite] = useState(false);
+    const { isFavorite: isFavorited, toggleFavorite } = useFavorites();
     const [loading, setLoading] = useState(false);
     const [showFullscreenModal, setShowFullscreenModal] = useState(false);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -62,102 +63,24 @@ export default function PropertyDetailsScreen({ route, navigation }) {
         };
     }, []);
 
+    // Usar o estado do contexto em vez de verificar manualmente
+    const isFavorite = isFavorited(property.id);
+
     useEffect(() => {
-        checkFavoriteStatus();
         navigation.setOptions({
             headerRight: () => (
-                <TouchableOpacity
-                    style={styles.headerButton}
-                    onPress={toggleFavorite}
-                    disabled={loading}
-                >
-                    <Ionicons
-                        name={isFavorite ? "heart" : "heart-outline"}
-                        size={24}
-                        color={isFavorite ? "#dc2626" : "#1e3a8a"}
-                    />
-                </TouchableOpacity>
+                <View style={styles.headerButton}>
+                    <FavoriteButton isFavorited={isFavorite} disabled={loading} propertyId={property.id} />
+                </View>
             ),
         });
     }, [isFavorite, loading]);
 
-    // Sincronizar status de favorito quando a tela receber foco
-    useFocusEffect(
-        React.useCallback(() => {
-            if (user?.id && property?.id) {
-                checkFavoriteStatus();
-            }
-        }, [user?.id, property?.id])
-    );
+    // Removido: não precisamos mais verificar status manualmente
 
 
 
-    const checkFavoriteStatus = async () => {
-        if (!user?.id) return;
-
-        try {
-            const { data, error } = await supabase
-                .from('favorites')
-                .select('*')
-                .eq('user_id', user.id)
-                .eq('property_id', property.id)
-                .single();
-
-            if (error && error.code !== 'PGRST116') {
-                console.error('❌ Erro ao verificar favorito:', error);
-            } else {
-                setIsFavorite(!!data);
-            }
-        } catch (error) {
-            console.error('❌ Erro ao verificar favorito:', error);
-        }
-    };
-
-    const toggleFavorite = async () => {
-        if (!user?.id) {
-            Alert.alert('Atenção', 'Você precisa estar logado para favoritar imóveis');
-            return;
-        }
-
-        setLoading(true);
-        try {
-            if (isFavorite) {
-                // Remover dos favoritos
-                const { error } = await supabase
-                    .from('favorites')
-                    .delete()
-                    .eq('user_id', user.id)
-                    .eq('property_id', property.id);
-
-                if (error) {
-                    console.error('❌ Erro ao remover favorito:', error);
-                    Alert.alert('Erro', 'Não foi possível remover dos favoritos');
-                } else {
-                    setIsFavorite(false);
-                }
-            } else {
-                // Adicionar aos favoritos
-                const { error } = await supabase
-                    .from('favorites')
-                    .insert({
-                        user_id: user.id,
-                        property_id: property.id,
-                    });
-
-                if (error) {
-                    console.error('❌ Erro ao adicionar favorito:', error);
-                    Alert.alert('Erro', 'Não foi possível adicionar aos favoritos');
-                } else {
-                    setIsFavorite(true);
-                }
-            }
-        } catch (error) {
-            console.error('❌ Erro ao gerenciar favorito:', error);
-            Alert.alert('Erro', 'Ocorreu um erro inesperado');
-        } finally {
-            setLoading(false);
-        }
-    };
+    // (toggle via FavoriteButton)
 
 
 
@@ -941,4 +864,5 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
         elevation: 8,
     },
+
 }); 
