@@ -22,7 +22,10 @@ export const FavoritesProvider = ({ children }) => {
             // Só atualizar estado se houver diferença real (evita re-render global desnecessário)
             const isSame = favorites.size === fetched.size && [...fetched].every(id => favorites.has(id));
             if (!isSame) {
+                console.log('[FavoritesContext] refreshFavorites -> atualizando set (tamanho antigo, novo):', favorites.size, fetched.size);
                 setFavorites(fetched);
+            } else {
+                console.log('[FavoritesContext] refreshFavorites -> sem mudanças, não atualiza estado');
             }
         } catch (e) {
             console.log('⚠️ Não foi possível atualizar favoritos:', e?.message || e);
@@ -31,8 +34,9 @@ export const FavoritesProvider = ({ children }) => {
 
     // Função para marcar que os favoritos foram modificados (para refresh seletivo)
     const markFavoritesChanged = useCallback((changedId) => {
-        setFavoritesChanged(true);
         lastChangedId.current = changedId || null;
+        setFavoritesChanged(true);
+        console.log('[FavoritesContext] markFavoritesChanged ->', { changedId });
     }, []);
 
     const [favoritesChanged, setFavoritesChanged] = useState(false);
@@ -57,6 +61,7 @@ export const FavoritesProvider = ({ children }) => {
 
         // 1) Atualização otimista
         const wasFavorited = favorites.has(propertyId);
+        console.log('[FavoritesContext] toggleFavorite:start', { propertyId, wasFavorited });
         setFavorites((prev) => {
             const next = new Set(prev);
             if (wasFavorited) next.delete(propertyId); else next.add(propertyId);
@@ -64,25 +69,25 @@ export const FavoritesProvider = ({ children }) => {
         });
         markFavoritesChanged(propertyId);
 
-        // 2) Persistir no backend (idempotente)
+        // 2) Persistir no backend usando RPC idempotente
         try {
-            if (wasFavorited) {
-                // Remover
-                const { error } = await supabase
-                    .from('favorites')
-                    .delete()
-                    .eq('user_id', user.id)
-                    .eq('property_id', propertyId);
-                if (error) throw error;
+            const { data, error } = await supabase.rpc('toggle_favorite', {
+                p_user_id: user.id,
+                p_property_id: propertyId,
+            });
+
+            if (error) {
+                const code = error?.code || '';
+                if (code !== '23505') { // 23505 é unique_violation, que é esperado para idempotência
+                    throw error;
+                }
+                console.log('[FavoritesContext] toggleFavorite:persisted (idempotent OK)', { propertyId });
             } else {
-                // Inserir de forma idempotente (onConflict)
-                const { error } = await supabase
-                    .from('favorites')
-                    .insert({ user_id: user.id, property_id: propertyId }, { onConflict: 'user_id,property_id', ignoreDuplicates: true });
-                if (error) throw error;
+                console.log('[FavoritesContext] toggleFavorite:persisted', data?.favorited ? 'insert' : 'delete', 'OK', { propertyId });
             }
         } catch (err) {
             // 3) Rollback em caso de erro real
+            console.log('[FavoritesContext] toggleFavorite:ERROR, doing rollback', { propertyId, message: err?.message });
             setFavorites((prev) => {
                 const next = new Set(prev);
                 if (wasFavorited) next.add(propertyId); else next.delete(propertyId);
@@ -90,6 +95,7 @@ export const FavoritesProvider = ({ children }) => {
             });
             Alert.alert('Erro', 'Não foi possível atualizar o favorito. Tente novamente.');
         } finally {
+            console.log('[FavoritesContext] toggleFavorite:done', { propertyId });
             inFlight.current.delete(propertyId);
         }
     }, [favorites, markFavoritesChanged]);

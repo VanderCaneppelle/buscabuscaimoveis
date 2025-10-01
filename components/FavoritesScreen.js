@@ -16,6 +16,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { useFavorites } from '../contexts/FavoritesContext';
 
 const { width } = Dimensions.get('window');
 
@@ -27,6 +28,7 @@ export default function FavoritesScreen({ navigation }) {
     const [favorites, setFavorites] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const { toggleFavorite, isFavorite } = useFavorites();
 
     useEffect(() => {
         if (user?.id) {
@@ -93,50 +95,48 @@ export default function FavoritesScreen({ navigation }) {
         setRefreshing(false);
     };
 
-    const removeFavorite = async (favoriteId) => {
-        try {
-            const { error } = await supabase
-                .from('favorites')
-                .delete()
-                .eq('id', favoriteId);
-
-            if (error) {
-                console.error('Erro ao remover favorito:', error);
-                Alert.alert('Erro', 'Não foi possível remover dos favoritos');
-            } else {
-                // Atualizar lista local
-                setFavorites(prev => prev.filter(fav => fav.id !== favoriteId));
-            }
-        } catch (error) {
-            console.error('Erro ao remover favorito:', error);
-            Alert.alert('Erro', 'Não foi possível remover dos favoritos');
-        }
-    };
-
-    const confirmRemoveFavorite = (favoriteId, propertyTitle) => {
-        Alert.alert(
-            'Remover Favorito',
-            `Deseja remover "${propertyTitle}" dos favoritos?`,
-            [
-                { text: 'Cancelar', style: 'cancel' },
-                { text: 'Remover', onPress: () => removeFavorite(favoriteId), style: 'destructive' }
-            ]
-        );
-    };
+    const handleUnfavoriteLocal = useCallback((propertyId) => {
+        // Remove o item da lista local quando deixar de ser favorito
+        setFavorites(prev => prev.filter(fav => fav.properties?.id !== propertyId));
+    }, []);
 
     // Componente para renderizar propriedades (igual ao da HomeScreen)
-    const PropertyItem = React.memo(({ item, index }) => {
+    const PropertyItem = React.memo(({ item, index, onRemoved }) => {
         const property = item.properties;
         if (!property) return null;
+        // Na tela de favoritos, todos os itens são favoritos por definição
+        const favNow = true; // Sempre true na FavoritesScreen
 
         // Memoizar o onPress para evitar re-renderizações
         const handlePress = useCallback(() => {
             navigation.navigate('PropertyDetails', { property: property });
         }, [navigation, property]);
 
-        const handleRemoveFavorite = useCallback(() => {
-            confirmRemoveFavorite(item.id, property.title);
-        }, [item.id, property.title]);
+        const handleToggleFavorite = useCallback(() => {
+            // Na FavoritesScreen, pedir confirmação antes de remover
+            Alert.alert(
+                'Remover dos favoritos',
+                `Deseja remover "${property.title ?? 'este imóvel'}" dos favoritos?`,
+                [
+                    { text: 'Cancelar', style: 'cancel' },
+                    {
+                        text: 'Remover',
+                        style: 'destructive',
+                        onPress: async () => {
+                            try {
+                                await toggleFavorite(property.id);
+                                if (typeof onRemoved === 'function') {
+                                    onRemoved(property.id);
+                                }
+                            } catch (error) {
+                                console.error('Erro ao desfavoritar:', error);
+                                Alert.alert('Erro', 'Não foi possível remover dos favoritos');
+                            }
+                        }
+                    }
+                ]
+            );
+        }, [property.id, property.title, toggleFavorite, onRemoved]);
 
         const mediaFiles = property.images || [];
         const [currentIndex, setCurrentIndex] = useState(0);
@@ -245,14 +245,14 @@ export default function FavoritesScreen({ navigation }) {
                         </View>
                     )}
 
-                    {/* Botão de Remover Favorito */}
+                    {/* Botão de Desfavoritar (ícone específico para FavoritesScreen) */}
                     <TouchableOpacity
                         style={styles.favoriteButton}
-                        onPress={handleRemoveFavorite}
+                        onPress={handleToggleFavorite}
                         activeOpacity={0.8}
                     >
                         <Ionicons
-                            name="heart"
+                            name="heart-dislike"
                             size={24}
                             color="#e74c3c"
                         />
@@ -329,9 +329,10 @@ export default function FavoritesScreen({ navigation }) {
             <PropertyItem
                 item={item}
                 index={index}
+                onRemoved={handleUnfavoriteLocal}
             />
         );
-    }, [navigation]);
+    }, [navigation, handleUnfavoriteLocal]);
 
     return (
         <View style={[styles.container, { paddingTop: insets.top }]}>
