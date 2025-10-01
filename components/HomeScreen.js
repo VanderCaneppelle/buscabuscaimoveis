@@ -141,8 +141,7 @@ export default function HomeScreen({ navigation }) {
             }
             // Recarregar favoritos APENAS se foram modificados em outra tela
             if (favoritesChanged) {
-                // Refresh apenas se necessário: mantém estado otimista e sincroniza do banco
-                refreshFavorites();
+                console.log('[HomeScreen] Focus -> favoritesChanged=true. SKIP refreshFavorites (usar estado otimista)');
                 setFavoritesChanged(false);
             }
         }, [user?.id, hasInitialData, favoritesChanged])
@@ -1294,8 +1293,8 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: 15,
         left: 15,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        borderRadius: 20,
+        backgroundColor: 'rgba(255, 255, 255, 0)',
+        borderRadius: 15,
         padding: 8,
         zIndex: 10,
     },

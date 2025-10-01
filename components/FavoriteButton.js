@@ -45,7 +45,7 @@ const FavoriteButton = React.memo(({ isFavorited, onPress, disabled, propertyId 
             </TouchableOpacity>
         </View>
     );
-}, (prev, next) => prev.isFavorited === next.isFavorited && prev.disabled === next.disabled && prev.propertyId === next.propertyId);
+}, (prev, next) => prev.disabled === next.disabled && prev.propertyId === next.propertyId);
 
 export default FavoriteButton;
 
