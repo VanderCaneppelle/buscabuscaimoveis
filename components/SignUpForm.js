@@ -46,6 +46,20 @@ export default function SignUpForm({ onBack }) {
             return;
         }
 
+        // Validar nome completo (nome + sobrenome)
+        const nameParts = formData.fullName.trim().split(/\s+/);
+        if (nameParts.length < 2) {
+            Alert.alert('Nome incompleto', 'Por favor, digite seu nome completo (nome e sobrenome).\nExemplo: João Silva');
+            return;
+        }
+
+        // Verificar se cada parte do nome tem pelo menos 2 caracteres
+        const hasInvalidPart = nameParts.some(part => part.length < 2);
+        if (hasInvalidPart) {
+            Alert.alert('Nome inválido', 'Nome e sobrenome devem ter pelo menos 2 caracteres cada');
+            return;
+        }
+
         if (formData.password !== formData.confirmPassword) {
             Alert.alert('Erro', 'As senhas não coincidem');
             return;
@@ -72,9 +86,17 @@ export default function SignUpForm({ onBack }) {
             // Normalizar e-mail
             const normalizedEmail = (formData.email || '').trim().toLowerCase();
 
-            // Chamada à Edge Function (200 sempre)
+            // Chamada à Edge Function com TODOS os dados
             const { data, error } = await supabase.functions.invoke('signup-proxy', {
-                body: { email: normalizedEmail, password: formData.password }
+                body: {
+                    email: normalizedEmail,
+                    password: formData.password,
+                    full_name: formData.fullName,
+                    phone: formData.phone,
+                    is_realtor: formData.isRealtor,
+                    creci: formData.isRealtor ? formData.creci : null,
+                    company_name: formData.isRealtor ? formData.companyName : null,
+                }
             });
 
             if (error) {
@@ -96,32 +118,17 @@ export default function SignUpForm({ onBack }) {
                 return;
             }
 
-
-            // Se quiser capturar o id retornado:
+            // Sucesso! Edge Function já criou user + profile
             const userId = data.userId || null;
 
+            // Salvar aceite dos termos
             if (userId) {
-                // Caso a confirmação esteja desativada no projeto e haja sessão, criamos o profile agora.
-                const { error: profileError } = await supabase
-                    .from('profiles')
-                    .insert({
-                        id: userId,
-                        full_name: formData.fullName,
-                        phone: formData.phone,
-                        is_realtor: formData.isRealtor,
-                        creci: formData.isRealtor ? formData.creci : null,
-                        company_name: formData.isRealtor ? formData.companyName : null,
-                    });
-
-                if (profileError) {
-                    console.error('Erro ao criar perfil:', profileError);
-                } else {
-                    try {
-                        await saveTermsAcceptance(supabase, userId);
-                        console.log('✅ Aceite dos termos salvo no cadastro');
-                    } catch (termsError) {
-                        console.error('Erro ao salvar aceite dos termos:', termsError);
-                    }
+                try {
+                    await saveTermsAcceptance(supabase, userId);
+                    console.log('✅ Aceite dos termos salvo no cadastro');
+                } catch (termsError) {
+                    console.error('⚠️ Erro ao salvar aceite dos termos:', termsError);
+                    // Não bloqueia o cadastro se falhar
                 }
             }
 
@@ -167,7 +174,7 @@ export default function SignUpForm({ onBack }) {
                                     <Ionicons name="person-outline" size={20} color="#7f8c8d" style={styles.inputIcon} />
                                     <TextInput
                                         style={styles.input}
-                                        placeholder="Nome completo *"
+                                        placeholder="Nome completo (ex: João Silva) *"
                                         placeholderTextColor="#7f8c8d"
                                         value={formData.fullName}
                                         onChangeText={(value) => updateFormData('fullName', value)}
