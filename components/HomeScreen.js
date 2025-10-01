@@ -19,6 +19,7 @@ import { Image } from 'expo-image';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
+import FavoriteButton from './FavoriteButton';
 import { useFocusEffect } from '@react-navigation/native';
 import Slider from '@react-native-community/slider';
 import { useAuth } from '../contexts/AuthContext';
@@ -48,7 +49,7 @@ export default function HomeScreen({ navigation }) {
     // console.log('🏠 HomeScreen: COMPONENTE MONTADO/RENDERIZADO'); // Removido para evitar logs excessivos
 
     const { user, signOut } = useAuth();
-    const { favorites, toggleFavorite, isFavorite, refreshFavorites } = useFavorites();
+    const { favorites, toggleFavorite, isFavorite, refreshFavorites, favoritesChanged, setFavoritesChanged } = useFavorites();
     const insets = useSafeAreaInsets();
     const colorScheme = useColorScheme();
     const [profile, setProfile] = useState(null);
@@ -138,9 +139,13 @@ export default function HomeScreen({ navigation }) {
                 fetchProperties();
                 setHasInitialData(true);
             }
-            // Recarregar favoritos ao voltar para a Home (sem Realtime)
-            refreshFavorites();
-        }, [user?.id, hasInitialData])
+            // Recarregar favoritos APENAS se foram modificados em outra tela
+            if (favoritesChanged) {
+                // Refresh apenas se necessário: mantém estado otimista e sincroniza do banco
+                refreshFavorites();
+                setFavoritesChanged(false);
+            }
+        }, [user?.id, hasInitialData, favoritesChanged])
     );
 
     // Detectar quando o componente é desmontado
@@ -562,18 +567,10 @@ export default function HomeScreen({ navigation }) {
                         </View>
                     )}
 
-                    {/* Botão de Favoritos */}
-                    <TouchableOpacity
-                        style={styles.favoriteButton}
-                        onPress={handleFavoritePress}
-                        activeOpacity={0.8}
-                    >
-                        <Ionicons
-                            name={isFavorited ? 'heart' : 'heart-outline'}
-                            size={30}
-                            color={isFavorited ? '#e74c3c' : '#ffffff'}
-                        />
-                    </TouchableOpacity>
+                    {/* Botão de Favoritos (componente isolado e memoizado) */}
+                    <View style={styles.favoriteButton}>
+                        <FavoriteButton isFavorited={isFavorited} onPress={() => toggleFavorite(item.id)} disabled={false} propertyId={item.id} />
+                    </View>
                 </View>
 
                 <View style={styles.propertyInfo}>
@@ -781,7 +778,7 @@ export default function HomeScreen({ navigation }) {
                     data={properties}
                     renderItem={renderProperty}
                     keyExtractor={(item) => `property-${item.id}`}
-                    extraData={favorites}
+                    // extraData removido para evitar re-render global
                     refreshControl={
                         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
                     }
