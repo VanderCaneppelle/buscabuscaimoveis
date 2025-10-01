@@ -48,7 +48,7 @@ export default function HomeScreen({ navigation }) {
     // console.log('🏠 HomeScreen: COMPONENTE MONTADO/RENDERIZADO'); // Removido para evitar logs excessivos
 
     const { user, signOut } = useAuth();
-    const { favorites, toggleFavorite, isFavorite } = useFavorites();
+    const { favorites, toggleFavorite, isFavorite, refreshFavorites } = useFavorites();
     const insets = useSafeAreaInsets();
     const colorScheme = useColorScheme();
     const [profile, setProfile] = useState(null);
@@ -138,6 +138,8 @@ export default function HomeScreen({ navigation }) {
                 fetchProperties();
                 setHasInitialData(true);
             }
+            // Recarregar favoritos ao voltar para a Home (sem Realtime)
+            refreshFavorites();
         }, [user?.id, hasInitialData])
     );
 

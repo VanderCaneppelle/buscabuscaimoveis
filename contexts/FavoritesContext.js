@@ -10,28 +10,26 @@ export const FavoritesProvider = ({ children }) => {
     const [shouldAnimate, setShouldAnimate] = useState(false);
     const inFlight = useRef(new Set()); // evita toques múltiplos/conflitos
 
+    const refreshFavorites = useCallback(async () => {
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+            const { data, error } = await supabase
+                .from('favorites')
+                .select('property_id')
+                .eq('user_id', user.id);
+            if (error) throw error;
+            const setIds = new Set((data || []).map(r => r.property_id));
+            setFavorites(setIds);
+        } catch (e) {
+            console.log('⚠️ Não foi possível atualizar favoritos:', e?.message || e);
+        }
+    }, []);
+
     // Carregar favoritos do usuário autenticado na montagem
     useEffect(() => {
-        let isMounted = true;
-        (async () => {
-            try {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) return;
-                const { data, error } = await supabase
-                    .from('favorites')
-                    .select('property_id')
-                    .eq('user_id', user.id);
-                if (error) throw error;
-                if (!isMounted) return;
-                const setIds = new Set((data || []).map(r => r.property_id));
-                setFavorites(setIds);
-            } catch (e) {
-                // silencioso; usuário ainda consegue favoritar manualmente
-                console.log('⚠️ Não foi possível carregar favoritos:', e?.message || e);
-            }
-        })();
-        return () => { isMounted = false; };
-    }, []);
+        refreshFavorites();
+    }, [refreshFavorites]);
 
     // Alternar favorito chamando o backend (sem otimista/rollback)
     const toggleFavorite = useCallback(async (propertyId) => {
@@ -88,7 +86,7 @@ export const FavoritesProvider = ({ children }) => {
     const getFavoriteCount = useCallback(() => favorites.size, [favorites]);
 
     return (
-        <FavoritesContext.Provider value={{ favorites, toggleFavorite, isFavorite, getFavoriteCount, shouldAnimate }}>
+        <FavoritesContext.Provider value={{ favorites, toggleFavorite, isFavorite, getFavoriteCount, shouldAnimate, refreshFavorites }}>
             {children}
         </FavoritesContext.Provider>
     );
