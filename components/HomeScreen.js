@@ -551,9 +551,9 @@ export default function HomeScreen({ navigation }) {
                         source={{ uri: displayMediaFiles[currentIndex] }}
                         style={styles.mediaItem}
                         contentFit="cover"
-                        cachePolicy="memory-disk"
+                        cachePolicy="disk"
                         placeholder={require('../assets/placeholder-image.png')}
-                        transition={200}
+                        transition={0}
                         priority="normal"
                     />
 
@@ -606,13 +606,10 @@ export default function HomeScreen({ navigation }) {
                         onPress={handleFavoritePress}
                         activeOpacity={0.8}
                     >
-                        <Image
-                            source={require('../assets/logo_bb.jpg')}
-                            style={[
-                                styles.favoriteIcon,
-                                { opacity: favorites[item.id] ? 1 : 0.6 }
-                            ]}
-                            resizeMode="contain"
+                        <Ionicons
+                            name={favorites[item.id] ? 'heart' : 'heart-outline'}
+                            size={30}
+                            color={favorites[item.id] ? '#e74c3c' : '#ffffff'}
                         />
                     </TouchableOpacity>
                 </View>
