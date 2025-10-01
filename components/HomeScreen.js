@@ -426,48 +426,8 @@ export default function HomeScreen({ navigation }) {
     };
 
     const handleToggleFavorite = useCallback(async (propertyId) => {
-        if (!user?.id) {
-            Alert.alert('Atenção', 'Você precisa estar logado para favoritar imóveis');
-            return;
-        }
-
-        try {
-            if (favorites[propertyId]) {
-                // Remover dos favoritos
-                const { error } = await supabase
-                    .from('favorites')
-                    .delete()
-                    .eq('user_id', user.id)
-                    .eq('property_id', propertyId);
-
-                if (error) {
-                    console.error('❌ Erro ao remover favorito:', error);
-                    Alert.alert('Erro', 'Não foi possível remover dos favoritos');
-                    return;
-                }
-            } else {
-                // Adicionar aos favoritos
-                const { error } = await supabase
-                    .from('favorites')
-                    .insert({
-                        user_id: user.id,
-                        property_id: propertyId,
-                    });
-
-                if (error) {
-                    console.error('❌ Erro ao adicionar favorito:', error);
-                    Alert.alert('Erro', 'Não foi possível adicionar aos favoritos');
-                    return;
-                }
-            }
-
-            // Usar a função do contexto (que dispara a animação)
-            toggleFavorite(propertyId);
-        } catch (error) {
-            console.error('❌ Erro ao gerenciar favorito:', error);
-            Alert.alert('Erro', 'Ocorreu um erro inesperado');
-        }
-    }, [user?.id, favorites, toggleFavorite]);
+        await toggleFavorite(propertyId);
+    }, [toggleFavorite]);
 
     const loadMoreProperties = async () => {
         if (loadingMore || !hasMore) {
@@ -495,7 +455,7 @@ export default function HomeScreen({ navigation }) {
 
 
     // Componente simplificado para renderizar propriedades
-    const PropertyItem = React.memo(({ item, index, favorites, handleToggleFavorite, navigation }) => {
+    const PropertyItem = React.memo(({ item, index, isFavorited, handleToggleFavorite, navigation }) => {
         const mediaFiles = item.images || [];
         const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -607,9 +567,9 @@ export default function HomeScreen({ navigation }) {
                         activeOpacity={0.8}
                     >
                         <Ionicons
-                            name={favorites[item.id] ? 'heart' : 'heart-outline'}
+                            name={isFavorited ? 'heart' : 'heart-outline'}
                             size={30}
-                            color={favorites[item.id] ? '#e74c3c' : '#ffffff'}
+                            color={isFavorited ? '#e74c3c' : '#ffffff'}
                         />
                     </TouchableOpacity>
                 </View>
@@ -673,25 +633,24 @@ export default function HomeScreen({ navigation }) {
             </TouchableOpacity>
         );
     }, (prevProps, nextProps) => {
-        // Comparação personalizada para evitar re-renderizações desnecessárias
         return (
             prevProps.item.id === nextProps.item.id &&
-            prevProps.favorites[prevProps.item.id] === nextProps.favorites[nextProps.item.id] &&
-            prevProps.index === nextProps.index
+            prevProps.isFavorited === nextProps.isFavorited
         );
     });
 
     const renderProperty = useCallback(({ item, index }) => {
+        const isFavorited = isFavorite(item.id);
         return (
             <PropertyItem
                 item={item}
                 index={index}
-                favorites={favorites}
+                isFavorited={isFavorited}
                 handleToggleFavorite={handleToggleFavorite}
                 navigation={navigation}
             />
         );
-    }, [favorites, handleToggleFavorite, navigation]);
+    }, [isFavorite, handleToggleFavorite, navigation]);
 
 
 
@@ -820,6 +779,7 @@ export default function HomeScreen({ navigation }) {
                     data={properties}
                     renderItem={renderProperty}
                     keyExtractor={(item) => `property-${item.id}`}
+                    extraData={favorites}
                     refreshControl={
                         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
                     }
