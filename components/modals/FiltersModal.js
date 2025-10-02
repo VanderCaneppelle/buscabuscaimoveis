@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     View,
     Text,
@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Slider from '@react-native-community/slider';
 import { styles } from './FiltersModal.styles';
 
 export default function FiltersModal({
@@ -23,15 +24,66 @@ export default function FiltersModal({
     const insets = useSafeAreaInsets();
     const [tempFilters, setTempFilters] = useState(filters);
     const [showCityDropdown, setShowCityDropdown] = useState(false);
+    const [priceRange, setPriceRange] = useState({
+        min: 0,
+        max: 5000000,
+    });
     const [sliderValues, setSliderValues] = useState({
         min: filters.minPrice || 0,
         max: filters.maxPrice || 5000000,
     });
+    const [minSliderValue, setMinSliderValue] = useState(filters.minPrice || 0);
+    const [maxSliderValue, setMaxSliderValue] = useState(filters.maxPrice || 5000000);
 
     // Sincronizar tempFilters quando filters mudar
     useEffect(() => {
         setTempFilters(filters);
+        setMinSliderValue(filters.minPrice || 0);
+        setMaxSliderValue(filters.maxPrice || 5000000);
+        setSliderValues({
+            min: filters.minPrice || 0,
+            max: filters.maxPrice || 5000000,
+        });
     }, [filters]);
+
+    const formatPrice = useCallback((value) => {
+        if (value >= 1000000) {
+            return `${(value / 1000000).toFixed(1)}M`;
+        } else if (value >= 1000) {
+            return `${(value / 1000).toFixed(0)}K`;
+        }
+        return value.toString();
+    }, []);
+
+    const handleMinSliderChange = useCallback((value) => {
+        // Garantir que o preço mínimo não seja maior que o máximo
+        const maxValue = Math.max(value + 100000, maxSliderValue);
+        setMinSliderValue(value);
+        setMaxSliderValue(maxValue);
+        setSliderValues(prev => ({ min: value, max: maxValue }));
+
+        // Atualizar filtros temporários
+        setTempFilters(prev => ({
+            ...prev,
+            minPrice: value > 0 ? value.toString() : '',
+            maxPrice: maxValue < 5000000 ? maxValue.toString() : '',
+        }));
+    }, [maxSliderValue]);
+
+    const handleMaxSliderChange = useCallback((value) => {
+        // Garantir que o preço máximo não seja menor que o mínimo
+        const minValue = Math.min(value - 100000, minSliderValue);
+        setMaxSliderValue(value);
+        setMinSliderValue(minValue);
+        setSliderValues(prev => ({ min: minValue, max: value }));
+
+        // Atualizar filtros temporários
+        setTempFilters(prev => ({
+            ...prev,
+            minPrice: minValue > 0 ? minValue.toString() : '',
+            maxPrice: value < 5000000 ? value.toString() : '',
+        }));
+    }, [minSliderValue]);
 
     const selectCity = (city) => {
         setTempFilters(prev => ({ ...prev, city }));
@@ -56,6 +108,8 @@ export default function FiltersModal({
         };
         setTempFilters(clearedFilters);
         setSliderValues({ min: 0, max: 5000000 });
+        setMinSliderValue(0);
+        setMaxSliderValue(5000000);
         setShowCityDropdown(false);
     };
 
@@ -161,13 +215,47 @@ export default function FiltersModal({
                                 )}
                             </View>
 
-                            {/* Range de Preço */}
+                            {/* Range de Preço com Slider */}
                             <View style={styles.filterGroup}>
                                 <Text style={styles.filterLabel}>Faixa de Preço</Text>
-                                <View style={styles.priceRangeContainer}>
-                                    <Text style={styles.priceRangeText}>
-                                        R$ {sliderValues.min.toLocaleString()} - R$ {sliderValues.max.toLocaleString()}
+
+                                {/* Valores de preço acima dos sliders */}
+                                <View style={styles.priceDisplayContainer}>
+                                    <Text style={styles.priceDisplayText}>
+                                        R$ {formatPrice(sliderValues.min)}
                                     </Text>
+                                    <Text style={styles.priceDisplayText}>
+                                        R$ {formatPrice(sliderValues.max)}
+                                    </Text>
+                                </View>
+
+                                {/* Sliders ocupando toda a largura */}
+                                <View style={styles.sliderContainer}>
+                                    <Text style={styles.sliderLabel}>Preço Mínimo</Text>
+                                    <Slider
+                                        style={styles.slider}
+                                        minimumValue={priceRange.min}
+                                        maximumValue={priceRange.max}
+                                        value={minSliderValue}
+                                        onValueChange={handleMinSliderChange}
+                                        minimumTrackTintColor="#00335e"
+                                        maximumTrackTintColor="#e2e8f0"
+                                        thumbStyle={styles.sliderThumb}
+                                        step={10000}
+                                    />
+
+                                    <Text style={styles.sliderLabel}>Preço Máximo</Text>
+                                    <Slider
+                                        style={styles.slider}
+                                        minimumValue={priceRange.min}
+                                        maximumValue={priceRange.max}
+                                        value={maxSliderValue}
+                                        onValueChange={handleMaxSliderChange}
+                                        minimumTrackTintColor="#00335e"
+                                        maximumTrackTintColor="#e2e8f0"
+                                        thumbStyle={styles.sliderThumb}
+                                        step={10000}
+                                    />
                                 </View>
                             </View>
                         </ScrollView>

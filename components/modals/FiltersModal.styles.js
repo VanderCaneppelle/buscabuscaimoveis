@@ -11,7 +11,7 @@ export const styles = StyleSheet.create({
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
         maxHeight: '90%',
-        minHeight: '60%',
+        minHeight: '80%',
     },
     modalHeader: {
         flexDirection: 'row',
@@ -127,18 +127,37 @@ export const styles = StyleSheet.create({
         fontSize: 16,
         color: '#2c3e50',
     },
-    priceRangeContainer: {
-        padding: 15,
-        backgroundColor: '#f8f9fa',
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: '#e2e8f0',
+    // Estilos para o slider de preço
+    priceDisplayContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 15,
     },
-    priceRangeText: {
+    priceDisplayText: {
         fontSize: 16,
-        color: '#00335e',
         fontWeight: '600',
-        textAlign: 'center',
+        color: '#00335e',
+    },
+    sliderContainer: {
+        marginBottom: 20,
+        width: '100%',
+        paddingHorizontal: 0,
+    },
+    sliderLabel: {
+        fontSize: 14,
+        color: '#64748b',
+        marginBottom: 5,
+        marginTop: 8,
+    },
+    slider: {
+        width: '100%',
+        height: 40,
+        marginBottom: 5,
+    },
+    sliderThumb: {
+        width: 36,
+        height: 36,
+        backgroundColor: '#00335e',
     },
     filterButtons: {
         flexDirection: 'row',
