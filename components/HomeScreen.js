@@ -339,15 +339,15 @@ export default function HomeScreen({ navigation }) {
         setShowFiltersModal(false);
     };
 
-    const applyFilters = () => {
+    const applyFilters = (newFilters = tempFilters) => {
         console.log('ðŸ”ðŸ”ðŸ” HomeScreen: APLICANDO FILTROS ðŸ”ðŸ”ðŸ”');
-        setFilters(tempFilters);
+        setFilters(newFilters);
         setSearchInputValue(''); // Limpar busca ao aplicar filtros
         setSearchTerm('');
         setCurrentPage(0);
         setShowFiltersModal(false);
         // Aplicar filtros e buscar propriedades
-        fetchProperties(tempFilters, '', 0, true, true);
+        fetchProperties(newFilters, '', 0, true, true);
     };
 
     const handleMinSliderChange = useCallback((value) => {
