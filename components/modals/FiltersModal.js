@@ -29,20 +29,29 @@ export default function FiltersModal({
         max: 5000000,
     });
     const [sliderValues, setSliderValues] = useState({
-        min: filters.minPrice || 0,
-        max: filters.maxPrice || 5000000,
+        min: filters.minPrice ? parseFloat(filters.minPrice) || 0 : 0,
+        max: filters.maxPrice ? parseFloat(filters.maxPrice) || 5000000 : 5000000,
     });
-    const [minSliderValue, setMinSliderValue] = useState(filters.minPrice || 0);
-    const [maxSliderValue, setMaxSliderValue] = useState(filters.maxPrice || 5000000);
+    const [minSliderValue, setMinSliderValue] = useState(
+        filters.minPrice ? parseFloat(filters.minPrice) || 0 : 0
+    );
+    const [maxSliderValue, setMaxSliderValue] = useState(
+        filters.maxPrice ? parseFloat(filters.maxPrice) || 5000000 : 5000000
+    );
 
     // Sincronizar tempFilters quando filters mudar
     useEffect(() => {
         setTempFilters(filters);
-        setMinSliderValue(filters.minPrice || 0);
-        setMaxSliderValue(filters.maxPrice || 5000000);
+
+        // Converter strings para números com segurança
+        const minPrice = filters.minPrice ? parseFloat(filters.minPrice) || 0 : 0;
+        const maxPrice = filters.maxPrice ? parseFloat(filters.maxPrice) || 5000000 : 5000000;
+
+        setMinSliderValue(minPrice);
+        setMaxSliderValue(maxPrice);
         setSliderValues({
-            min: filters.minPrice || 0,
-            max: filters.maxPrice || 5000000,
+            min: minPrice,
+            max: maxPrice,
         });
     }, [filters]);
 
