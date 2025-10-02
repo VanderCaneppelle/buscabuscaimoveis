@@ -4,6 +4,7 @@ import {
     Text,
     StyleSheet,
     TouchableOpacity,
+    TouchableWithoutFeedback,
     Alert,
     FlatList,
     TextInput,
@@ -27,6 +28,7 @@ import { useFavorites } from '../contexts/FavoritesContext';
 import { supabase } from '../lib/supabase';
 import PropertyCacheService from '../lib/propertyCacheService';
 import StoriesComponent from './StoriesComponent';
+import { CardStyleInterpolators } from '@react-navigation/stack';
 
 const { width } = Dimensions.get('window');
 
@@ -845,11 +847,8 @@ export default function HomeScreen({ navigation }) {
                     transparent={true}
                     onRequestClose={closeFiltersModal}
                 >
-                    <TouchableOpacity
-                        style={styles.modalOverlay}
-                        activeOpacity={1}
-                        onPress={closeFiltersModal}
-                    >
+
+                    <View style={styles.modalOverlay} pointerEvents="box-none">
                         <KeyboardAvoidingView
                             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                             style={styles.modalContent}
@@ -871,6 +870,8 @@ export default function HomeScreen({ navigation }) {
                                         style={styles.filtersScrollView}
                                         showsVerticalScrollIndicator={false}
                                         keyboardShouldPersistTaps="handled"
+                                        nestedScrollEnabled={true}
+                                        removeClippedSubviews={false}
                                     >
                                         {/* Tipo de Propriedade */}
                                         <View style={styles.filterGroup}>
@@ -902,64 +903,49 @@ export default function HomeScreen({ navigation }) {
                                         </View>
 
                                         {/* Cidade com Dropdown */}
-                                        <View style={styles.filterGroup}>
-                                            <Text style={styles.filterLabel}>Cidade</Text>
+
+                                        <View style={styles.inputGroup}>
+                                            <Text style={styles.inputLabel}>Cidade</Text>
                                             <TouchableOpacity
-                                                style={styles.cityDropdownContainer}
-                                                activeOpacity={0.7}
+                                                style={styles.dropdownButton}
                                                 onPress={() => setShowCityDropdown(!showCityDropdown)}
                                             >
-                                                <View style={styles.cityDropdownButton}>
-                                                    <Text style={[
-                                                        styles.cityDropdownButtonText,
-                                                        !citySearchTerm && styles.cityDropdownPlaceholder
-                                                    ]}>
-                                                        {citySearchTerm || 'Selecione uma cidade'}
-                                                    </Text>
-                                                    <Ionicons
-                                                        name={showCityDropdown ? "chevron-up" : "chevron-down"}
-                                                        size={20}
-                                                        color="#7f8c8d"
-                                                    />
-                                                </View>
-                                                {showCityDropdown && (
-                                                    <View style={styles.cityDropdown}>
-                                                        <ScrollView
-                                                            style={styles.cityDropdownList}
-                                                            keyboardShouldPersistTaps="handled"
-                                                            nestedScrollEnabled={true}
-                                                            showsVerticalScrollIndicator={true}
-                                                            bounces={false}
-                                                            scrollEventThrottle={16}
-                                                        >
-                                                            <TouchableOpacity
-                                                                style={styles.cityDropdownItem}
-                                                                onPress={() => selectCity('')}
-                                                            >
-                                                                <Text style={styles.cityDropdownText}>Todas as cidades</Text>
-                                                            </TouchableOpacity>
-                                                            {cities.map((city, index) => (
-                                                                <TouchableOpacity
-                                                                    key={index}
-                                                                    style={[
-                                                                        styles.cityDropdownItem,
-                                                                        citySearchTerm === city && styles.cityDropdownItemSelected
-                                                                    ]}
-                                                                    onPress={() => selectCity(city)}
-                                                                >
-                                                                    <Text style={[
-                                                                        styles.cityDropdownText,
-                                                                        citySearchTerm === city && styles.cityDropdownTextSelected
-                                                                    ]}>
-                                                                        {city}
-                                                                    </Text>
-                                                                </TouchableOpacity>
-                                                            ))}
-                                                        </ScrollView>
-                                                    </View>
-                                                )}
+                                                <Text style={styles.dropdownButtonText}>{citySearchTerm || 'Selecione a cidade'}</Text>
+                                                <Ionicons
+                                                    name={showCityDropdown ? "chevron-up" : "chevron-down"}
+                                                    size={24}
+                                                    color="#00335e"
+                                                />
                                             </TouchableOpacity>
+                                            {showCityDropdown && (
+                                                <View style={styles.dropdownList}>
+                                                    <ScrollView
+                                                        style={styles.dropdownScroll}
+                                                        showsVerticalScrollIndicator={true}
+                                                        indicatorStyle="black"
+                                                        nestedScrollEnabled={true}
+                                                    >
+                                                        <TouchableOpacity
+                                                            style={styles.dropdownItem}
+                                                            onPress={() => selectCity('')}
+                                                        >
+                                                            <Text style={styles.dropdownItemText}>Todas as cidades</Text>
+                                                        </TouchableOpacity>
+                                                        {cities.map((city, index) => (
+                                                            <TouchableOpacity
+                                                                key={index}
+                                                                style={styles.dropdownItem}
+                                                                onPress={() => selectCity(city)}
+                                                            >
+                                                                <Text style={styles.dropdownItemText}>{city}</Text>
+                                                            </TouchableOpacity>
+                                                        ))}
+                                                    </ScrollView>
+                                                </View>
+                                            )}
                                         </View>
+
+
 
                                         {/* Range de Preço com Slider */}
                                         <View style={styles.filterGroup}>
@@ -1029,7 +1015,7 @@ export default function HomeScreen({ navigation }) {
                                 </TouchableOpacity>
                             </View>
                         </KeyboardAvoidingView>
-                    </TouchableOpacity>
+                    </View>
                 </Modal>
 
             </View>
@@ -1617,30 +1603,27 @@ const styles = StyleSheet.create({
         right: 0,
         backgroundColor: '#fff',
         borderWidth: 1,
-        borderColor: '#e2e8f0',
-        borderTopWidth: 0,
-        borderBottomLeftRadius: 8,
-        borderBottomRightRadius: 8,
+        borderColor: '#e0e0e0',
+        borderRadius: 8,
         maxHeight: 200,
-        zIndex: 1001,
+        zIndex: 9999,
+        elevation: 10,
         shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.1,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
         shadowRadius: 3.84,
-        elevation: 5,
+        marginTop: 2,
+        overflow: 'hidden',
     },
     cityDropdownList: {
         maxHeight: 200,
         flexGrow: 0,
     },
     cityDropdownItem: {
-        paddingHorizontal: 15,
         paddingVertical: 12,
+        paddingHorizontal: 15,
         borderBottomWidth: 1,
-        borderBottomColor: '#f1f5f9',
+        borderBottomColor: '#f0f0f0',
     },
     cityDropdownText: {
         fontSize: 16,
@@ -1652,6 +1635,67 @@ const styles = StyleSheet.create({
     cityDropdownTextSelected: {
         color: '#00335e',
         fontWeight: '600',
+    },
+
+    // Estilos para dropdown (baseados na MyPropertiesScreen)
+    inputGroup: {
+        position: 'relative',
+        marginBottom: 20,
+    },
+    inputLabel: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#00335e',
+        marginBottom: 8,
+    },
+    dropdownButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        borderWidth: 1,
+        borderColor: '#e0e0e0',
+        borderRadius: 8,
+        paddingHorizontal: 15,
+        paddingVertical: 12,
+        backgroundColor: '#fff',
+    },
+    dropdownButtonText: {
+        fontSize: 16,
+        color: '#2c3e50',
+        flex: 1,
+    },
+    dropdownList: {
+        position: 'absolute',
+        top: '100%',
+        left: 0,
+        right: 0,
+        backgroundColor: '#fff',
+        borderWidth: 1,
+        borderColor: '#e0e0e0',
+        borderRadius: 8,
+        maxHeight: 200,
+        zIndex: 9999,
+        elevation: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        marginTop: 2,
+        overflow: 'hidden',
+    },
+    dropdownScroll: {
+        maxHeight: 200,
+        flexGrow: 0,
+    },
+    dropdownItem: {
+        paddingVertical: 12,
+        paddingHorizontal: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: '#f0f0f0',
+    },
+    dropdownItemText: {
+        fontSize: 16,
+        color: '#2c3e50',
     },
 
 
