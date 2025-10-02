@@ -4,15 +4,12 @@ import {
     Text,
     StyleSheet,
     TouchableOpacity,
-    TouchableWithoutFeedback,
     Alert,
     FlatList,
     TextInput,
-    Modal,
     ScrollView,
     RefreshControl,
     Dimensions,
-    KeyboardAvoidingView,
     Platform,
     useColorScheme,
 } from 'react-native';
@@ -22,7 +19,6 @@ import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import FavoriteButton from './FavoriteButton';
 import { useFocusEffect } from '@react-navigation/native';
-import Slider from '@react-native-community/slider';
 import { useAuth } from '../contexts/AuthContext';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { supabase } from '../lib/supabase';
@@ -77,21 +73,8 @@ export default function HomeScreen({ navigation }) {
         minPrice: '',
         maxPrice: '',
     });
-    const [priceRange, setPriceRange] = useState({
-        min: 0,
-        max: 5000000,
-    });
-    const [sliderValues, setSliderValues] = useState({
-        min: 0,
-        max: 5000000,
-    });
-    const [minSliderValue, setMinSliderValue] = useState(0);
-    const [maxSliderValue, setMaxSliderValue] = useState(5000000);
-
     // Estados para dropdown de cidades
     const [cities, setCities] = useState([]);
-    const [showCityDropdown, setShowCityDropdown] = useState(false);
-    const [citySearchTerm, setCitySearchTerm] = useState('');
 
     // Estados para lazy loading
     const [currentPage, setCurrentPage] = useState(0);
@@ -312,26 +295,7 @@ export default function HomeScreen({ navigation }) {
     };
 
     const openFiltersModal = () => {
-        setTempFilters(filters); // Copiar filtros atuais para temporÃ¡rios
-        setCitySearchTerm(filters.city); // Inicializar campo de cidade
-
-        // Configurar valores do slider baseado nos filtros atuais
-        let minPrice = filters.minPrice ? parseFloat(filters.minPrice) : 0;
-        let maxPrice = filters.maxPrice ? parseFloat(filters.maxPrice) : 5000000;
-
-        // Garantir distÃ¢ncia mÃ­nima entre as bolinhas
-        if (maxPrice - minPrice < 100000) {
-            if (minPrice === 0) {
-                maxPrice = 100000;
-            } else {
-                minPrice = Math.max(0, maxPrice - 100000);
-            }
-        }
-
-        setSliderValues({ min: minPrice, max: maxPrice });
-        setMinSliderValue(minPrice);
-        setMaxSliderValue(maxPrice);
-
+        setTempFilters(filters); // Copiar filtros atuais para temporários
         setShowFiltersModal(true);
     };
 
@@ -350,51 +314,8 @@ export default function HomeScreen({ navigation }) {
         fetchProperties(newFilters, '', 0, true, true);
     };
 
-    const handleMinSliderChange = useCallback((value) => {
-        // Garantir que o preÃ§o mÃ­nimo nÃ£o seja maior que o mÃ¡ximo
-        const maxValue = Math.max(value + 100000, maxSliderValue);
-        setMinSliderValue(value);
-        setMaxSliderValue(maxValue);
-        setSliderValues(prev => ({ min: value, max: maxValue }));
-
-        // Atualizar filtros temporÃ¡rios
-        setTempFilters(prev => ({
-            ...prev,
-            minPrice: value > 0 ? value.toString() : '',
-            maxPrice: maxValue < 5000000 ? maxValue.toString() : '',
-        }));
-    }, [maxSliderValue]);
-
-    const handleMaxSliderChange = useCallback((value) => {
-        // Garantir que o preÃ§o mÃ¡ximo nÃ£o seja menor que o mÃ­nimo
-        const minValue = Math.min(value - 100000, minSliderValue);
-        setMaxSliderValue(value);
-        setMinSliderValue(minValue);
-        setSliderValues(prev => ({ min: minValue, max: value }));
-
-        // Atualizar filtros temporÃ¡rios
-        setTempFilters(prev => ({
-            ...prev,
-            minPrice: minValue > 0 ? minValue.toString() : '',
-            maxPrice: value < 5000000 ? value.toString() : '',
-        }));
-    }, [minSliderValue]);
-
-    const formatPrice = useCallback((value) => {
-        if (value >= 1000000) {
-            return `${(value / 1000000).toFixed(1)}M`;
-        } else if (value >= 1000) {
-            return `${(value / 1000).toFixed(0)}K`;
-        }
-        return value.toString();
-    }, []);
 
 
-    const selectCity = (city) => {
-        setCitySearchTerm(city);
-        setTempFilters(prev => ({ ...prev, city }));
-        setShowCityDropdown(false);
-    };
 
 
 
@@ -652,10 +573,6 @@ export default function HomeScreen({ navigation }) {
             />
         );
     }, [isFavorite, handleToggleFavorite, navigation]);
-
-
-
-    const renderFilterModal = () => null; // Modal desabilitado para melhorar performance
 
     if (loading) {
         return (
