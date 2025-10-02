@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
     View,
     Text,
@@ -33,7 +33,7 @@ import { FiltersModal } from './modals';
 
 const { width } = Dimensions.get('window');
 
-// FunÃ§Ã£o debounce para otimizar performance
+// Função debounce para otimizar performance
 const debounce = (func, wait) => {
     let timeout;
     return function executedFunction(...args) {
@@ -49,7 +49,7 @@ const debounce = (func, wait) => {
 
 
 export default function HomeScreen({ navigation }) {
-    // console.log('ðŸ  HomeScreen: COMPONENTE MONTADO/RENDERIZADO'); // Removido para evitar logs excessivos
+    // console.log('🏠 HomeScreen: COMPONENTE MONTADO/RENDERIZADO'); // Removido para evitar logs excessivos
 
     const { user, signOut } = useAuth();
     const { favorites, toggleFavorite, isFavorite, refreshFavorites, favoritesChanged, setFavoritesChanged } = useFavorites();
@@ -63,7 +63,7 @@ export default function HomeScreen({ navigation }) {
     const [loadingMore, setLoadingMore] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [searchInputValue, setSearchInputValue] = useState(''); // Valor do input separado do termo de busca
-    const [isSearching, setIsSearching] = useState(false); // Estado para indicar se estÃ¡ buscando
+    const [isSearching, setIsSearching] = useState(false); // Estado para indicar se está buscando
     const [filters, setFilters] = useState({
         city: '',
         propertyType: [],
@@ -100,13 +100,13 @@ export default function HomeScreen({ navigation }) {
 
     // Estado para controlar dados
     const [hasInitialData, setHasInitialData] = useState(false);
-    const [scrollPosition, setScrollPosition] = useState(0); // Manter posiÃ§Ã£o do scroll
+    const [scrollPosition, setScrollPosition] = useState(0); // Manter posição do scroll
 
     // Refs para controle
     const searchInputRef = useRef(null);
     const flatListRef = useRef(null);
 
-    // Cores dinÃ¢micas baseadas no tema do dispositivo
+    // Cores dinâmicas baseadas no tema do dispositivo
     const colors = {
         headerBg: '#ffffff', // Header sempre branco
         headerBorder: '#e2e8f0',
@@ -117,15 +117,15 @@ export default function HomeScreen({ navigation }) {
     };
 
     useEffect(() => {
-        console.log('ðŸ  HomeScreen: useEffect dados - user?.id:', !!user?.id, 'hasInitialData:', hasInitialData);
+        console.log('🏠 HomeScreen: useEffect dados - user?.id:', !!user?.id, 'hasInitialData:', hasInitialData);
         if (!hasInitialData) {
-            console.log('ðŸ‘¤ðŸ‘¤ðŸ‘¤ HomeScreen: CARREGANDO DADOS INICIAIS ðŸ‘¤ðŸ‘¤ðŸ‘¤');
+            console.log('👤👤👤 HomeScreen: CARREGANDO DADOS INICIAIS 👤👤👤');
             // Carregar dados apenas uma vez
             if (user?.id) {
                 fetchProfile();
             }
             fetchProperties();
-            fetchCities(); // Buscar cidades disponÃ­veis
+            fetchCities(); // Buscar cidades disponíveis
             setHasInitialData(true);
         }
     }, [user?.id, hasInitialData]);
@@ -133,9 +133,9 @@ export default function HomeScreen({ navigation }) {
     // Garantir que os dados sejam carregados quando a tela ganhar foco
     useFocusEffect(
         useCallback(() => {
-            console.log('ðŸ  HomeScreen: TELA GANHOU FOCO');
+            console.log('🏠 HomeScreen: TELA GANHOU FOCO');
             if (!hasInitialData) {
-                console.log('ðŸ‘¤ðŸ‘¤ðŸ‘¤ HomeScreen: CARREGANDO DADOS NO FOCUS ðŸ‘¤ðŸ‘¤ðŸ‘¤');
+                console.log('👤👤👤 HomeScreen: CARREGANDO DADOS NO FOCUS 👤👤👤');
                 if (user?.id) {
                     fetchProfile();
                 }
@@ -150,11 +150,11 @@ export default function HomeScreen({ navigation }) {
         }, [user?.id, hasInitialData, favoritesChanged])
     );
 
-    // Detectar quando o componente Ã© desmontado
+    // Detectar quando o componente é desmontado
     useEffect(() => {
-        console.log('ðŸ  HomeScreen: COMPONENTE MONTADO - useEffect cleanup');
+        console.log('🏠 HomeScreen: COMPONENTE MONTADO - useEffect cleanup');
         return () => {
-            console.log('ðŸ  HomeScreen: COMPONENTE DESMONTADO');
+            console.log('🏠 HomeScreen: COMPONENTE DESMONTADO');
         };
     }, []);
 
@@ -167,36 +167,36 @@ export default function HomeScreen({ navigation }) {
                 .single();
 
             if (error) {
-                console.error('âŒ Erro ao buscar perfil:', error);
+                console.error('❌ Erro ao buscar perfil:', error);
             } else {
                 setProfile(data);
             }
         } catch (error) {
-            console.error('âŒ Erro ao buscar perfil:', error);
+            console.error('❌ Erro ao buscar perfil:', error);
         }
     };
 
     const fetchProperties = async (customFilters = null, searchQuery = null, page = 0, forceRefresh = false, isSearchOrFilterChange = false) => {
-        // Evitar recarregamento se jÃ¡ temos dados e nÃ£o Ã© forceRefresh
-        // Mas sempre executar se for forceRefresh ou mudanÃ§a de busca/filtro
+        // Evitar recarregamento se já temos dados e não é forceRefresh
+        // Mas sempre executar se for forceRefresh ou mudança de busca/filtro
         if (page === 0 && properties.length > 0 && !forceRefresh && !isSearchOrFilterChange && hasInitialData) {
-            console.log('ðŸ  HomeScreen: Dados jÃ¡ carregados, pulando fetchProperties');
+            console.log('🏠 HomeScreen: Dados já carregados, pulando fetchProperties');
             return;
         }
 
-        // Se nÃ£o temos dados iniciais e nÃ£o Ã© uma mudanÃ§a de filtro/busca, forÃ§ar carregamento
+        // Se não temos dados iniciais e não é uma mudança de filtro/busca, forçar carregamento
         if (page === 0 && !hasInitialData && !isSearchOrFilterChange) {
-            console.log('ðŸ  HomeScreen: Primeiro carregamento, forÃ§ando busca');
+            console.log('🏠 HomeScreen: Primeiro carregamento, forçando busca');
             forceRefresh = true;
         }
 
-        console.log('ðŸ  HomeScreen: Carregando propriedades...');
-        console.log('ðŸ  HomeScreen: ParÃ¢metros:', { customFilters, searchQuery, page, forceRefresh, isSearchOrFilterChange });
+        console.log('🏠 HomeScreen: Carregando propriedades...');
+        console.log('🏠 HomeScreen: Parâmetros:', { customFilters, searchQuery, page, forceRefresh, isSearchOrFilterChange });
 
-        // Controlar loading baseado no tipo de operaÃ§Ã£o
+        // Controlar loading baseado no tipo de operação
         if (page === 0) {
             if (isSearchOrFilterChange) {
-                setListLoading(true); // Loading apenas da lista (nÃ£o pisca a tela)
+                setListLoading(true); // Loading apenas da lista (não pisca a tela)
             } else {
                 setLoading(true); // Loading da tela inteira (apenas na primeira vez)
             }
@@ -211,10 +211,10 @@ export default function HomeScreen({ navigation }) {
                 filters: activeFilters,
                 searchTerm: activeSearch,
                 forceRefresh,
-                enableParallelUpdate: true // Habilitar atualizaÃ§Ã£o em background (SWR)
+                enableParallelUpdate: true // Habilitar atualização em background (SWR)
             });
 
-            console.log('ðŸ  HomeScreen: Resultado recebido:', {
+            console.log('🏠 HomeScreen: Resultado recebido:', {
                 dataLength: result.data?.length || 0,
                 hasMore: result.hasMore,
                 totalCount: result.totalCount
@@ -231,8 +231,8 @@ export default function HomeScreen({ navigation }) {
             setTotalCount(result.totalCount);
 
         } catch (error) {
-            console.error('âŒ Erro ao carregar propriedades:', error);
-            Alert.alert('Erro', 'NÃ£o foi possÃ­vel carregar os anÃºncios');
+            console.error('❌ Erro ao carregar propriedades:', error);
+            Alert.alert('Erro', 'Não foi possível carregar os anúncios');
         } finally {
             if (page === 0) {
                 if (isSearchOrFilterChange) {
@@ -247,32 +247,32 @@ export default function HomeScreen({ navigation }) {
     };
 
     const onRefresh = async () => {
-        console.log('ðŸ”„ðŸ”„ðŸ”„ HomeScreen: INICIANDO REFRESH MANUAL ðŸ”„ðŸ”„ðŸ”„');
+        console.log('🔄🔄🔄 HomeScreen: INICIANDO REFRESH MANUAL 🔄🔄🔄');
         setRefreshing(true);
         setCurrentPage(0);
         await Promise.all([
-            fetchProperties(filters, searchTerm, 0, true), // ForÃ§ar refresh
+            fetchProperties(filters, searchTerm, 0, true), // Forçar refresh
             fetchProfile()
         ]);
         setRefreshing(false);
-        console.log('âœ…âœ…âœ… HomeScreen: REFRESH MANUAL FINALIZADO âœ…âœ…âœ…');
+        console.log('✅✅✅ HomeScreen: REFRESH MANUAL FINALIZADO ✅✅✅');
     };
 
-    // Nova funÃ§Ã£o para executar a busca
+    // Nova função para executar a busca
     const executeSearch = useCallback(async () => {
         if (!searchInputValue.trim()) {
-            // Se nÃ£o hÃ¡ texto, limpar busca e mostrar todos os imÃ³veis
+            // Se não há texto, limpar busca e mostrar todos os imóveis
             clearSearch();
             return;
         }
 
-        console.log(`ðŸ”ðŸ”ðŸ” HomeScreen: EXECUTANDO BUSCA: "${searchInputValue}" ðŸ”ðŸ”ðŸ”`);
+        console.log(`🔍🔍🔍 HomeScreen: EXECUTANDO BUSCA: "${searchInputValue}" 🔍🔍🔍`);
         setIsSearching(true);
         setSearchTerm(searchInputValue);
         setCurrentPage(0);
 
-        // Atualizar apenas os dados, sem re-renderizar a pÃ¡gina inteira
-        await fetchProperties(filters, searchInputValue, 0, true, true); // true = mudanÃ§a de busca/filtro
+        // Atualizar apenas os dados, sem re-renderizar a página inteira
+        await fetchProperties(filters, searchInputValue, 0, true, true); // true = mudança de busca/filtro
 
         // Fechar o teclado
         if (searchInputRef.current) {
@@ -280,13 +280,13 @@ export default function HomeScreen({ navigation }) {
         }
     }, [searchInputValue, filters]);
 
-    // FunÃ§Ã£o para lidar com mudanÃ§as no input (sem executar busca automÃ¡tica)
+    // Função para lidar com mudanças no input (sem executar busca automática)
     const handleSearchInputChange = (text) => {
         setSearchInputValue(text);
     };
 
     const clearSearch = () => {
-        console.log('ðŸ§¹ðŸ§¹ðŸ§¹ HomeScreen: LIMPANDO BUSCA ðŸ§¹ðŸ§¹ðŸ§¹');
+        console.log('🧹🧹🧹 HomeScreen: LIMPANDO BUSCA 🧹🧹🧹');
         setSearchInputValue('');
         setSearchTerm('');
         setCurrentPage(0);
@@ -295,7 +295,7 @@ export default function HomeScreen({ navigation }) {
     };
 
     const clearFilters = () => {
-        console.log('ðŸ§¹ðŸ§¹ðŸ§¹ HomeScreen: LIMPANDO FILTROS E BUSCA ðŸ§¹ðŸ§¹ðŸ§¹');
+        console.log('🧹🧹🧹 HomeScreen: LIMPANDO FILTROS E BUSCA 🧹🧹🧹');
         const clearedFilters = {
             city: '',
             propertyType: [],
@@ -312,14 +312,14 @@ export default function HomeScreen({ navigation }) {
     };
 
     const openFiltersModal = () => {
-        setTempFilters(filters); // Copiar filtros atuais para temporÃ¡rios
+        setTempFilters(filters); // Copiar filtros atuais para temporários
         setCitySearchTerm(filters.city); // Inicializar campo de cidade
 
         // Configurar valores do slider baseado nos filtros atuais
         let minPrice = filters.minPrice ? parseFloat(filters.minPrice) : 0;
         let maxPrice = filters.maxPrice ? parseFloat(filters.maxPrice) : 5000000;
 
-        // Garantir distÃ¢ncia mÃ­nima entre as bolinhas
+        // Garantir distância mínima entre as bolinhas
         if (maxPrice - minPrice < 100000) {
             if (minPrice === 0) {
                 maxPrice = 100000;
@@ -340,7 +340,7 @@ export default function HomeScreen({ navigation }) {
     };
 
     const applyFilters = () => {
-        console.log('ðŸ”ðŸ”ðŸ” HomeScreen: APLICANDO FILTROS ðŸ”ðŸ”ðŸ”');
+        console.log('🔍🔍🔍 HomeScreen: APLICANDO FILTROS 🔍🔍🔍');
         setFilters(tempFilters);
         setSearchInputValue(''); // Limpar busca ao aplicar filtros
         setSearchTerm('');
@@ -351,13 +351,13 @@ export default function HomeScreen({ navigation }) {
     };
 
     const handleMinSliderChange = useCallback((value) => {
-        // Garantir que o preÃ§o mÃ­nimo nÃ£o seja maior que o mÃ¡ximo
+        // Garantir que o preço mínimo não seja maior que o máximo
         const maxValue = Math.max(value + 100000, maxSliderValue);
         setMinSliderValue(value);
         setMaxSliderValue(maxValue);
         setSliderValues(prev => ({ min: value, max: maxValue }));
 
-        // Atualizar filtros temporÃ¡rios
+        // Atualizar filtros temporários
         setTempFilters(prev => ({
             ...prev,
             minPrice: value > 0 ? value.toString() : '',
@@ -366,13 +366,13 @@ export default function HomeScreen({ navigation }) {
     }, [maxSliderValue]);
 
     const handleMaxSliderChange = useCallback((value) => {
-        // Garantir que o preÃ§o mÃ¡ximo nÃ£o seja menor que o mÃ­nimo
+        // Garantir que o preço máximo não seja menor que o mínimo
         const minValue = Math.min(value - 100000, minSliderValue);
         setMaxSliderValue(value);
         setMinSliderValue(minValue);
         setSliderValues(prev => ({ min: minValue, max: value }));
 
-        // Atualizar filtros temporÃ¡rios
+        // Atualizar filtros temporários
         setTempFilters(prev => ({
             ...prev,
             minPrice: minValue > 0 ? minValue.toString() : '',
@@ -410,13 +410,13 @@ export default function HomeScreen({ navigation }) {
                 .neq('city', '');
 
             if (error) {
-                console.error('âŒ Erro ao buscar cidades:', error);
+                console.error('❌ Erro ao buscar cidades:', error);
             } else {
                 // Remover duplicatas, normalizar e ordenar
                 const citySet = new Set();
                 data.forEach(item => {
                     if (item.city && item.city.trim()) {
-                        // Normalizar: remover espaÃ§os extras e converter para lowercase para comparaÃ§Ã£o
+                        // Normalizar: remover espaços extras e converter para lowercase para comparação
                         const normalizedCity = item.city.trim();
                         citySet.add(normalizedCity);
                     }
@@ -426,11 +426,11 @@ export default function HomeScreen({ navigation }) {
                     a.toLowerCase().localeCompare(b.toLowerCase())
                 );
 
-                console.log('ðŸ™ï¸ Cidades carregadas:', uniqueCities.length, uniqueCities.slice(0, 5));
+                console.log('🏙️ Cidades carregadas:', uniqueCities.length, uniqueCities.slice(0, 5));
                 setCities(uniqueCities);
             }
         } catch (error) {
-            console.error('âŒ Erro ao buscar cidades:', error);
+            console.error('❌ Erro ao buscar cidades:', error);
         }
     };
 
@@ -440,11 +440,11 @@ export default function HomeScreen({ navigation }) {
 
     const loadMoreProperties = async () => {
         if (loadingMore || !hasMore) {
-            console.log('â¸ï¸â¸ï¸â¸ï¸ HomeScreen: LOADMORE IGNORADO â¸ï¸â¸ï¸â¸ï¸ - loadingMore:', loadingMore, 'hasMore:', hasMore);
+            console.log('⏸️⏸️⏸️ HomeScreen: LOADMORE IGNORADO ⏸️⏸️⏸️ - loadingMore:', loadingMore, 'hasMore:', hasMore);
             return;
         }
 
-        console.log(`ðŸ“„ðŸ“„ðŸ“„ HomeScreen: CARREGANDO MAIS PROPRIEDADES - PÃGINA ${currentPage + 1} ðŸ“„ðŸ“„ðŸ“„`);
+        console.log(`📄📄📄 HomeScreen: CARREGANDO MAIS PROPRIEDADES - PÁGINA ${currentPage + 1} 📄📄📄`);
         setLoadingMore(true);
         const nextPage = currentPage + 1;
         await fetchProperties(filters, searchTerm, nextPage);
@@ -455,7 +455,7 @@ export default function HomeScreen({ navigation }) {
 
         return (
             <View style={styles.loadingMoreContainer}>
-                <Text style={styles.loadingMoreText}>Carregando mais anÃºncios...</Text>
+                <Text style={styles.loadingMoreText}>Carregando mais anúncios...</Text>
             </View>
         );
     };
@@ -468,17 +468,17 @@ export default function HomeScreen({ navigation }) {
         const mediaFiles = item.images || [];
         const [currentIndex, setCurrentIndex] = useState(0);
 
-        // Memoizar o onPress para evitar re-renderizaÃ§Ãµes
+        // Memoizar o onPress para evitar re-renderizações
         const handlePress = useCallback(() => {
             navigation.navigate('PropertyDetails', { property: item });
         }, [navigation, item]);
 
         const handleFavoritePress = useCallback((event) => {
-            event.stopPropagation(); // NÃ£o propagar para o card
+            event.stopPropagation(); // Não propagar para o card
             handleToggleFavorite(item.id);
         }, [handleToggleFavorite, item.id]);
 
-        // Separar imagens e vÃ­deos (simplificado)
+        // Separar imagens e vídeos (simplificado)
         const imageFiles = mediaFiles.filter(file =>
             !file.includes('.mp4') && !file.includes('.mov') && !file.includes('.avi') &&
             !file.includes('.mkv') && !file.includes('.webm')
@@ -492,11 +492,11 @@ export default function HomeScreen({ navigation }) {
         const hasMultipleMedia = imageFiles.length > 1;
         const hasVideos = videoFiles.length > 0;
 
-        // Fallback para quando nÃ£o hÃ¡ imagens
+        // Fallback para quando não há imagens
         const defaultImage = 'https://via.placeholder.com/300x200?text=Sem+Imagem';
         const displayMediaFiles = imageFiles.length > 0 ? imageFiles : [defaultImage];
 
-        // NavegaÃ§Ã£o com setas
+        // Navegação com setas
         const handlePreviousImage = useCallback((event) => {
             event.stopPropagation();
             setCurrentIndex(prev => prev > 0 ? prev - 1 : displayMediaFiles.length - 1);
@@ -526,7 +526,7 @@ export default function HomeScreen({ navigation }) {
                         priority="normal"
                     />
 
-                    {/* NavegaÃ§Ã£o integrada com contador (apenas se hÃ¡ mÃºltiplas imagens) */}
+                    {/* Navegação integrada com contador (apenas se há múltiplas imagens) */}
                     {hasMultipleMedia && (
                         <View style={styles.imageNavigationCompact}>
                             <TouchableOpacity
@@ -551,7 +551,7 @@ export default function HomeScreen({ navigation }) {
                         </View>
                     )}
 
-                    {/* Ãcones de tipo de mÃ­dia */}
+                    {/* Ícones de tipo de mídia */}
                     {(imageFiles.length > 0 || videoFiles.length > 0) && (
                         <View style={styles.mediaTypeBadge}>
                             {imageFiles.length > 0 && (
@@ -569,7 +569,7 @@ export default function HomeScreen({ navigation }) {
                         </View>
                     )}
 
-                    {/* BotÃ£o de Favoritos (componente isolado e memoizado) */}
+                    {/* Botão de Favoritos (componente isolado e memoizado) */}
                     <View style={styles.favoriteButton}>
                         <FavoriteButton isFavorited={isFavorited} onPress={() => toggleFavorite(item.id)} disabled={false} propertyId={item.id} />
                     </View>
@@ -577,7 +577,7 @@ export default function HomeScreen({ navigation }) {
 
                 <View style={styles.propertyInfo}>
                     <Text style={styles.propertyTitle} numberOfLines={2}>
-                        {item.title ?? 'TÃ­tulo indisponÃ­vel'}
+                        {item.title ?? 'Título indisponível'}
                     </Text>
 
                     <Text style={styles.propertyLocation}>
@@ -587,7 +587,7 @@ export default function HomeScreen({ navigation }) {
                         {((item.sale_price ?? item.salePrice) && parseFloat(item.sale_price ?? item.salePrice) > 0) ? (
                             <View style={styles.priceContainer}>
                                 <Text style={styles.originalPriceRed}>
-                                    De: R$ {item.price?.toLocaleString('pt-BR') ?? 'PreÃ§o indisponÃ­vel'}
+                                    De: R$ {item.price?.toLocaleString('pt-BR') ?? 'Preço indisponível'}
                                 </Text>
                                 <Text style={styles.salePriceGreen}>
                                     Por: R$ {(item.sale_price ?? item.salePrice)?.toLocaleString('pt-BR')}
@@ -595,7 +595,7 @@ export default function HomeScreen({ navigation }) {
                             </View>
                         ) : (
                             <Text style={styles.propertyPrice}>
-                                R$ {item.price?.toLocaleString('pt-BR') ?? 'PreÃ§o indisponÃ­vel'}
+                                R$ {item.price?.toLocaleString('pt-BR') ?? 'Preço indisponível'}
                             </Text>
                         )}
                         <View style={styles.propertyFeatures}>
@@ -611,16 +611,16 @@ export default function HomeScreen({ navigation }) {
                             )}
                             {item.area != null && (
                                 <Text style={styles.propertyFeature}>
-                                    {`${item.area}mÂ²`}
+                                    {`${item.area}m²`}
                                 </Text>
                             )}
                         </View>
                     </View>
                     <Text style={styles.propertyType}>
-                        {(item.property_type ?? '') + ' â€¢ ' + (item.transaction_type ?? '')}
+                        {(item.property_type ?? '') + ' • ' + (item.transaction_type ?? '')}
                     </Text>
 
-                    {/* BotÃ£o "Ver detalhes" para indicar que o card Ã© clicÃ¡vel */}
+                    {/* Botão "Ver detalhes" para indicar que o card é clicável */}
                     {/* <TouchableOpacity
                         style={styles.verDetalhesButton}
                         activeOpacity={0.8}
@@ -693,7 +693,7 @@ export default function HomeScreen({ navigation }) {
                             style={styles.titleLogo}
                             resizeMode="contain"
                         />
-                        <Text style={styles.storiesTitle}>Busca Busca ImÃ³veis</Text>
+                        <Text style={styles.storiesTitle}>Busca Busca Imóveis</Text>
                     </View>
                     <View style={styles.storiesWrapper}>
                         <StoriesComponent navigation={navigation} />
@@ -707,14 +707,14 @@ export default function HomeScreen({ navigation }) {
 
                     {/* Primeira linha: Barra de Pesquisa */}
                     <View style={styles.headerTop}>
-                        {/* Barra de Pesquisa com BotÃ£o de Busca */}
+                        {/* Barra de Pesquisa com Botão de Busca */}
                         <View style={styles.searchContainer}>
                             <View style={styles.searchBar}>
                                 <Ionicons name="search" size={20} color="#7f8c8d" style={styles.searchIcon} />
                                 <TextInput
                                     ref={searchInputRef}
                                     style={styles.searchInput}
-                                    placeholder="Buscar imÃ³veis..."
+                                    placeholder="Buscar imóveis..."
                                     placeholderTextColor="#7f8c8d"
                                     value={searchInputValue}
                                     onChangeText={handleSearchInputChange}
@@ -728,7 +728,7 @@ export default function HomeScreen({ navigation }) {
                                 )}
                             </View>
 
-                            {/* BotÃ£o de Busca Discreto */}
+                            {/* Botão de Busca Discreto */}
                             <TouchableOpacity
                                 style={[
                                     styles.searchButton,
@@ -788,7 +788,7 @@ export default function HomeScreen({ navigation }) {
                         <View style={styles.propertiesSection}>
                             <View style={styles.sectionHeader}>
                                 <Text style={styles.sectionTitle}>
-                                    {`AnÃºncios (${totalCount})`}
+                                    {`Anúncios (${totalCount})`}
                                     {searchTerm && (
                                         <Text style={styles.searchResultInfo}>
                                             {` - Busca: "${searchTerm}"`}
@@ -805,7 +805,7 @@ export default function HomeScreen({ navigation }) {
                         <View style={styles.emptyContainer}>
                             <Ionicons name="home-outline" size={64} color="#bdc3c7" />
                             <Text style={styles.emptyText}>
-                                {searchTerm ? 'Nenhum imÃ³vel encontrado para esta busca' : 'Nenhum anÃºncio encontrado'}
+                                {searchTerm ? 'Nenhum imóvel encontrado para esta busca' : 'Nenhum anúncio encontrado'}
                             </Text>
                             <Text style={styles.emptySubtext}>
                                 {searchTerm ? 'Tente ajustar os termos de busca' : 'Tente ajustar os filtros ou volte mais tarde'}
@@ -813,7 +813,7 @@ export default function HomeScreen({ navigation }) {
                         </View>
                     }
                     contentContainerStyle={styles.listContainer}
-                    // OtimizaÃ§Ãµes de performance para scroll aninhado
+                    // Otimizações de performance para scroll aninhado
                     removeClippedSubviews={false}
                     maxToRenderPerBatch={2}
                     windowSize={5}
@@ -849,6 +849,175 @@ export default function HomeScreen({ navigation }) {
                     onApplyFilters={applyFilters}
                     cities={cities}
                 />
+                        <KeyboardAvoidingView
+                            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                            style={styles.modalContent}
+                        >
+                            <View style={styles.modalHeader}>
+                                <Text style={styles.modalTitle}>Filtros</Text>
+                                <TouchableOpacity onPress={closeFiltersModal}>
+                                    <Ionicons name="close" size={24} color="#00335e" />
+                                </TouchableOpacity>
+                            </View>
+
+                            <View style={styles.modalBody}>
+                                <TouchableOpacity
+                                    style={styles.filtersContainer}
+                                    activeOpacity={1}
+                                    onPress={() => setShowCityDropdown(false)}
+                                >
+                                    <ScrollView
+                                        style={styles.filtersScrollView}
+                                        showsVerticalScrollIndicator={false}
+                                        keyboardShouldPersistTaps="handled"
+                                        nestedScrollEnabled={true}
+                                        removeClippedSubviews={false}
+                                    >
+                                        {/* Tipo de Propriedade */}
+                                        <View style={styles.filterGroup}>
+                                            <Text style={styles.filterLabel}>Tipo de Propriedade</Text>
+                                            <View style={styles.propertyTypeContainer}>
+                                                {['Casa', 'Apartamento', 'Terreno', 'Comercial', 'Rural'].map((type) => (
+                                                    <TouchableOpacity
+                                                        key={type}
+                                                        style={[
+                                                            styles.propertyTypeButton,
+                                                            tempFilters.propertyType.includes(type) && styles.propertyTypeButtonSelected
+                                                        ]}
+                                                        onPress={() => setTempFilters(prev => ({
+                                                            ...prev,
+                                                            propertyType: prev.propertyType.includes(type)
+                                                                ? prev.propertyType.filter(t => t !== type)
+                                                                : [...prev.propertyType, type]
+                                                        }))}
+                                                    >
+                                                        <Text style={[
+                                                            styles.propertyTypeButtonText,
+                                                            tempFilters.propertyType.includes(type) && styles.propertyTypeButtonTextSelected
+                                                        ]}>
+                                                            {type}
+                                                        </Text>
+                                                    </TouchableOpacity>
+                                                ))}
+                                            </View>
+                                        </View>
+
+                                        {/* Cidade com Dropdown */}
+
+                                        <View style={styles.inputGroup}>
+                                            <Text style={styles.inputLabel}>Cidade</Text>
+                                            <TouchableOpacity
+                                                style={styles.dropdownButton}
+                                                onPress={() => setShowCityDropdown(!showCityDropdown)}
+                                            >
+                                                <Text style={styles.dropdownButtonText}>{citySearchTerm || 'Selecione a cidade'}</Text>
+                                                <Ionicons
+                                                    name={showCityDropdown ? "chevron-up" : "chevron-down"}
+                                                    size={24}
+                                                    color="#00335e"
+                                                />
+                                            </TouchableOpacity>
+                                            {showCityDropdown && (
+                                                <View style={styles.dropdownList}>
+                                                    <ScrollView
+                                                        style={styles.dropdownScroll}
+                                                        showsVerticalScrollIndicator={true}
+                                                        indicatorStyle="black"
+                                                        nestedScrollEnabled={true}
+                                                    >
+                                                        <TouchableOpacity
+                                                            style={styles.dropdownItem}
+                                                            onPress={() => selectCity('')}
+                                                        >
+                                                            <Text style={styles.dropdownItemText}>Todas as cidades</Text>
+                                                        </TouchableOpacity>
+                                                        {cities.map((city, index) => (
+                                                            <TouchableOpacity
+                                                                key={index}
+                                                                style={styles.dropdownItem}
+                                                                onPress={() => selectCity(city)}
+                                                            >
+                                                                <Text style={styles.dropdownItemText}>{city}</Text>
+                                                            </TouchableOpacity>
+                                                        ))}
+                                                    </ScrollView>
+                                                </View>
+                                            )}
+                                        </View>
+
+
+
+                                        {/* Range de Preço com Slider */}
+                                        <View style={styles.filterGroup}>
+                                            <Text style={styles.filterLabel}>Faixa de Preço</Text>
+
+                                            {/* Valores de preço acima dos sliders */}
+                                            <View style={styles.priceDisplayContainer}>
+                                                <Text style={styles.priceDisplayText}>
+                                                    R$ {formatPrice(sliderValues.min)}
+                                                </Text>
+                                                <Text style={styles.priceDisplayText}>
+                                                    R$ {formatPrice(sliderValues.max)}
+                                                </Text>
+                                            </View>
+
+                                            {/* Sliders ocupando toda a largura */}
+                                            <View style={styles.sliderContainer}>
+                                                <Text style={styles.sliderLabel}>Preço Mínimo</Text>
+                                                <Slider
+                                                    style={styles.slider}
+                                                    minimumValue={priceRange.min}
+                                                    maximumValue={priceRange.max}
+                                                    value={minSliderValue}
+                                                    onValueChange={handleMinSliderChange}
+                                                    minimumTrackTintColor="#00335e"
+                                                    maximumTrackTintColor="#e2e8f0"
+                                                    thumbStyle={styles.sliderThumb}
+                                                    step={10000}
+                                                />
+
+                                                <Text style={styles.sliderLabel}>Preço Máximo</Text>
+                                                <Slider
+                                                    style={styles.slider}
+                                                    minimumValue={priceRange.min}
+                                                    maximumValue={priceRange.max}
+                                                    value={maxSliderValue}
+                                                    onValueChange={handleMaxSliderChange}
+                                                    minimumTrackTintColor="#00335e"
+                                                    maximumTrackTintColor="#e2e8f0"
+                                                    thumbStyle={styles.sliderThumb}
+                                                    step={10000}
+                                                />
+                                            </View>
+                                        </View>
+                                    </ScrollView>
+                                </TouchableOpacity>
+                            </View>
+
+                            <View style={styles.filterButtons}>
+                                <TouchableOpacity style={styles.clearButton} onPress={() => {
+                                    setTempFilters({
+                                        city: '',
+                                        propertyType: [],
+                                        minPrice: '',
+                                        maxPrice: '',
+                                    });
+                                    setCitySearchTerm('');
+                                    setSliderValues({ min: 0, max: 5000000 });
+                                    setMinSliderValue(0);
+                                    setMaxSliderValue(5000000);
+                                    setShowCityDropdown(false);
+                                }}>
+                                    <Text style={styles.clearButtonText}>Limpar</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.applyButton} onPress={applyFilters}>
+                                    <Text style={styles.applyButtonText}>Aplicar</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </KeyboardAvoidingView>
+                    </View>
+                </Modal>
+
             </View>
         </View>
     );
@@ -870,7 +1039,7 @@ const styles = StyleSheet.create({
         paddingTop: 5,
         paddingBottom: 5,
         backgroundColor: '#ffcc1e',
-        height: 120, // Altura reduzida jÃ¡ que removemos os botÃµes de admin
+        height: 120, // Altura reduzida já que removemos os botões de admin
     },
     titleContainer: {
         flexDirection: 'row',
@@ -1045,7 +1214,7 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     mediaItem: {
-        width: width - 40, // 40 Ã© o padding horizontal
+        width: width - 40, // 40 é o padding horizontal
         height: 200,
         backgroundColor: '#e9ecef',
     },
@@ -1231,6 +1400,303 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
 
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'flex-end',
+    },
+    modalContent: {
+        backgroundColor: '#fff',
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        maxHeight: '80%',
+        flex: 1,
+        justifyContent: 'flex-end',
+    },
+    modalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 20,
+        borderBottomWidth: 1,
+        borderBottomColor: '#e0e0e0',
+    },
+    modalBody: {
+        flex: 1,
+        minHeight: 0, // Importante para o flex funcionar corretamente
+    },
+    filtersScrollView: {
+        flex: 1,
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#00335e',
+    },
+    filtersContainer: {
+        flex: 1,
+        padding: 20,
+    },
+    filterGroup: {
+        marginBottom: 20,
+    },
+    filterLabel: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#00335e',
+        marginBottom: 8,
+    },
+    filterInput: {
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
+        borderRadius: 8,
+        paddingHorizontal: 15,
+        paddingVertical: 12,
+        fontSize: 16,
+        color: '#1e3a8a',
+        backgroundColor: '#fff',
+        width: '100%',
+    },
+    filterButtons: {
+        flexDirection: 'row',
+        gap: 15,
+        marginTop: 20,
+        paddingHorizontal: 20,
+        paddingBottom: 40, // Safe area para evitar que fique atrás da barra de navegação
+    },
+    clearButton: {
+        flex: 1,
+        borderWidth: 1,
+        borderColor: '#00335e',
+        borderRadius: 8,
+        paddingVertical: 12,
+        alignItems: 'center',
+    },
+    clearButtonText: {
+        color: '#00335e',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    applyButton: {
+        flex: 1,
+        backgroundColor: '#00335e',
+        borderRadius: 8,
+        paddingVertical: 12,
+        alignItems: 'center',
+    },
+    applyButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+
+    // Estilos para o modal de filtros
+    propertyTypeContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+    },
+    propertyTypeButton: {
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
+        backgroundColor: '#ffffff',
+    },
+    propertyTypeButtonSelected: {
+        backgroundColor: '#00335e',
+        borderColor: '#00335e',
+    },
+    propertyTypeButtonText: {
+        fontSize: 14,
+        color: '#64748b',
+        fontWeight: '500',
+    },
+    propertyTypeButtonTextSelected: {
+        color: '#ffffff',
+    },
+    priceRangeContainer: {
+        flexDirection: 'column',
+        width: '100%',
+    },
+    priceInputContainer: {
+        flex: 1,
+    },
+    priceLabel: {
+        fontSize: 14,
+        color: '#64748b',
+        marginBottom: 4,
+    },
+    priceInput: {
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
+        borderRadius: 8,
+        paddingHorizontal: 15,
+        paddingVertical: 12,
+        fontSize: 16,
+        color: '#1e3a8a',
+        backgroundColor: '#fff',
+    },
+
+    // Estilos para o slider de preço
+    priceDisplayContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 15,
+    },
+    priceDisplayText: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#00335e',
+    },
+    sliderContainer: {
+        marginBottom: 20,
+        width: '100%',
+        paddingHorizontal: 0,
+    },
+    sliderLabel: {
+        fontSize: 14,
+        color: '#64748b',
+        marginBottom: 5,
+        marginTop: 8,
+    },
+    slider: {
+        width: '100%',
+        height: 40,
+        marginBottom: 5,
+    },
+    sliderThumb: {
+        width: 24,
+        height: 24,
+        backgroundColor: '#00335e',
+    },
+
+    // Estilos para dropdown de cidades
+    cityDropdownContainer: {
+        position: 'relative',
+        zIndex: 1000,
+    },
+    cityDropdownButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
+        borderRadius: 8,
+        paddingHorizontal: 15,
+        paddingVertical: 12,
+        backgroundColor: '#fff',
+    },
+    cityDropdownButtonText: {
+        fontSize: 16,
+        color: '#1e3a8a',
+        flex: 1,
+    },
+    cityDropdownPlaceholder: {
+        color: '#7f8c8d',
+    },
+    cityDropdown: {
+        position: 'absolute',
+        top: '100%',
+        left: 0,
+        right: 0,
+        backgroundColor: '#fff',
+        borderWidth: 1,
+        borderColor: '#e0e0e0',
+        borderRadius: 8,
+        maxHeight: 200,
+        zIndex: 9999,
+        elevation: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        marginTop: 2,
+        overflow: 'hidden',
+    },
+    cityDropdownList: {
+        maxHeight: 200,
+        flexGrow: 0,
+    },
+    cityDropdownItem: {
+        paddingVertical: 12,
+        paddingHorizontal: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: '#f0f0f0',
+    },
+    cityDropdownText: {
+        fontSize: 16,
+        color: '#00335e',
+    },
+    cityDropdownItemSelected: {
+        backgroundColor: '#f0f9ff',
+    },
+    cityDropdownTextSelected: {
+        color: '#00335e',
+        fontWeight: '600',
+    },
+
+    // Estilos para dropdown (baseados na MyPropertiesScreen)
+    inputGroup: {
+        position: 'relative',
+        marginBottom: 20,
+    },
+    inputLabel: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#00335e',
+        marginBottom: 8,
+    },
+    dropdownButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        borderWidth: 1,
+        borderColor: '#e0e0e0',
+        borderRadius: 8,
+        paddingHorizontal: 15,
+        paddingVertical: 12,
+        backgroundColor: '#fff',
+    },
+    dropdownButtonText: {
+        fontSize: 16,
+        color: '#2c3e50',
+        flex: 1,
+    },
+    dropdownList: {
+        position: 'absolute',
+        top: '100%',
+        left: 0,
+        right: 0,
+        backgroundColor: '#fff',
+        borderWidth: 1,
+        borderColor: '#e0e0e0',
+        borderRadius: 8,
+        maxHeight: 200,
+        zIndex: 9999,
+        elevation: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        marginTop: 2,
+        overflow: 'hidden',
+    },
+    dropdownScroll: {
+        maxHeight: 200,
+        flexGrow: 0,
+    },
+    dropdownItem: {
+        paddingVertical: 12,
+        paddingHorizontal: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: '#f0f0f0',
+    },
+    dropdownItemText: {
+        fontSize: 16,
+        color: '#2c3e50',
+    },
 
 
     searchBar: {
@@ -1438,7 +1904,7 @@ const styles = StyleSheet.create({
     },
     storiesWrapper: {
         height: 80, // Altura reduzida para o container dos stories
-        overflow: 'hidden', // Evita que o conteÃºdo extrapole
+        overflow: 'hidden', // Evita que o conteúdo extrapole
     },
     contentPlaceholder: {
         flex: 1,
