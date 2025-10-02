@@ -27,45 +27,6 @@ import MapaImovelUnico from './MapaImovelUnico';
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
-// Componente customizado para o ícone de favoritos com animação
-function AnimatedFavoriteIcon({ focused, color, size }) {
-    const [scaleValue] = useState(new Animated.Value(1));
-    const { shouldAnimate, setShouldAnimate } = useFavorites();
-
-    // Animar quando shouldAnimate for true
-    useEffect(() => {
-        if (shouldAnimate) {
-            animateIcon();
-        }
-    }, [shouldAnimate]);
-
-    const animateIcon = () => {
-        Animated.sequence([
-            Animated.timing(scaleValue, {
-                toValue: 1.8,
-                duration: 500,
-                useNativeDriver: true,
-            }),
-            Animated.timing(scaleValue, {
-                toValue: 1,
-                duration: 150,
-                useNativeDriver: true,
-            }),
-        ]).start();
-    };
-
-    return (
-        <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
-            <Image
-                source={require('../assets/gif_bb.mp4')}
-                style={{ width: size, height: size }}
-                resizeMode="contain"
-            />
-        </Animated.View>
-    );
-}
-
-
 // Stack Navigator para cada tab que pode ter telas aninhadas
 function HomeStack() {
     return (
@@ -219,13 +180,36 @@ function AccountStack() {
 
 function TabNavigator() {
     const insets = useSafeAreaInsets();
+    const { getFavoriteCount, favoritesChanged, setFavoritesChanged } = useFavorites();
+    const favCount = getFavoriteCount ? getFavoriteCount() : 0;
+    const favIconScale = React.useRef(new Animated.Value(1)).current;
+
+    React.useEffect(() => {
+        if (favoritesChanged) {
+            Animated.sequence([
+                Animated.timing(favIconScale, { toValue: 1.5, duration: 200, useNativeDriver: true }),
+                Animated.spring(favIconScale, { toValue: 1, useNativeDriver: true, friction: 5 })
+            ]).start(() => {
+                // limpar flag para evitar animar a cada render
+                setFavoritesChanged(false);
+            });
+        }
+    }, [favoritesChanged, favIconScale, setFavoritesChanged]);
 
     return (
         <Tab.Navigator
             screenOptions={({ route }) => ({
                 tabBarIcon: ({ focused, color, size }) => {
                     if (route.name === 'Favoritos') {
-                        return <AnimatedFavoriteIcon focused={focused} color={color} size={size} />;
+                        return (
+                            <Animated.View style={{ transform: [{ scale: favIconScale }] }}>
+                                <Image
+                                    source={require('../assets/logo_bb.jpg')}
+                                    style={{ width: size, height: size, opacity: focused ? 1 : 0.7 }}
+                                    contentFit="contain"
+                                />
+                            </Animated.View>
+                        );
                     }
 
                     let iconName;
@@ -278,7 +262,18 @@ function TabNavigator() {
                 name="Favoritos"
                 component={FavoritesStack}
                 options={{
-                    tabBarLabel: 'Favoritos'
+                    tabBarLabel: 'Favoritos',
+                    tabBarBadge: favCount > 0 ? (favCount > 99 ? '99+' : favCount) : undefined,
+                    tabBarBadgeStyle: {
+                        backgroundColor: '#e74c3c',
+                        color: '#fff',
+                        fontSize: 10,
+                        minWidth: 16,
+                        height: 16,
+                        lineHeight: 16,
+                        textAlign: 'center',
+                        paddingHorizontal: 2,
+                    }
                 }}
             />
             <Tab.Screen
