@@ -67,14 +67,6 @@ function HomeStack() {
             <Stack.Screen name="HomeMain" component={HomeScreen} />
 
             <Stack.Screen
-                name="MapaImoveis"
-                component={MapaImoveis}
-                options={{
-                    headerShown: false,
-                }}
-            />
-
-            <Stack.Screen
                 name="CreateStory"
                 component={CreateStoryScreen}
                 options={{
