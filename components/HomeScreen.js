@@ -693,7 +693,7 @@ export default function HomeScreen({ navigation }) {
                             style={styles.titleLogo}
                             resizeMode="contain"
                         />
-                        <Text style={styles.storiesTitle}>Busca Busca ImÃ³veis</Text>
+                        <Text style={styles.storiesTitle}>Busca Busca Imóveis</Text>
                     </View>
                     <View style={styles.storiesWrapper}>
                         <StoriesComponent navigation={navigation} />
@@ -714,7 +714,7 @@ export default function HomeScreen({ navigation }) {
                                 <TextInput
                                     ref={searchInputRef}
                                     style={styles.searchInput}
-                                    placeholder="Buscar imÃ³veis..."
+                                    placeholder="Buscar imóveis..."
                                     placeholderTextColor="#7f8c8d"
                                     value={searchInputValue}
                                     onChangeText={handleSearchInputChange}
@@ -788,7 +788,7 @@ export default function HomeScreen({ navigation }) {
                         <View style={styles.propertiesSection}>
                             <View style={styles.sectionHeader}>
                                 <Text style={styles.sectionTitle}>
-                                    {`AnÃºncios (${totalCount})`}
+                                    {`Anúncios (${totalCount})`}
                                     {searchTerm && (
                                         <Text style={styles.searchResultInfo}>
                                             {` - Busca: "${searchTerm}"`}
@@ -805,7 +805,7 @@ export default function HomeScreen({ navigation }) {
                         <View style={styles.emptyContainer}>
                             <Ionicons name="home-outline" size={64} color="#bdc3c7" />
                             <Text style={styles.emptyText}>
-                                {searchTerm ? 'Nenhum imÃ³vel encontrado para esta busca' : 'Nenhum anÃºncio encontrado'}
+                                {searchTerm ? 'Nenhum imóvel encontrado para esta busca' : 'Nenhum anúncio encontrado'}
                             </Text>
                             <Text style={styles.emptySubtext}>
                                 {searchTerm ? 'Tente ajustar os termos de busca' : 'Tente ajustar os filtros ou volte mais tarde'}
@@ -813,7 +813,7 @@ export default function HomeScreen({ navigation }) {
                         </View>
                     }
                     contentContainerStyle={styles.listContainer}
-                    // OtimizaÃ§Ãµes de performance para scroll aninhado
+                    // Otimizações de performance para scroll aninhado
                     removeClippedSubviews={false}
                     maxToRenderPerBatch={2}
                     windowSize={5}
