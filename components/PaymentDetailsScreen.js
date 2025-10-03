@@ -18,6 +18,10 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase.js';
 export default function PaymentDetailsScreen({ route, navigation }) {
     const { plan } = route.params;
+    const [selectedPeriod, setSelectedPeriod] = useState(null); // Será definido dinamicamente
+    const [planOptions, setPlanOptions] = useState({ monthly: null, annual: null });
+    const [loadingPlans, setLoadingPlans] = useState(true);
+    const [currentUserPlan, setCurrentUserPlan] = useState(null);
     const { user } = useAuth();
 
     const [loading, setLoading] = useState(false);
@@ -27,6 +31,108 @@ export default function PaymentDetailsScreen({ route, navigation }) {
     const [currentAdsCount, setCurrentAdsCount] = useState(0);
     const [currentPaymentId, setCurrentPaymentId] = useState(null);
     const [checkingStatus, setCheckingStatus] = useState(false);
+
+    useEffect(() => {
+        // Carregar opções de plano (mensal e anual) e plano atual do usuário
+        loadPlanOptions();
+        loadCurrentUserPlan();
+    }, []);
+
+    const loadCurrentUserPlan = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('user_subscriptions')
+                .select(`
+                    *,
+                    plans:plan_id (
+                        id,
+                        name,
+                        display_name,
+                        period
+                    )
+                `)
+                .eq('user_id', user.id)
+                .eq('status', 'active')
+                .single();
+
+            if (!error && data) {
+                setCurrentUserPlan(data);
+                // Definir período padrão baseado no plano atual
+                if (data.plans?.name === `${plan.name}_annual`) {
+                    setSelectedPeriod('monthly'); // Se tem anual, selecionar mensal
+                } else if (data.plans?.name === plan.name) {
+                    setSelectedPeriod('annual'); // Se tem mensal, selecionar anual
+                } else {
+                    setSelectedPeriod('annual'); // Padrão
+                }
+            } else {
+                setSelectedPeriod('annual'); // Se não tem plano, padrão anual
+            }
+        } catch (error) {
+            console.error('Erro ao carregar plano atual do usuário:', error);
+        }
+    };
+
+    const loadPlanOptions = async () => {
+        try {
+            // Buscar plano mensal
+            const { data: monthlyPlan, error: monthlyError } = await supabase
+                .from('plans')
+                .select('*')
+                .eq('name', plan.name)
+                .eq('period', 'monthly')
+                .single();
+
+            // Buscar plano anual
+            const { data: annualPlan, error: annualError } = await supabase
+                .from('plans')
+                .select('*')
+                .eq('name', `${plan.name}_annual`)
+                .eq('period', 'annual')
+                .single();
+
+            if (!monthlyError && monthlyPlan) {
+                setPlanOptions(prev => ({ ...prev, monthly: monthlyPlan }));
+            }
+
+            if (!annualError && annualPlan) {
+                setPlanOptions(prev => ({ ...prev, annual: annualPlan }));
+            }
+        } catch (error) {
+            console.error('Erro ao carregar opções de plano:', error);
+        } finally {
+            setLoadingPlans(false);
+        }
+    };
+
+    // Função para verificar se uma opção está bloqueada
+    const isOptionBlocked = (period) => {
+        if (!currentUserPlan || !planOptions.monthly || !planOptions.annual) {
+            return false;
+        }
+
+        const currentPlanName = currentUserPlan.plans?.name;
+
+        // Se tem plano mensal ativo, bloquear opção mensal
+        if (period === 'monthly' && currentPlanName === planOptions.monthly.name) {
+            return true;
+        }
+
+        // Se tem plano anual ativo, bloquear opção anual
+        if (period === 'annual' && currentPlanName === planOptions.annual.name) {
+            return true;
+        }
+
+        return false;
+    };
+
+    // Função para definir período padrão (não bloqueado)
+    const getDefaultPeriod = () => {
+        if (isOptionBlocked('annual')) {
+            return 'monthly';
+        }
+        return 'annual';
+    };
 
     // Função para verificar se pode fazer downgrade
     const checkDowngradePossibility = async () => {
@@ -122,8 +228,17 @@ export default function PaymentDetailsScreen({ route, navigation }) {
             // Configurar notificações
             await PushNotificationService.requestPermissions();
 
+            // Usar o plano selecionado baseado no período
+            const selectedPlan = selectedPeriod === 'annual' ? planOptions.annual : planOptions.monthly;
+
+            if (!selectedPlan) {
+                Alert.alert('Erro', 'Plano não encontrado');
+                setLoading(false);
+                return;
+            }
+
             // Criar pagamento no backend
-            const result = await BackendService.createPayment(plan, user);
+            const result = await BackendService.createPayment(selectedPlan, user);
             console.log('✅ Pagamento criado:', result);
             // Guardar paymentId para acompanhar via polling
             if (result?.payment?.id) {
@@ -292,13 +407,6 @@ export default function PaymentDetailsScreen({ route, navigation }) {
                                 <Text style={styles.planName}>{plan.display_name || plan.name || 'Plano'}</Text>
                             </View>
 
-                            <View style={styles.priceSection}>
-                                <Text style={styles.priceValue}>
-                                    R$ {plan.price ? plan.price.toFixed(2).replace('.', ',') : '0,00'}
-                                </Text>
-                                <Text style={styles.pricePeriod}>pagamento único</Text>
-                            </View>
-
                             <View style={styles.divider} />
 
                             <View style={styles.planFeatures}>
@@ -315,6 +423,133 @@ export default function PaymentDetailsScreen({ route, navigation }) {
                                 ))}
                             </View>
                         </View>
+
+                        {/* Period Selection */}
+                        {loadingPlans ? (
+                            <View style={styles.periodSelectionCard}>
+                                <Text style={styles.periodSelectionTitle}>Selecione um plano</Text>
+
+                                {/* Skeleton para Plano Anual */}
+                                <View style={styles.periodOptionSkeleton}>
+                                    <View style={styles.periodOptionContent}>
+                                        <View style={styles.periodOptionHeader}>
+                                            <View style={styles.skeletonText} />
+                                            <View style={styles.skeletonBadge} />
+                                        </View>
+                                        <View style={styles.skeletonDescription} />
+                                    </View>
+                                    <View style={styles.skeletonRadioButton} />
+                                </View>
+
+                                {/* Skeleton para Plano Mensal */}
+                                <View style={styles.periodOptionSkeleton}>
+                                    <View style={styles.periodOptionContent}>
+                                        <View style={styles.periodOptionHeader}>
+                                            <View style={styles.skeletonText} />
+                                        </View>
+                                        <View style={styles.skeletonDescription} />
+                                    </View>
+                                    <View style={styles.skeletonRadioButton} />
+                                </View>
+                            </View>
+                        ) : planOptions.monthly && planOptions.annual ? (
+                            <View style={styles.periodSelectionCard}>
+                                <Text style={styles.periodSelectionTitle}>Selecione um plano</Text>
+
+                                {/* Plano Anual */}
+                                <TouchableOpacity
+                                    style={[
+                                        styles.periodOption,
+                                        selectedPeriod === 'annual' && styles.periodOptionSelected,
+                                        isOptionBlocked('annual') && styles.periodOptionBlocked
+                                    ]}
+                                    onPress={() => !isOptionBlocked('annual') && setSelectedPeriod('annual')}
+                                    disabled={isOptionBlocked('annual')}
+                                >
+                                    <View style={styles.periodOptionContent}>
+                                        <View style={styles.periodOptionHeader}>
+                                            <Text style={[
+                                                styles.periodOptionTitle,
+                                                isOptionBlocked('annual') && styles.periodOptionTitleBlocked
+                                            ]}>
+                                                Anual
+                                            </Text>
+                                            {isOptionBlocked('annual') ? (
+                                                <View style={styles.currentBadge}>
+                                                    <Text style={styles.currentText}>Atual</Text>
+                                                </View>
+                                            ) : planOptions.monthly && planOptions.annual && (
+                                                <View style={styles.savingsBadge}>
+                                                    <Text style={styles.savingsText}>
+                                                        Economize {Math.round((((planOptions.monthly.price * 12) - planOptions.annual.price) / (planOptions.monthly.price * 12)) * 100)}%
+                                                    </Text>
+                                                </View>
+                                            )}
+                                        </View>
+                                        <Text style={styles.periodOptionDescription}>
+                                            R$ {planOptions.annual.price.toFixed(2).replace('.', ',')}/ano (R$ {(planOptions.annual.price / 12).toFixed(2).replace('.', ',')}/mês)
+                                        </Text>
+                                    </View>
+                                    <View style={[
+                                        styles.radioButton,
+                                        selectedPeriod === 'annual' && styles.radioButtonSelected,
+                                        isOptionBlocked('annual') && styles.radioButtonBlocked
+                                    ]}>
+                                        {selectedPeriod === 'annual' && !isOptionBlocked('annual') && (
+                                            <View style={styles.radioButtonInner} />
+                                        )}
+                                        {isOptionBlocked('annual') && (
+                                            <Ionicons name="checkmark" size={12} color="#2ecc71" />
+                                        )}
+                                    </View>
+                                </TouchableOpacity>
+
+                                {/* Plano Mensal */}
+                                <TouchableOpacity
+                                    style={[
+                                        styles.periodOption,
+                                        selectedPeriod === 'monthly' && styles.periodOptionSelected,
+                                        isOptionBlocked('monthly') && styles.periodOptionBlocked
+                                    ]}
+                                    onPress={() => !isOptionBlocked('monthly') && setSelectedPeriod('monthly')}
+                                    disabled={isOptionBlocked('monthly')}
+                                >
+                                    <View style={styles.periodOptionContent}>
+                                        <View style={styles.periodOptionHeader}>
+                                            <Text style={[
+                                                styles.periodOptionTitle,
+                                                isOptionBlocked('monthly') && styles.periodOptionTitleBlocked
+                                            ]}>
+                                                Mensal
+                                            </Text>
+                                            {isOptionBlocked('monthly') && (
+                                                <View style={styles.currentBadge}>
+                                                    <Text style={styles.currentText}>Atual</Text>
+                                                </View>
+                                            )}
+                                        </View>
+                                        <Text style={[
+                                            styles.periodOptionDescription,
+                                            isOptionBlocked('monthly') && styles.periodOptionDescriptionBlocked
+                                        ]}>
+                                            Teste gratuito de 30-dia e depois R$ {planOptions.monthly.price.toFixed(2).replace('.', ',')}/mês
+                                        </Text>
+                                    </View>
+                                    <View style={[
+                                        styles.radioButton,
+                                        selectedPeriod === 'monthly' && styles.radioButtonSelected,
+                                        isOptionBlocked('monthly') && styles.radioButtonBlocked
+                                    ]}>
+                                        {selectedPeriod === 'monthly' && !isOptionBlocked('monthly') && (
+                                            <View style={styles.radioButtonInner} />
+                                        )}
+                                        {isOptionBlocked('monthly') && (
+                                            <Ionicons name="checkmark" size={12} color="#2ecc71" />
+                                        )}
+                                    </View>
+                                </TouchableOpacity>
+                            </View>
+                        ) : null}
 
                         {/* Payment Method Card */}
                         <View style={styles.paymentMethodCard}>
@@ -732,6 +967,150 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
         marginLeft: 8,
+    },
+    periodSelectionCard: {
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: 20,
+        marginBottom: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 3.84,
+        elevation: 5,
+    },
+    periodSelectionTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#2c3e50',
+        marginBottom: 20,
+        textAlign: 'center',
+    },
+    periodOption: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 15,
+        borderRadius: 8,
+        borderWidth: 2,
+        borderColor: '#e0e0e0',
+        marginBottom: 10,
+        backgroundColor: '#fff',
+    },
+    periodOptionSelected: {
+        borderColor: '#f39c12',
+        backgroundColor: '#fff8e1',
+    },
+    periodOptionContent: {
+        flex: 1,
+    },
+    periodOptionHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 5,
+    },
+    periodOptionTitle: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#2c3e50',
+        marginRight: 10,
+    },
+    periodOptionDescription: {
+        fontSize: 14,
+        color: '#7f8c8d',
+        lineHeight: 20,
+    },
+    savingsBadge: {
+        backgroundColor: '#f39c12',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 12,
+    },
+    savingsText: {
+        fontSize: 12,
+        fontWeight: '600',
+        color: '#fff',
+    },
+    radioButton: {
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        borderWidth: 2,
+        borderColor: '#e0e0e0',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginLeft: 15,
+    },
+    radioButtonSelected: {
+        borderColor: '#f39c12',
+    },
+    radioButtonInner: {
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+        backgroundColor: '#f39c12',
+    },
+    periodOptionBlocked: {
+        backgroundColor: '#f8f9fa',
+        borderColor: '#e0e0e0',
+        opacity: 0.7,
+    },
+    periodOptionTitleBlocked: {
+        color: '#95a5a6',
+    },
+    periodOptionDescriptionBlocked: {
+        color: '#bdc3c7',
+    },
+    radioButtonBlocked: {
+        borderColor: '#2ecc71',
+        backgroundColor: '#e8f5e8',
+    },
+    currentBadge: {
+        backgroundColor: '#2ecc71',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 12,
+    },
+    currentText: {
+        fontSize: 12,
+        fontWeight: '600',
+        color: '#fff',
+    },
+    periodOptionSkeleton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 15,
+        borderRadius: 8,
+        borderWidth: 2,
+        borderColor: '#e0e0e0',
+        marginBottom: 10,
+        backgroundColor: '#f8f9fa',
+    },
+    skeletonText: {
+        height: 16,
+        width: 60,
+        backgroundColor: '#e0e0e0',
+        borderRadius: 4,
+        marginRight: 10,
+    },
+    skeletonBadge: {
+        height: 20,
+        width: 80,
+        backgroundColor: '#e0e0e0',
+        borderRadius: 12,
+    },
+    skeletonDescription: {
+        height: 14,
+        width: '80%',
+        backgroundColor: '#e0e0e0',
+        borderRadius: 4,
+        marginTop: 5,
+    },
+    skeletonRadioButton: {
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        backgroundColor: '#e0e0e0',
+        marginLeft: 15,
     },
     cancelButton: {
         marginHorizontal: 20,
