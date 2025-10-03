@@ -23,6 +23,7 @@ export default function PlansScreen({ navigation, route }) {
 
     const { user } = useAuth();
     const [plans, setPlans] = useState([]);
+    const [groupedPlans, setGroupedPlans] = useState({ monthly: [], annual: [] });
     const [userPlan, setUserPlan] = useState(null);
     const [loading, setLoading] = useState(true);
     const [subscribing, setSubscribing] = useState(false);
@@ -46,12 +47,14 @@ export default function PlansScreen({ navigation, route }) {
     const loadPlansAndUserInfo = async () => {
         try {
             setLoading(true);
-            const [plansData, userPlanInfo] = await Promise.all([
+            const [plansData, groupedPlansData, userPlanInfo] = await Promise.all([
                 PlanService.getAvailablePlans(),
+                PlanService.getPlansGroupedByPeriod(),
                 PlanService.getUserPlanInfo(user.id)
             ]);
 
             setPlans(plansData);
+            setGroupedPlans(groupedPlansData);
             setUserPlan(userPlanInfo);
         } catch (error) {
             console.error('Erro ao carregar planos:', error);
@@ -65,12 +68,6 @@ export default function PlansScreen({ navigation, route }) {
         // Não permitir selecionar plano gratuito se já tem
         if (plan.name === 'free' && userPlan?.plan?.plan_name === 'free') {
             Alert.alert('Plano Atual', 'Você já possui o plano gratuito');
-            return;
-        }
-
-        // Não permitir selecionar o mesmo plano
-        if (plan.name === userPlan?.plan?.plan_name) {
-            Alert.alert('Plano Atual', 'Você já possui este plano');
             return;
         }
 
@@ -95,7 +92,7 @@ export default function PlansScreen({ navigation, route }) {
             setSelectedPlan(plan);
             setShowConfirmModal(true);
         } else {
-            // Para planos pagos, ir direto para PaymentDetails
+            // Para planos pagos, ir direto para PaymentDetails (mesmo se for o plano atual)
             navigation.navigate('PaymentDetails', { plan: plan });
         }
     };
@@ -191,10 +188,22 @@ export default function PlansScreen({ navigation, route }) {
             return null;
         }
 
-        const isCurrentPlan = userPlan?.plan?.plan_name === plan.name;
+        // Verificar se é o plano atual (mensal ou anual)
+        const isCurrentPlanMonthly = userPlan?.plan?.plan_name === plan.name;
+        const isCurrentPlanAnnual = userPlan?.plan?.plan_name === `${plan.name}_annual`;
+        const isCurrentPlan = isCurrentPlanMonthly || isCurrentPlanAnnual;
         const isFreePlan = plan.name === 'free';
         const isPopular = plan.name === 'silver';
         const isDowngradeToFree = isFreePlan && userPlan?.plan?.plan_name && userPlan.plan.plan_name !== 'free';
+
+        // Encontrar plano anual correspondente para calcular preço mais baixo
+        const annualPlan = groupedPlans.annual.find(annual =>
+            annual.name === `${plan.name}_annual`
+        );
+
+        // Calcular preço mais baixo (anual/12 se existir, senão mensal)
+        const lowestPrice = annualPlan ? annualPlan.price / 12 : plan.price;
+        const hasAnnualOption = !!annualPlan;
 
         return (
             <TouchableOpacity
@@ -205,7 +214,7 @@ export default function PlansScreen({ navigation, route }) {
                     isPopular && styles.popularPlanCard
                 ]}
                 onPress={() => handlePlanSelection(plan)}
-                disabled={isCurrentPlan}
+                disabled={isDowngradeToFree}
             >
                 {isPopular && (
                     <View style={styles.popularBadge}>
@@ -224,9 +233,13 @@ export default function PlansScreen({ navigation, route }) {
                     <Text style={styles.planName}>{plan.display_name}</Text>
                     <View style={styles.planPrice}>
                         <Text style={styles.priceValue}>
-                            {isFreePlan ? 'Grátis' : `R$ ${plan.price.toFixed(2).replace('.', ',')}`}
+                            {isFreePlan ? 'Grátis' : `R$ ${lowestPrice.toFixed(2).replace('.', ',')}`}
                         </Text>
-                        {!isFreePlan && <Text style={styles.pricePeriod}>/mês</Text>}
+                        {!isFreePlan && (
+                            <Text style={styles.pricePeriod}>
+                                /mês{hasAnnualOption ? ' (a partir de)' : ''}
+                            </Text>
+                        )}
                     </View>
                 </View>
 
@@ -246,14 +259,14 @@ export default function PlansScreen({ navigation, route }) {
                         isDowngradeToFree && styles.disabledButton
                     ]}
                     onPress={() => handlePlanSelection(plan)}
-                    disabled={isCurrentPlan || isDowngradeToFree}
+                    disabled={isDowngradeToFree}
                 >
                     <Text style={[
                         styles.selectButtonText,
                         isCurrentPlan && styles.currentPlanButtonText,
                         isDowngradeToFree && styles.disabledButtonText
                     ]}>
-                        {isCurrentPlan ? 'Plano Atual' :
+                        {isCurrentPlan ? 'Alterar Plano' :
                             isDowngradeToFree ? 'Contatar Suporte' : 'Selecionar Plano'}
                     </Text>
                 </TouchableOpacity>
@@ -324,7 +337,9 @@ export default function PlansScreen({ navigation, route }) {
                     <View style={styles.plansSection}>
                         <Text style={styles.sectionTitle}>Planos Disponíveis</Text>
                         <View style={styles.plansList}>
-                            {plans && plans.length > 0 ? plans.map(renderPlanCard) : null}
+                            {groupedPlans.monthly && groupedPlans.monthly.length > 0
+                                ? groupedPlans.monthly.map(renderPlanCard)
+                                : null}
                         </View>
                     </View>
 

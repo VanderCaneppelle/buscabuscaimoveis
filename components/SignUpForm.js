@@ -223,6 +223,9 @@ export default function SignUpForm({ onBack }) {
                                         autoCapitalize="none"
                                     />
                                 </View>
+                                <View style={styles.passwordRequirementsContainer}>
+                                    <Text style={styles.passwordRequirements}>A senha deve ter pelo menos 6 caracteres</Text>
+                                </View>
 
                                 {/* Confirmar Senha */}
                                 <View style={styles.inputContainer}>
@@ -528,5 +531,19 @@ const styles = StyleSheet.create({
         color: '#3498db',
         textDecorationLine: 'underline',
         fontWeight: '500',
+    },
+    passwordRequirements: {
+        fontSize: 12,
+        fontWeight: 'bold',
+        color: '#7f8c8d',
+        marginBottom: 10,
+    },
+    passwordRequirementsContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        borderRadius: 10,
+        marginBottom: 5,
+        paddingHorizontal: 15,
     },
 }); 

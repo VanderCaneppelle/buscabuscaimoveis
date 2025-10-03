@@ -161,9 +161,27 @@ export default async function handler(req, res) {
                 console.log('✅ Assinatura anterior cancelada');
             }
 
-            // Criar nova assinatura
+            // Buscar informações do plano para determinar período
+            const { data: planData, error: planError } = await supabase
+                .from('plans')
+                .select('period')
+                .eq('id', payment.plan_id)
+                .single();
+
+            if (planError) {
+                console.error('❌ Erro ao buscar plano:', planError);
+                return res.status(500).json({ error: 'Failed to get plan info' });
+            }
+
+            // Calcular data de vencimento baseada no período do plano
             const subscriptionEndDate = new Date();
-            subscriptionEndDate.setDate(subscriptionEndDate.getDate() + 30); // 30 dias
+            if (planData.period === 'annual') {
+                subscriptionEndDate.setFullYear(subscriptionEndDate.getFullYear() + 1); // 1 ano
+                console.log('📅 Plano anual - vencimento em 1 ano');
+            } else {
+                subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 1); // 1 mês
+                console.log('📅 Plano mensal - vencimento em 1 mês');
+            }
 
             const { data: newSubscription, error: subscriptionError } = await supabase
                 .from('user_subscriptions')
