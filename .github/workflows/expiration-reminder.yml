@@ -1,0 +1,51 @@
+name: Lembrete de Vencimento de Plano
+
+on:
+  schedule:
+    # 10:00 AM (horário de Brasília) = 13:00 UTC
+    - cron: '0 13 * * *'
+  
+  # Permitir execução manual
+  workflow_dispatch:
+
+jobs:
+  send-expiration-reminder:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+      
+      - name: Instalar dependências
+        run: |
+          cd backend
+          npm ci
+      
+      - name: Configurar variáveis de ambiente
+        run: |
+          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> $GITHUB_ENV
+          echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> $GITHUB_ENV
+          echo "EXPO_PUBLIC_SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> $GITHUB_ENV
+          echo "SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> $GITHUB_ENV
+         
+      
+      - name: Enviar lembretes de vencimento
+        run: |
+          cd backend
+          node scripts/send-expiration-reminder.js
+      
+      - name: Notificar resultado
+        if: always()
+        run: |
+          if [ ${{ job.status }} == 'success' ]; then
+            echo "✅ Lembretes de vencimento enviados com sucesso"
+          else
+            echo "❌ Falha ao enviar lembretes de vencimento"
+          fi
