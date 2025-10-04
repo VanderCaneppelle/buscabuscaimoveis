@@ -44,6 +44,7 @@ export default async function handler(req, res) {
 
         const payment = await response.json();
         console.log('📊 Status do pagamento:', payment.status);
+        console.log('📋 Dados completos do pagamento:', JSON.stringify(payment, null, 2));
 
         return res.status(200).json({
             success: true,
