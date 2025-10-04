@@ -656,9 +656,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     currentPlanButton: {
-        backgroundColor: '#f8f9fa',
-        borderWidth: 1,
-        borderColor: '#e0e0e0',
+        backgroundColor: '#3498db',
+        borderWidth: 3,
+        borderColor: '#f39c12',
     },
     selectButtonText: {
         fontSize: 16,
@@ -666,7 +666,7 @@ const styles = StyleSheet.create({
         color: '#fff',
     },
     currentPlanButtonText: {
-        color: '#7f8c8d',
+        color: '#fff',
     },
     featuresSection: {
         marginBottom: 30,
