@@ -7,6 +7,13 @@ async function sendExpirationReminders() {
     try {
         console.log('🔄 Iniciando verificação de planos vencendo...');
 
+        // Debug das variáveis de ambiente
+        console.log('🔧 Verificando variáveis de ambiente...');
+        console.log(`   SUPABASE_URL: ${process.env.SUPABASE_URL ? '✅ Definida' : '❌ Não definida'}`);
+        console.log(`   EXPO_PUBLIC_SUPABASE_URL: ${process.env.EXPO_PUBLIC_SUPABASE_URL ? '✅ Definida' : '❌ Não definida'}`);
+        console.log(`   SUPABASE_SERVICE_ROLE_KEY: ${process.env.SUPABASE_SERVICE_ROLE_KEY ? '✅ Definida' : '❌ Não definida'}`);
+        console.log(`   SUPABASE_ANON_KEY: ${process.env.SUPABASE_ANON_KEY ? '✅ Definida' : '❌ Não definida'}`);
+
         const now = new Date();
         const fiveDaysFromNow = new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000);
 
