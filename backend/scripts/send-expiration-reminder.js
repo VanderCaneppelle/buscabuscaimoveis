@@ -2,6 +2,7 @@
 import { NotificationService } from '../lib/notificationService.js';
 import { supabase } from '../lib/supabase.js';
 
+
 async function sendExpirationReminders() {
     try {
         console.log('🔄 Iniciando verificação de planos vencendo...');

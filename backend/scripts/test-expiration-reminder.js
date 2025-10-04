@@ -1,4 +1,6 @@
 // Script de teste para verificar lembretes de vencimento
+import 'dotenv/config';
+dotenv.config();
 import { supabase } from '../lib/supabase.js';
 
 async function testExpirationReminder() {
