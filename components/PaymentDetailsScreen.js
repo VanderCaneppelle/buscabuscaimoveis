@@ -31,6 +31,7 @@ export default function PaymentDetailsScreen({ route, navigation }) {
     const [currentAdsCount, setCurrentAdsCount] = useState(0);
     const [currentPaymentId, setCurrentPaymentId] = useState(null);
     const [checkingStatus, setCheckingStatus] = useState(false);
+    const [showPaymentInfoModal, setShowPaymentInfoModal] = useState(false);
 
     useEffect(() => {
         // Carregar opções de plano (mensal e anual) e plano atual do usuário
@@ -287,12 +288,15 @@ export default function PaymentDetailsScreen({ route, navigation }) {
     useEffect(() => {
         if (!webViewVisible || !currentPaymentId) return;
 
+        console.log('🚀 Iniciando polling para paymentId:', currentPaymentId);
         let isCancelled = false;
         setCheckingStatus(true);
 
         const start = Date.now();
-        const POLL_INTERVAL_MS = 2000;
-        const MAX_DURATION_MS = 120000; // 2 minutos
+        const FAST_POLL_INTERVAL_MS = 3000; // 3 segundos
+        const SLOW_POLL_INTERVAL_MS = 10000; // 10 segundos
+        const FAST_PHASE_DURATION_MS = 180000; // 3 minutos
+        const MAX_DURATION_MS = 300000; // 5 minutos
 
         const poll = async () => {
             if (isCancelled) return;
@@ -312,15 +316,26 @@ export default function PaymentDetailsScreen({ route, navigation }) {
             } catch (e) {
                 // silenciar erros intermitentes de rede
             }
-            if (Date.now() - start < MAX_DURATION_MS) {
-                setTimeout(poll, POLL_INTERVAL_MS);
+
+            const elapsed = Date.now() - start;
+
+            if (elapsed < MAX_DURATION_MS) {
+                // Determinar intervalo baseado no tempo decorrido
+                const interval = elapsed < FAST_PHASE_DURATION_MS
+                    ? FAST_POLL_INTERVAL_MS
+                    : SLOW_POLL_INTERVAL_MS;
+
+                setTimeout(poll, interval);
             } else {
                 setCheckingStatus(false);
+                // Mostrar modal informativo quando polling terminar
+                setShowPaymentInfoModal(true);
             }
         };
 
-        const timer = setTimeout(poll, POLL_INTERVAL_MS);
+        const timer = setTimeout(poll, FAST_POLL_INTERVAL_MS);
         return () => {
+            console.log('🛑 Parando polling para paymentId:', currentPaymentId);
             isCancelled = true;
             clearTimeout(timer);
         };
@@ -532,7 +547,7 @@ export default function PaymentDetailsScreen({ route, navigation }) {
                                             styles.periodOptionDescription,
                                             isOptionBlocked('monthly') && styles.periodOptionDescriptionBlocked
                                         ]}>
-                                            Teste gratuito de 30-dia e depois R$ {planOptions.monthly.price.toFixed(2).replace('.', ',')}/mês
+                                            R$ {planOptions.monthly.price.toFixed(2).replace('.', ',')}/mês
                                         </Text>
                                     </View>
                                     <View style={[
@@ -666,12 +681,39 @@ export default function PaymentDetailsScreen({ route, navigation }) {
                                 <ActivityIndicator size="large" color="#27ae60" />
                             </View>
                         )}
-                        {checkingStatus && (
-                            <View style={{ position: 'absolute', bottom: 16, left: 16, right: 16, backgroundColor: 'rgba(0,0,0,0.7)', padding: 12, borderRadius: 8 }}>
-                                <Text style={{ color: '#fff', textAlign: 'center' }}>Aguardando confirmação do pagamento...</Text>
-                            </View>
-                        )}
                     </SafeAreaView>
+                </Modal>
+
+                {/* Modal Informativo de Pagamento */}
+                <Modal
+                    visible={showPaymentInfoModal}
+                    transparent={true}
+                    animationType="fade"
+                    onRequestClose={() => setShowPaymentInfoModal(false)}
+                >
+                    <View style={styles.modalOverlay}>
+                        <View style={styles.paymentInfoModal}>
+                            <View style={styles.paymentInfoIcon}>
+                                <Ionicons name="time-outline" size={48} color="#f39c12" />
+                            </View>
+
+                            <Text style={styles.paymentInfoTitle}>Pagamento em Processamento</Text>
+
+                            <Text style={styles.paymentInfoText}>
+                                Ainda não detectamos seu pagamento, mas você pode concluir normalmente.
+                                Assim que for aprovado, seu plano será ativado automaticamente.
+                            </Text>
+
+                            <View style={styles.paymentInfoButtons}>
+                                <TouchableOpacity
+                                    style={styles.paymentInfoButton}
+                                    onPress={() => setShowPaymentInfoModal(false)}
+                                >
+                                    <Text style={styles.paymentInfoButtonText}>Entendi</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </View>
                 </Modal>
             </View>
         </SafeAreaView>
@@ -1111,6 +1153,59 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         backgroundColor: '#e0e0e0',
         marginLeft: 15,
+
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+    },
+    paymentInfoModal: {
+        justifyContent: 'center',
+        backgroundColor: '#fff',
+        borderRadius: 16,
+        padding: 24,
+        margin: 20,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 8,
+    },
+    paymentInfoIcon: {
+        marginBottom: 16,
+    },
+    paymentInfoTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#2c3e50',
+        marginBottom: 16,
+        textAlign: 'center',
+    },
+    paymentInfoText: {
+        fontSize: 16,
+        color: '#7f8c8d',
+        lineHeight: 24,
+        textAlign: 'center',
+        marginBottom: 24,
+    },
+    paymentInfoButtons: {
+        width: '100%',
+    },
+    paymentInfoButton: {
+        backgroundColor: '#3498db',
+        borderRadius: 12,
+        paddingVertical: 14,
+        paddingHorizontal: 24,
+        alignItems: 'center',
+    },
+    paymentInfoButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '600',
     },
     cancelButton: {
         marginHorizontal: 20,
