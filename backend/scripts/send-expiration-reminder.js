@@ -6,12 +6,22 @@ async function sendExpirationReminders() {
     try {
         console.log('🔄 Iniciando verificação de planos vencendo...');
 
+        const now = new Date();
+        const fiveDaysFromNow = new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000);
+
+        console.log(`📅 Data atual: ${now.toISOString()}`);
+        console.log(`📅 Data atual (local): ${now.toLocaleString('pt-BR')}`);
+        console.log(`📅 Data limite (5 dias): ${fiveDaysFromNow.toISOString()}`);
+        console.log(`📅 Data limite (5 dias local): ${fiveDaysFromNow.toLocaleString('pt-BR')}`);
+
         // Buscar usuários com planos vencendo em 5 dias ou menos
+        // Incluir tanto 'active' quanto 'cancelled' (cancelados mas ainda válidos)
         const { data: expiringSubscriptions, error } = await supabase
             .from('user_subscriptions')
             .select(`
                 user_id,
                 end_date,
+                status,
                 plans (
                     id,
                     name,
@@ -19,9 +29,9 @@ async function sendExpirationReminders() {
                     max_ads
                 )
             `)
-            .eq('status', 'active')
-            .lte('end_date', new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString()) // 5 dias
-            .gte('end_date', new Date().toISOString()); // Não vencidos ainda
+            .in('status', ['active', 'cancelled'])
+            .lte('end_date', fiveDaysFromNow.toISOString()) // 5 dias
+            .gte('end_date', now.toISOString()); // Não vencidos ainda
 
         if (error) {
             console.error('❌ Erro ao buscar assinaturas vencendo:', error);
@@ -30,6 +40,43 @@ async function sendExpirationReminders() {
 
         if (!expiringSubscriptions || expiringSubscriptions.length === 0) {
             console.log('✅ Nenhum plano vencendo em breve encontrado');
+
+            // Debug: buscar todas as assinaturas ativas para verificar
+            console.log('\n🔍 Debug: Verificando todas as assinaturas ativas...');
+            const { data: allActiveSubscriptions, error: debugError } = await supabase
+                .from('user_subscriptions')
+                .select(`
+                    user_id,
+                    end_date,
+                    status,
+                    plans (
+                        id,
+                        name,
+                        display_name
+                    )
+                `)
+                .in('status', ['active', 'cancelled'])
+                .order('end_date', { ascending: true });
+
+            if (!debugError && allActiveSubscriptions) {
+                console.log(`📊 Total de assinaturas ativas/canceladas: ${allActiveSubscriptions.length}`);
+                allActiveSubscriptions.slice(0, 10).forEach((sub, index) => {
+                    const endDate = new Date(sub.end_date);
+                    const diffTime = endDate.getTime() - now.getTime();
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                    // Verificar se esta assinatura deveria estar incluída
+                    const shouldBeIncluded = endDate <= fiveDaysFromNow && endDate >= now;
+                    const status = shouldBeIncluded ? '✅ DEVERIA INCLUIR' : '❌ Não inclui';
+
+                    console.log(`   ${index + 1}. ${sub.user_id} - ${sub.plans.display_name} - ${sub.status}`);
+                    console.log(`      Vence em ${diffDays} dias (${endDate.toLocaleDateString('pt-BR')}) - ${status}`);
+                    console.log(`      end_date: ${sub.end_date}`);
+                    console.log(`      now: ${now.toISOString()}`);
+                    console.log(`      fiveDaysFromNow: ${fiveDaysFromNow.toISOString()}`);
+                    console.log('');
+                });
+            }
             return;
         }
 
@@ -73,6 +120,7 @@ async function sendExpirationReminders() {
 
                 console.log(`📤 Enviando lembrete para usuário ${subscription.user_id}:`);
                 console.log(`   Plano: ${subscription.plans.display_name}`);
+                console.log(`   Status: ${subscription.status}`);
                 console.log(`   Dias restantes: ${diffDays}`);
                 console.log(`   Título: ${title}`);
 

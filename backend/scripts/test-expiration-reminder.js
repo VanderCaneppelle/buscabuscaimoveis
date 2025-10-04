@@ -38,13 +38,14 @@ async function testExpirationReminder() {
             .select(`
                 user_id,
                 end_date,
+                status,
                 plans (
                     id,
                     name,
                     display_name
                 )
             `)
-            .eq('status', 'active')
+            .in('status', ['active', 'cancelled'])
             .lte('end_date', fiveDaysFromNow)
             .gte('end_date', now);
 
@@ -65,6 +66,7 @@ async function testExpirationReminder() {
 
                 console.log(`   ${index + 1}. Usuário: ${subscription.user_id}`);
                 console.log(`      Plano: ${subscription.plans.display_name}`);
+                console.log(`      Status: ${subscription.status}`);
                 console.log(`      Vence em: ${diffDays} dias (${endDate.toLocaleDateString('pt-BR')})`);
                 console.log('');
             });
