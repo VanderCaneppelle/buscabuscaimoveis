@@ -37,7 +37,7 @@ async function sendExpirationReminders() {
                     max_ads
                 )
             `)
-            .in('status', ['active', 'cancelled'])
+            .in('status', ['active'])
             .lte('end_date', fiveDaysFromNow.toISOString()) // 5 dias
             .gte('end_date', now.toISOString()); // Não vencidos ainda
 
