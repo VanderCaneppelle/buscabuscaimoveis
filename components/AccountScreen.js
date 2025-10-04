@@ -117,7 +117,11 @@ export default function AccountScreen({ navigation }) {
             const totalViews = adsData.reduce((sum, ad) => sum + (ad.views || 0), 0);
 
             setUserPlanInfo({
-                plan: planData?.plans || null,
+                plan: planData?.plans ? {
+                    ...planData.plans,
+                    end_date: planData.end_date,
+                    plan_name: planData.plans.name
+                } : null,
                 subscription: planData,
                 canCreate: {
                     can_create: planData ? adsData.length < planData.plans.max_ads : false,
@@ -151,6 +155,62 @@ export default function AccountScreen({ navigation }) {
                 { text: 'Sair', onPress: () => signOut(true), style: 'destructive' }
             ]
         );
+    };
+
+    // Função para formatar data de vencimento
+    const formatExpirationDate = (endDate) => {
+        try {
+            const date = new Date(endDate);
+            const now = new Date();
+            const diffTime = date.getTime() - now.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays <= 0) {
+                return 'Vencido';
+            } else if (diffDays === 1) {
+                return '1 dia';
+            } else if (diffDays <= 7) {
+                return `${diffDays} dias`;
+            } else {
+                return date.toLocaleDateString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                });
+            }
+        } catch (error) {
+            console.error('Erro ao formatar data:', error);
+            return 'Data inválida';
+        }
+    };
+
+    // Função para verificar se o plano está vencendo em breve (3 dias)
+    const isExpiringSoon = (endDate) => {
+        try {
+            const date = new Date(endDate);
+            const now = new Date();
+            const diffTime = date.getTime() - now.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            return diffDays <= 3 && diffDays > 0;
+        } catch (error) {
+            console.error('Erro ao verificar vencimento:', error);
+            return false;
+        }
+    };
+
+    // Função para lidar com renovação
+    const handleRenewal = (currentPlan) => {
+        // Determinar o plano base (remover _annual se existir)
+        const basePlanName = currentPlan.plan_name?.replace('_annual', '') || 'bronze';
+
+        // Navegar para PaymentDetails com o plano atual
+        navigation.navigate('PaymentDetails', {
+            plan: {
+                name: basePlanName,
+                display_name: currentPlan.display_name?.replace(' Anual', '') || 'Bronze'
+            }
+        });
     };
 
     const handleClearCache = async () => {
@@ -284,6 +344,35 @@ export default function AccountScreen({ navigation }) {
                                             : `Limite atingido: ${userPlanInfo.canCreate.current_ads}/${userPlanInfo.canCreate.max_ads} anúncios`
                                         }
                                     </Text>
+
+                                    {/* Data de Vencimento */}
+                                    {userPlanInfo.plan.end_date && (
+                                        <View style={styles.expirationInfo}>
+                                            <Ionicons name="calendar-outline" size={16} color="#7f8c8d" />
+                                            <Text style={styles.expirationText}>
+                                                Vence em: {formatExpirationDate(userPlanInfo.plan.end_date)}
+                                            </Text>
+                                        </View>
+                                    )}
+
+                                    {/* Lembrete de Renovação */}
+                                    {userPlanInfo.plan.end_date && isExpiringSoon(userPlanInfo.plan.end_date) && (
+                                        <View style={styles.renewalReminder}>
+                                            <View style={styles.reminderHeader}>
+                                                <Ionicons name="warning" size={16} color="#f39c12" />
+                                                <Text style={styles.reminderTitle}>Renovação Necessária</Text>
+                                            </View>
+                                            <Text style={styles.reminderText}>
+                                                Seu plano vence em breve. Renove para continuar usando todos os recursos.
+                                            </Text>
+                                            <TouchableOpacity
+                                                style={styles.renewalButton}
+                                                onPress={() => handleRenewal(userPlanInfo.plan)}
+                                            >
+                                                <Text style={styles.renewalButtonText}>Renovar Plano</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    )}
                                     <TouchableOpacity
                                         style={styles.upgradeButton}
                                         onPress={() => navigation.navigate('Plans')}
@@ -584,6 +673,55 @@ const styles = StyleSheet.create({
     upgradeButtonText: {
         color: '#fff',
         fontSize: 14,
+        fontWeight: '600',
+    },
+    expirationInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 8,
+        marginBottom: 8,
+    },
+    expirationText: {
+        fontSize: 14,
+        color: '#7f8c8d',
+        marginLeft: 6,
+    },
+    renewalReminder: {
+        backgroundColor: '#fff3cd',
+        borderColor: '#ffeaa7',
+        borderWidth: 1,
+        borderRadius: 8,
+        padding: 12,
+        marginTop: 8,
+        marginBottom: 8,
+    },
+    reminderHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 6,
+    },
+    reminderTitle: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#856404',
+        marginLeft: 6,
+    },
+    reminderText: {
+        fontSize: 13,
+        color: '#856404',
+        lineHeight: 18,
+        marginBottom: 10,
+    },
+    renewalButton: {
+        backgroundColor: '#f39c12',
+        borderRadius: 6,
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        alignSelf: 'flex-start',
+    },
+    renewalButtonText: {
+        color: '#fff',
+        fontSize: 13,
         fontWeight: '600',
     },
     menuSection: {
