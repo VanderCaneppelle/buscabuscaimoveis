@@ -33,6 +33,11 @@ async function sendExpirationReminders() {
             .lte('end_date', fiveDaysFromNow.toISOString()) // 5 dias
             .gte('end_date', now.toISOString()); // Não vencidos ainda
 
+        console.log(`🔍 Query executada:`);
+        console.log(`   Status: ['active', 'cancelled']`);
+        console.log(`   end_date <= ${fiveDaysFromNow.toISOString()}`);
+        console.log(`   end_date >= ${now.toISOString()}`);
+
         if (error) {
             console.error('❌ Erro ao buscar assinaturas vencendo:', error);
             process.exit(1);
@@ -55,11 +60,10 @@ async function sendExpirationReminders() {
                         display_name
                     )
                 `)
-                .in('status', ['active', 'cancelled'])
                 .order('end_date', { ascending: true });
 
             if (!debugError && allActiveSubscriptions) {
-                console.log(`📊 Total de assinaturas ativas/canceladas: ${allActiveSubscriptions.length}`);
+                console.log(`📊 Total de assinaturas encontradas: ${allActiveSubscriptions.length}`);
                 allActiveSubscriptions.slice(0, 10).forEach((sub, index) => {
                     const endDate = new Date(sub.end_date);
                     const diffTime = endDate.getTime() - now.getTime();
@@ -69,13 +73,17 @@ async function sendExpirationReminders() {
                     const shouldBeIncluded = endDate <= fiveDaysFromNow && endDate >= now;
                     const status = shouldBeIncluded ? '✅ DEVERIA INCLUIR' : '❌ Não inclui';
 
-                    console.log(`   ${index + 1}. ${sub.user_id} - ${sub.plans.display_name} - ${sub.status}`);
+                    console.log(`   ${index + 1}. ${sub.user_id} - ${sub.plans?.display_name || 'N/A'} - ${sub.status}`);
                     console.log(`      Vence em ${diffDays} dias (${endDate.toLocaleDateString('pt-BR')}) - ${status}`);
                     console.log(`      end_date: ${sub.end_date}`);
                     console.log(`      now: ${now.toISOString()}`);
                     console.log(`      fiveDaysFromNow: ${fiveDaysFromNow.toISOString()}`);
                     console.log('');
                 });
+            } else if (debugError) {
+                console.error('❌ Erro ao buscar assinaturas:', debugError);
+            } else {
+                console.log('⚠️ Nenhuma assinatura encontrada no banco');
             }
             return;
         }
