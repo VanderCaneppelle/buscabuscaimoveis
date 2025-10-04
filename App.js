@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -17,6 +17,7 @@ import MainNavigator from './components/MainNavigator';
 import ResetPasswordScreen from './components/ResetPasswordScreen';
 import TermsAcceptanceCheck from './components/TermsAcceptanceCheck';
 import * as Linking from 'expo-linking';
+import { PushNotificationService } from './lib/pushNotificationService';
 
 const Stack = createStackNavigator();
 
@@ -24,6 +25,7 @@ function AppContent() {
   const { user, loading } = useAuth();
   const [isResetPassword, setIsResetPassword] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const navigationRef = useRef(null);
 
   // Debug: Log do estado de autenticação
   useEffect(() => {
@@ -61,6 +63,67 @@ function AppContent() {
     return () => subscription?.remove();
   }, []);
 
+  // Configurar navegação por notificação push
+  useEffect(() => {
+    if (!user) return; // Só configurar se usuário estiver logado
+
+    const handleNotificationResponse = (response) => {
+      console.log('📱 Notificação clicada:', response);
+
+      const data = response.notification.request.content.data;
+      const type = data?.type;
+
+      if (!navigationRef.current) {
+        console.log('⚠️ Navigation ref não disponível ainda');
+        return;
+      }
+
+      try {
+        const screen = data?.screen;
+        const params = data?.params;
+
+        if (screen) {
+          console.log(`🔄 Navegando para ${screen} com parâmetros:`, params);
+          navigationRef.current.navigate(screen, params);
+        } else {
+          // Fallback baseado no tipo
+          switch (type) {
+            case 'plan_expiration':
+              console.log('🔄 Navegando para tela de planos...');
+              navigationRef.current.navigate('Plans', params);
+              break;
+
+            case 'property_approved':
+              console.log('🔄 Navegando para anúncios...');
+              navigationRef.current.navigate('MyProperties', params);
+              break;
+
+            case 'daily_reminder':
+              console.log('🔄 Navegando para home...');
+              navigationRef.current.navigate('Home', params);
+              break;
+
+            default:
+              console.log('🔄 Navegando para home (padrão)...');
+              navigationRef.current.navigate('Home', params);
+              break;
+          }
+        }
+      } catch (error) {
+        console.error('❌ Erro ao navegar:', error);
+      }
+    };
+
+    // Configurar listener para notificações
+    const subscription = PushNotificationService.setupNotificationResponseListener(handleNotificationResponse);
+
+    return () => {
+      if (subscription) {
+        subscription.remove();
+      }
+    };
+  }, [user]);
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -86,7 +149,7 @@ function AppContent() {
   }
 
   return user ? (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Main" component={MainNavigator} />
       </Stack.Navigator>

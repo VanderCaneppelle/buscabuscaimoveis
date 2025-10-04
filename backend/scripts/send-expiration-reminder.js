@@ -131,7 +131,13 @@ async function sendExpirationReminders() {
                     planId: subscription.plans.id,
                     planName: subscription.plans.name,
                     daysLeft: diffDays,
-                    endDate: subscription.end_date
+                    endDate: subscription.end_date,
+                    // Dados para navegação
+                    screen: 'Plans',
+                    params: {
+                        planId: subscription.plans.id,
+                        planName: subscription.plans.name
+                    }
                 };
 
                 console.log(`📤 Enviando lembrete para usuário ${subscription.user_id}:`);
