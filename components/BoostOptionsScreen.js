@@ -30,10 +30,11 @@ export default function BoostOptionsScreen({ navigation, route }) {
         try {
             setLoading(true);
             const plans = await BoostService.getBoostPlans();
+            console.log('📊 Planos carregados:', plans);
             setBoostPlans(plans);
 
-            // Selecionar plano de 3 dias por padrão (mais popular)
-            const defaultPlan = plans.find(p => p.duration_days === 3) || plans[0];
+            // Selecionar plano de 5 dias por padrão (mais popular)
+            const defaultPlan = plans.find(p => p.duration_days === 5) || plans.find(p => p.duration_days === 3) || plans[0];
             setSelectedPlan(defaultPlan);
         } catch (error) {
             console.error('Erro ao carregar planos de boost:', error);
@@ -53,12 +54,25 @@ export default function BoostOptionsScreen({ navigation, route }) {
 
     const renderBoostPlanCard = (plan) => {
         const isSelected = selectedPlan?.id === plan.id;
-        const isPopular = plan.duration_days === 3;
+        const isPopular = plan.duration_days === 5; // Plano de 5 dias é o mais popular
 
         // Calcular economia comparado ao plano de 1 dia
         const oneDayPlan = boostPlans.find(p => p.duration_days === 1);
-        const savings = oneDayPlan ? (oneDayPlan.price * plan.duration_days) - plan.price : 0;
-        const savingsPercent = oneDayPlan ? Math.round((savings / (oneDayPlan.price * plan.duration_days)) * 100) : 0;
+
+        // Preço sem desconto = preço de 1 dia × quantidade de dias
+        const priceWithoutDiscount = oneDayPlan ? oneDayPlan.price * plan.duration_days : 0;
+        // Economia = preço sem desconto - preço atual do plano
+        const savings = priceWithoutDiscount - plan.price;
+        // Percentual de desconto
+        const savingsPercent = priceWithoutDiscount > 0 ? Math.round((savings / priceWithoutDiscount) * 100) : 0;
+
+        console.log(`💰 Plano ${plan.duration_days} dias:`, {
+            oneDayPrice: oneDayPlan?.price,
+            planPrice: plan.price,
+            priceWithoutDiscount,
+            savings,
+            savingsPercent
+        });
 
         return (
             <TouchableOpacity
@@ -89,22 +103,23 @@ export default function BoostOptionsScreen({ navigation, route }) {
                     <Text style={styles.priceValue}>
                         R$ {plan.price.toFixed(2).replace('.', ',')}
                     </Text>
-                    {savings > 0 && (
+                </View>
+
+                <View style={styles.planFooter}>
+                    {plan.duration_days > 1 && (
+                        <Text style={styles.pricePerDay}>
+                            R$ {(plan.price / plan.duration_days).toFixed(2).replace('.', ',')}/dia
+                        </Text>
+                    )}
+                    {plan.duration_days > 1 && savingsPercent > 0 && (
                         <View style={styles.savingsBadge}>
+                            <Ionicons name="trending-down" size={12} color="#fff" />
                             <Text style={styles.savingsText}>
-                                Economize {savingsPercent}%
+                                -{savingsPercent}%
                             </Text>
                         </View>
                     )}
                 </View>
-
-                <Text style={styles.planDescription}>{plan.description}</Text>
-
-                {plan.duration_days > 1 && (
-                    <Text style={styles.pricePerDay}>
-                        R$ {(plan.price / plan.duration_days).toFixed(2).replace('.', ',')}/dia
-                    </Text>
-                )}
             </TouchableOpacity>
         );
     };
@@ -137,33 +152,6 @@ export default function BoostOptionsScreen({ navigation, route }) {
             {/* Conteúdo Principal */}
             <View style={styles.contentContainer}>
                 <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-
-                    {/* Property Info */}
-                    <View style={styles.propertyCard}>
-                        <Image
-                            source={{ uri: property.images?.[0] }}
-                            style={styles.propertyImage}
-                            resizeMode="cover"
-                        />
-                        <View style={styles.propertyInfo}>
-                            <Text style={styles.propertyTitle} numberOfLines={2}>
-                                {property.title}
-                            </Text>
-                            <Text style={styles.propertyLocation}>
-                                {property.city}, {property.state}
-                            </Text>
-                        </View>
-                    </View>
-
-                    {/* Info Card */}
-                    <View style={styles.infoCard}>
-                        <Ionicons name="rocket" size={32} color="#f39c12" />
-                        <Text style={styles.infoTitle}>Destaque seu Anúncio</Text>
-                        <Text style={styles.infoText}>
-                            Seu anúncio aparecerá na aba "Destaques" e terá maior visibilidade.
-                            Escolha por quantos dias deseja impulsionar:
-                        </Text>
-                    </View>
 
                     {/* Boost Plans */}
                     <View style={styles.plansSection}>
@@ -260,6 +248,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 3.84,
         elevation: 5,
+        paddingTop: 20,
     },
     content: {
         flex: 1,
@@ -339,9 +328,9 @@ const styles = StyleSheet.create({
     planCard: {
         backgroundColor: '#fff',
         marginHorizontal: 20,
-        marginBottom: 12,
+        marginBottom: 10,
         borderRadius: 12,
-        padding: 16,
+        padding: 12,
         borderWidth: 2,
         borderColor: '#e9ecef',
     },
@@ -354,91 +343,91 @@ const styles = StyleSheet.create({
     },
     popularBadge: {
         position: 'absolute',
-        top: -10,
+        top: -8,
         right: 20,
         backgroundColor: '#f39c12',
-        paddingHorizontal: 12,
-        paddingVertical: 4,
+        paddingHorizontal: 10,
+        paddingVertical: 3,
         borderRadius: 12,
     },
     popularText: {
         color: '#fff',
-        fontSize: 11,
+        fontSize: 10,
         fontWeight: '600',
     },
     planHeader: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 10,
+        marginBottom: 8,
     },
     radioButton: {
-        width: 20,
-        height: 20,
-        borderRadius: 10,
+        width: 18,
+        height: 18,
+        borderRadius: 9,
         borderWidth: 2,
         borderColor: '#3498db',
         alignItems: 'center',
         justifyContent: 'center',
-        marginRight: 12,
+        marginRight: 10,
     },
     radioButtonInner: {
-        width: 10,
-        height: 10,
-        borderRadius: 5,
+        width: 9,
+        height: 9,
+        borderRadius: 4.5,
         backgroundColor: '#3498db',
     },
     planDuration: {
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: 'bold',
         color: '#2c3e50',
     },
     planPrice: {
-        flexDirection: 'row',
-        alignItems: 'center',
         marginBottom: 8,
     },
     priceValue: {
-        fontSize: 24,
+        fontSize: 20,
         fontWeight: 'bold',
         color: '#3498db',
-        marginRight: 10,
+    },
+    planFooter: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    pricePerDay: {
+        fontSize: 11,
+        color: '#95a5a6',
+        fontStyle: 'italic',
     },
     savingsBadge: {
-        backgroundColor: '#2ecc71',
+        backgroundColor: '#27ae60',
         paddingHorizontal: 8,
         paddingVertical: 4,
         borderRadius: 12,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 3,
     },
     savingsText: {
         color: '#fff',
         fontSize: 11,
-        fontWeight: '600',
-    },
-    planDescription: {
-        fontSize: 14,
-        color: '#7f8c8d',
-        marginBottom: 6,
-    },
-    pricePerDay: {
-        fontSize: 12,
-        color: '#95a5a6',
-        fontStyle: 'italic',
+        fontWeight: 'bold',
     },
     benefitsSection: {
-        marginBottom: 20,
+        marginBottom: 15,
     },
     benefitItem: {
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 20,
-        paddingVertical: 10,
+        paddingVertical: 8,
     },
     benefitText: {
-        fontSize: 14,
+        fontSize: 13,
         color: '#2c3e50',
-        marginLeft: 12,
+        marginLeft: 10,
         flex: 1,
-        lineHeight: 20,
+        lineHeight: 18,
     },
     footer: {
         backgroundColor: '#fff',

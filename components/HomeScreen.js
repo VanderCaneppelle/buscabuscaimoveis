@@ -26,6 +26,7 @@ import PropertyCacheService from '../lib/propertyCacheService';
 import StoriesComponent from './StoriesComponent';
 import { CardStyleInterpolators } from '@react-navigation/stack';
 import { FiltersModal } from './modals';
+import { BoostService } from '../lib/boostService';
 
 const { width } = Dimensions.get('window');
 
@@ -57,6 +58,7 @@ export default function HomeScreen({ navigation }) {
     const [listLoading, setListLoading] = useState(false); // Loading apenas para a lista
     const [refreshing, setRefreshing] = useState(false);
     const [loadingMore, setLoadingMore] = useState(false);
+    const [boostedPropertyIds, setBoostedPropertyIds] = useState(new Set()); // IDs de propriedades impulsionadas
     const [searchTerm, setSearchTerm] = useState('');
     const [searchInputValue, setSearchInputValue] = useState(''); // Valor do input separado do termo de busca
     const [isSearching, setIsSearching] = useState(false); // Estado para indicar se estÃ¡ buscando
@@ -159,6 +161,22 @@ export default function HomeScreen({ navigation }) {
         }
     };
 
+    const fetchBoostedProperties = async (propertyIds, shouldMerge = false) => {
+        try {
+            const boostedIds = await BoostService.getBoostedPropertyIds(propertyIds);
+
+            if (shouldMerge) {
+                // Mesclar com IDs existentes (para paginação)
+                setBoostedPropertyIds(prev => new Set([...prev, ...boostedIds]));
+            } else {
+                // Substituir (para primeira carga ou refresh)
+                setBoostedPropertyIds(boostedIds);
+            }
+        } catch (err) {
+            console.error('Erro ao buscar boosts ativos:', err);
+        }
+    };
+
     const fetchProperties = async (customFilters = null, searchQuery = null, page = 0, forceRefresh = false, isSearchOrFilterChange = false) => {
         // Evitar recarregamento se jÃ¡ temos dados e nÃ£o Ã© forceRefresh
         // Mas sempre executar se for forceRefresh ou mudanÃ§a de busca/filtro
@@ -212,6 +230,12 @@ export default function HomeScreen({ navigation }) {
             setCurrentPage(page);
             setHasMore(result.hasMore);
             setTotalCount(result.totalCount);
+
+            // Buscar boosts ativos para as propriedades carregadas
+            if (result.data && result.data.length > 0) {
+                const shouldMerge = page > 0; // Se não é primeira página, mesclar com existentes
+                fetchBoostedProperties(result.data.map(p => p.id), shouldMerge);
+            }
 
         } catch (error) {
             console.error('âŒ Erro ao carregar propriedades:', error);
@@ -385,9 +409,10 @@ export default function HomeScreen({ navigation }) {
 
 
     // Componente simplificado para renderizar propriedades
-    const PropertyItem = React.memo(({ item, index, isFavorited, handleToggleFavorite, navigation }) => {
+    const PropertyItem = React.memo(({ item, index, isFavorited, handleToggleFavorite, navigation, boostedPropertyIds }) => {
         const mediaFiles = item.images || [];
         const [currentIndex, setCurrentIndex] = useState(0);
+        const isBoosted = boostedPropertyIds.has(item.id);
 
         // Memoizar o onPress para evitar re-renderizaÃ§Ãµes
         const handlePress = useCallback(() => {
@@ -494,6 +519,7 @@ export default function HomeScreen({ navigation }) {
                     <View style={styles.favoriteButton}>
                         <FavoriteButton isFavorited={isFavorited} onPress={() => toggleFavorite(item.id)} disabled={false} propertyId={item.id} />
                     </View>
+
                 </View>
 
                 <View style={styles.propertyInfo}>
@@ -532,15 +558,22 @@ export default function HomeScreen({ navigation }) {
                             )}
                             {item.area != null && (
                                 <Text style={styles.propertyFeature}>
-                                    {`${item.area}mÂ²`}
+                                    {`${item.area}m²`}
                                 </Text>
                             )}
                         </View>
                     </View>
                     <Text style={styles.propertyType}>
-                        {(item.property_type ?? '') + ' â€¢ ' + (item.transaction_type ?? '')}
+                        {(item.property_type ?? '') + ' á ' + (item.transaction_type ?? '')}
                     </Text>
 
+                    {/* Badge de Destaque - Canto inferior direito */}
+                    {isBoosted && (
+                        <View style={styles.boostBadge}>
+                            <Ionicons name="rocket" size={12} color="#fff" />
+                            <Text style={styles.boostBadgeText}>Destaque</Text>
+                        </View>
+                    )}
                     {/* BotÃ£o "Ver detalhes" para indicar que o card Ã© clicÃ¡vel */}
                     {/* <TouchableOpacity
                         style={styles.verDetalhesButton}
@@ -570,9 +603,10 @@ export default function HomeScreen({ navigation }) {
                 isFavorited={isFavorited}
                 handleToggleFavorite={handleToggleFavorite}
                 navigation={navigation}
+                boostedPropertyIds={boostedPropertyIds}
             />
         );
-    }, [isFavorite, handleToggleFavorite, navigation]);
+    }, [isFavorite, handleToggleFavorite, navigation, boostedPropertyIds]);
 
     if (loading) {
         return (
@@ -1035,6 +1069,29 @@ const styles = StyleSheet.create({
     favoriteIcon: {
         width: 24,
         height: 24,
+    },
+    boostBadge: {
+        position: 'absolute',
+        bottom: 10,
+        right: 10,
+        backgroundColor: '#f39c12',
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        borderRadius: 8,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+        elevation: 5,
+        zIndex: 9,
+    },
+    boostBadgeText: {
+        color: '#fff',
+        fontSize: 11,
+        fontWeight: 'bold',
     },
     propertyInfo: {
         padding: 15,

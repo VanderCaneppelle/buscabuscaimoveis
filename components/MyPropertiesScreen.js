@@ -170,7 +170,7 @@ export default function MyPropertiesScreen({ navigation }) {
     }, [user?.id]);
 
     const fetchActiveBoosts = useCallback(async () => {
-        if (!user?.id) return;
+        if (!user?.id || properties.length === 0) return;
 
         try {
             const { data, error } = await supabase
