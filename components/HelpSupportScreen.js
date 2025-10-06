@@ -7,6 +7,7 @@ import {
     SafeAreaView,
     ScrollView,
     Linking,
+    Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -31,17 +32,25 @@ export default function HelpSupportScreen({ navigation }) {
 
     return (
         <SafeAreaView style={styles.container}>
-            {/* Header */}
+
+            {/* Header Amarelo com Título */}
             <View style={styles.headerContainer}>
-                <TouchableOpacity
-                    style={styles.backButton}
-                    onPress={() => navigation.goBack()}
-                >
-                    <Ionicons name="arrow-back" size={24} color="#00335e" />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>Ajuda e Suporte</Text>
-                <View style={styles.placeholder} />
+                <View style={styles.titleContainer}>
+                    <Image
+                        source={require('../assets/logo_bb.jpg')}
+                        style={styles.titleLogo}
+                        resizeMode="contain"
+                    />
+                    <Text style={styles.headerTitle}>Ajuda e Suporte</Text>
+                </View>
+                <Text style={styles.headerSubtitle}>Entre em contato conosco</Text>
             </View>
+            <TouchableOpacity
+                style={styles.backButton}
+                onPress={() => navigation.goBack()}
+            >
+                <Ionicons name="arrow-back" size={24} color="#00335e" />
+            </TouchableOpacity>
 
             {/* Conteúdo Principal */}
             <View style={styles.contentContainer}>
@@ -153,26 +162,44 @@ const styles = StyleSheet.create({
         backgroundColor: '#ffcc1e',
     },
     headerContainer: {
-        paddingTop: 60,
+        paddingTop: 10,
         paddingBottom: 15,
         backgroundColor: '#ffcc1e',
         paddingHorizontal: 20,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
     },
     backButton: {
         position: 'absolute',
+        top: 10,
         left: 20,
         padding: 10,
+        zIndex: 1,
     },
     headerTitle: {
         fontSize: 20,
         fontWeight: 'bold',
         color: '#00335e',
+        textAlign: 'center',
+    },
+    headerSubtitle: {
+        fontSize: 16,
+        color: '#00335e',
+        textAlign: 'center',
+        opacity: 0.8,
+    },
+    titleLogo: {
+        width: 30,
+        height: 30,
+        borderRadius: 15,
+        marginRight: 10,
     },
     placeholder: {
         width: 40,
+    },
+    titleContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 10,
     },
     contentContainer: {
         flex: 1,
