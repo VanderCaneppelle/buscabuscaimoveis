@@ -141,78 +141,115 @@ export default async function handler(req, res) {
 
         console.log('✅ Pagamento atualizado no banco:', mpPayment.status);
 
-        // Se o pagamento foi aprovado, criar/atualizar user_subscription
+        // Se o pagamento foi aprovado, processar subscription ou boost
         if (mpPayment.status === 'approved') {
-            console.log('🎉 Pagamento aprovado! Criando assinatura...');
+            console.log('🎉 Pagamento aprovado!');
 
-            // Cancelar assinatura anterior se existir
-            const { error: cancelError } = await supabase
-                .from('user_subscriptions')
-                .update({
-                    status: 'cancelled',
-                    cancelled_at: new Date().toISOString()
-                })
-                .eq('user_id', payment.user_id)
-                .eq('status', 'active');
+            // Verificar se é pagamento de boost (external_reference começa com "boost_")
+            const isBoost = mpPayment.external_reference?.startsWith('boost_');
 
-            if (cancelError) {
-                console.error('❌ Erro ao cancelar assinatura anterior:', cancelError);
+            if (isBoost) {
+                console.log('🚀 Processando boost...');
+
+                // Buscar boost pendente associado a este pagamento
+                const { data: boost, error: boostError } = await supabase
+                    .from('property_boosts')
+                    .select('*')
+                    .eq('payment_id', payment.id)
+                    .eq('status', 'pending')
+                    .single();
+
+                if (!boostError && boost) {
+                    // Ativar boost
+                    const { error: activateError } = await supabase
+                        .from('property_boosts')
+                        .update({
+                            status: 'active',
+                            start_date: new Date().toISOString(),
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('id', boost.id);
+
+                    if (activateError) {
+                        console.error('❌ Erro ao ativar boost:', activateError);
+                    } else {
+                        console.log('✅ Boost ativado:', boost.id);
+                    }
+                } else {
+                    console.error('❌ Boost não encontrado:', boostError);
+                }
             } else {
-                console.log('✅ Assinatura anterior cancelada');
-            }
+                console.log('📋 Processando assinatura...');
 
-            // Buscar informações do plano para determinar período
-            const { data: planData, error: planError } = await supabase
-                .from('plans')
-                .select('period')
-                .eq('id', payment.plan_id)
-                .single();
+                // Cancelar assinatura anterior se existir
+                const { error: cancelError } = await supabase
+                    .from('user_subscriptions')
+                    .update({
+                        status: 'cancelled',
+                        cancelled_at: new Date().toISOString()
+                    })
+                    .eq('user_id', payment.user_id)
+                    .eq('status', 'active');
 
-            if (planError) {
-                console.error('❌ Erro ao buscar plano:', planError);
-                return res.status(500).json({ error: 'Failed to get plan info' });
-            }
+                if (cancelError) {
+                    console.error('❌ Erro ao cancelar assinatura anterior:', cancelError);
+                } else {
+                    console.log('✅ Assinatura anterior cancelada');
+                }
 
-            // Calcular data de vencimento baseada no período do plano
-            const subscriptionEndDate = new Date();
-            if (planData.period === 'annual') {
-                subscriptionEndDate.setFullYear(subscriptionEndDate.getFullYear() + 1); // 1 ano
-                console.log('📅 Plano anual - vencimento em 1 ano');
-            } else {
-                subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 1); // 1 mês
-                console.log('📅 Plano mensal - vencimento em 1 mês');
-            }
+                // Buscar informações do plano para determinar período
+                const { data: planData, error: planError } = await supabase
+                    .from('plans')
+                    .select('period')
+                    .eq('id', payment.plan_id)
+                    .single();
 
-            const { data: newSubscription, error: subscriptionError } = await supabase
-                .from('user_subscriptions')
-                .insert({
-                    user_id: payment.user_id,
-                    plan_id: payment.plan_id,
-                    status: 'active',
-                    start_date: new Date().toISOString(),
-                    end_date: subscriptionEndDate.toISOString(),
-                    payment_id: payment.id
-                })
-                .select()
-                .single();
+                if (planError) {
+                    console.error('❌ Erro ao buscar plano:', planError);
+                    return res.status(500).json({ error: 'Failed to get plan info' });
+                }
 
-            if (subscriptionError) {
-                console.error('❌ Erro ao criar assinatura:', subscriptionError);
-            } else {
-                console.log('✅ Nova assinatura criada:', newSubscription.id);
+                // Calcular data de vencimento baseada no período do plano
+                const subscriptionEndDate = new Date();
+                if (planData.period === 'annual') {
+                    subscriptionEndDate.setFullYear(subscriptionEndDate.getFullYear() + 1); // 1 ano
+                    console.log('📅 Plano anual - vencimento em 1 ano');
+                } else {
+                    subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 1); // 1 mês
+                    console.log('📅 Plano mensal - vencimento em 1 mês');
+                }
+
+                const { data: newSubscription, error: subscriptionError } = await supabase
+                    .from('user_subscriptions')
+                    .insert({
+                        user_id: payment.user_id,
+                        plan_id: payment.plan_id,
+                        status: 'active',
+                        start_date: new Date().toISOString(),
+                        end_date: subscriptionEndDate.toISOString(),
+                        payment_id: payment.id
+                    })
+                    .select()
+                    .single();
+
+                if (subscriptionError) {
+                    console.error('❌ Erro ao criar assinatura:', subscriptionError);
+                } else {
+                    console.log('✅ Nova assinatura criada:', newSubscription.id);
+                }
             }
         }
 
         return res.status(200).json({
             success: true,
-            message: 'Test webhook processed successfully',
+            message: 'Webhook processed successfully',
             payment_id: payment.id,
             status: mpPayment.status,
             timestamp: new Date().toISOString()
         });
 
     } catch (error) {
-        console.error('❌ Erro no teste webhook:', error);
+        console.error('❌ Erro no webhook:', error);
         return res.status(500).json({
             error: 'Internal server error',
             message: error.message

@@ -685,6 +685,15 @@ export default function MyPropertiesScreen({ navigation }) {
                             </TouchableOpacity> */}
 
                             <View style={styles.actionButtons}>
+                                {item.status === 'approved' && (
+                                    <TouchableOpacity
+                                        style={[styles.actionButton, styles.boostButton]}
+                                        onPress={() => navigation.navigate('BoostOptions', { property: item })}
+                                    >
+                                        <Ionicons name="rocket-outline" size={18} color="#f39c12" />
+                                        <Text style={styles.boostButtonText}>Impulsionar</Text>
+                                    </TouchableOpacity>
+                                )}
                                 <TouchableOpacity
                                     style={[styles.actionButton, styles.editButton]}
                                     onPress={() => openEditModal(item)}
@@ -1720,6 +1729,16 @@ const styles = StyleSheet.create({
     },
     deleteButtonText: {
         color: '#e74c3c',
+        fontSize: 14,
+        fontWeight: '600',
+    },
+    boostButton: {
+        backgroundColor: '#fff8e1',
+        borderWidth: 1,
+        borderColor: '#f39c12',
+    },
+    boostButtonText: {
+        color: '#f39c12',
         fontSize: 14,
         fontWeight: '600',
     },

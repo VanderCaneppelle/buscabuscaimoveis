@@ -16,6 +16,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { BoostService } from '../lib/boostService';
 
 const { width } = Dimensions.get('window');
 
@@ -43,20 +44,47 @@ export default function DiscoverScreen({ navigation }) {
     const loadData = async () => {
         try {
             setLoading(true);
-            const { data, error } = await supabase
-                .from('properties')
-                .select('*')
-                .eq('status', 'approved')
-                .order('created_at', { ascending: false })
-                .limit(20);
 
-            if (error) {
-                console.error('Erro ao buscar propriedades:', error);
-            } else {
-                setFeaturedProperties(data || []);
-            }
+            // Usar a função do banco para buscar anúncios impulsionados
+            const boostedProperties = await BoostService.getBoostedProperties();
+
+            console.log(`✨ ${boostedProperties.length} anúncios em destaque carregados`);
+
+            // Transformar para o formato esperado pelo componente
+            const properties = boostedProperties.map(item => ({
+                id: item.property_id,
+                title: item.title,
+                description: item.description,
+                price: item.price,
+                sale_price: item.sale_price,
+                property_type: item.property_type,
+                transaction_type: item.transaction_type,
+                bedrooms: item.bedrooms,
+                bathrooms: item.bathrooms,
+                parking_spaces: item.parking_spaces,
+                area: item.area,
+                address: item.address,
+                neighborhood: item.neighborhood,
+                city: item.city,
+                state: item.state,
+                zip_code: item.zip_code,
+                latitude: item.latitude,
+                longitude: item.longitude,
+                images: item.images,
+                status: item.property_status,
+                views: item.property_views || 0,
+                created_at: item.property_created_at,
+                user_id: item.user_id,
+                boost_info: {
+                    id: item.boost_id,
+                    end_date: item.boost_end_date,
+                    days_remaining: item.days_remaining
+                }
+            }));
+
+            setFeaturedProperties(properties);
         } catch (error) {
-            console.error('Erro ao buscar propriedades:', error);
+            console.error('Erro ao buscar anúncios em destaque:', error);
         } finally {
             setLoading(false);
         }
@@ -156,6 +184,12 @@ export default function DiscoverScreen({ navigation }) {
                             ))}
                         </View>
                     )}
+
+                    {/* Badge de Destaque */}
+                    <View style={styles.boostBadge}>
+                        <Ionicons name="rocket" size={14} color="#fff" />
+                        <Text style={styles.boostBadgeText}>DESTAQUE</Text>
+                    </View>
 
                     {/* Indicador de quantidade de mídias */}
                     {hasMultipleMedia && (
@@ -401,6 +435,29 @@ const styles = StyleSheet.create({
     mediaIndicatorActive: {
         backgroundColor: '#fff',
         width: 20,
+    },
+    boostBadge: {
+        position: 'absolute',
+        top: 15,
+        left: 15,
+        backgroundColor: '#f39c12',
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        borderRadius: 6,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+        elevation: 4,
+    },
+    boostBadgeText: {
+        color: '#fff',
+        fontSize: 11,
+        fontWeight: 'bold',
+        letterSpacing: 0.5,
     },
     mediaCountBadge: {
         position: 'absolute',

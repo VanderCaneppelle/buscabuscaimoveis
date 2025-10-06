@@ -26,6 +26,8 @@ import MapaImovelUnico from './MapaImovelUnico';
 import TermsAndPrivacyScreen from './TermsAndPrivacyScreen';
 import HelpSupportScreen from './HelpSupportScreen';
 import EditProfileScreen from './EditProfileScreen';
+import BoostOptionsScreen from './BoostOptionsScreen';
+import BoostPaymentScreen from './BoostPaymentScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -457,6 +459,36 @@ export default function MainNavigator() {
                 component={EditProfileScreen}
                 options={{
                     title: 'Editar Perfil',
+                    headerBackTitle: 'Voltar',
+                    presentation: 'fullScreenModal',
+                    headerShown: false,
+                    cardStyle: { backgroundColor: 'white' },
+                    animation: 'none',
+                    tabBarStyle: { display: 'none' },
+                }}
+            />
+
+            {/* Boost Options - seleção de duração do impulsionamento */}
+            <Stack.Screen
+                name="BoostOptions"
+                component={BoostOptionsScreen}
+                options={{
+                    title: 'Impulsionar Anúncio',
+                    headerBackTitle: 'Voltar',
+                    presentation: 'fullScreenModal',
+                    headerShown: false,
+                    cardStyle: { backgroundColor: 'white' },
+                    animation: 'none',
+                    tabBarStyle: { display: 'none' },
+                }}
+            />
+
+            {/* Boost Payment - pagamento do impulsionamento */}
+            <Stack.Screen
+                name="BoostPayment"
+                component={BoostPaymentScreen}
+                options={{
+                    title: 'Pagamento',
                     headerBackTitle: 'Voltar',
                     presentation: 'fullScreenModal',
                     headerShown: false,
