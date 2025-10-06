@@ -250,15 +250,6 @@ export default function AccountScreen({ navigation }) {
         </TouchableOpacity>
     );
 
-    const renderStatsCard = (title, value, icon, color) => (
-        <View style={styles.statsCard}>
-            <View style={[styles.statsIcon, { backgroundColor: color }]}>
-                <Ionicons name={icon} size={16} color="#fff" />
-            </View>
-            <Text style={styles.statsValue}>{value}</Text>
-            <Text style={styles.statsTitle}>{title}</Text>
-        </View>
-    );
 
     return (
         <SafeAreaView style={styles.container}>
@@ -303,30 +294,6 @@ export default function AccountScreen({ navigation }) {
                         </View>
                     </View>
 
-                    {/* Quick Stats */}
-                    <View style={styles.statsSection}>
-                        <Text style={styles.sectionTitle}>Resumo</Text>
-                        <View style={styles.statsGrid}>
-                            {renderStatsCard(
-                                'Anúncios Aprovados',
-                                userPlanInfo?.stats?.approvedAds || 0,
-                                'home',
-                                '#3498db'
-                            )}
-                            {renderStatsCard(
-                                'Favoritos',
-                                userPlanInfo?.stats?.favorites || 0,
-                                'heart',
-                                '#e74c3c'
-                            )}
-                            {renderStatsCard(
-                                'Visualizações',
-                                userPlanInfo?.stats?.views || 0,
-                                'eye',
-                                '#2ecc71'
-                            )}
-                        </View>
-                    </View>
 
                     {/* Plan Info */}
                     <View style={styles.planSection}>
@@ -412,13 +379,13 @@ export default function AccountScreen({ navigation }) {
                             () => Alert.alert('Em breve', 'Funcionalidade em desenvolvimento')
                         )}
 
-                        {renderMenuItem(
+                        {/* {renderMenuItem(
                             'Histórico de Planos',
                             'Veja suas assinaturas anteriores',
                             'time',
                             '#f39c12',
                             () => Alert.alert('Em breve', 'Funcionalidade em desenvolvimento')
-                        )}
+                        )} */}
 
 
 
