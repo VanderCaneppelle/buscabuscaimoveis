@@ -24,6 +24,7 @@ import MyPropertiesScreen from './MyPropertiesScreen';
 import MapaImoveis from './MapaImoveis';
 import MapaImovelUnico from './MapaImovelUnico';
 import TermsAndPrivacyScreen from './TermsAndPrivacyScreen';
+import HelpSupportScreen from './HelpSupportScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -425,6 +426,21 @@ export default function MainNavigator() {
                 component={TermsAndPrivacyScreen}
                 options={{
                     title: 'Termos e Privacidade',
+                    headerBackTitle: 'Voltar',
+                    presentation: 'fullScreenModal',
+                    headerShown: false,
+                    cardStyle: { backgroundColor: 'white' },
+                    animation: 'none',
+                    tabBarStyle: { display: 'none' },
+                }}
+            />
+
+            {/* Help and Support - tela de ajuda e suporte */}
+            <Stack.Screen
+                name="HelpSupport"
+                component={HelpSupportScreen}
+                options={{
+                    title: 'Ajuda e Suporte',
                     headerBackTitle: 'Voltar',
                     presentation: 'fullScreenModal',
                     headerShown: false,

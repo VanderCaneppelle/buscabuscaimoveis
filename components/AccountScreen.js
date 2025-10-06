@@ -443,7 +443,7 @@ export default function AccountScreen({ navigation }) {
                             'Entre em contato conosco',
                             'help-circle',
                             '#34495e',
-                            () => Alert.alert('Em breve', 'Funcionalidade em desenvolvimento')
+                            () => navigation.navigate('HelpSupport')
                         )}
 
                         {renderMenuItem(
@@ -451,7 +451,7 @@ export default function AccountScreen({ navigation }) {
                             'Versão 1.0.0',
                             'information-circle',
                             '#7f8c8d',
-                            () => Alert.alert('Sobre', 'Busca Busca Imóveis v1.0.0\n\nEncontre o imóvel dos seus sonhos!')
+                            () => Alert.alert('Sobre', 'Busca Busca Imóveis\n\nVersão 1.0.0\n\nDesenvolvido por: TW Consultoria de TI\n\nContato: (47) 99241-4455')
                         )}
 
                         {renderMenuItem(
