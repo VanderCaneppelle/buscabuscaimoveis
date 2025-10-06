@@ -44,6 +44,7 @@ export default function AdvertiseScreen({ navigation }) {
         try {
             setLoading(true);
             const planInfo = await PlanService.getUserPlanInfo(user.id);
+            console.log('📋 AdvertiseScreen - planInfo:', JSON.stringify(planInfo, null, 2));
             setUserPlanInfo(planInfo);
         } catch (error) {
             console.error('Erro ao verificar permissões:', error);
