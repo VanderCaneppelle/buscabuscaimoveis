@@ -376,7 +376,7 @@ export default function AccountScreen({ navigation }) {
                             'Atualize suas informações pessoais',
                             'person',
                             '#3498db',
-                            () => Alert.alert('Em breve', 'Funcionalidade em desenvolvimento')
+                            () => navigation.navigate('EditProfile')
                         )}
 
                         {/* {renderMenuItem(

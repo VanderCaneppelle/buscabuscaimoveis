@@ -25,6 +25,7 @@ import MapaImoveis from './MapaImoveis';
 import MapaImovelUnico from './MapaImovelUnico';
 import TermsAndPrivacyScreen from './TermsAndPrivacyScreen';
 import HelpSupportScreen from './HelpSupportScreen';
+import EditProfileScreen from './EditProfileScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -441,6 +442,21 @@ export default function MainNavigator() {
                 component={HelpSupportScreen}
                 options={{
                     title: 'Ajuda e Suporte',
+                    headerBackTitle: 'Voltar',
+                    presentation: 'fullScreenModal',
+                    headerShown: false,
+                    cardStyle: { backgroundColor: 'white' },
+                    animation: 'none',
+                    tabBarStyle: { display: 'none' },
+                }}
+            />
+
+            {/* Edit Profile - tela de edição de perfil */}
+            <Stack.Screen
+                name="EditProfile"
+                component={EditProfileScreen}
+                options={{
+                    title: 'Editar Perfil',
                     headerBackTitle: 'Voltar',
                     presentation: 'fullScreenModal',
                     headerShown: false,
