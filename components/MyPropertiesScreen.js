@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { PropertyService } from '../lib/propertyService';
+import { BoostService } from '../lib/boostService';
 
 import { validateMediaLimitsByPlan } from '../lib/validation/mediaLimits';
 import { supabase } from '../lib/supabase';
@@ -32,6 +33,7 @@ export default function MyPropertiesScreen({ navigation }) {
 
     const [stats, setStats] = useState({ total: 0, pending: 0, approved: 0 });
     const [userPlan, setUserPlan] = useState(null);
+    const [activeBoosts, setActiveBoosts] = useState({}); // {propertyId: boostData}
 
     const [editModalVisible, setEditModalVisible] = useState(false);
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
@@ -167,6 +169,32 @@ export default function MyPropertiesScreen({ navigation }) {
         }
     }, [user?.id]);
 
+    const fetchActiveBoosts = useCallback(async () => {
+        if (!user?.id) return;
+
+        try {
+            const { data, error } = await supabase
+                .from('property_boosts')
+                .select('property_id, end_date, status')
+                .eq('status', 'active')
+                .gte('end_date', new Date().toISOString())
+                .in('property_id', properties.map(p => p.id));
+
+            if (error) throw error;
+
+            // Criar um mapa de propertyId -> boostData
+            const boostsMap = {};
+            if (data) {
+                data.forEach(boost => {
+                    boostsMap[boost.property_id] = boost;
+                });
+            }
+            setActiveBoosts(boostsMap);
+        } catch (err) {
+            console.error('Erro ao buscar boosts ativos:', err);
+        }
+    }, [user?.id, properties]);
+
     const fetchProperties = useCallback(
         async (forceRefresh = false, isFilterChange = false) => {
             if (!user?.id) return;
@@ -206,6 +234,12 @@ export default function MyPropertiesScreen({ navigation }) {
         }
     }, [selectedFilter, user?.id]);
 
+    // Buscar boosts quando as propriedades forem carregadas
+    useEffect(() => {
+        if (properties.length > 0) {
+            fetchActiveBoosts();
+        }
+    }, [properties.length]);
 
     // Recarregar dados quando a tela receber foco
     useFocusEffect(
@@ -570,13 +604,22 @@ export default function MyPropertiesScreen({ navigation }) {
                                 )}
                             </View>
                             <View style={styles.headerRight}>
-                                <View style={[
-                                    styles.statusBadge,
-                                    { backgroundColor: getStatusColor(item.status) }
-                                ]}>
-                                    <Text style={styles.statusText}>
-                                        {getStatusText(item.status)}
-                                    </Text>
+                                <View style={styles.badgesContainer}>
+                                    <View style={[
+                                        styles.statusBadge,
+                                        { backgroundColor: getStatusColor(item.status) }
+                                    ]}>
+                                        <Text style={styles.statusText}>
+                                            {getStatusText(item.status)}
+                                        </Text>
+                                    </View>
+                                    {/* Badge de Impulsionado */}
+                                    {activeBoosts[item.id] && (
+                                        <View style={styles.boostedBadge}>
+                                            <Ionicons name="rocket" size={10} color="#fff" />
+                                            <Text style={styles.boostedBadgeText}>Impulsionado</Text>
+                                        </View>
+                                    )}
                                 </View>
                                 <Ionicons
                                     name={isExpanded ? "chevron-up" : "chevron-down"}
@@ -684,14 +727,47 @@ export default function MyPropertiesScreen({ navigation }) {
                                 <Text style={styles.viewDetailsButtonText}>Ver Detalhes Completos</Text>
                             </TouchableOpacity> */}
 
+                            {/* Boost Status - Mostrar se anúncio está impulsionado */}
+                            {item.status === 'approved' && activeBoosts[item.id] && (
+                                <View style={styles.boostStatusContainer}>
+                                    <View style={styles.boostStatusHeader}>
+                                        <Ionicons name="rocket" size={18} color="#27ae60" />
+                                        <Text style={styles.boostStatusTitle}>🚀 Anúncio Impulsionado</Text>
+                                    </View>
+                                    <Text style={styles.boostStatusText}>
+                                        Impulsionado até {new Date(activeBoosts[item.id].end_date).toLocaleDateString('pt-BR', {
+                                            day: '2-digit',
+                                            month: '2-digit',
+                                            year: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        })}
+                                    </Text>
+                                </View>
+                            )}
+
                             <View style={styles.actionButtons}>
                                 {item.status === 'approved' && (
                                     <TouchableOpacity
-                                        style={[styles.actionButton, styles.boostButton]}
+                                        style={[
+                                            styles.actionButton,
+                                            styles.boostButton,
+                                            activeBoosts[item.id] && styles.boostButtonDisabled
+                                        ]}
                                         onPress={() => navigation.navigate('BoostOptions', { property: item })}
+                                        disabled={!!activeBoosts[item.id]}
                                     >
-                                        <Ionicons name="rocket-outline" size={18} color="#f39c12" />
-                                        <Text style={styles.boostButtonText}>Impulsionar</Text>
+                                        <Ionicons
+                                            name="rocket-outline"
+                                            size={18}
+                                            color={activeBoosts[item.id] ? '#95a5a6' : '#f39c12'}
+                                        />
+                                        <Text style={[
+                                            styles.boostButtonText,
+                                            activeBoosts[item.id] && styles.boostButtonTextDisabled
+                                        ]}>
+                                            {activeBoosts[item.id] ? 'Impulsionado' : 'Impulsionar'}
+                                        </Text>
                                     </TouchableOpacity>
                                 )}
                                 <TouchableOpacity
@@ -1515,6 +1591,11 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: 10,
     },
+    badgesContainer: {
+        flexDirection: 'column',
+        gap: 4,
+        alignItems: 'flex-end',
+    },
     statusBadge: {
         paddingHorizontal: 8,
         paddingVertical: 4,
@@ -1523,6 +1604,20 @@ const styles = StyleSheet.create({
     statusText: {
         color: '#fff',
         fontSize: 12,
+        fontWeight: '600',
+    },
+    boostedBadge: {
+        backgroundColor: '#27ae60',
+        paddingHorizontal: 8,
+        paddingVertical: 3,
+        borderRadius: 6,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+    },
+    boostedBadgeText: {
+        color: '#fff',
+        fontSize: 10,
         fontWeight: '600',
     },
     propertyTitle: {
@@ -1741,6 +1836,38 @@ const styles = StyleSheet.create({
         color: '#f39c12',
         fontSize: 14,
         fontWeight: '600',
+    },
+    boostButtonDisabled: {
+        backgroundColor: '#f5f5f5',
+        borderColor: '#95a5a6',
+        opacity: 0.6,
+    },
+    boostButtonTextDisabled: {
+        color: '#95a5a6',
+    },
+    boostStatusContainer: {
+        backgroundColor: '#e8f5e9',
+        borderLeftWidth: 4,
+        borderLeftColor: '#27ae60',
+        padding: 12,
+        borderRadius: 8,
+        marginBottom: 10,
+    },
+    boostStatusHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        marginBottom: 5,
+    },
+    boostStatusTitle: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#27ae60',
+    },
+    boostStatusText: {
+        fontSize: 13,
+        color: '#2c3e50',
+        marginLeft: 26,
     },
     viewDetailsButton: {
         backgroundColor: '#00335e',
