@@ -15,6 +15,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { PlanService } from '../lib/planService';
 import { useFocusEffect } from '@react-navigation/native';
 
+
 export default function AdvertiseScreen({ navigation }) {
     console.log('Rendered AdvertiseScreen');
 
@@ -186,8 +187,7 @@ export default function AdvertiseScreen({ navigation }) {
                             'Veja e edite seus anúncios',
                             'list',
                             '#2ecc71',
-                            () => Alert.alert('Em breve', 'Funcionalidade em desenvolvimento'),
-                            false
+                            () => navigation.navigate('MyProperties')
                         )}
 
                         {renderActionCard(

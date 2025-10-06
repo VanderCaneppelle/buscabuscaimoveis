@@ -93,6 +93,13 @@ function AdvertiseStack() {
         <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="AdvertiseMain" component={AdvertiseScreen} />
             <Stack.Screen
+                name="MyProperties"
+                component={MyPropertiesScreen}
+                options={{
+                    headerShown: false,
+                }}
+            />
+            <Stack.Screen
                 name="VideoUploadTest"
                 component={VideoUploadTestScreen}
                 options={{
@@ -161,13 +168,6 @@ function AccountStack() {
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="AccountMain" component={AccountScreen} />
-            <Stack.Screen
-                name="MyProperties"
-                component={MyPropertiesScreen}
-                options={{
-                    headerShown: false,
-                }}
-            />
         </Stack.Navigator>
     );
 }
@@ -449,6 +449,7 @@ export default function MainNavigator() {
                     tabBarStyle: { display: 'none' },
                 }}
             />
+
 
             {/* MapaImoveis como modal - acessível de qualquer tela */}
             <Stack.Screen

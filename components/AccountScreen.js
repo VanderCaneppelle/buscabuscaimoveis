@@ -413,14 +413,6 @@ export default function AccountScreen({ navigation }) {
                         )}
 
                         {renderMenuItem(
-                            'Meus Anúncios',
-                            'Gerencie seus anúncios publicados',
-                            'list',
-                            '#2ecc71',
-                            () => navigation.navigate('MyProperties')
-                        )}
-
-                        {renderMenuItem(
                             'Histórico de Planos',
                             'Veja suas assinaturas anteriores',
                             'time',
