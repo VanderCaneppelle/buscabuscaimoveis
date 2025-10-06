@@ -11,10 +11,20 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { getTermsInfo } from '../lib/termsConfig';
 
-export default function TermsAndPrivacyScreen({ visible, onClose, type = 'terms' }) {
+export default function TermsAndPrivacyScreen({ navigation, visible, onClose, type = 'terms' }) {
     console.log('Rendered TermsAndPrivacyScreen');
     const [activeTab, setActiveTab] = useState(type); // 'terms' ou 'privacy'
     const termsInfo = getTermsInfo();
+
+    const handleClose = () => {
+        if (typeof onClose === 'function') {
+            onClose();
+            return;
+        }
+        if (navigation && typeof navigation.goBack === 'function') {
+            navigation.goBack();
+        }
+    };
 
     const termsContent = `
 # Termos de Uso
@@ -128,47 +138,89 @@ Para dúvidas ou solicitações, entre em contato pelo WhatsApp disponível no a
         return <>{elements}</>;
     };
 
-    return (
-        <Modal
-            visible={visible}
-            animationType="slide"
-            presentationStyle="pageSheet"
-        >
-            <SafeAreaView style={styles.container}>
-                <View style={styles.header}>
-                    <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                        <Ionicons name="close" size={24} color="#3498db" />
-                    </TouchableOpacity>
-                    <Text style={styles.headerTitle}>
-                        {activeTab === 'terms' ? 'Termos de Uso' : 'Política de Privacidade'}
-                    </Text>
-                    <View style={styles.tabContainer}>
-                        <TouchableOpacity
-                            style={[styles.tab, activeTab === 'terms' && styles.activeTab]}
-                            onPress={() => setActiveTab('terms')}
-                        >
-                            <Text style={[styles.tabText, activeTab === 'terms' && styles.activeTabText]}>
-                                Termos
-                            </Text>
+    // Se "visible" for fornecido, assume modo modal embutido; senão, usa como tela standalone
+    if (typeof visible !== 'undefined') {
+        return (
+            <Modal
+                visible={visible}
+                animationType="slide"
+                presentationStyle="pageSheet"
+                onRequestClose={handleClose}
+            >
+                <SafeAreaView style={styles.container}>
+                    <View style={styles.header}>
+                        <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+                            <Ionicons name="close" size={24} color="#3498db" />
                         </TouchableOpacity>
-                        <TouchableOpacity
-                            style={[styles.tab, activeTab === 'privacy' && styles.activeTab]}
-                            onPress={() => setActiveTab('privacy')}
-                        >
-                            <Text style={[styles.tabText, activeTab === 'privacy' && styles.activeTabText]}>
-                                Privacidade
-                            </Text>
-                        </TouchableOpacity>
+                        <Text style={styles.headerTitle}>
+                            {activeTab === 'terms' ? 'Termos de Uso' : 'Política de Privacidade'}
+                        </Text>
+                        <View style={styles.tabContainer}>
+                            <TouchableOpacity
+                                style={[styles.tab, activeTab === 'terms' && styles.activeTab]}
+                                onPress={() => setActiveTab('terms')}
+                            >
+                                <Text style={[styles.tabText, activeTab === 'terms' && styles.activeTabText]}>
+                                    Termos
+                                </Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.tab, activeTab === 'privacy' && styles.activeTab]}
+                                onPress={() => setActiveTab('privacy')}
+                            >
+                                <Text style={[styles.tabText, activeTab === 'privacy' && styles.activeTabText]}>
+                                    Privacidade
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
-                </View>
 
-                <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-                    <View style={styles.textContainer}>
-                        {formatContent(activeTab === 'terms' ? termsContent : privacyContent)}
-                    </View>
-                </ScrollView>
-            </SafeAreaView>
-        </Modal>
+                    <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+                        <View style={styles.textContainer}>
+                            {formatContent(activeTab === 'terms' ? termsContent : privacyContent)}
+                        </View>
+                    </ScrollView>
+                </SafeAreaView>
+            </Modal>
+        );
+    }
+
+    // Modo tela standalone (via react-navigation), sem wrapper de Modal
+    return (
+        <SafeAreaView style={styles.container}>
+            <View style={styles.header}>
+                <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+                    <Ionicons name="close" size={24} color="#3498db" />
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>
+                    {activeTab === 'terms' ? 'Termos de Uso' : 'Política de Privacidade'}
+                </Text>
+                <View style={styles.tabContainer}>
+                    <TouchableOpacity
+                        style={[styles.tab, activeTab === 'terms' && styles.activeTab]}
+                        onPress={() => setActiveTab('terms')}
+                    >
+                        <Text style={[styles.tabText, activeTab === 'terms' && styles.activeTabText]}>
+                            Termos
+                        </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[styles.tab, activeTab === 'privacy' && styles.activeTab]}
+                        onPress={() => setActiveTab('privacy')}
+                    >
+                        <Text style={[styles.tabText, activeTab === 'privacy' && styles.activeTabText]}>
+                            Privacidade
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+
+            <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+                <View style={styles.textContainer}>
+                    {formatContent(activeTab === 'terms' ? termsContent : privacyContent)}
+                </View>
+            </ScrollView>
+        </SafeAreaView>
     );
 }
 

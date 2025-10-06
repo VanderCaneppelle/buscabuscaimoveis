@@ -435,7 +435,7 @@ export default function AccountScreen({ navigation }) {
                             'Gerencie sua privacidade',
                             'shield-checkmark',
                             '#e67e22',
-                            () => Alert.alert('Em breve', 'Funcionalidade em desenvolvimento')
+                            () => navigation.navigate('TermsPrivacy')
                         )}
 
                         {renderMenuItem(

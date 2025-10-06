@@ -23,6 +23,7 @@ import VideoUploadTestScreen from './VideoUploadTestScreen';
 import MyPropertiesScreen from './MyPropertiesScreen';
 import MapaImoveis from './MapaImoveis';
 import MapaImovelUnico from './MapaImovelUnico';
+import TermsAndPrivacyScreen from './TermsAndPrivacyScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -413,6 +414,21 @@ export default function MainNavigator() {
                     presentation: 'fullScreenModal',
                     headerShown: false,
                     cardStyle: { backgroundColor: '#ffcc1e' },
+                    animation: 'none',
+                    tabBarStyle: { display: 'none' },
+                }}
+            />
+
+            {/* Terms and Privacy - tela standalone reutilizando o componente existente */}
+            <Stack.Screen
+                name="TermsPrivacy"
+                component={TermsAndPrivacyScreen}
+                options={{
+                    title: 'Termos e Privacidade',
+                    headerBackTitle: 'Voltar',
+                    presentation: 'fullScreenModal',
+                    headerShown: false,
+                    cardStyle: { backgroundColor: 'white' },
                     animation: 'none',
                     tabBarStyle: { display: 'none' },
                 }}
