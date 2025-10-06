@@ -67,14 +67,15 @@ export default function AdvertiseScreen({ navigation }) {
         }
     };
 
-    const handleViewPlans = () => {
-        navigation.navigate('Plans');
+    const handleViewPlans = (highlightPlan = null) => {
+        navigation.navigate('Plans', { highlightPlan });
     };
 
     const renderPlanInfoCard = () => {
         if (!userPlanInfo) return null;
 
         const { plan, canCreate } = userPlanInfo;
+        const availableAds = canCreate.max_ads - canCreate.current_ads;
 
         return (
             <View style={styles.planInfoCard}>
@@ -89,6 +90,24 @@ export default function AdvertiseScreen({ navigation }) {
                         : canCreate.reason
                     }
                 </Text>
+
+                {/* Botão para liberar mais anúncios quando disponível < 2 */}
+                {availableAds < 2 && (
+                    <View style={styles.upgradeSection}>
+                        <Text style={styles.upgradeMessage}>
+                            {availableAds === 0
+                                ? '⚠️ Você não tem mais anúncios disponíveis! Não fique sem anunciar, renove seu plano.'
+                                : '⚠️ Seu limite de anúncios esta quase esgotado! Não fique sem vender! Libere mais anúncios.'}
+                        </Text>
+                        <TouchableOpacity
+                            style={styles.upgradeButton}
+                            onPress={() => handleViewPlans('gold')}
+                        >
+                            <Ionicons name="arrow-up-circle" size={16} color="#fff" />
+                            <Text style={styles.upgradeButtonText}>Liberar Mais Anúncios</Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
             </View>
         );
     };
@@ -132,9 +151,9 @@ export default function AdvertiseScreen({ navigation }) {
                         style={styles.titleLogo}
                         resizeMode="contain"
                     />
-                    <Text style={styles.headerTitle}>Minha Conta</Text>
+                    <Text style={styles.headerTitle}>Anunciar</Text>
                 </View>
-                <Text style={styles.headerSubtitle}>Gerencie seu perfil e configurações</Text>
+                <Text style={styles.headerSubtitle}>Publique seu imóvel</Text>
             </View>
 
             {/* Conteúdo Principal */}
@@ -143,9 +162,9 @@ export default function AdvertiseScreen({ navigation }) {
                 <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
                     {/* Plan Info */}
                     {renderPlanInfoCard()}
-
-                    {/* Quick Stats */}
                     <View style={styles.statsSection}>
+
+                        {/* Quick Stats */}
                         <Text style={styles.sectionTitle}>Resumo</Text>
                         <View style={styles.statsGrid}>
                             {renderStatsCard(
@@ -171,7 +190,7 @@ export default function AdvertiseScreen({ navigation }) {
 
                     {/* Actions */}
                     <View style={styles.actionsSection}>
-                        <Text style={styles.sectionTitle}>Ações</Text>
+                        {/* <Text style={styles.sectionTitle}>Ações</Text> */}
 
                         {renderActionCard(
                             'Criar Novo Anúncio',
@@ -199,14 +218,14 @@ export default function AdvertiseScreen({ navigation }) {
                             false
                         )}
 
-                        {renderActionCard(
+                        {/* {renderActionCard(
                             'Relatórios',
                             'Acompanhe o desempenho',
                             'analytics',
                             '#9b59b6',
                             () => Alert.alert('Em breve', 'Funcionalidade em desenvolvimento'),
                             false
-                        )}
+                        )} */}
                     </View>
 
                     {/* Tips */}
@@ -255,9 +274,9 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     titleLogo: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
+        width: 30,
+        height: 30,
+        borderRadius: 15,
         marginRight: 10,
     },
     headerTitle: {
@@ -324,6 +343,34 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#7f8c8d',
     },
+    upgradeSection: {
+        marginTop: 12,
+        paddingTop: 12,
+        borderTopWidth: 1,
+        borderTopColor: '#e9ecef',
+    },
+    upgradeMessage: {
+        fontSize: 13,
+        color: '#856404',
+        textAlign: 'center',
+        marginBottom: 10,
+        lineHeight: 18,
+    },
+    upgradeButton: {
+        backgroundColor: '#f39c12',
+        paddingVertical: 10,
+        paddingHorizontal: 16,
+        borderRadius: 8,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    upgradeButtonText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: '600',
+        marginLeft: 6,
+    },
     statsSection: {
         marginBottom: 20,
     },
@@ -341,37 +388,37 @@ const styles = StyleSheet.create({
     },
     statsCard: {
         flex: 1,
-        backgroundColor: '#fff',
-        borderRadius: 12,
-        padding: 15,
+        backgroundColor: '#f8f9fa',
+        borderRadius: 8,
+        padding: 12,
         alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.1,
-        shadowRadius: 3.84,
-        elevation: 3,
+        borderWidth: 1,
+        borderColor: '#e9ecef',
     },
     statsIcon: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
+        width: 32,
+        height: 32,
+        borderRadius: 16,
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 8,
+        marginBottom: 6,
+        opacity: 0.8,
     },
     statsValue: {
-        fontSize: 18,
-        fontWeight: 'bold',
+        fontSize: 16,
+        fontWeight: '600',
         color: '#2c3e50',
         marginBottom: 2,
+        textAlign: 'center',
     },
     statsTitle: {
-        fontSize: 12,
+        fontSize: 11,
         color: '#7f8c8d',
         textAlign: 'center',
+        fontWeight: '400',
+    },
+    statsContent: {
+        alignItems: 'center',
     },
     actionsSection: {
         marginBottom: 20,

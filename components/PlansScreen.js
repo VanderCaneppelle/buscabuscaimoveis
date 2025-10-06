@@ -29,6 +29,8 @@ export default function PlansScreen({ navigation, route }) {
     const [subscribing, setSubscribing] = useState(false);
     const [selectedPlan, setSelectedPlan] = useState(null);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const scrollViewRef = React.useRef(null);
+    const goldCardRef = React.useRef(null);
 
     useEffect(() => {
         loadPlansAndUserInfo();
@@ -56,6 +58,18 @@ export default function PlansScreen({ navigation, route }) {
             setPlans(plansData);
             setGroupedPlans(groupedPlansData);
             setUserPlan(userPlanInfo);
+
+            // Se houver parâmetro para destacar plano específico, rolar até ele
+            if (route.params?.highlightPlan && goldCardRef.current) {
+                setTimeout(() => {
+                    goldCardRef.current?.measureLayout(
+                        scrollViewRef.current,
+                        (x, y) => {
+                            scrollViewRef.current?.scrollTo({ y: y - 20, animated: true });
+                        }
+                    );
+                }, 500);
+            }
         } catch (error) {
             console.error('Erro ao carregar planos:', error);
             Alert.alert('Erro', 'Não foi possível carregar os planos');
@@ -194,6 +208,7 @@ export default function PlansScreen({ navigation, route }) {
         const isCurrentPlan = isCurrentPlanMonthly || isCurrentPlanAnnual;
         const isFreePlan = plan.name === 'free';
         const isPopular = plan.name === 'silver';
+        const isGoldPlan = plan.name === 'gold';
         const isDowngradeToFree = isFreePlan && userPlan?.plan?.plan_name && userPlan.plan.plan_name !== 'free';
 
         // Encontrar plano anual correspondente para calcular preço mais baixo
@@ -206,71 +221,76 @@ export default function PlansScreen({ navigation, route }) {
         const hasAnnualOption = !!annualPlan;
 
         return (
-            <TouchableOpacity
+            <View
                 key={plan.id}
-                style={[
-                    styles.planCard,
-                    isCurrentPlan && styles.currentPlanCard,
-                    isPopular && styles.popularPlanCard
-                ]}
-                onPress={() => handlePlanSelection(plan)}
-                disabled={isDowngradeToFree}
+                ref={isGoldPlan ? goldCardRef : null}
+                collapsable={false}
             >
-                {isPopular && (
-                    <View style={styles.popularBadge}>
-                        <Text style={styles.popularText}>Mais Popular</Text>
-                    </View>
-                )}
-
-                {isCurrentPlan && (
-                    <View style={styles.currentPlanBadge}>
-                        <Ionicons name="checkmark-circle" size={16} color="#2ecc71" />
-                        <Text style={styles.currentPlanText}>Plano Atual</Text>
-                    </View>
-                )}
-
-                <View style={styles.planHeader}>
-                    <Text style={styles.planName}>{plan.display_name}</Text>
-                    <View style={styles.planPrice}>
-                        <Text style={styles.priceValue}>
-                            {isFreePlan ? 'Grátis' : `R$ ${lowestPrice.toFixed(2).replace('.', ',')}`}
-                        </Text>
-                        {!isFreePlan && (
-                            <Text style={styles.pricePeriod}>
-                                /mês{hasAnnualOption ? ' (a partir de)' : ''}
-                            </Text>
-                        )}
-                    </View>
-                </View>
-
-                <View style={styles.planFeatures}>
-                    {plan.features && plan.features.length > 0 ? plan.features.map((feature, index) => (
-                        <View key={index} style={styles.featureItem}>
-                            <Ionicons name="checkmark-circle" size={16} color="#2ecc71" />
-                            <Text style={styles.featureText}>{feature}</Text>
-                        </View>
-                    )) : null}
-                </View>
-
                 <TouchableOpacity
                     style={[
-                        styles.selectButton,
-                        isCurrentPlan && styles.currentPlanButton,
-                        isDowngradeToFree && styles.disabledButton
+                        styles.planCard,
+                        isCurrentPlan && styles.currentPlanCard,
+                        isPopular && styles.popularPlanCard
                     ]}
                     onPress={() => handlePlanSelection(plan)}
                     disabled={isDowngradeToFree}
                 >
-                    <Text style={[
-                        styles.selectButtonText,
-                        isCurrentPlan && styles.currentPlanButtonText,
-                        isDowngradeToFree && styles.disabledButtonText
-                    ]}>
-                        {isCurrentPlan ? 'Alterar Plano' :
-                            isDowngradeToFree ? 'Contatar Suporte' : 'Selecionar Plano'}
-                    </Text>
+                    {isPopular && (
+                        <View style={styles.popularBadge}>
+                            <Text style={styles.popularText}>Mais Popular</Text>
+                        </View>
+                    )}
+
+                    {isCurrentPlan && (
+                        <View style={styles.currentPlanBadge}>
+                            <Ionicons name="checkmark-circle" size={16} color="#2ecc71" />
+                            <Text style={styles.currentPlanText}>Plano Atual</Text>
+                        </View>
+                    )}
+
+                    <View style={styles.planHeader}>
+                        <Text style={styles.planName}>{plan.display_name}</Text>
+                        <View style={styles.planPrice}>
+                            <Text style={styles.priceValue}>
+                                {isFreePlan ? 'Grátis' : `R$ ${lowestPrice.toFixed(2).replace('.', ',')}`}
+                            </Text>
+                            {!isFreePlan && (
+                                <Text style={styles.pricePeriod}>
+                                    /mês{hasAnnualOption ? ' (a partir de)' : ''}
+                                </Text>
+                            )}
+                        </View>
+                    </View>
+
+                    <View style={styles.planFeatures}>
+                        {plan.features && plan.features.length > 0 ? plan.features.map((feature, index) => (
+                            <View key={index} style={styles.featureItem}>
+                                <Ionicons name="checkmark-circle" size={16} color="#2ecc71" />
+                                <Text style={styles.featureText}>{feature}</Text>
+                            </View>
+                        )) : null}
+                    </View>
+
+                    <TouchableOpacity
+                        style={[
+                            styles.selectButton,
+                            isCurrentPlan && styles.currentPlanButton,
+                            isDowngradeToFree && styles.disabledButton
+                        ]}
+                        onPress={() => handlePlanSelection(plan)}
+                        disabled={isDowngradeToFree}
+                    >
+                        <Text style={[
+                            styles.selectButtonText,
+                            isCurrentPlan && styles.currentPlanButtonText,
+                            isDowngradeToFree && styles.disabledButtonText
+                        ]}>
+                            {isCurrentPlan ? 'Alterar Plano' :
+                                isDowngradeToFree ? 'Contatar Suporte' : 'Selecionar Plano'}
+                        </Text>
+                    </TouchableOpacity>
                 </TouchableOpacity>
-            </TouchableOpacity>
+            </View>
         );
     };
 
@@ -305,7 +325,11 @@ export default function PlansScreen({ navigation, route }) {
             {/* Conteúdo Principal */}
             <View style={styles.contentContainer}>
 
-                <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+                <ScrollView
+                    ref={scrollViewRef}
+                    style={styles.content}
+                    showsVerticalScrollIndicator={false}
+                >
                     {/* Info Card */}
                     <View style={styles.infoCard}>
                         <Ionicons name="information-circle" size={24} color="#3498db" />
