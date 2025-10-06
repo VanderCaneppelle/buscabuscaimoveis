@@ -24,6 +24,9 @@ export default function BoostPaymentScreen({ navigation, route }) {
     const [loading, setLoading] = useState(false);
     const [webViewVisible, setWebViewVisible] = useState(false);
     const [checkoutUrl, setCheckoutUrl] = useState('');
+    const [currentPaymentId, setCurrentPaymentId] = useState(null);
+    const [checkingStatus, setCheckingStatus] = useState(false);
+    const [showBoostSuccessModal, setShowBoostSuccessModal] = useState(false);
 
     const handlePayment = async () => {
         if (!user) {
@@ -48,6 +51,11 @@ export default function BoostPaymentScreen({ navigation, route }) {
 
             console.log('✅ Pagamento criado:', result);
 
+            // Guardar paymentId para polling
+            if (result?.payment?.id) {
+                setCurrentPaymentId(result.payment.id);
+            }
+
             // Abrir Mercado Pago dentro do app (WebView)
             const paymentUrl = result?.preference?.init_point || result?.preference?.sandbox_init_point;
             console.log('🔗 Abrindo URL no WebView:', paymentUrl);
@@ -69,17 +77,63 @@ export default function BoostPaymentScreen({ navigation, route }) {
 
     const handleWebViewClose = () => {
         setWebViewVisible(false);
-        Alert.alert(
-            'Pagamento em Processamento',
-            'Assim que o pagamento for aprovado, seu anúncio será impulsionado automaticamente.',
-            [
-                {
-                    text: 'OK',
-                    onPress: () => navigation.navigate('MyProperties')
-                }
-            ]
-        );
+        navigation.navigate('MyProperties');
     };
+
+    // Polling do status enquanto a WebView está aberta
+    React.useEffect(() => {
+        if (!webViewVisible || !currentPaymentId) return;
+
+        console.log('🚀 Iniciando polling para boost paymentId:', currentPaymentId);
+        let isCancelled = false;
+        setCheckingStatus(true);
+
+        const start = Date.now();
+        const FAST_POLL_INTERVAL_MS = 3000; // 3 segundos
+        const SLOW_POLL_INTERVAL_MS = 10000; // 10 segundos
+        const FAST_PHASE_DURATION_MS = 180000; // 3 minutos
+        const MAX_DURATION_MS = 300000; // 5 minutos
+
+        const poll = async () => {
+            if (isCancelled) return;
+            try {
+                const result = await BackendService.checkPaymentStatus(currentPaymentId);
+                const status = result?.payment?.status;
+                console.log('⏱️ Boost poll status:', status);
+
+                if (status === 'approved') {
+                    if (!isCancelled) {
+                        setCheckingStatus(false);
+                        setWebViewVisible(false);
+                        setShowBoostSuccessModal(true);
+                    }
+                    return;
+                }
+            } catch (e) {
+                // silenciar erros intermitentes de rede
+            }
+
+            const elapsed = Date.now() - start;
+
+            if (elapsed < MAX_DURATION_MS) {
+                // Determinar intervalo baseado no tempo decorrido
+                const interval = elapsed < FAST_PHASE_DURATION_MS
+                    ? FAST_POLL_INTERVAL_MS
+                    : SLOW_POLL_INTERVAL_MS;
+
+                setTimeout(poll, interval);
+            } else {
+                setCheckingStatus(false);
+            }
+        };
+
+        const timer = setTimeout(poll, FAST_POLL_INTERVAL_MS);
+        return () => {
+            console.log('🛑 Parando polling de boost');
+            isCancelled = true;
+            clearTimeout(timer);
+        };
+    }, [webViewVisible, currentPaymentId]);
 
     return (
         <SafeAreaView style={styles.container}>
@@ -231,6 +285,38 @@ export default function BoostPaymentScreen({ navigation, route }) {
                         />
                     ) : null}
                 </SafeAreaView>
+            </Modal>
+
+            {/* Modal de Sucesso - Anúncio Impulsionado */}
+            <Modal
+                visible={showBoostSuccessModal}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => {
+                    setShowBoostSuccessModal(false);
+                    navigation.navigate('MyProperties');
+                }}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <View style={styles.successIconContainer}>
+                            <Text style={styles.successIcon}>🚀</Text>
+                        </View>
+                        <Text style={styles.modalTitle}>Anúncio Impulsionado!</Text>
+                        <Text style={styles.modalMessage}>
+                            Seu anúncio já está aparecendo na seção de Destaques e será visto por muito mais pessoas!
+                        </Text>
+                        <TouchableOpacity
+                            style={styles.modalButton}
+                            onPress={() => {
+                                setShowBoostSuccessModal(false);
+                                navigation.navigate('MyProperties');
+                            }}
+                        >
+                            <Text style={styles.modalButtonText}>Ver Meus Anúncios</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
             </Modal>
         </SafeAreaView>
     );
@@ -465,6 +551,70 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: '#fff',
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+    },
+    modalContent: {
+        backgroundColor: '#fff',
+        borderRadius: 20,
+        padding: 30,
+        width: '90%',
+        maxWidth: 400,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.3,
+        shadowRadius: 20,
+        elevation: 10,
+    },
+    successIconContainer: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: '#e8f5e9',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    successIcon: {
+        fontSize: 40,
+    },
+    modalTitle: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#27ae60',
+        marginBottom: 15,
+        textAlign: 'center',
+    },
+    modalMessage: {
+        fontSize: 16,
+        color: '#555',
+        textAlign: 'center',
+        lineHeight: 24,
+        marginBottom: 25,
+    },
+    modalButton: {
+        backgroundColor: '#27ae60',
+        paddingVertical: 14,
+        paddingHorizontal: 30,
+        borderRadius: 12,
+        width: '100%',
+        alignItems: 'center',
+        shadowColor: '#27ae60',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 5,
+    },
+    modalButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
     },
 });
 
