@@ -66,7 +66,34 @@ export default function AdvertiseScreen({ navigation }) {
             );
         }
     };
-
+    const handleManageAds = () => {
+        if (eligibility?.canCreate) {
+            navigation.navigate('MyProperties');
+        } else {
+            Alert.alert(
+                'Você não pode gerenciar anúncios no momento.',
+                eligibility?.reason || 'Você não pode gerenciar anúncios no momento.',
+                [
+                    { text: 'Cancelar', style: 'cancel' },
+                    { text: 'Ver Planos', onPress: () => navigation.navigate('Plans') }
+                ]
+            );
+        }
+    };
+    const handleBoostAds = () => {
+        if (eligibility?.canCreate) {
+            navigation.navigate('AdBoosting');
+        } else {
+            Alert.alert(
+                'Você não pode impulsionar anúncios no momento.',
+                eligibility?.reason || 'Você não pode impulsionar anúncios no momento.',
+                [
+                    { text: 'Cancelar', style: 'cancel' },
+                    { text: 'Ver Planos', onPress: () => navigation.navigate('Plans') }
+                ]
+            );
+        }
+    };
     const handleViewPlans = (highlightPlan = null) => {
         navigation.navigate('Plans', { highlightPlan });
     };
@@ -104,16 +131,19 @@ export default function AdvertiseScreen({ navigation }) {
                 {availableAds < 2 && (
                     <View style={styles.upgradeSection}>
                         <Text style={styles.upgradeMessage}>
-                            {availableAds === 0
-                                ? '⚠️ Você não tem mais anúncios disponíveis! Não fique sem anunciar, renove seu plano.'
-                                : '⚠️ Seu limite de anúncios esta quase esgotado! Não fique sem vender! Libere mais anúncios.'}
+                            {planDisplayName === 'Gratuito' ? 'Contrate um plano e comece a anunciar.' :
+                                availableAds === 0
+                                    ? '⚠️ Você não tem mais anúncios disponíveis! Não fique sem anunciar, renove seu plano.'
+                                    : '⚠️ Seu limite de anúncios esta quase esgotado! Não fique sem vender! Libere mais anúncios.'}
                         </Text>
                         <TouchableOpacity
                             style={styles.upgradeButton}
                             onPress={() => handleViewPlans('gold')}
                         >
                             <Ionicons name="arrow-up-circle" size={16} color="#fff" />
-                            <Text style={styles.upgradeButtonText}>Liberar Mais Anúncios</Text>
+
+                            <Text style={styles.upgradeButtonText}>{planDisplayName === 'Gratuito' ? 'Contratar Plano' : 'Liberar Mais Anúncios'}</Text>
+
                         </TouchableOpacity>
                     </View>
                 )}
@@ -203,12 +233,6 @@ export default function AdvertiseScreen({ navigation }) {
 
                         {(() => {
                             const isDisabled = !eligibility?.canCreate;
-                            console.log('🎯 Botão Criar Anúncio:', {
-                                eligibility,
-                                isDisabled,
-                                currentAds: eligibility?.currentAds,
-                                maxAds: eligibility?.maxAds
-                            });
                             return renderActionCard(
                                 'Criar Novo Anúncio',
                                 'Publique um novo imóvel',
@@ -219,28 +243,36 @@ export default function AdvertiseScreen({ navigation }) {
                             );
                         })()}
 
-                        {renderActionCard(
-                            'Gerenciar Anúncios',
-                            'Veja e edite seus anúncios',
-                            'list',
-                            '#2ecc71',
-                            () => navigation.navigate('MyProperties')
-                        )}
+                        {(() => {
+                            const isDisabled = !eligibility?.canCreate;
+                            return renderActionCard(
+                                'Gerenciar Anúncios',
+                                'Veja e edite seus anúncios',
+                                'list',
+                                '#2ecc71',
+                                handleManageAds,
+                                isDisabled
+                            );
+                        })()}
 
-                        {renderActionCard(
-                            'Impulsionar Anúncios',
-                            'Dê mais visibilidade aos seus anúncios',
-                            'rocket',
-                            '#e67e22',
-                            () => navigation.navigate('AdBoosting')
-                        )}
+                        {(() => {
+                            const isDisabled = !eligibility?.canCreate;
+                            return renderActionCard(
+                                'Impulsionar Anúncios',
+                                'Dê mais visibilidade aos seus anúncios',
+                                'rocket',
+                                '#e67e22',
+                                handleBoostAds,
+                                isDisabled
+                            );
+                        })()}
 
                         {renderActionCard(
                             'Ver Planos',
                             'Contrate ou altere seu plano',
                             'card',
                             '#f39c12',
-                            handleViewPlans,
+                            () => handleViewPlans(),
                             false
                         )}
 
@@ -385,6 +417,8 @@ const styles = StyleSheet.create({
         borderTopColor: '#e9ecef',
     },
     upgradeMessage: {
+        fontWeight: '600',
+        fontStyle: 'italic',
         fontSize: 13,
         color: '#856404',
         textAlign: 'center',
