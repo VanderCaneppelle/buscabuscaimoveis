@@ -153,92 +153,127 @@ export default function BoostPaymentScreen({ navigation, route }) {
             <View style={styles.contentContainer}>
                 <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
 
-                    {/* Property Info */}
-                    <View style={styles.propertyCard}>
-                        <Image
-                            source={{ uri: property.images?.[0] }}
-                            style={styles.propertyImage}
-                            resizeMode="cover"
-                        />
-                        <View style={styles.propertyInfo}>
-                            <Text style={styles.propertyTitle} numberOfLines={2}>
-                                {property.title}
-                            </Text>
-                            <Text style={styles.propertyLocation}>
-                                {property.city}, {property.state}
-                            </Text>
+                    {/* Recibo Header */}
+                    <View style={styles.receiptHeader}>
+                        <View style={styles.stampContainer}>
+                            <Ionicons name="receipt-outline" size={24} color="#00335e" />
                         </View>
+                        <Text style={styles.receiptTitle}>Comprovante de Impulsionamento</Text>
+                        <Text style={styles.receiptDate}>
+                            {new Date().toLocaleDateString('pt-BR', {
+                                day: '2-digit',
+                                month: 'long',
+                                year: 'numeric'
+                            })}
+                        </Text>
                     </View>
 
-                    {/* Boost Plan Card */}
-                    <View style={styles.planCard}>
-                        <View style={styles.planHeader}>
-                            <Ionicons name="rocket" size={24} color="#f39c12" />
-                            <Text style={styles.planName}>Impulsionamento</Text>
-                        </View>
-
-                        <View style={styles.planDetails}>
-                            <View style={styles.planDetailRow}>
-                                <Text style={styles.planDetailLabel}>Duração:</Text>
-                                <Text style={styles.planDetailValue}>
-                                    {boostPlan.duration_days === 1 ? '1 dia' : `${boostPlan.duration_days} dias`}
+                    {/* Recibo Principal */}
+                    <View style={styles.receiptBody}>
+                        {/* Seção Imóvel */}
+                        <View style={styles.receiptSection}>
+                            <Text style={styles.sectionTitle}>IMÓVEL</Text>
+                            <View style={styles.propertyDetailsOnly}>
+                                <Text style={styles.propertyTitle} numberOfLines={2}>
+                                    {property.title}
+                                </Text>
+                                <Text style={styles.propertyLocation}>
+                                    {property.city}, {property.state}
+                                </Text>
+                                <Text style={styles.propertyId}>
+                                    ID: {property.id.substring(0, 8).toUpperCase()}
                                 </Text>
                             </View>
-                            <View style={styles.planDetailRow}>
-                                <Text style={styles.planDetailLabel}>Valor:</Text>
-                                <Text style={styles.planDetailValue}>
+                        </View>
+
+                        <View style={styles.dottedDivider} />
+
+                        {/* Seção Serviço */}
+                        <View style={styles.receiptSection}>
+                            <Text style={styles.sectionTitle}>SERVIÇO CONTRATADO</Text>
+                            <View style={styles.serviceRow}>
+                                <View style={styles.serviceIcon}>
+                                    <Ionicons name="rocket" size={20} color="#fff" />
+                                </View>
+                                <View style={styles.serviceInfo}>
+                                    <Text style={styles.serviceName}>Impulsionamento Premium</Text>
+                                    <Text style={styles.serviceDuration}>
+                                        {boostPlan.duration_days === 1 ? '1 dia' : `${boostPlan.duration_days} dias`} de destaque
+                                    </Text>
+                                </View>
+                            </View>
+                        </View>
+
+                        <View style={styles.dottedDivider} />
+
+                        {/* Seção Detalhes */}
+                        <View style={styles.receiptSection}>
+                            <Text style={styles.sectionTitle}>DETALHES</Text>
+                            <View style={styles.detailRow}>
+                                <Text style={styles.detailLabel}>Início do Impulsionamento:</Text>
+                                <Text style={styles.detailValue}>Após aprovação do pagamento</Text>
+                            </View>
+                            <View style={styles.detailRow}>
+                                <Text style={styles.detailLabel}>Visibilidade:</Text>
+                                <Text style={styles.detailValue}>Seção "Destaques"</Text>
+                            </View>
+                            <View style={styles.detailRow}>
+                                <Text style={styles.detailLabel}>Alcance estimado:</Text>
+                                <Text style={styles.detailValue}>Até 10x mais visualizações</Text>
+                            </View>
+                        </View>
+
+                        <View style={styles.solidDivider} />
+
+                        {/* Seção Pagamento */}
+                        <View style={styles.receiptSection}>
+                            <Text style={styles.sectionTitle}>FORMA DE PAGAMENTO</Text>
+                            <View style={styles.paymentRow}>
+                                <Ionicons name="card" size={24} color="#27ae60" />
+                                <View style={styles.paymentInfo}>
+                                    <Text style={styles.paymentMethod}>Mercado Pago</Text>
+                                    <Text style={styles.paymentSubtext}>
+                                        Pix, Cartão, Boleto e mais opções
+                                    </Text>
+                                </View>
+                            </View>
+                            <View style={styles.receiptFooter}>
+                                <Ionicons name="shield-checkmark" size={18} color="#27ae60" />
+                                <Text style={styles.footerText}>
+                                    Transação 100% segura via Mercado Pago
+                                </Text>
+                            </View>
+                        </View>
+
+                        <View style={styles.solidDivider} />
+
+                        {/* Seção Total */}
+                        <View style={styles.totalSection}>
+                            <View style={styles.totalRow}>
+                                <Text style={styles.totalLabel}>Subtotal</Text>
+                                <Text style={styles.totalValue}>
+                                    R$ {boostPlan.price.toFixed(2).replace('.', ',')}
+                                </Text>
+                            </View>
+                            <View style={styles.totalRow}>
+                                <Text style={styles.totalLabel}>Taxas</Text>
+                                <Text style={styles.totalValue}>R$ 0,00</Text>
+                            </View>
+                            <View style={styles.grandTotalRow}>
+                                <Text style={styles.grandTotalLabel}>TOTAL</Text>
+                                <Text style={styles.grandTotalValue}>
                                     R$ {boostPlan.price.toFixed(2).replace('.', ',')}
                                 </Text>
                             </View>
                         </View>
-
-                        <View style={styles.divider} />
-
-                        <Text style={styles.benefitsTitle}>O que você ganha:</Text>
-                        <View style={styles.benefitItem}>
-                            <Ionicons name="checkmark-circle" size={18} color="#2ecc71" />
-                            <Text style={styles.benefitText}>
-                                Anúncio aparece na aba "Destaques"
-                            </Text>
-                        </View>
-                        <View style={styles.benefitItem}>
-                            <Ionicons name="checkmark-circle" size={18} color="#2ecc71" />
-                            <Text style={styles.benefitText}>
-                                Até 10x mais visibilidade
-                            </Text>
-                        </View>
-                        <View style={styles.benefitItem}>
-                            <Ionicons name="checkmark-circle" size={18} color="#2ecc71" />
-                            <Text style={styles.benefitText}>
-                                Venda mais rápido
-                            </Text>
-                        </View>
                     </View>
 
-                    {/* Payment Method Card */}
-                    <View style={styles.paymentMethodCard}>
-                        <View style={styles.paymentMethodHeader}>
-                            <Ionicons name="card-outline" size={24} color="#27ae60" />
-                            <Text style={styles.paymentMethodTitle}>Método de Pagamento</Text>
-                        </View>
-                        <Text style={styles.paymentMethodText}>
-                            Mercado Pago - Pagamento seguro
-                        </Text>
-                        <Text style={styles.paymentMethodSubtext}>
-                            Cartão de crédito, débito, Pix e mais
-                        </Text>
-                    </View>
+
 
                 </ScrollView>
 
                 {/* Payment Button */}
                 <View style={styles.footer}>
-                    <View style={styles.totalSection}>
-                        <Text style={styles.totalLabel}>Total a pagar:</Text>
-                        <Text style={styles.totalValue}>
-                            R$ {boostPlan.price.toFixed(2).replace('.', ',')}
-                        </Text>
-                    </View>
                     <TouchableOpacity
                         style={[styles.paymentButton, loading && styles.paymentButtonDisabled]}
                         onPress={handlePayment}
@@ -247,12 +282,12 @@ export default function BoostPaymentScreen({ navigation, route }) {
                         {loading ? (
                             <ActivityIndicator size="small" color="#fff" />
                         ) : (
-                            <>
-                                <Ionicons name="card" size={24} color="#fff" />
+                            <View style={styles.paymentButtonContent}>
+                                <Ionicons name="card" size={20} color="#fff" />
                                 <Text style={styles.paymentButtonText}>
-                                    Pagar com Mercado Pago
+                                    Confirmar e Pagar
                                 </Text>
-                            </>
+                            </View>
                         )}
                     </TouchableOpacity>
                 </View>
@@ -351,182 +386,261 @@ const styles = StyleSheet.create({
     },
     contentContainer: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: '#f8f9fa',
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: -2,
-        },
-        shadowOpacity: 0.1,
-        shadowRadius: 3.84,
-        elevation: 5,
     },
     content: {
         flex: 1,
     },
-    propertyCard: {
-        backgroundColor: '#fff',
-        margin: 20,
-        borderRadius: 12,
-        overflow: 'hidden',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3.84,
-        elevation: 3,
-    },
-    propertyImage: {
-        width: '100%',
-        height: 150,
-        backgroundColor: '#f8f9fa',
-    },
-    propertyInfo: {
-        padding: 15,
-    },
-    propertyTitle: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#2c3e50',
-        marginBottom: 5,
-    },
-    propertyLocation: {
-        fontSize: 14,
-        color: '#7f8c8d',
-    },
-    planCard: {
-        backgroundColor: '#fff',
-        marginHorizontal: 20,
-        marginBottom: 20,
-        borderRadius: 12,
-        padding: 20,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3.84,
-        elevation: 3,
-    },
-    planHeader: {
-        flexDirection: 'row',
+    // Receipt Header Styles
+    receiptHeader: {
         alignItems: 'center',
-        marginBottom: 15,
+        paddingVertical: 8,
+        paddingHorizontal: 20,
+        backgroundColor: '#fff',
+        marginTop: 15,
+        marginHorizontal: 15,
+        borderTopLeftRadius: 15,
+        borderTopRightRadius: 15,
+        borderBottomWidth: 2,
+        borderBottomColor: '#e9ecef',
+        borderStyle: 'dashed',
     },
-    planName: {
-        fontSize: 18,
+    stampContainer: {
+        width: 40,
+        height: 40,
+        borderRadius: 25,
+        backgroundColor: '#ffcc1e',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 10,
+        borderWidth: 3,
+        borderColor: '#00335e',
+    },
+    receiptTitle: {
+        fontSize: 16,
         fontWeight: 'bold',
         color: '#2c3e50',
-        marginLeft: 10,
+        marginBottom: 5,
+        textAlign: 'center',
     },
-    planDetails: {
-        marginBottom: 15,
+    receiptDate: {
+        fontSize: 12,
+        color: '#7f8c8d',
+        textTransform: 'capitalize',
     },
-    planDetailRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
+    // Receipt Body Styles
+    receiptBody: {
+        backgroundColor: '#fff',
+        marginHorizontal: 15,
+        paddingHorizontal: 20,
+        paddingBottom: 15,
+        borderBottomLeftRadius: 15,
+        borderBottomRightRadius: 15,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.1,
+        shadowRadius: 6,
+        elevation: 4,
+        marginBottom: 10,
+    },
+    receiptSection: {
+        paddingVertical: 10,
+    },
+    sectionTitle: {
+        fontSize: 11,
+        fontWeight: '700',
+        color: '#95a5a6',
+        letterSpacing: 1,
         marginBottom: 8,
     },
-    planDetailLabel: {
-        fontSize: 14,
+    // Property Section
+    propertyDetailsOnly: {
+        flex: 1,
+    },
+    propertyTitle: {
+        fontSize: 15,
+        fontWeight: '600',
+        color: '#2c3e50',
+        marginBottom: 4,
+    },
+    propertyLocation: {
+        fontSize: 13,
+        color: '#7f8c8d',
+        marginBottom: 4,
+    },
+    propertyId: {
+        fontSize: 11,
+        color: '#95a5a6',
+        fontFamily: 'monospace',
+    },
+    // Service Section
+    serviceRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+    },
+    serviceIcon: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: '#6c5ce7',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    serviceInfo: {
+        flex: 1,
+    },
+    serviceName: {
+        fontSize: 15,
+        fontWeight: '600',
+        color: '#2c3e50',
+        marginBottom: 2,
+    },
+    serviceDuration: {
+        fontSize: 13,
         color: '#7f8c8d',
     },
-    planDetailValue: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#2c3e50',
-    },
-    divider: {
-        height: 1,
-        backgroundColor: '#e9ecef',
-        marginVertical: 15,
-    },
-    benefitsTitle: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#2c3e50',
-        marginBottom: 10,
-    },
-    benefitItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 8,
-    },
-    benefitText: {
-        fontSize: 14,
-        color: '#2c3e50',
-        marginLeft: 8,
-    },
-    paymentMethodCard: {
-        backgroundColor: '#f0fdf4',
-        marginHorizontal: 20,
-        marginBottom: 20,
-        borderRadius: 12,
-        padding: 20,
-        borderWidth: 1,
-        borderColor: '#86efac',
-    },
-    paymentMethodHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 10,
-    },
-    paymentMethodTitle: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#166534',
-        marginLeft: 10,
-    },
-    paymentMethodText: {
-        fontSize: 14,
-        color: '#166534',
-        marginBottom: 5,
-    },
-    paymentMethodSubtext: {
-        fontSize: 12,
-        color: '#15803d',
-    },
-    footer: {
-        backgroundColor: '#fff',
-        padding: 20,
-        borderTopWidth: 1,
-        borderTopColor: '#e9ecef',
-    },
-    totalSection: {
+    // Detail Section
+    detailRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
+        marginBottom: 6,
+        paddingVertical: 2,
+    },
+    detailLabel: {
+        fontSize: 12,
+        color: '#7f8c8d',
+        flex: 1,
+    },
+    detailValue: {
+        fontSize: 12,
+        fontWeight: '500',
+        color: '#2c3e50',
+        textAlign: 'right',
+        flex: 1,
+    },
+    // Payment Section
+    paymentRow: {
+        flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 15,
+        gap: 12,
+    },
+    paymentInfo: {
+        flex: 1,
+    },
+    paymentMethod: {
+        fontSize: 15,
+        fontWeight: '600',
+        color: '#2c3e50',
+        marginBottom: 2,
+    },
+    paymentSubtext: {
+        fontSize: 12,
+        color: '#7f8c8d',
+    },
+    // Total Section
+    totalSection: {
+        paddingTop: 10,
+    },
+    totalRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 6,
     },
     totalLabel: {
-        fontSize: 16,
+        fontSize: 13,
         color: '#7f8c8d',
     },
     totalValue: {
-        fontSize: 24,
-        fontWeight: 'bold',
+        fontSize: 13,
+        fontWeight: '500',
         color: '#2c3e50',
     },
-    paymentButton: {
-        backgroundColor: '#27ae60',
-        borderRadius: 12,
-        paddingVertical: 16,
+    grandTotalRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingTop: 10,
+        marginTop: 6,
+        borderTopWidth: 2,
+        borderTopColor: '#00335e',
+    },
+    grandTotalLabel: {
+        fontSize: 15,
+        fontWeight: '700',
+        color: '#00335e',
+    },
+    grandTotalValue: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: '#00335e',
+    },
+    // Dividers
+    dottedDivider: {
+        height: 1,
+        borderTopWidth: 1,
+        borderTopColor: '#dee2e6',
+        borderStyle: 'dashed',
+    },
+    solidDivider: {
+        height: 1,
+        backgroundColor: '#e9ecef',
+    },
+    // Footer
+    receiptFooter: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 5,
+        gap: 4,
+        paddingVertical: 6,
+        paddingHorizontal: 12,
+        backgroundColor: '#f0fdf4',
+        borderTopWidth: 1,
+        borderTopColor: '#86efac',
+    },
+    footerText: {
+        fontSize: 11,
+        color: '#166534',
+        fontWeight: '500',
+    },
+    // Payment Button
+    footer: {
+        backgroundColor: '#fff',
+        padding: 12,
+        borderTopWidth: 1,
+        borderTopColor: '#e9ecef',
+    },
+    paymentButton: {
+        backgroundColor: '#27ae60',
+        borderRadius: 8,
+        paddingVertical: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: '#27ae60',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 3,
     },
     paymentButtonDisabled: {
         backgroundColor: '#bdc3c7',
     },
+    paymentButtonContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
     paymentButtonText: {
         color: '#fff',
-        fontSize: 18,
+        fontSize: 15,
         fontWeight: 'bold',
-        marginLeft: 8,
+    },
+    paymentButtonSubtext: {
+        color: '#fff',
+        fontSize: 12,
+        marginTop: 1,
+        opacity: 0.9,
     },
     webViewHeader: {
         flexDirection: 'row',
