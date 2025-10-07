@@ -11,6 +11,7 @@ import HomeScreen from './HomeScreen';
 import DiscoverScreen from './DiscoverScreen';
 import FavoritesScreen from './FavoritesScreen';
 import AdvertiseScreen from './AdvertiseScreen';
+import AdBoostingScreen from './AdBoostingScreen';
 import AccountScreen from './AccountScreen';
 import PlansScreen from './PlansScreen';
 import CreateAdScreen from './CreateAdScreen';
@@ -95,6 +96,11 @@ function AdvertiseStack() {
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="AdvertiseMain" component={AdvertiseScreen} />
+            <Stack.Screen
+                name="AdBoosting"
+                component={AdBoostingScreen}
+                options={{ headerShown: false }}
+            />
             <Stack.Screen
                 name="MyProperties"
                 component={MyPropertiesScreen}

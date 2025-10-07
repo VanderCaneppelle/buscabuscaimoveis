@@ -228,6 +228,14 @@ export default function AdvertiseScreen({ navigation }) {
                         )}
 
                         {renderActionCard(
+                            'Impulsionar Anúncios',
+                            'Dê mais visibilidade aos seus anúncios',
+                            'rocket',
+                            '#e67e22',
+                            () => navigation.navigate('AdBoosting')
+                        )}
+
+                        {renderActionCard(
                             'Ver Planos',
                             'Contrate ou altere seu plano',
                             'card',
