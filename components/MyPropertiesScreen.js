@@ -925,7 +925,25 @@ export default function MyPropertiesScreen({ navigation }) {
                         </Text>
                         <TouchableOpacity
                             style={styles.createAdButton}
-                            onPress={() => navigation.navigate('CreateAd')}
+                            onPress={async () => {
+                                try {
+                                    const info = await PlanService.getUserEligibility(user.id);
+                                    if (info.canCreate) {
+                                        navigation.navigate('CreateAd');
+                                    } else {
+                                        Alert.alert(
+                                            'Não é possível criar anúncio',
+                                            info.reason || 'Verifique seu plano.',
+                                            [
+                                                { text: 'Cancelar', style: 'cancel' },
+                                                { text: 'Ver Planos', onPress: () => navigation.navigate('Plans') }
+                                            ]
+                                        );
+                                    }
+                                } catch (e) {
+                                    Alert.alert('Erro', 'Não foi possível verificar seu plano agora.');
+                                }
+                            }}
                         >
                             <Text style={styles.createAdButtonText}>Criar Primeiro Anúncio</Text>
                         </TouchableOpacity>

@@ -21,7 +21,7 @@ export default function AdvertiseScreen({ navigation }) {
 
     const { user } = useAuth();
     const insets = useSafeAreaInsets();
-    const [userPlanInfo, setUserPlanInfo] = useState(null);
+    const [eligibility, setEligibility] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -43,8 +43,8 @@ export default function AdvertiseScreen({ navigation }) {
     const checkUserPermissions = async () => {
         try {
             setLoading(true);
-            const planInfo = await PlanService.getUserPlanInfo(user.id);
-            setUserPlanInfo(planInfo);
+            const snapshot = await PlanService.getUserEligibility(user.id);
+            setEligibility(snapshot);
         } catch (error) {
             console.error('Erro ao verificar permissões:', error);
         } finally {
@@ -53,12 +53,12 @@ export default function AdvertiseScreen({ navigation }) {
     };
 
     const handleCreateAd = () => {
-        if (userPlanInfo?.canCreate.can_create) {
+        if (eligibility?.canCreate) {
             navigation.navigate('CreateAd');
         } else {
             Alert.alert(
                 'Plano Necessário',
-                userPlanInfo?.canCreate.reason || 'Você precisa de um plano ativo para criar anúncios.',
+                eligibility?.reason || 'VocÊ não pode criar anúncios no momento. Motivos:' / n / n 'plano vencido' / n / n 'plano gratuito' / n / n 'limite de anúncios atingido',
                 [
                     { text: 'Cancelar', style: 'cancel' },
                     { text: 'Ver Planos', onPress: () => navigation.navigate('Plans') }
@@ -72,23 +72,32 @@ export default function AdvertiseScreen({ navigation }) {
     };
 
     const renderPlanInfoCard = () => {
-        if (!userPlanInfo) return null;
+        if (!eligibility) return null;
 
-        const { plan, canCreate } = userPlanInfo;
-        const availableAds = canCreate.max_ads - canCreate.current_ads;
+        const availableAds = Math.max(0, (eligibility.maxAds ?? 0) - (eligibility.currentAds ?? 0));
+        const isExpired = eligibility.isExpired === true;
+        const planDisplayName = isExpired
+            ? `${eligibility.planDisplayName} (Vencido)`
+            : (eligibility.planDisplayName || 'Gratuito');
 
         return (
             <View style={styles.planInfoCard}>
                 <View style={styles.planInfoHeader}>
-                    <Ionicons name="card" size={24} color="#3498db" />
+                    <Ionicons name="card" size={24} color={isExpired ? "#e74c3c" : "#3498db"} />
                     <Text style={styles.planInfoTitle}>Seu Plano Atual</Text>
                 </View>
-                <Text style={styles.planName}>{plan?.display_name || 'Gratuito'}</Text>
+                <Text style={[styles.planName, isExpired && styles.planNameExpired]}>
+                    {planDisplayName}
+                </Text>
+                {isExpired && eligibility?.endDate && (
+                    <Text style={styles.planExpiredDate}>
+                        Venceu em {new Date(eligibility.endDate).toLocaleDateString('pt-BR')}
+                    </Text>
+                )}
                 <Text style={styles.planStatus}>
-                    {canCreate.can_create
-                        ? `${canCreate.current_ads}/${canCreate.max_ads} anúncios ativos`
-                        : canCreate.reason
-                    }
+                    {eligibility.canCreate
+                        ? `${eligibility.currentAds}/${eligibility.maxAds} anúncios ativos`
+                        : eligibility.reason}
                 </Text>
 
                 {/* Botão para liberar mais anúncios quando disponível < 2 */}
@@ -169,19 +178,19 @@ export default function AdvertiseScreen({ navigation }) {
                         <View style={styles.statsGrid}>
                             {renderStatsCard(
                                 'Anúncios Ativos',
-                                userPlanInfo?.canCreate.current_ads || 0,
+                                eligibility?.currentAds || 0,
                                 'home',
                                 '#3498db'
                             )}
                             {renderStatsCard(
                                 'Limite',
-                                userPlanInfo?.canCreate.max_ads || 0,
+                                eligibility?.maxAds || 0,
                                 'trending-up',
                                 '#2ecc71'
                             )}
                             {renderStatsCard(
                                 'Disponíveis',
-                                Math.max(0, (userPlanInfo?.canCreate.max_ads || 0) - (userPlanInfo?.canCreate.current_ads || 0)),
+                                Math.max(0, (eligibility?.maxAds || 0) - (eligibility?.currentAds || 0)),
                                 'add-circle',
                                 '#f39c12'
                             )}
@@ -192,14 +201,23 @@ export default function AdvertiseScreen({ navigation }) {
                     <View style={styles.actionsSection}>
                         {/* <Text style={styles.sectionTitle}>Ações</Text> */}
 
-                        {renderActionCard(
-                            'Criar Novo Anúncio',
-                            'Publique um novo imóvel',
-                            'add-circle',
-                            '#3498db',
-                            handleCreateAd,
-                            !userPlanInfo?.canCreate.can_create
-                        )}
+                        {(() => {
+                            const isDisabled = !eligibility?.canCreate;
+                            console.log('🎯 Botão Criar Anúncio:', {
+                                eligibility,
+                                isDisabled,
+                                currentAds: eligibility?.currentAds,
+                                maxAds: eligibility?.maxAds
+                            });
+                            return renderActionCard(
+                                'Criar Novo Anúncio',
+                                'Publique um novo imóvel',
+                                'add-circle',
+                                '#3498db',
+                                handleCreateAd,
+                                isDisabled
+                            );
+                        })()}
 
                         {renderActionCard(
                             'Gerenciar Anúncios',
@@ -338,6 +356,15 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#3498db',
         marginBottom: 5,
+    },
+    planNameExpired: {
+        color: '#e74c3c',
+    },
+    planExpiredDate: {
+        fontSize: 12,
+        color: '#e74c3c',
+        fontStyle: 'italic',
+        marginBottom: 8,
     },
     planStatus: {
         fontSize: 14,

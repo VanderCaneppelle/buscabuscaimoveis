@@ -22,7 +22,7 @@ export default function AccountScreen({ navigation }) {
 
     const { user, signOut } = useAuth();
     const [profile, setProfile] = useState(null);
-    const [userPlanInfo, setUserPlanInfo] = useState(null);
+    const [eligibility, setEligibility] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -46,7 +46,7 @@ export default function AccountScreen({ navigation }) {
             setLoading(true);
             await Promise.all([
                 fetchProfile(),
-                fetchUserPlanInfo()
+                fetchEligibility()
             ]);
         } catch (error) {
             console.error('Erro ao carregar dados do usuário:', error);
@@ -73,76 +73,12 @@ export default function AccountScreen({ navigation }) {
         }
     };
 
-    const fetchUserPlanInfo = async () => {
+    const fetchEligibility = async () => {
         try {
-            // Buscar dados diretamente das tabelas
-            const [activeSubscription, activeAds, favorites] = await Promise.all([
-                // Buscar assinatura ativa
-                supabase
-                    .from('user_subscriptions')
-                    .select(`
-                        *,
-                        plans (
-                            id,
-                            name,
-                            display_name,
-                            max_ads,
-                            price
-                        )
-                    `)
-                    .eq('user_id', user.id)
-                    .eq('status', 'active')
-                    .single(),
-
-                // Buscar anúncios aprovados
-                supabase
-                    .from('properties')
-                    .select('*')
-                    .eq('user_id', user.id)
-                    .eq('status', 'approved'),
-
-                // Buscar favoritos
-                supabase
-                    .from('favorites')
-                    .select('*')
-                    .eq('user_id', user.id)
-            ]);
-
-            // Processar dados
-            const planData = activeSubscription.data;
-            const adsData = activeAds.data || [];
-            const favoritesData = favorites.data || [];
-
-            // Calcular visualizações (soma de todas as visualizações dos anúncios aprovados)
-            const totalViews = adsData.reduce((sum, ad) => sum + (ad.views || 0), 0);
-
-            setUserPlanInfo({
-                plan: planData?.plans ? {
-                    ...planData.plans,
-                    end_date: planData.end_date,
-                    plan_name: planData.plans.name
-                } : null,
-                subscription: planData,
-                canCreate: {
-                    can_create: planData ? adsData.length < planData.plans.max_ads : false,
-                    current_ads: adsData.length,
-                    max_ads: planData?.plans?.max_ads || 0,
-                    plan_name: planData?.plans?.name || 'free'
-                },
-                stats: {
-                    approvedAds: adsData.length,
-                    favorites: favoritesData.length,
-                    views: totalViews
-                }
-            });
+            const info = await PlanService.getUserEligibility(user.id);
+            setEligibility(info);
         } catch (error) {
-            console.error('Erro ao buscar informações do plano:', error);
-            // Fallback para dados básicos
-            setUserPlanInfo({
-                plan: null,
-                canCreate: { can_create: false, current_ads: 0, max_ads: 0, plan_name: 'free' },
-                stats: { approvedAds: 0, favorites: 0, views: 0 }
-            });
+            console.error('Erro ao buscar elegibilidade:', error);
         }
     };
 
@@ -299,71 +235,53 @@ export default function AccountScreen({ navigation }) {
                     <View style={styles.planSection}>
                         <Text style={styles.sectionTitle}>Plano Atual</Text>
                         <View style={styles.planCard}>
-                            {userPlanInfo?.plan ? (
-                                <>
-                                    <View style={styles.planHeader}>
-                                        <Ionicons name="card" size={24} color="#3498db" />
-                                        <Text style={styles.planName}>{userPlanInfo.plan.display_name}</Text>
-                                    </View>
-                                    <Text style={styles.planStatus}>
-                                        {userPlanInfo.canCreate.can_create
-                                            ? `${userPlanInfo.canCreate.current_ads}/${userPlanInfo.canCreate.max_ads} anúncios aprovados`
-                                            : `Limite atingido: ${userPlanInfo.canCreate.current_ads}/${userPlanInfo.canCreate.max_ads} anúncios`
-                                        }
-                                    </Text>
+                            <View style={styles.planHeader}>
+                                <Ionicons name="card" size={24} color={eligibility?.isExpired ? '#e74c3c' : '#3498db'} />
+                                <Text style={styles.planName}>
+                                    {eligibility?.isExpired
+                                        ? `${eligibility?.planDisplayName || 'Gratuito'} (Vencido)`
+                                        : (eligibility?.planDisplayName || 'Gratuito')}
+                                </Text>
+                            </View>
+                            <Text style={styles.planStatus}>
+                                {eligibility?.canCreate
+                                    ? `${eligibility.currentAds || 0}/${eligibility.maxAds || 0} anúncios`
+                                    : eligibility?.reason || '—'}
+                            </Text>
 
-                                    {/* Data de Vencimento */}
-                                    {userPlanInfo.plan.end_date && (
-                                        <View style={styles.expirationInfo}>
-                                            <Ionicons name="calendar-outline" size={16} color="#7f8c8d" />
-                                            <Text style={styles.expirationText}>
-                                                Vence em: {formatExpirationDate(userPlanInfo.plan.end_date)}
-                                            </Text>
-                                        </View>
-                                    )}
-
-                                    {/* Lembrete de Renovação */}
-                                    {userPlanInfo.plan.end_date && isExpiringSoon(userPlanInfo.plan.end_date) && (
-                                        <View style={styles.renewalReminder}>
-                                            <View style={styles.reminderHeader}>
-                                                <Ionicons name="warning" size={16} color="#f39c12" />
-                                                <Text style={styles.reminderTitle}>Renovação Necessária</Text>
-                                            </View>
-                                            <Text style={styles.reminderText}>
-                                                Seu plano vence em breve. Renove para continuar usando todos os recursos.
-                                            </Text>
-                                            <TouchableOpacity
-                                                style={styles.renewalButton}
-                                                onPress={() => handleRenewal(userPlanInfo.plan)}
-                                            >
-                                                <Text style={styles.renewalButtonText}>Renovar Plano</Text>
-                                            </TouchableOpacity>
-                                        </View>
-                                    )}
-                                    <TouchableOpacity
-                                        style={styles.upgradeButton}
-                                        onPress={() => navigation.navigate('Plans')}
-                                    >
-                                        <Text style={styles.upgradeButtonText}>Alterar Plano</Text>
-                                    </TouchableOpacity>
-                                </>
-                            ) : (
-                                <>
-                                    <View style={styles.planHeader}>
-                                        <Ionicons name="card" size={24} color="#95a5a6" />
-                                        <Text style={styles.planName}>Plano Gratuito</Text>
-                                    </View>
-                                    <Text style={styles.planStatus}>
-                                        {userPlanInfo?.canCreate?.current_ads || 0} anúncios aprovados
+                            {eligibility?.endDate && (
+                                <View style={styles.expirationInfo}>
+                                    <Ionicons name="calendar-outline" size={16} color="#7f8c8d" />
+                                    <Text style={styles.expirationText}>
+                                        Vence em: {formatExpirationDate(eligibility.endDate)}
                                     </Text>
-                                    <TouchableOpacity
-                                        style={styles.upgradeButton}
-                                        onPress={() => navigation.navigate('Plans')}
-                                    >
-                                        <Text style={styles.upgradeButtonText}>Ver Planos</Text>
-                                    </TouchableOpacity>
-                                </>
+                                </View>
                             )}
+
+                            {eligibility?.endDate && isExpiringSoon(eligibility.endDate) && (
+                                <View style={styles.renewalReminder}>
+                                    <View style={styles.reminderHeader}>
+                                        <Ionicons name="warning" size={16} color="#f39c12" />
+                                        <Text style={styles.reminderTitle}>Renovação Necessária</Text>
+                                    </View>
+                                    <Text style={styles.reminderText}>
+                                        Seu plano vence em breve. Renove para continuar usando todos os recursos.
+                                    </Text>
+                                    <TouchableOpacity
+                                        style={styles.renewalButton}
+                                        onPress={() => navigation.navigate('Plans')}
+                                    >
+                                        <Text style={styles.renewalButtonText}>Renovar Plano</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            )}
+
+                            <TouchableOpacity
+                                style={styles.upgradeButton}
+                                onPress={() => navigation.navigate('Plans')}
+                            >
+                                <Text style={styles.upgradeButtonText}>Alterar Plano</Text>
+                            </TouchableOpacity>
                         </View>
                     </View>
 
