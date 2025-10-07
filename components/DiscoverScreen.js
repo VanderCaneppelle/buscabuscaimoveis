@@ -17,6 +17,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { BoostService } from '../lib/boostService';
+import AdBoostingScreen from './AdBoostingScreen';
 
 const { width } = Dimensions.get('window');
 
@@ -322,7 +323,7 @@ export default function DiscoverScreen({ navigation }) {
                         <View style={styles.ctaContainer}>
                             <View style={styles.ctaCard}>
                                 <Ionicons name="ribbon" size={18} color="#6c5ce7" />
-                                <Text style={styles.ctaText}>Quer sair na frente da concorrência?</Text>
+                                <Text style={styles.ctaText}>Quer dar mais visibilidade para seus anúncios?</Text>
                                 <TouchableOpacity
                                     style={styles.ctaButton}
                                     onPress={() => navigation.navigate('AdBoosting')}
