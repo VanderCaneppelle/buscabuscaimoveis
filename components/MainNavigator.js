@@ -97,11 +97,6 @@ function AdvertiseStack() {
         <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="AdvertiseMain" component={AdvertiseScreen} />
             <Stack.Screen
-                name="AdBoosting"
-                component={AdBoostingScreen}
-                options={{ headerShown: false }}
-            />
-            <Stack.Screen
                 name="MyProperties"
                 component={MyPropertiesScreen}
                 options={{
@@ -495,6 +490,21 @@ export default function MainNavigator() {
                 component={BoostPaymentScreen}
                 options={{
                     title: 'Pagamento',
+                    headerBackTitle: 'Voltar',
+                    presentation: 'fullScreenModal',
+                    headerShown: false,
+                    cardStyle: { backgroundColor: 'white' },
+                    animation: 'none',
+                    tabBarStyle: { display: 'none' },
+                }}
+            />
+
+            {/* Ad Boosting - tela de impulsionamento de anúncios */}
+            <Stack.Screen
+                name="AdBoosting"
+                component={AdBoostingScreen}
+                options={{
+                    title: 'Impulsionar Anúncios',
                     headerBackTitle: 'Voltar',
                     presentation: 'fullScreenModal',
                     headerShown: false,

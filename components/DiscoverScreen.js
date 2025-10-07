@@ -297,7 +297,7 @@ export default function DiscoverScreen({ navigation }) {
         <View style={[styles.container, { paddingTop: insets.top }]}>
             {/* Header Amarelo com Título */}
             <View style={styles.headerContainer}>
-                <View style={styles.titleContainer}>
+                <View style={[styles.titleContainer, { justifyContent: 'center' }]}>
                     <Image
                         source={require('../assets/logo_bb.jpg')}
                         style={styles.titleLogo}
@@ -317,6 +317,21 @@ export default function DiscoverScreen({ navigation }) {
                     keyExtractor={(item) => item.id}
                     refreshControl={
                         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                    }
+                    ListHeaderComponent={
+                        <View style={styles.ctaContainer}>
+                            <View style={styles.ctaCard}>
+                                <Ionicons name="ribbon" size={18} color="#6c5ce7" />
+                                <Text style={styles.ctaText}>Quer sair na frente da concorrência?</Text>
+                                <TouchableOpacity
+                                    style={styles.ctaButton}
+                                    onPress={() => navigation.navigate('AdBoosting')}
+                                >
+                                    <Ionicons name="rocket" size={16} color="#fff" />
+                                    <Text style={styles.ctaButtonText}>Impulsionar agora</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
                     }
                     ListEmptyComponent={
                         <View style={styles.emptyContainer}>
@@ -344,6 +359,7 @@ const styles = StyleSheet.create({
         paddingBottom: 15,
         backgroundColor: '#ffcc1e',
         paddingHorizontal: 20,
+        position: 'relative'
     },
     titleContainer: {
         flexDirection: 'row',
@@ -369,6 +385,28 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         opacity: 0.8,
     },
+    ctaContainer: { paddingHorizontal: 20, paddingBottom: 10 },
+    ctaCard: {
+        backgroundColor: '#f5f3ff',
+        borderWidth: 1,
+        borderColor: '#e9e5ff',
+        padding: 12,
+        borderRadius: 12,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+    },
+    ctaText: { flex: 1, color: '#3f3d56', fontSize: 13, fontWeight: '600' },
+    ctaButton: {
+        backgroundColor: '#6c5ce7',
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderRadius: 8,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+    },
+    ctaButtonText: { color: '#fff', fontSize: 12, fontWeight: '700' },
     contentContainer: {
         flex: 1,
         backgroundColor: '#fff',
