@@ -271,20 +271,20 @@ function setupModerationActions(propertyId) {
         approveBtn.addEventListener('click', async () => {
             const ok = confirm('Confirmar aprovação deste anúncio?');
             if (!ok) return;
-            await updatePropertyStatus(propertyId, 'approved');
+            await updatePropertyStatus(propertyId, 'approved', 'active');
         });
     }
     if (rejectBtn) {
         rejectBtn.addEventListener('click', async () => {
             const reason = prompt('Motivo da rejeição (opcional):');
-            await updatePropertyStatus(propertyId, 'rejected', reason);
+            await updatePropertyStatus(propertyId, 'rejected', 'inactive', reason);
         });
     }
 }
 
-async function updatePropertyStatus(propertyId, newStatus, reason) {
+async function updatePropertyStatus(propertyId, newStatus, newAdStatus, reason) {
     try {
-        const updates = { status: newStatus };
+        const updates = { status: newStatus, ad_status: newAdStatus };
         const { error } = await supabase
             .from('properties')
             .update(updates)

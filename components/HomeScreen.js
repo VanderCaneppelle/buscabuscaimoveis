@@ -181,18 +181,18 @@ export default function HomeScreen({ navigation }) {
         // Evitar recarregamento se jÃ¡ temos dados e nÃ£o Ã© forceRefresh
         // Mas sempre executar se for forceRefresh ou mudanÃ§a de busca/filtro
         if (page === 0 && properties.length > 0 && !forceRefresh && !isSearchOrFilterChange && hasInitialData) {
-            console.log('ðŸ  HomeScreen: Dados jÃ¡ carregados, pulando fetchProperties');
+            console.log('  HomeScreen: Dados já carregados, pulando fetchProperties');
             return;
         }
 
         // Se nÃ£o temos dados iniciais e nÃ£o Ã© uma mudanÃ§a de filtro/busca, forÃ§ar carregamento
         if (page === 0 && !hasInitialData && !isSearchOrFilterChange) {
-            console.log('ðŸ  HomeScreen: Primeiro carregamento, forÃ§ando busca');
+            console.log('  HomeScreen: Primeiro carregamento, forçando busca');
             forceRefresh = true;
         }
 
-        console.log('ðŸ  HomeScreen: Carregando propriedades...');
-        console.log('ðŸ  HomeScreen: ParÃ¢metros:', { customFilters, searchQuery, page, forceRefresh, isSearchOrFilterChange });
+        console.log('  HomeScreen: Carregando propriedades...');
+        console.log('  HomeScreen: Parâmetros:', { customFilters, searchQuery, page, forceRefresh, isSearchOrFilterChange });
 
         // Controlar loading baseado no tipo de operaÃ§Ã£o
         if (page === 0) {
@@ -524,7 +524,7 @@ export default function HomeScreen({ navigation }) {
 
                 <View style={styles.propertyInfo}>
                     <Text style={styles.propertyTitle} numberOfLines={2}>
-                        {item.title ?? 'TÃ­tulo indisponÃ­vel'}
+                        {item.title ?? 'Título indisponível'}
                     </Text>
 
                     <Text style={styles.propertyLocation}>
@@ -534,7 +534,7 @@ export default function HomeScreen({ navigation }) {
                         {((item.sale_price ?? item.salePrice) && parseFloat(item.sale_price ?? item.salePrice) > 0) ? (
                             <View style={styles.priceContainer}>
                                 <Text style={styles.originalPriceRed}>
-                                    De: R$ {item.price?.toLocaleString('pt-BR') ?? 'PreÃ§o indisponÃ­vel'}
+                                    De: R$ {item.price?.toLocaleString('pt-BR') ?? 'Preço indisponível'}
                                 </Text>
                                 <Text style={styles.salePriceGreen}>
                                     Por: R$ {(item.sale_price ?? item.salePrice)?.toLocaleString('pt-BR')}
@@ -542,7 +542,7 @@ export default function HomeScreen({ navigation }) {
                             </View>
                         ) : (
                             <Text style={styles.propertyPrice}>
-                                R$ {item.price?.toLocaleString('pt-BR') ?? 'PreÃ§o indisponÃ­vel'}
+                                R$ {item.price?.toLocaleString('pt-BR') ?? 'Preço indisponível'}
                             </Text>
                         )}
                         <View style={styles.propertyFeatures}>
@@ -564,7 +564,7 @@ export default function HomeScreen({ navigation }) {
                         </View>
                     </View>
                     <Text style={styles.propertyType}>
-                        {(item.property_type ?? '') + ' á ' + (item.transaction_type ?? '')}
+                        {(item.property_type ?? '') + ' a ' + (item.transaction_type ?? '')}
                     </Text>
 
                     {/* Badge de Destaque - Canto inferior direito */}
@@ -574,7 +574,7 @@ export default function HomeScreen({ navigation }) {
                             <Text style={styles.boostBadgeText}>Destaque</Text>
                         </View>
                     )}
-                    {/* BotÃ£o "Ver detalhes" para indicar que o card Ã© clicÃ¡vel */}
+                    {/* Botão "Ver detalhes" para indicar que o card é clicável */}
                     {/* <TouchableOpacity
                         style={styles.verDetalhesButton}
                         activeOpacity={0.8}
