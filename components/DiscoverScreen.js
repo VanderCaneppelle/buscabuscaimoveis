@@ -17,6 +17,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { BoostService } from '../lib/boostService';
+import { PlanService } from '../lib/planService';
 import AdBoostingScreen from './AdBoostingScreen';
 
 const { width } = Dimensions.get('window');
@@ -27,20 +28,38 @@ export default function DiscoverScreen({ navigation }) {
     const { user } = useAuth();
     const insets = useSafeAreaInsets();
     const [featuredProperties, setFeaturedProperties] = useState([]);
+    const [userPlan, setUserPlan] = useState(null);
+
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
 
     useEffect(() => {
         loadData();
-    }, []);
+        if (user?.id) {
+            loadUserPlan();
+        }
+    }, [user?.id]);
 
     // Atualizar dados sempre que a tela ganhar foco
     useFocusEffect(
         React.useCallback(() => {
             console.log('🔄 DiscoverScreen: Atualizando dados...');
             loadData();
-        }, [])
+            if (user?.id) {
+                loadUserPlan();
+            }
+        }, [user?.id])
     );
+
+    const loadUserPlan = async () => {
+        try {
+            const planSnapshot = await PlanService.getUserPlanSnapshot(user.id);
+            setUserPlan(planSnapshot);
+        } catch (error) {
+            console.error('Erro ao carregar plano do usuário:', error);
+            setUserPlan(null);
+        }
+    };
 
     const loadData = async () => {
         try {
@@ -319,20 +338,24 @@ export default function DiscoverScreen({ navigation }) {
                     refreshControl={
                         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
                     }
+
                     ListHeaderComponent={
-                        <View style={styles.ctaContainer}>
-                            <View style={styles.ctaCard}>
-                                <Ionicons name="ribbon" size={18} color="#6c5ce7" />
-                                <Text style={styles.ctaText}>Quer dar mais visibilidade para seus anúncios?</Text>
-                                <TouchableOpacity
-                                    style={styles.ctaButton}
-                                    onPress={() => navigation.navigate('AdBoosting')}
-                                >
-                                    <Ionicons name="rocket" size={16} color="#fff" />
-                                    <Text style={styles.ctaButtonText}>Impulsionar agora</Text>
-                                </TouchableOpacity>
+                        // Mostrar CTA apenas para usuários com plano pago (não free)
+                        userPlan && !userPlan.isFreePlan ? (
+                            <View style={styles.ctaContainer}>
+                                <View style={styles.ctaCard}>
+                                    <Ionicons name="ribbon" size={18} color="#6c5ce7" />
+                                    <Text style={styles.ctaText}>Quer dar mais visibilidade para seus anúncios?</Text>
+                                    <TouchableOpacity
+                                        style={styles.ctaButton}
+                                        onPress={() => navigation.navigate('AdBoosting')}
+                                    >
+                                        <Ionicons name="rocket" size={16} color="#fff" />
+                                        <Text style={styles.ctaButtonText}>Impulsionar agora</Text>
+                                    </TouchableOpacity>
+                                </View>
                             </View>
-                        </View>
+                        ) : null
                     }
                     ListEmptyComponent={
                         <View style={styles.emptyContainer}>
