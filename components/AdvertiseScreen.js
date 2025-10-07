@@ -57,8 +57,8 @@ export default function AdvertiseScreen({ navigation }) {
             navigation.navigate('CreateAd');
         } else {
             Alert.alert(
-                'Plano Necessário',
-                eligibility?.reason || 'VocÊ não pode criar anúncios no momento. Motivos:' / n / n 'plano vencido' / n / n 'plano gratuito' / n / n 'limite de anúncios atingido',
+                'Você não pode criar anúncios no momento.',
+                eligibility?.reason || 'Você não pode criar anúncios no momento.',
                 [
                     { text: 'Cancelar', style: 'cancel' },
                     { text: 'Ver Planos', onPress: () => navigation.navigate('Plans') }

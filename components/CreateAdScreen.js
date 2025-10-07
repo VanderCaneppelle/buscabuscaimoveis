@@ -140,13 +140,15 @@ export default function CreateAdScreen({ navigation, route }) {
         }, [])
     );
 
+    const [eligibility, setEligibility] = useState(null);
+
     const checkUserPermissions = async () => {
         try {
             setLoading(true);
-            const planInfo = await PlanService.getUserPlanInfo(user.id);
-            setUserPlanInfo(planInfo);
+            const info = await PlanService.getUserEligibility(user.id);
+            setEligibility(info);
 
-            if (!planInfo.canCreate.can_create) {
+            if (!info.canCreate) {
                 setShowPlanModal(true);
             }
         } catch (error) {
@@ -1411,10 +1413,18 @@ export default function CreateAdScreen({ navigation, route }) {
                             <View style={styles.modalIcon}>
                                 <Ionicons name="lock-closed" size={48} color="#e74c3c" />
                             </View>
-                            <Text style={styles.modalTitle}>Plano Necessário</Text>
+                            <Text style={styles.modalTitle}>Você não pode criar anúncios no momento.</Text>
                             <Text style={styles.modalText}>
-                                Para criar anúncios, você precisa de um plano pago.
-                                {userPlanInfo?.canCreate.reason && `\n\n${userPlanInfo.canCreate.reason}`}
+                                {!eligibility
+                                    ? 'Não foi possível verificar suas permissões agora.'
+                                    : eligibility.isExpired
+                                        ? `Seu plano (${eligibility.planDisplayName}) está vencido. Renove para criar novos anúncios.`
+                                        : eligibility.maxAds === 0
+                                            ? 'Seu plano atual não permite criar anúncios.'
+                                            : eligibility.currentAds >= eligibility.maxAds
+                                                ? `Você atingiu o limite de ${eligibility.maxAds} anúncios do seu plano (${eligibility.planDisplayName}).`
+                                                : eligibility.reason || 'Não é possível criar anúncios no momento.'
+                                }
                             </Text>
 
                             <View style={styles.modalButtons}>
