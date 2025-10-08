@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
+import StandardHeader from './StandardHeader';
 
 export default function PaymentConfirmationScreen({ route, navigation }) {
     console.log('Rendered PaymentConfirmationScreen');
@@ -68,15 +69,12 @@ export default function PaymentConfirmationScreen({ route, navigation }) {
 
     return (
         <SafeAreaView style={styles.container}>
-            <View style={styles.headerContainer}>
-                <View style={styles.titleContainer}>
-                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                        <Ionicons name="arrow-back" size={24} color="#00335e" />
-                    </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Pagamento Aprovado</Text>
-                    <View style={styles.placeholder} />
-                </View>
-            </View>
+            <StandardHeader
+                title="Pagamento Aprovado"
+                subtitle="Seu pagamento foi aprovado com sucesso"
+                showBackButton={false}
+                onBackPress={() => navigation.goBack()}
+            />
 
             <View style={styles.contentContainer}>
                 <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>

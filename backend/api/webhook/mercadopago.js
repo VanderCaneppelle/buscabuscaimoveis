@@ -189,7 +189,7 @@ export default async function handler(req, res) {
                         cancelled_at: new Date().toISOString()
                     })
                     .eq('user_id', payment.user_id)
-                    .eq('status', 'active');
+                    .eq('status', ['active', 'expired']);
 
                 if (cancelError) {
                     console.error('❌ Erro ao cancelar assinatura anterior:', cancelError);
