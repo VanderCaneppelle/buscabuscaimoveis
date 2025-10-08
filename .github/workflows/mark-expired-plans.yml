@@ -1,0 +1,50 @@
+name: Marcar Planos Vencidos
+
+on:
+  schedule:
+    # Executar diariamente à meia-noite (horário de Brasília)
+    # UTC-3 = UTC+0 + 3h, então 00h BRT = 3h UTC
+    - cron: '0 3 * * *'
+  workflow_dispatch: # Permitir execução manual
+
+jobs:
+  mark-expired-plans:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+      
+      - name: Instalar dependências
+        working-directory: ./backend
+        run: npm ci
+      
+      - name: Marcar planos vencidos como 'expired'
+        working-directory: ./backend
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        run: |
+          echo "🕛 Iniciando marcação de planos vencidos..."
+          echo "📅 Data/hora atual: $(date)"
+          echo "🌍 Timezone: $(date +%Z)"
+          
+          node scripts/mark-expired-plans.js
+      
+      - name: Notificar resultado
+        if: always()
+        run: |
+          if [ $? -eq 0 ]; then
+            echo "✅ Marcação de planos vencidos executada com sucesso"
+          else
+            echo "❌ Erro na marcação de planos vencidos"
+            exit 1
+          fi

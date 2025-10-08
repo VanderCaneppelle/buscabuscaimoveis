@@ -1,0 +1,51 @@
+name: Inativar Anúncios de Planos Vencidos
+
+on:
+  schedule:
+    # Executar diariamente às 3h da manhã (horário de Brasília)
+    # UTC-3 = UTC+0 + 3h, então 3h BRT = 6h UTC
+    - cron: '0 6 * * *'
+  workflow_dispatch: # Permitir execução manual
+
+jobs:
+  check-expired-plans:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+      
+      - name: Instalar dependências
+        working-directory: ./backend
+        run: npm ci
+      
+      - name: Inativar anúncios de planos vencidos
+        working-directory: ./backend
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        run: |
+          echo "🕒 Iniciando inativação de anúncios de planos vencidos..."
+          echo "📅 Data/hora atual: $(date)"
+          echo "🌍 Timezone: $(date +%Z)"
+          echo "ℹ️  Pré-requisito: Job 'Marcar Planos Vencidos' deve ter executado à meia-noite"
+          
+          node scripts/check-expired-plans.js
+      
+      - name: Notificar resultado
+        if: always()
+        run: |
+          if [ $? -eq 0 ]; then
+            echo "✅ Inativação de anúncios executada com sucesso"
+          else
+            echo "❌ Erro na inativação de anúncios"
+            exit 1
+          fi

@@ -93,12 +93,17 @@ export default function AccountScreen({ navigation }) {
         );
     };
 
-    // Função para formatar data de vencimento
+    // Função para formatar data de vencimento (considerando apenas data, não hora)
     const formatExpirationDate = (endDate) => {
         try {
             const date = new Date(endDate);
             const now = new Date();
-            const diffTime = date.getTime() - now.getTime();
+
+            // Normalizar para meia-noite para comparar apenas a data
+            const endDateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            const nowDateOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+            const diffTime = endDateOnly.getTime() - nowDateOnly.getTime();
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
             if (diffDays <= 0) {
@@ -120,12 +125,17 @@ export default function AccountScreen({ navigation }) {
         }
     };
 
-    // Função para verificar se o plano está vencendo em breve (3 dias)
+    // Função para verificar se o plano está vencendo em breve (3 dias) - considerando apenas data
     const isExpiringSoon = (endDate) => {
         try {
             const date = new Date(endDate);
             const now = new Date();
-            const diffTime = date.getTime() - now.getTime();
+
+            // Normalizar para meia-noite para comparar apenas a data
+            const endDateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            const nowDateOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+            const diffTime = endDateOnly.getTime() - nowDateOnly.getTime();
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
             return diffDays <= 3 && diffDays > 0;
