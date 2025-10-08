@@ -2,10 +2,14 @@ import { NotificationService } from '../lib/notificationService.js';
 import { SCHEDULED_NOTIFICATIONS } from '../config/notifications.js';
 
 export default async function handler(req, res) {
-    // Configurar CORS
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    // Configurar CORS (abrangente para suportar origem 'null' do file://)
+    const origin = req.headers.origin || '*';
+    res.setHeader('Access-Control-Allow-Origin', '*'); // permitir todas as origens, incluindo 'null'
+    res.setHeader('Vary', 'Origin');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.setHeader('Access-Control-Allow-Headers', req.headers['access-control-request-headers'] || 'Content-Type, Authorization');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Max-Age', '86400');
 
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
@@ -31,9 +35,12 @@ export default async function handler(req, res) {
             case 'property-approved':
                 return await handlePropertyApproved(req, res, notificationService);
 
+            case 'property-rejected':
+                return await handlePropertyRejected(req, res, notificationService);
+
             default:
                 return res.status(400).json({
-                    error: 'Ação não especificada. Use: register, send, schedule, status ou property-approved'
+                    error: 'Ação não especificada. Use: register, send, schedule, status, property-approved ou property-rejected'
                 });
         }
     } catch (error) {
@@ -116,6 +123,7 @@ async function handleSend(req, res, notificationService) {
 }
 
 // Enviar notificação de anúncio aprovado (centralizado)
+// Handler para notificação de anúncio aprovado
 async function handlePropertyApproved(req, res, notificationService) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Método não permitido' });
@@ -138,6 +146,34 @@ async function handlePropertyApproved(req, res, notificationService) {
     } else {
         return res.status(500).json({
             error: 'Erro ao enviar notificação de aprovação',
+            details: result.error
+        });
+    }
+}
+
+// Handler para notificação de anúncio rejeitado
+async function handlePropertyRejected(req, res, notificationService) {
+    if (req.method !== 'POST') {
+        return res.status(405).json({ error: 'Método não permitido' });
+    }
+
+    const { userId, propertyId, reason } = req.body;
+    if (!userId || !propertyId) {
+        return res.status(400).json({ error: 'userId e propertyId são obrigatórios' });
+    }
+
+    const result = await notificationService.sendPropertyRejectedById(userId, propertyId, reason);
+
+    if (result.success) {
+        return res.status(200).json({
+            message: 'Notificação de rejeição enviada com sucesso',
+            sent: result.sent,
+            total: result.total,
+            results: result.results
+        });
+    } else {
+        return res.status(500).json({
+            error: 'Erro ao enviar notificação de rejeição',
             details: result.error
         });
     }

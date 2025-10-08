@@ -313,6 +313,37 @@ export class NotificationService {
         }
         return this.sendPropertyApproved(userId, property);
     }
+
+    /**
+     * Enviar notificação de anúncio rejeitado
+     */
+    async sendPropertyRejected(userId, property, reason = null) {
+        const title = '❌ Anúncio Rejeitado';
+        const body = reason
+            ? `Seu anúncio "${property.title}" foi rejeitado. Motivo: ${reason}`
+            : `Seu anúncio "${property.title}" foi rejeitado. Entre em contato para mais informações.`;
+
+        const data = {
+            type: 'property_rejected',
+            propertyId: property.id,
+            adId: property.ad_id || null,
+            reason: reason || null,
+            screen: 'MyProperties'
+        };
+
+        return this.sendNotificationToUser(userId, title, body, data);
+    }
+
+    /**
+     * Enviar notificação de anúncio rejeitado por ID
+     */
+    async sendPropertyRejectedById(userId, propertyId, reason = null) {
+        const property = await this.fetchPropertyMinimal(propertyId);
+        if (!property) {
+            return { success: false, error: 'Propriedade não encontrada' };
+        }
+        return this.sendPropertyRejected(userId, property, reason);
+    }
 }
 
 export default NotificationService;

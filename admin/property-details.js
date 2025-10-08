@@ -4,6 +4,8 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 // Inicializar Supabase
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Expor cliente global para serviços auxiliares
+window.supabaseClient = supabase;
 
 // Elementos DOM
 const loadingElement = document.getElementById('loading');
@@ -262,7 +264,7 @@ function setupAdminNotes(propertyId, initialNotes) {
     };
 }
 
-// Aprovação/Rejeição
+// Aprovação/Rejeição - USANDO SERVIÇO CENTRALIZADO
 function setupModerationActions(propertyId) {
     const approveBtn = document.getElementById('approve-button');
     const rejectBtn = document.getElementById('reject-button');
@@ -271,27 +273,43 @@ function setupModerationActions(propertyId) {
         approveBtn.addEventListener('click', async () => {
             const ok = confirm('Confirmar aprovação deste anúncio?');
             if (!ok) return;
-            await updatePropertyStatus(propertyId, 'approved', 'active');
+
+            try {
+                // Usar serviço centralizado via global
+                await window.ModerationService.approveProperty(propertyId);
+
+                // Atualizar UI local
+                await updatePropertyStatusUI(propertyId, 'approved');
+                alert('Anúncio aprovado e ativado com sucesso!');
+            } catch (err) {
+                console.error('Erro ao aprovar:', err);
+                alert('Erro ao aprovar anúncio. Tente novamente.');
+            }
         });
     }
     if (rejectBtn) {
         rejectBtn.addEventListener('click', async () => {
             const reason = prompt('Motivo da rejeição (opcional):');
-            await updatePropertyStatus(propertyId, 'rejected', 'inactive', reason);
+
+            try {
+                // Usar serviço centralizado via global
+                await window.ModerationService.rejectProperty(propertyId, reason);
+
+                // Atualizar UI local
+                await updatePropertyStatusUI(propertyId, 'rejected');
+                alert('Anúncio rejeitado com sucesso!');
+            } catch (err) {
+                console.error('Erro ao rejeitar:', err);
+                alert('Erro ao rejeitar anúncio. Tente novamente.');
+            }
         });
     }
 }
 
-async function updatePropertyStatus(propertyId, newStatus, newAdStatus, reason) {
+// Atualizar apenas a UI após moderação (não faz update no banco)
+async function updatePropertyStatusUI(propertyId, newStatus) {
     try {
-        const updates = { status: newStatus, ad_status: newAdStatus };
-        const { error } = await supabase
-            .from('properties')
-            .update(updates)
-            .eq('id', propertyId);
-        if (error) throw error;
-
-        // Atualizar UI
+        // Atualizar badges de status na UI
         const statusInline = document.getElementById('status-display-inline');
         if (statusInline) {
             statusInline.textContent = getStatusText(newStatus);
@@ -304,10 +322,8 @@ async function updatePropertyStatus(propertyId, newStatus, newAdStatus, reason) 
         }
 
         updateModerationButtonsVisibility(newStatus);
-        alert(`Status atualizado para: ${getStatusText(newStatus)}`);
     } catch (err) {
-        console.error('Erro ao atualizar status:', err);
-        alert('Falha ao atualizar status. Tente novamente.');
+        console.error('Erro ao atualizar UI:', err);
     }
 }
 

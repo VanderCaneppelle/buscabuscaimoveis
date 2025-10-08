@@ -7,6 +7,8 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 // Inicializar Supabase
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Expor cliente global para serviços auxiliares
+window.supabaseClient = supabase;
 
 // Estado da aplicação
 let properties = [];
@@ -514,32 +516,15 @@ async function sendApprovalPushToOwner(propertyId) {
     }
 }
 
-// Aprovar propriedade
+// Aprovar propriedade - USANDO SERVIÇO CENTRALIZADO
 async function approveProperty(propertyId) {
     if (!confirm('Tem certeza que deseja aprovar este anúncio?')) return;
 
     try {
-        // Obter o usuário logado
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-            throw new Error('Usuário não autenticado');
-        }
+        // Usar serviço centralizado via global
+        await window.ModerationService.approveProperty(propertyId);
 
-        const { error } = await supabase
-            .from('properties')
-            .update({
-                status: 'approved',
-                approved_at: new Date().toISOString(),
-                approved_by: user.id // Usar o ID real do usuário logado
-            })
-            .eq('id', propertyId);
-
-        if (error) throw error;
-
-        // Enviar notificação de aprovação ao dono do anúncio (não bloquear UI)
-        sendApprovalPushToOwner(propertyId);
-
-        showSuccess('Anúncio aprovado com sucesso!');
+        showSuccess('Anúncio aprovado e ativado com sucesso!');
         await loadProperties();
         applyFilters();
     } catch (error) {
@@ -548,28 +533,13 @@ async function approveProperty(propertyId) {
     }
 }
 
-// Rejeitar propriedade
+// Rejeitar propriedade - USANDO SERVIÇO CENTRALIZADO
 async function rejectProperty(propertyId) {
     const reason = prompt('Motivo da rejeição (opcional):');
 
     try {
-        // Obter o usuário logado
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-            throw new Error('Usuário não autenticado');
-        }
-
-        const { error } = await supabase
-            .from('properties')
-            .update({
-                status: 'rejected',
-                rejected_at: new Date().toISOString(),
-                rejected_by: user.id, // Usar o ID real do usuário logado
-                rejection_reason: reason || null
-            })
-            .eq('id', propertyId);
-
-        if (error) throw error;
+        // Usar serviço centralizado via global
+        await window.ModerationService.rejectProperty(propertyId, reason);
 
         showSuccess('Anúncio rejeitado com sucesso!');
         await loadProperties();
