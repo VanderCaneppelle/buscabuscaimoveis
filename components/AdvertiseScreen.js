@@ -20,6 +20,7 @@ export default function AdvertiseScreen({ navigation }) {
 
     const { user } = useAuth();
     const [eligibility, setEligibility] = useState(null);
+    const [manageAdsInfo, setManageAdsInfo] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -41,8 +42,20 @@ export default function AdvertiseScreen({ navigation }) {
     const checkUserPermissions = async () => {
         try {
             setLoading(true);
-            const snapshot = await PlanService.getUserEligibility(user.id);
-            setEligibility(snapshot);
+            const eligibilityData = await PlanService.getUserEligibility(user.id);
+            setEligibility(eligibilityData);
+
+            // Verificar se pode gerenciar anúncios (separado de criar)
+            const manageResult = await PlanService.userCanManageAds(user.id);
+            setManageAdsInfo(manageResult);
+
+            console.log('📋 AdvertiseScreen - Permissões:', {
+                canCreate: eligibilityData.canCreate,
+                canManage: manageResult.canManageAds,
+                manageReason: manageResult.reason,
+                planName: eligibilityData.planName,
+                isFreePlan: eligibilityData.isFreePlan
+            });
         } catch (error) {
             console.error('Erro ao verificar permissões:', error);
         } finally {
@@ -65,12 +78,12 @@ export default function AdvertiseScreen({ navigation }) {
         }
     };
     const handleManageAds = () => {
-        if (eligibility?.canCreate) {
+        if (manageAdsInfo?.canManageAds) {
             navigation.navigate('MyProperties');
         } else {
             Alert.alert(
-                'Você não pode gerenciar anúncios no momento.',
-                eligibility?.reason || 'Você não pode gerenciar anúncios no momento.',
+                'Não é possível gerenciar anúncios',
+                manageAdsInfo?.reason || 'Você precisa de um plano ativo para gerenciar anúncios.',
                 [
                     { text: 'Cancelar', style: 'cancel' },
                     { text: 'Ver Planos', onPress: () => navigation.navigate('Plans') }
@@ -79,12 +92,12 @@ export default function AdvertiseScreen({ navigation }) {
         }
     };
     const handleBoostAds = () => {
-        if (eligibility?.canCreate) {
+        if (manageAdsInfo?.canManageAds) {
             navigation.navigate('AdBoosting');
         } else {
             Alert.alert(
                 'Você não pode impulsionar anúncios no momento.',
-                eligibility?.reason || 'Você não pode impulsionar anúncios no momento.',
+                manageAdsInfo?.reason || 'Você não pode impulsionar anúncios no momento.',
                 [
                     { text: 'Cancelar', style: 'cancel' },
                     { text: 'Ver Planos', onPress: () => navigation.navigate('Plans') }
@@ -125,8 +138,30 @@ export default function AdvertiseScreen({ navigation }) {
                         : eligibility.reason}
                 </Text>
 
+                {/* Aviso de Plano Vencido */}
+                {isExpired && (
+                    <View style={styles.expiredWarning}>
+                        <View style={styles.expiredWarningHeader}>
+                            <Ionicons name="warning" size={20} color="#e74c3c" />
+                            <Text style={styles.expiredWarningTitle}>Atenção: Plano Vencido</Text>
+                        </View>
+                        <Text style={styles.expiredWarningText}>
+                            Seus anúncios permanecerão inativos por até 24 horas.
+                            {'\n'}
+                            Caso o plano não seja renovado, eles serão permanentemente excluídos.
+                        </Text>
+                        <TouchableOpacity
+                            style={styles.renewButton}
+                            onPress={() => navigation.navigate('Plans')}
+                        >
+                            <Ionicons name="refresh" size={16} color="#fff" />
+                            <Text style={styles.renewButtonText}>Renovar Plano Agora</Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
+
                 {/* Botão para liberar mais anúncios quando disponível < 2 */}
-                {availableAds < 2 && (
+                {!isExpired && availableAds < 2 && (
                     <View style={styles.upgradeSection}>
                         <Text style={styles.upgradeMessage}>
                             {planDisplayName === 'Gratuito' ? 'Contrate um plano e comece a anunciar.' :
@@ -235,7 +270,12 @@ export default function AdvertiseScreen({ navigation }) {
                         })()}
 
                         {(() => {
-                            const isDisabled = !eligibility?.canCreate;
+                            const isDisabled = !manageAdsInfo?.canManageAds;
+                            console.log('🎯 Botão Gerenciar Anúncios:', {
+                                manageAdsInfo,
+                                isDisabled,
+                                canManageAds: manageAdsInfo?.canManageAds
+                            });
                             return renderActionCard(
                                 'Gerenciar Anúncios',
                                 'Veja e edite seus anúncios',
@@ -247,7 +287,7 @@ export default function AdvertiseScreen({ navigation }) {
                         })()}
 
                         {(() => {
-                            const isDisabled = !eligibility?.canCreate;
+                            const isDisabled = !manageAdsInfo?.canManageAds;
                             return renderActionCard(
                                 'Impulsionar Anúncios',
                                 'Dê mais visibilidade aos seus anúncios',
@@ -371,6 +411,51 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#7f8c8d',
     },
+    // Aviso de Plano Vencido
+    expiredWarning: {
+        marginTop: 12,
+        paddingTop: 12,
+        borderTopWidth: 1,
+        borderTopColor: '#e9ecef',
+        backgroundColor: '#fee',
+        padding: 12,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#f5c6cb',
+    },
+    expiredWarningHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        marginBottom: 8,
+    },
+    expiredWarningTitle: {
+        fontSize: 15,
+        fontWeight: 'bold',
+        color: '#e74c3c',
+    },
+    expiredWarningText: {
+        fontSize: 13,
+        color: '#721c24',
+        lineHeight: 20,
+        marginBottom: 12,
+    },
+    renewButton: {
+        backgroundColor: '#e74c3c',
+        paddingVertical: 10,
+        paddingHorizontal: 16,
+        borderRadius: 8,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 6,
+    },
+    renewButtonText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: '700',
+    },
+    // Seção de Upgrade
     upgradeSection: {
         marginTop: 12,
         paddingTop: 12,
