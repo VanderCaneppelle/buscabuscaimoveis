@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { WebView } from 'react-native-webview';
 import BackendService from '../lib/backendService';
 import { useAuth } from '../contexts/AuthContext';
+import StandardHeader from './StandardHeader';
 
 export default function BoostPaymentScreen({ navigation, route }) {
     console.log('Rendered BoostPaymentScreen');
@@ -138,16 +139,12 @@ export default function BoostPaymentScreen({ navigation, route }) {
     return (
         <SafeAreaView style={styles.container}>
             {/* Header */}
-            <View style={styles.headerContainer}>
-                <TouchableOpacity
-                    style={styles.backButton}
-                    onPress={() => navigation.goBack()}
-                >
-                    <Ionicons name="arrow-back" size={24} color="#00335e" />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>Confirmar Impulsionamento</Text>
-                <View style={styles.placeholder} />
-            </View>
+            <StandardHeader
+                title="Confira os detalhes"
+                subtitle="Confirme o pagamento do impulso"
+                showBackButton={true}
+                onBackPress={() => navigation.goBack()}
+            />
 
             {/* Conteúdo Principal */}
             <View style={styles.contentContainer}>
@@ -362,25 +359,7 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#ffcc1e',
     },
-    headerContainer: {
-        paddingTop: 60,
-        paddingBottom: 15,
-        backgroundColor: '#ffcc1e',
-        paddingHorizontal: 20,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    backButton: {
-        position: 'absolute',
-        left: 20,
-        padding: 10,
-    },
-    headerTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#00335e',
-    },
+
     placeholder: {
         width: 40,
     },
@@ -614,7 +593,7 @@ const styles = StyleSheet.create({
     paymentButton: {
         backgroundColor: '#27ae60',
         borderRadius: 8,
-        paddingVertical: 10,
+        paddingVertical: 15,
         alignItems: 'center',
         justifyContent: 'center',
         shadowColor: '#27ae60',

@@ -29,6 +29,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useFocusEffect } from '@react-navigation/native';
 import { searchAddresses } from '../lib/geocodingService';
 import MapaEscolherEndereco from './MapaEscolherEndereco';
+import StandardHeader from './StandardHeader';
 
 const { width } = Dimensions.get('window');
 
@@ -628,23 +629,12 @@ export default function CreateAdScreen({ navigation, route }) {
     return (
         <View style={[styles.container, { paddingTop: insets.top }]}>
             {/* Header Amarelo com Título */}
-            <View style={styles.headerContainer}>
-                <View style={styles.titleContainer}>
-
-                    <TouchableOpacity
-                        style={styles.backButton}
-                        onPress={() => navigation.goBack()}>
-                        <Ionicons name="arrow-back" size={24} color="#00335e" />
-                    </TouchableOpacity>
-                    <Image
-                        source={require('../assets/logo_bb.jpg')}
-                        style={styles.titleLogo}
-                        resizeMode="contain"
-                    />
-                    <Text style={styles.headerTitle}>Criar Anúncio</Text>
-                    <View style={styles.placeholder} />
-                </View>
-            </View>
+            <StandardHeader
+                title="Criar Anúncio"
+                subtitle="Publique seu imóvel"
+                showBackButton={true}
+                onBackPress={() => navigation.goBack()}
+            />
 
             {/* Conteúdo Principal */}
             <View
@@ -1504,35 +1494,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#ffcc1e',
     },
 
-    headerContainer: {
-        paddingTop: 10,
-        paddingBottom: 15,
-        backgroundColor: '#ffcc1e',
-        paddingHorizontal: 20,
-    },
-    titleLogo: {
-        width: 30,
-        height: 30,
-        borderRadius: 15,
-        marginRight: 10,
-    },
-    titleContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        position: 'relative',
-    },
-    headerTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#00335e',
-    },
-    backButton: {
-        position: 'absolute',
-        left: 10,
-        top: 10,
-        zIndex: 1,
-    },
+
+
     placeholder: {
         width: 40, // Adjust as needed for spacing
     },

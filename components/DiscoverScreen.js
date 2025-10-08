@@ -18,6 +18,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { BoostService } from '../lib/boostService';
 import { PlanService } from '../lib/planService';
+import StandardHeader from './StandardHeader';
 import AdBoostingScreen from './AdBoostingScreen';
 
 const { width } = Dimensions.get('window');
@@ -314,19 +315,12 @@ export default function DiscoverScreen({ navigation }) {
     }, [navigation]);
 
     return (
-        <View style={[styles.container, { paddingTop: insets.top }]}>
-            {/* Header Amarelo com Título */}
-            <View style={styles.headerContainer}>
-                <View style={[styles.titleContainer, { justifyContent: 'center' }]}>
-                    <Image
-                        source={require('../assets/logo_bb.jpg')}
-                        style={styles.titleLogo}
-                        resizeMode="contain"
-                    />
-                    <Text style={styles.headerTitle}>Melhores Oportunidades</Text>
-                </View>
-                <Text style={styles.headerSubtitle}>Descubra imóveis incríveis</Text>
-            </View>
+        <SafeAreaView style={styles.container}>
+            {/* Header Padrão */}
+            <StandardHeader
+                title="Melhores Oportunidades"
+                subtitle="Descubra imóveis incríveis"
+            />
 
             {/* Conteúdo Principal */}
             <View style={styles.contentContainer}>
@@ -369,7 +363,7 @@ export default function DiscoverScreen({ navigation }) {
                     contentContainerStyle={styles.listContainer}
                 />
             </View>
-        </View>
+        </SafeAreaView>
     );
 }
 
@@ -377,37 +371,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#ffcc1e',
-    },
-    headerContainer: {
-        paddingTop: 10,
-        paddingBottom: 15,
-        backgroundColor: '#ffcc1e',
-        paddingHorizontal: 20,
-        position: 'relative'
-    },
-    titleContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 10,
-    },
-    titleLogo: {
-        width: 30,
-        height: 30,
-        borderRadius: 15,
-        marginRight: 10,
-    },
-    headerTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#00335e',
-        textAlign: 'center',
-    },
-    headerSubtitle: {
-        fontSize: 16,
-        color: '#00335e',
-        textAlign: 'center',
-        opacity: 0.8,
     },
     ctaContainer: { paddingHorizontal: 20, paddingBottom: 10 },
     ctaCard: {

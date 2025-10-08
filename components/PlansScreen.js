@@ -1,5 +1,3 @@
-console.log('Rendered PlansScreen');
-
 import React, { useState, useEffect } from 'react';
 import {
     View,
@@ -9,14 +7,15 @@ import {
     TouchableOpacity,
     Alert,
     ActivityIndicator,
-    Modal
+    Modal,
+    SafeAreaView
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { PlanService } from '../lib/planService';
 import { BackendService } from '../lib/backendService';
 import { useAuth } from '../contexts/AuthContext';
 import { useFocusEffect } from '@react-navigation/native';
+import StandardHeader from './StandardHeader';
 
 export default function PlansScreen({ navigation, route }) {
     console.log('Rendered PlansScreen');
@@ -306,21 +305,15 @@ export default function PlansScreen({ navigation, route }) {
     }
 
     return (
-        <View style={styles.container}>
-            {/* Header Amarelo com Título */}
-            <View style={styles.headerContainer}>
-                <View style={styles.titleContainer}>
-                    <TouchableOpacity
-                        style={styles.backButton}
-                        onPress={() => navigation.goBack()}>
-                        <Ionicons name="arrow-back" size={24} color="#00335e" />
-                    </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Escolha seu Plano</Text>
-                    <View style={styles.placeholder} />
-
-                </View>
-            </View>
-
+        <SafeAreaView style={styles.container}>
+            {/* Header Padrão com botão de voltar */}
+            <StandardHeader
+                title="Escolha seu Plano"
+                subtitle="Encontre o plano ideal para você"
+                showLogo={false}
+                showBackButton={true}
+                onBackPress={() => navigation.goBack()}
+            />
 
             {/* Conteúdo Principal */}
             <View style={styles.contentContainer}>
@@ -452,7 +445,7 @@ export default function PlansScreen({ navigation, route }) {
                     </View>
                 </View>
             </Modal>
-        </View >
+        </SafeAreaView>
     );
 }
 
@@ -460,33 +453,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#ffcc1e',
-    },
-
-    headerContainer: {
-        paddingTop: 60,
-        paddingBottom: 15,
-        backgroundColor: '#ffcc1e',
-        paddingHorizontal: 20,
-    },
-
-    titleContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        position: 'relative',
-    },
-    headerTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#00335e',
-    },
-    backButton: {
-        position: 'absolute',
-        left: 0,
-        padding: 10,
-    },
-    placeholder: {
-        width: 40, // Adjust as needed to center the title
     },
 
     contentContainer: {

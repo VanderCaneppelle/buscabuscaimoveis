@@ -17,6 +17,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useFavorites } from '../contexts/FavoritesContext';
+import StandardHeader from './StandardHeader';
 
 const { width } = Dimensions.get('window');
 
@@ -337,19 +338,12 @@ export default function FavoritesScreen({ navigation }) {
     return (
         <View style={[styles.container, { paddingTop: insets.top }]}>
             {/* Header Amarelo com Título */}
-            <View style={styles.headerContainer}>
-                <View style={styles.titleContainer}>
-                    <Image
-                        source={require('../assets/logo_bb.jpg')}
-                        style={styles.titleLogo}
-                        resizeMode="contain"
-                    />
-                    <Text style={styles.headerTitle}>Favoritos</Text>
-                </View>
-                <Text style={styles.headerSubtitle}>
-                    {favorites.length} imóv{favorites.length > 1 ? 'eis' : 'el'} favoritado{favorites.length !== 1 ? 's' : ''}
-                </Text>
-            </View>
+            <StandardHeader
+                title="Favoritos"
+                subtitle={`${favorites.length} imóv${favorites.length > 1 ? 'eis' : 'el'} favoritado${favorites.length !== 1 ? 's' : ''}`}
+                showBackButton={false}
+                onBackPress={() => navigation.goBack()}
+            />
 
             {/* Conteúdo Principal */}
             <View style={styles.contentContainer}>
@@ -388,36 +382,7 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#ffcc1e',
     },
-    headerContainer: {
-        paddingTop: 10,
-        paddingBottom: 15,
-        backgroundColor: '#ffcc1e',
-        paddingHorizontal: 20,
-    },
-    titleContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 10,
-    },
-    titleLogo: {
-        width: 30,
-        height: 30,
-        borderRadius: 15,
-        marginRight: 10,
-    },
-    headerTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#00335e',
-        textAlign: 'center',
-    },
-    headerSubtitle: {
-        fontSize: 16,
-        color: '#00335e',
-        textAlign: 'center',
-        opacity: 0.8,
-    },
+
     contentContainer: {
         flex: 1,
         backgroundColor: '#fff',

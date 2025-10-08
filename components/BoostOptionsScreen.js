@@ -12,6 +12,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { BoostService } from '../lib/boostService';
 import { useAuth } from '../contexts/AuthContext';
+import StandardHeader from './StandardHeader';
 
 export default function BoostOptionsScreen({ navigation, route }) {
     console.log('Rendered BoostOptionsScreen');
@@ -138,16 +139,12 @@ export default function BoostOptionsScreen({ navigation, route }) {
     return (
         <SafeAreaView style={styles.container}>
             {/* Header */}
-            <View style={styles.headerContainer}>
-                <TouchableOpacity
-                    style={styles.backButton}
-                    onPress={() => navigation.goBack()}
-                >
-                    <Ionicons name="arrow-back" size={24} color="#00335e" />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>Impulsionar Anúncio</Text>
-                <View style={styles.placeholder} />
-            </View>
+            <StandardHeader
+                title="Impulsionar Anúncios"
+                subtitle="Impulse seus anúncios"
+                showBackButton={true}
+                onBackPress={() => navigation.goBack()}
+            />
 
             {/* Conteúdo Principal */}
             <View style={styles.contentContainer}>
@@ -213,25 +210,7 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#ffcc1e',
     },
-    headerContainer: {
-        paddingTop: 60,
-        paddingBottom: 15,
-        backgroundColor: '#ffcc1e',
-        paddingHorizontal: 20,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    backButton: {
-        position: 'absolute',
-        left: 20,
-        padding: 10,
-    },
-    headerTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#00335e',
-    },
+
     placeholder: {
         width: 40,
     },

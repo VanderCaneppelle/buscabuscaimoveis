@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { PropertyService } from '../lib/propertyService';
 import { BoostService } from '../lib/boostService';
+import StandardHeader from './StandardHeader';
 
 export default function AdBoostingScreen({ navigation }) {
     const { user } = useAuth();
@@ -98,13 +99,12 @@ export default function AdBoostingScreen({ navigation }) {
 
     return (
         <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color="#00335e" />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>Impulsionar Anúncios</Text>
-                <View style={{ width: 24 }} />
-            </View>
+            <StandardHeader
+                title="Impulsionar Anúncios"
+                subtitle="Impulse seus anúncios"
+                showBackButton={true}
+                onBackPress={() => navigation.goBack()}
+            />
 
             <FlatList
                 data={properties}
@@ -125,17 +125,7 @@ export default function AdBoostingScreen({ navigation }) {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#fff' },
-    header: {
-        paddingTop: 16,
-        paddingBottom: 12,
-        paddingHorizontal: 16,
-        backgroundColor: '#ffcc1e',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between'
-    },
-    backButton: { padding: 8 },
-    headerTitle: { color: '#00335e', fontSize: 18, fontWeight: 'bold' },
+
     list: { padding: 16 },
     card: {
         backgroundColor: '#fff',

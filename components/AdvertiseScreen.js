@@ -7,20 +7,18 @@ import {
     SafeAreaView,
     ScrollView,
     Alert,
-    Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
 import { PlanService } from '../lib/planService';
 import { useFocusEffect } from '@react-navigation/native';
+import StandardHeader from './StandardHeader';
 
 
 export default function AdvertiseScreen({ navigation }) {
     console.log('Rendered AdvertiseScreen');
 
     const { user } = useAuth();
-    const insets = useSafeAreaInsets();
     const [eligibility, setEligibility] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -181,19 +179,12 @@ export default function AdvertiseScreen({ navigation }) {
     );
 
     return (
-        <View style={[styles.container, { paddingTop: insets.top }]}>
-            {/* Header Amarelo com Título */}
-            <View style={styles.headerContainer}>
-                <View style={styles.titleContainer}>
-                    <Image
-                        source={require('../assets/logo_bb.jpg')}
-                        style={styles.titleLogo}
-                        resizeMode="contain"
-                    />
-                    <Text style={styles.headerTitle}>Anunciar</Text>
-                </View>
-                <Text style={styles.headerSubtitle}>Publique seu imóvel</Text>
-            </View>
+        <SafeAreaView style={styles.container}>
+            {/* Header Padrão */}
+            <StandardHeader
+                title="Anunciar"
+                subtitle="Publique seu imóvel"
+            />
 
             {/* Conteúdo Principal */}
             <View style={styles.contentContainer}>
@@ -310,7 +301,7 @@ export default function AdvertiseScreen({ navigation }) {
                     </View>
                 </ScrollView>
             </View>
-        </View>
+        </SafeAreaView>
     );
 }
 
@@ -318,36 +309,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#ffcc1e',
-    },
-    headerContainer: {
-        paddingTop: 10,
-        paddingBottom: 15,
-        backgroundColor: '#ffcc1e',
-        paddingHorizontal: 0,
-    },
-    titleContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 10,
-    },
-    titleLogo: {
-        width: 30,
-        height: 30,
-        borderRadius: 15,
-        marginRight: 10,
-    },
-    headerTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#00335e',
-        textAlign: 'center',
-    },
-    headerSubtitle: {
-        fontSize: 16,
-        color: '#00335e',
-        textAlign: 'center',
-        opacity: 0.8,
     },
     contentContainer: {
         flex: 1,

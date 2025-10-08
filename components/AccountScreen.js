@@ -7,7 +7,6 @@ import {
     SafeAreaView,
     ScrollView,
     Alert,
-    Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
@@ -15,6 +14,7 @@ import { supabase } from '../lib/supabase';
 import { PlanService } from '../lib/planService';
 import PropertyCacheService from '../lib/propertyCacheService';
 import { useFocusEffect } from '@react-navigation/native';
+import StandardHeader from './StandardHeader';
 // Removido: NotificationManager
 
 export default function AccountScreen({ navigation }) {
@@ -189,18 +189,11 @@ export default function AccountScreen({ navigation }) {
 
     return (
         <SafeAreaView style={styles.container}>
-            {/* Header Amarelo com Título */}
-            <View style={styles.headerContainer}>
-                <View style={styles.titleContainer}>
-                    <Image
-                        source={require('../assets/logo_bb.jpg')}
-                        style={styles.titleLogo}
-                        resizeMode="contain"
-                    />
-                    <Text style={styles.headerTitle}>Minha Conta</Text>
-                </View>
-                <Text style={styles.headerSubtitle}>Gerencie seu perfil e configurações</Text>
-            </View>
+            {/* Header Padrão */}
+            <StandardHeader
+                title="Minha Conta"
+                subtitle="Gerencie seu perfil e configurações"
+            />
 
             {/* Conteúdo Principal */}
             <View style={styles.contentContainer}>
@@ -357,36 +350,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#ffcc1e',
-    },
-    headerContainer: {
-        paddingTop: 10,
-        paddingBottom: 15,
-        backgroundColor: '#ffcc1e',
-        paddingHorizontal: 20,
-    },
-    titleContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 10,
-    },
-    titleLogo: {
-        width: 30,
-        height: 30,
-        borderRadius: 15,
-        marginRight: 10,
-    },
-    headerTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#00335e',
-        textAlign: 'center',
-    },
-    headerSubtitle: {
-        fontSize: 16,
-        color: '#00335e',
-        textAlign: 'center',
-        opacity: 0.8,
     },
     contentContainer: {
         flex: 1,

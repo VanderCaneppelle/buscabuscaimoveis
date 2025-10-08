@@ -16,6 +16,9 @@ import BackendService from '../lib/backendService';
 import { PushNotificationService } from '../lib/pushNotificationService';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase.js';
+import StandardHeader from './StandardHeader';
+
+
 export default function PaymentDetailsScreen({ route, navigation }) {
     const { plan } = route.params;
     const [selectedPeriod, setSelectedPeriod] = useState(null); // Será definido dinamicamente
@@ -396,191 +399,184 @@ export default function PaymentDetailsScreen({ route, navigation }) {
 
     return (
         <SafeAreaView style={styles.container}>
-            <View style={styles.container}>
-                {/* Header Amarelo com Título */}
-                <View style={styles.headerContainer}>
-                    <View style={styles.titleContainer}>
-                        <TouchableOpacity
-                            style={styles.backButton}
-                            onPress={() => navigation.goBack()}>
-                            <Ionicons name="arrow-back" size={24} color="#00335e" />
-                        </TouchableOpacity>
-                        <Text style={styles.headerTitle}>Escolha seu Plano</Text>
-                        <View style={styles.placeholder} />
 
+            <StandardHeader
+                title="Detalhes do Plano"
+                subtitle="Detalhes do plano selecionado"
+                showBackButton={true}
+                onBackPress={() => navigation.goBack()}
+            />
+            {/* Conteúdo Principal */}
+            <View style={styles.contentContainer}>
+                <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+
+
+                    {/* Plan Card */}
+                    <View style={styles.planCard}>
+                        <View style={styles.planHeader}>
+                            <Ionicons name="star" size={24} color="#f39c12" />
+                            <Text style={styles.planName}>{plan.display_name || plan.name || 'Plano'}</Text>
+                        </View>
+
+                        <View style={styles.divider} />
+
+                        <View style={styles.planFeatures}>
+                            <Text style={styles.featuresTitle}>Recursos Inclusos:</Text>
+                            {getPlanFeatures().map((feature, index) => (
+                                <View key={index} style={styles.featureItem}>
+                                    <Ionicons
+                                        name="checkmark-circle"
+                                        size={20}
+                                        style={styles.featureIcon}
+                                    />
+                                    <Text style={styles.featureText}>{feature}</Text>
+                                </View>
+                            ))}
+                        </View>
                     </View>
-                </View>
-                {/* Conteúdo Principal */}
-                <View style={styles.contentContainer}>
-                    <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
 
+                    {/* Period Selection */}
+                    {loadingPlans ? (
+                        <View style={styles.periodSelectionCard}>
+                            <Text style={styles.periodSelectionTitle}>Selecione um plano</Text>
 
-                        {/* Plan Card */}
-                        <View style={styles.planCard}>
-                            <View style={styles.planHeader}>
-                                <Ionicons name="star" size={24} color="#f39c12" />
-                                <Text style={styles.planName}>{plan.display_name || plan.name || 'Plano'}</Text>
+                            {/* Skeleton para Plano Anual */}
+                            <View style={styles.periodOptionSkeleton}>
+                                <View style={styles.periodOptionContent}>
+                                    <View style={styles.periodOptionHeader}>
+                                        <View style={styles.skeletonText} />
+                                        <View style={styles.skeletonBadge} />
+                                    </View>
+                                    <View style={styles.skeletonDescription} />
+                                </View>
+                                <View style={styles.skeletonRadioButton} />
                             </View>
 
-                            <View style={styles.divider} />
-
-                            <View style={styles.planFeatures}>
-                                <Text style={styles.featuresTitle}>Recursos Inclusos:</Text>
-                                {getPlanFeatures().map((feature, index) => (
-                                    <View key={index} style={styles.featureItem}>
-                                        <Ionicons
-                                            name="checkmark-circle"
-                                            size={20}
-                                            style={styles.featureIcon}
-                                        />
-                                        <Text style={styles.featureText}>{feature}</Text>
+                            {/* Skeleton para Plano Mensal */}
+                            <View style={styles.periodOptionSkeleton}>
+                                <View style={styles.periodOptionContent}>
+                                    <View style={styles.periodOptionHeader}>
+                                        <View style={styles.skeletonText} />
                                     </View>
-                                ))}
+                                    <View style={styles.skeletonDescription} />
+                                </View>
+                                <View style={styles.skeletonRadioButton} />
                             </View>
                         </View>
+                    ) : planOptions.monthly && planOptions.annual ? (
+                        <View style={styles.periodSelectionCard}>
+                            <Text style={styles.periodSelectionTitle}>Selecione um plano</Text>
 
-                        {/* Period Selection */}
-                        {loadingPlans ? (
-                            <View style={styles.periodSelectionCard}>
-                                <Text style={styles.periodSelectionTitle}>Selecione um plano</Text>
-
-                                {/* Skeleton para Plano Anual */}
-                                <View style={styles.periodOptionSkeleton}>
-                                    <View style={styles.periodOptionContent}>
-                                        <View style={styles.periodOptionHeader}>
-                                            <View style={styles.skeletonText} />
-                                            <View style={styles.skeletonBadge} />
-                                        </View>
-                                        <View style={styles.skeletonDescription} />
-                                    </View>
-                                    <View style={styles.skeletonRadioButton} />
-                                </View>
-
-                                {/* Skeleton para Plano Mensal */}
-                                <View style={styles.periodOptionSkeleton}>
-                                    <View style={styles.periodOptionContent}>
-                                        <View style={styles.periodOptionHeader}>
-                                            <View style={styles.skeletonText} />
-                                        </View>
-                                        <View style={styles.skeletonDescription} />
-                                    </View>
-                                    <View style={styles.skeletonRadioButton} />
-                                </View>
-                            </View>
-                        ) : planOptions.monthly && planOptions.annual ? (
-                            <View style={styles.periodSelectionCard}>
-                                <Text style={styles.periodSelectionTitle}>Selecione um plano</Text>
-
-                                {/* Plano Anual */}
-                                <TouchableOpacity
-                                    style={[
-                                        styles.periodOption,
-                                        selectedPeriod === 'annual' && styles.periodOptionSelected,
-                                        isOptionBlocked('annual') && styles.periodOptionBlocked
-                                    ]}
-                                    onPress={() => !isOptionBlocked('annual') && setSelectedPeriod('annual')}
-                                    disabled={isOptionBlocked('annual')}
-                                >
-                                    <View style={styles.periodOptionContent}>
-                                        <View style={styles.periodOptionHeader}>
-                                            <Text style={[
-                                                styles.periodOptionTitle,
-                                                isOptionBlocked('annual') && styles.periodOptionTitleBlocked
-                                            ]}>
-                                                Anual
-                                            </Text>
-                                            {isOptionBlocked('annual') ? (
-                                                <View style={styles.currentBadge}>
-                                                    <Text style={styles.currentText}>Atual</Text>
-                                                </View>
-                                            ) : planOptions.monthly && planOptions.annual && (
-                                                <View style={styles.savingsBadge}>
-                                                    <Text style={styles.savingsText}>
-                                                        Economize {Math.round((((planOptions.monthly.price * 12) - planOptions.annual.price) / (planOptions.monthly.price * 12)) * 100)}%
-                                                    </Text>
-                                                </View>
-                                            )}
-                                        </View>
-                                        <Text style={styles.periodOptionDescription}>
-                                            R$ {planOptions.annual.price.toFixed(2).replace('.', ',')}/ano (R$ {(planOptions.annual.price / 12).toFixed(2).replace('.', ',')}/mês)
-                                        </Text>
-                                    </View>
-                                    <View style={[
-                                        styles.radioButton,
-                                        selectedPeriod === 'annual' && styles.radioButtonSelected,
-                                        isOptionBlocked('annual') && styles.radioButtonBlocked
-                                    ]}>
-                                        {selectedPeriod === 'annual' && !isOptionBlocked('annual') && (
-                                            <View style={styles.radioButtonInner} />
-                                        )}
-                                        {isOptionBlocked('annual') && (
-                                            <Ionicons name="checkmark" size={12} color="#2ecc71" />
-                                        )}
-                                    </View>
-                                </TouchableOpacity>
-
-                                {/* Plano Mensal */}
-                                <TouchableOpacity
-                                    style={[
-                                        styles.periodOption,
-                                        selectedPeriod === 'monthly' && styles.periodOptionSelected,
-                                        isOptionBlocked('monthly') && styles.periodOptionBlocked
-                                    ]}
-                                    onPress={() => !isOptionBlocked('monthly') && setSelectedPeriod('monthly')}
-                                    disabled={isOptionBlocked('monthly')}
-                                >
-                                    <View style={styles.periodOptionContent}>
-                                        <View style={styles.periodOptionHeader}>
-                                            <Text style={[
-                                                styles.periodOptionTitle,
-                                                isOptionBlocked('monthly') && styles.periodOptionTitleBlocked
-                                            ]}>
-                                                Mensal
-                                            </Text>
-                                            {isOptionBlocked('monthly') && (
-                                                <View style={styles.currentBadge}>
-                                                    <Text style={styles.currentText}>Atual</Text>
-                                                </View>
-                                            )}
-                                        </View>
+                            {/* Plano Anual */}
+                            <TouchableOpacity
+                                style={[
+                                    styles.periodOption,
+                                    selectedPeriod === 'annual' && styles.periodOptionSelected,
+                                    isOptionBlocked('annual') && styles.periodOptionBlocked
+                                ]}
+                                onPress={() => !isOptionBlocked('annual') && setSelectedPeriod('annual')}
+                                disabled={isOptionBlocked('annual')}
+                            >
+                                <View style={styles.periodOptionContent}>
+                                    <View style={styles.periodOptionHeader}>
                                         <Text style={[
-                                            styles.periodOptionDescription,
-                                            isOptionBlocked('monthly') && styles.periodOptionDescriptionBlocked
+                                            styles.periodOptionTitle,
+                                            isOptionBlocked('annual') && styles.periodOptionTitleBlocked
                                         ]}>
-                                            R$ {planOptions.monthly.price.toFixed(2).replace('.', ',')}/mês
+                                            Anual
                                         </Text>
-                                    </View>
-                                    <View style={[
-                                        styles.radioButton,
-                                        selectedPeriod === 'monthly' && styles.radioButtonSelected,
-                                        isOptionBlocked('monthly') && styles.radioButtonBlocked
-                                    ]}>
-                                        {selectedPeriod === 'monthly' && !isOptionBlocked('monthly') && (
-                                            <View style={styles.radioButtonInner} />
+                                        {isOptionBlocked('annual') ? (
+                                            <View style={styles.currentBadge}>
+                                                <Text style={styles.currentText}>Atual</Text>
+                                            </View>
+                                        ) : planOptions.monthly && planOptions.annual && (
+                                            <View style={styles.savingsBadge}>
+                                                <Text style={styles.savingsText}>
+                                                    Economize {Math.round((((planOptions.monthly.price * 12) - planOptions.annual.price) / (planOptions.monthly.price * 12)) * 100)}%
+                                                </Text>
+                                            </View>
                                         )}
+                                    </View>
+                                    <Text style={styles.periodOptionDescription}>
+                                        R$ {planOptions.annual.price.toFixed(2).replace('.', ',')}/ano (R$ {(planOptions.annual.price / 12).toFixed(2).replace('.', ',')}/mês)
+                                    </Text>
+                                </View>
+                                <View style={[
+                                    styles.radioButton,
+                                    selectedPeriod === 'annual' && styles.radioButtonSelected,
+                                    isOptionBlocked('annual') && styles.radioButtonBlocked
+                                ]}>
+                                    {selectedPeriod === 'annual' && !isOptionBlocked('annual') && (
+                                        <View style={styles.radioButtonInner} />
+                                    )}
+                                    {isOptionBlocked('annual') && (
+                                        <Ionicons name="checkmark" size={12} color="#2ecc71" />
+                                    )}
+                                </View>
+                            </TouchableOpacity>
+
+                            {/* Plano Mensal */}
+                            <TouchableOpacity
+                                style={[
+                                    styles.periodOption,
+                                    selectedPeriod === 'monthly' && styles.periodOptionSelected,
+                                    isOptionBlocked('monthly') && styles.periodOptionBlocked
+                                ]}
+                                onPress={() => !isOptionBlocked('monthly') && setSelectedPeriod('monthly')}
+                                disabled={isOptionBlocked('monthly')}
+                            >
+                                <View style={styles.periodOptionContent}>
+                                    <View style={styles.periodOptionHeader}>
+                                        <Text style={[
+                                            styles.periodOptionTitle,
+                                            isOptionBlocked('monthly') && styles.periodOptionTitleBlocked
+                                        ]}>
+                                            Mensal
+                                        </Text>
                                         {isOptionBlocked('monthly') && (
-                                            <Ionicons name="checkmark" size={12} color="#2ecc71" />
+                                            <View style={styles.currentBadge}>
+                                                <Text style={styles.currentText}>Atual</Text>
+                                            </View>
                                         )}
                                     </View>
-                                </TouchableOpacity>
-                            </View>
-                        ) : null}
-
-                        {/* Payment Method Card */}
-                        <View style={styles.paymentMethodCard}>
-                            <View style={styles.paymentMethodHeader}>
-                                <Ionicons name="card-outline" size={24} color="#27ae60" />
-                                <Text style={styles.paymentMethodTitle}>Método de Pagamento</Text>
-                            </View>
-                            <View style={styles.mercadopagoInfo}>
-                                <Ionicons name="shield-checkmark" size={20} color="#27ae60" />
-                                <Text style={styles.mercadopagoText}>
-                                    Mercado Pago - Pagamento 100% seguro
-                                </Text>
-                            </View>
+                                    <Text style={[
+                                        styles.periodOptionDescription,
+                                        isOptionBlocked('monthly') && styles.periodOptionDescriptionBlocked
+                                    ]}>
+                                        R$ {planOptions.monthly.price.toFixed(2).replace('.', ',')}/mês
+                                    </Text>
+                                </View>
+                                <View style={[
+                                    styles.radioButton,
+                                    selectedPeriod === 'monthly' && styles.radioButtonSelected,
+                                    isOptionBlocked('monthly') && styles.radioButtonBlocked
+                                ]}>
+                                    {selectedPeriod === 'monthly' && !isOptionBlocked('monthly') && (
+                                        <View style={styles.radioButtonInner} />
+                                    )}
+                                    {isOptionBlocked('monthly') && (
+                                        <Ionicons name="checkmark" size={12} color="#2ecc71" />
+                                    )}
+                                </View>
+                            </TouchableOpacity>
                         </View>
+                    ) : null}
 
-                        {/* Security Info
+                    {/* Payment Method Card */}
+                    <View style={styles.paymentMethodCard}>
+                        <View style={styles.paymentMethodHeader}>
+                            <Ionicons name="card-outline" size={24} color="#27ae60" />
+                            <Text style={styles.paymentMethodTitle}>Método de Pagamento</Text>
+                        </View>
+                        <View style={styles.mercadopagoInfo}>
+                            <Ionicons name="shield-checkmark" size={20} color="#27ae60" />
+                            <Text style={styles.mercadopagoText}>
+                                Mercado Pago - Pagamento 100% seguro
+                            </Text>
+                        </View>
+                    </View>
+
+                    {/* Security Info
                         <View style={styles.securityCard}>
                             <View style={styles.securityHeader}>
                                 <Ionicons name="lock-closed" size={20} color="#e74c3c" />
@@ -602,121 +598,120 @@ export default function PaymentDetailsScreen({ route, navigation }) {
                             </View>
                         </View> */}
 
-                        {/* Downgrade Warning */}
-                        {currentPlan && plan.max_ads < currentPlan.max_ads && (
-                            <View style={styles.downgradeCard}>
-                                <View style={styles.downgradeHeader}>
-                                    <Ionicons name="warning" size={24} color="#f39c12" />
-                                    <Text style={styles.downgradeTitle}>Atenção: Downgrade de Plano</Text>
-                                </View>
-                                <View style={styles.downgradeContent}>
-                                    <Text style={styles.downgradeText}>
-                                        Você está fazendo downgrade do plano <Text style={styles.planHighlight}>{currentPlan.display_name} </Text>
-                                        para o plano <Text style={styles.planHighlight}>{plan.display_name}</Text>.
-                                    </Text>
-                                    <Text style={styles.downgradeText}>
-                                        Anúncios ativos: <Text style={styles.adsHighlight}>{currentAdsCount}</Text>
-                                    </Text>
-                                    <Text style={styles.downgradeText}>
-                                        Limite do novo plano: <Text style={styles.adsHighlight}>{plan.max_ads}</Text>
-                                    </Text>
-                                    {currentAdsCount > plan.max_ads && (
-                                        <Text style={styles.downgradeWarning}>
-                                            ⚠️ Você precisa remover {currentAdsCount - plan.max_ads} anúncio(s) antes de fazer o downgrade.
-                                        </Text>
-                                    )}
-                                </View>
+                    {/* Downgrade Warning */}
+                    {currentPlan && plan.max_ads < currentPlan.max_ads && (
+                        <View style={styles.downgradeCard}>
+                            <View style={styles.downgradeHeader}>
+                                <Ionicons name="warning" size={24} color="#f39c12" />
+                                <Text style={styles.downgradeTitle}>Atenção: Downgrade de Plano</Text>
                             </View>
-                        )}
-
-                        {/* Payment Button */}
-                        <TouchableOpacity
-                            style={styles.paymentButton}
-                            onPress={handlePayment}
-                            disabled={loading}
-                        >
-                            <Ionicons name="card" size={24} color="#fff" />
-                            <Text style={styles.paymentButtonText}>
-                                Pagar com Mercado Pago
-                            </Text>
-                        </TouchableOpacity>
-
-                        {/* Cancel Button */}
-                        <TouchableOpacity
-                            style={styles.cancelButton}
-                            onPress={() => navigation.goBack()}
-                        >
-                            <Text style={styles.cancelButtonText}>Cancelar</Text>
-                        </TouchableOpacity>
-                    </ScrollView>
-                </View>
-
-                {/* WebView - Checkout Mercado Pago */}
-                <Modal
-                    visible={webViewVisible}
-                    animationType="slide"
-                    onRequestClose={() => setWebViewVisible(false)}
-                >
-                    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
-                        <View style={{ height: 56, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, borderBottomWidth: 1, borderBottomColor: '#eee' }}>
-                            <TouchableOpacity onPress={() => setWebViewVisible(false)} style={{ padding: 8 }}>
-                                <Ionicons name="close" size={24} color="#00335e" />
-                            </TouchableOpacity>
-                            <Text style={{ marginLeft: 8, fontSize: 16, fontWeight: '600', color: '#00335e' }}>Pagamento Seguro</Text>
-                        </View>
-                        {checkoutUrl ? (
-                            <WebView
-                                source={{ uri: checkoutUrl }}
-                                onNavigationStateChange={handleWebViewNavChange}
-                                startInLoadingState
-                                renderLoading={() => (
-                                    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                                        <ActivityIndicator size="large" color="#27ae60" />
-                                        <Text style={{ marginTop: 12, color: '#7f8c8d' }}>Carregando checkout...</Text>
-                                    </View>
+                            <View style={styles.downgradeContent}>
+                                <Text style={styles.downgradeText}>
+                                    Você está fazendo downgrade do plano <Text style={styles.planHighlight}>{currentPlan.display_name} </Text>
+                                    para o plano <Text style={styles.planHighlight}>{plan.display_name}</Text>.
+                                </Text>
+                                <Text style={styles.downgradeText}>
+                                    Anúncios ativos: <Text style={styles.adsHighlight}>{currentAdsCount}</Text>
+                                </Text>
+                                <Text style={styles.downgradeText}>
+                                    Limite do novo plano: <Text style={styles.adsHighlight}>{plan.max_ads}</Text>
+                                </Text>
+                                {currentAdsCount > plan.max_ads && (
+                                    <Text style={styles.downgradeWarning}>
+                                        ⚠️ Você precisa remover {currentAdsCount - plan.max_ads} anúncio(s) antes de fazer o downgrade.
+                                    </Text>
                                 )}
-                            />
-                        ) : (
-                            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                                <ActivityIndicator size="large" color="#27ae60" />
                             </View>
-                        )}
-                    </SafeAreaView>
-                </Modal>
+                        </View>
+                    )}
 
-                {/* Modal Informativo de Pagamento */}
-                <Modal
-                    visible={showPaymentInfoModal}
-                    transparent={true}
-                    animationType="fade"
-                    onRequestClose={() => setShowPaymentInfoModal(false)}
-                >
-                    <View style={styles.modalOverlay}>
-                        <View style={styles.paymentInfoModal}>
-                            <View style={styles.paymentInfoIcon}>
-                                <Ionicons name="time-outline" size={48} color="#f39c12" />
-                            </View>
+                    {/* Payment Button */}
+                    <TouchableOpacity
+                        style={styles.paymentButton}
+                        onPress={handlePayment}
+                        disabled={loading}
+                    >
+                        <Ionicons name="card" size={24} color="#fff" />
+                        <Text style={styles.paymentButtonText}>
+                            Pagar com Mercado Pago
+                        </Text>
+                    </TouchableOpacity>
 
-                            <Text style={styles.paymentInfoTitle}>Pagamento em Processamento</Text>
+                    {/* Cancel Button */}
+                    <TouchableOpacity
+                        style={styles.cancelButton}
+                        onPress={() => navigation.goBack()}
+                    >
+                        <Text style={styles.cancelButtonText}>Cancelar</Text>
+                    </TouchableOpacity>
+                </ScrollView>
+            </View>
 
-                            <Text style={styles.paymentInfoText}>
-                                Ainda não detectamos seu pagamento, mas você pode concluir normalmente.
-                                Assim que for aprovado, seu plano será ativado automaticamente.
-                            </Text>
+            {/* WebView - Checkout Mercado Pago */}
+            <Modal
+                visible={webViewVisible}
+                animationType="slide"
+                onRequestClose={() => setWebViewVisible(false)}
+            >
+                <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+                    <View style={{ height: 56, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, borderBottomWidth: 1, borderBottomColor: '#eee' }}>
+                        <TouchableOpacity onPress={() => setWebViewVisible(false)} style={{ padding: 8 }}>
+                            <Ionicons name="close" size={24} color="#00335e" />
+                        </TouchableOpacity>
+                        <Text style={{ marginLeft: 8, fontSize: 16, fontWeight: '600', color: '#00335e' }}>Pagamento Seguro</Text>
+                    </View>
+                    {checkoutUrl ? (
+                        <WebView
+                            source={{ uri: checkoutUrl }}
+                            onNavigationStateChange={handleWebViewNavChange}
+                            startInLoadingState
+                            renderLoading={() => (
+                                <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                                    <ActivityIndicator size="large" color="#27ae60" />
+                                    <Text style={{ marginTop: 12, color: '#7f8c8d' }}>Carregando checkout...</Text>
+                                </View>
+                            )}
+                        />
+                    ) : (
+                        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                            <ActivityIndicator size="large" color="#27ae60" />
+                        </View>
+                    )}
+                </SafeAreaView>
+            </Modal>
 
-                            <View style={styles.paymentInfoButtons}>
-                                <TouchableOpacity
-                                    style={styles.paymentInfoButton}
-                                    onPress={() => setShowPaymentInfoModal(false)}
-                                >
-                                    <Text style={styles.paymentInfoButtonText}>Entendi</Text>
-                                </TouchableOpacity>
-                            </View>
+            {/* Modal Informativo de Pagamento */}
+            <Modal
+                visible={showPaymentInfoModal}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setShowPaymentInfoModal(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.paymentInfoModal}>
+                        <View style={styles.paymentInfoIcon}>
+                            <Ionicons name="time-outline" size={48} color="#f39c12" />
+                        </View>
+
+                        <Text style={styles.paymentInfoTitle}>Pagamento em Processamento</Text>
+
+                        <Text style={styles.paymentInfoText}>
+                            Ainda não detectamos seu pagamento, mas você pode concluir normalmente.
+                            Assim que for aprovado, seu plano será ativado automaticamente.
+                        </Text>
+
+                        <View style={styles.paymentInfoButtons}>
+                            <TouchableOpacity
+                                style={styles.paymentInfoButton}
+                                onPress={() => setShowPaymentInfoModal(false)}
+                            >
+                                <Text style={styles.paymentInfoButtonText}>Entendi</Text>
+                            </TouchableOpacity>
                         </View>
                     </View>
-                </Modal>
-            </View>
-        </SafeAreaView>
+                </View>
+            </Modal>
+        </SafeAreaView >
     );
 }
 
