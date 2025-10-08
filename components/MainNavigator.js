@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Platform, Easing, Animated } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
-import { useFavorites } from '../contexts/FavoritesContext';
+import { useFavoritesStore } from '../stores/favoritesStore';
 
 import HomeScreen from './HomeScreen';
 import DiscoverScreen from './DiscoverScreen';
@@ -178,8 +178,12 @@ function AccountStack() {
 
 function TabNavigator() {
     const insets = useSafeAreaInsets();
-    const { getFavoriteCount, favoritesChanged, setFavoritesChanged } = useFavorites();
-    const favCount = getFavoriteCount ? getFavoriteCount() : 0;
+
+    // Zustand: selecionar apenas o necessário
+    const favCount = useFavoritesStore(state => state.getFavoriteCount());
+    const favoritesChanged = useFavoritesStore(state => state.favoritesChanged);
+    const clearFavoritesChanged = useFavoritesStore(state => state.clearFavoritesChanged);
+
     const favIconScale = React.useRef(new Animated.Value(1)).current;
 
     React.useEffect(() => {
@@ -189,10 +193,10 @@ function TabNavigator() {
                 Animated.spring(favIconScale, { toValue: 1, useNativeDriver: true, friction: 5 })
             ]).start(() => {
                 // limpar flag para evitar animar a cada render
-                setFavoritesChanged(false);
+                clearFavoritesChanged();
             });
         }
-    }, [favoritesChanged, favIconScale, setFavoritesChanged]);
+    }, [favoritesChanged, favIconScale, clearFavoritesChanged]);
 
     return (
         <Tab.Navigator

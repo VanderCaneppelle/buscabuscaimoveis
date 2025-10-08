@@ -1,37 +1,27 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback } from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useFavorites } from '../contexts/FavoritesContext';
+import { useFavoritesStore } from '../stores/favoritesStore';
 
-const FavoriteButton = React.memo(({ isFavorited, onPress, disabled, propertyId }) => {
-    const { toggleFavorite } = useFavorites();
-    const [localOn, setLocalOn] = useState(!!isFavorited);
-    const inFlight = useRef(false);
-
-    // Sincronizar prop externa quando mudar (ex.: vindo de outra tela)
-    useEffect(() => {
-        setLocalOn(!!isFavorited);
-    }, [isFavorited]);
+/**
+ * FavoriteButton - Botão de favoritar usando Zustand
+ * Simplificado: não precisa mais de estado local duplicado
+ */
+const FavoriteButton = React.memo(({ propertyId, disabled }) => {
+    const isFavorited = useFavoritesStore(state => state.isFavorite(propertyId));
+    const toggleFavorite = useFavoritesStore(state => state.toggleFavorite);
+    const inFlight = useFavoritesStore(state => state.inFlight.has(propertyId));
 
     const handlePress = useCallback(() => {
-        if (disabled || inFlight.current) return;
-        inFlight.current = true;
-        // Atualização otimista local, sem re-render do card/lista
-        const nextOn = !localOn;
-        setLocalOn(nextOn);
-        const action = typeof onPress === 'function' ? onPress : () => toggleFavorite(propertyId);
-        Promise.resolve(action())
-            .catch(() => setLocalOn(!nextOn))
-            .finally(() => { inFlight.current = false; });
-    }, [disabled, localOn, onPress, toggleFavorite, propertyId]);
-
-    // Removida animação para simplificar (voltar ao comportamento original)
+        if (disabled || inFlight) return;
+        toggleFavorite(propertyId);
+    }, [disabled, inFlight, toggleFavorite, propertyId]);
 
     return (
         <View>
             <TouchableOpacity
                 onPress={handlePress}
-                disabled={disabled}
+                disabled={disabled || inFlight}
                 activeOpacity={0.8}
                 style={{
                     backgroundColor: 'rgba(0,0,0,0.5)',
@@ -40,14 +30,17 @@ const FavoriteButton = React.memo(({ isFavorited, onPress, disabled, propertyId 
                 }}
             >
                 <Ionicons
-                    name={localOn ? 'heart' : 'heart-outline'}
+                    name={isFavorited ? 'heart' : 'heart-outline'}
                     size={30}
-                    color={localOn ? '#e74c3c' : '#ffffff'}
+                    color={isFavorited ? '#e74c3c' : '#ffffff'}
                 />
             </TouchableOpacity>
         </View>
     );
-}, (prev, next) => prev.disabled === next.disabled && prev.propertyId === next.propertyId);
+}, (prev, next) =>
+    prev.disabled === next.disabled &&
+    prev.propertyId === next.propertyId
+);
 
 export default FavoriteButton;
 

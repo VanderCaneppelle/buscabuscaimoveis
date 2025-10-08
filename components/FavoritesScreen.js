@@ -13,10 +13,9 @@ import {
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
-import { useFavorites } from '../contexts/FavoritesContext';
+import { useFavoritesStore } from '../stores/favoritesStore';
 import StandardHeader from './StandardHeader';
 
 const { width } = Dimensions.get('window');
@@ -25,11 +24,13 @@ export default function FavoritesScreen({ navigation }) {
     console.log('Rendered FavoritesScreen');
 
     const { user } = useAuth();
-    const insets = useSafeAreaInsets();
     const [favorites, setFavorites] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
-    const { toggleFavorite, isFavorite } = useFavorites();
+
+    // Zustand
+    const toggleFavorite = useFavoritesStore(state => state.toggleFavorite);
+    const isFavorite = useFavoritesStore(state => state.isFavorite);
 
     useEffect(() => {
         if (user?.id) {
@@ -336,8 +337,8 @@ export default function FavoritesScreen({ navigation }) {
     }, [navigation, handleUnfavoriteLocal]);
 
     return (
-        <View style={[styles.container, { paddingTop: insets.top }]}>
-            {/* Header Amarelo com Título */}
+        <SafeAreaView style={styles.container}>
+            {/* Header Padrão */}
             <StandardHeader
                 title="Favoritos"
                 subtitle={`${favorites.length} imóv${favorites.length > 1 ? 'eis' : 'el'} favoritado${favorites.length !== 1 ? 's' : ''}`}
@@ -373,7 +374,7 @@ export default function FavoritesScreen({ navigation }) {
                     contentContainerStyle={styles.listContainer}
                 />
             </View>
-        </View>
+        </SafeAreaView>
     );
 }
 

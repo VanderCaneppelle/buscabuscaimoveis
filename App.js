@@ -10,7 +10,7 @@ enableScreens();
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LoadingProvider } from './contexts/LoadingContext';
 import { AdminProvider } from './contexts/AdminContext';
-import { FavoritesProvider } from './contexts/FavoritesContext';
+import { useFavoritesStore } from './stores/favoritesStore';
 import LoginScreen from './components/LoginScreen';
 import MainNavigator from './components/MainNavigator';
 
@@ -27,10 +27,23 @@ function AppContent() {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const navigationRef = useRef(null);
 
+  // Zustand: Inicializar favoritos quando usuário logar
+  const refreshFavorites = useFavoritesStore(state => state.refreshFavorites);
+  const resetFavorites = useFavoritesStore(state => state.reset);
+
   // Debug: Log do estado de autenticação
   useEffect(() => {
     console.log('AppContent - Estado atual:', { user: user?.email, loading });
-  }, [user, loading]);
+
+    // Carregar favoritos quando usuário logar
+    if (user?.id) {
+      console.log('[App] Usuário logado, carregando favoritos...');
+      refreshFavorites();
+    } else {
+      console.log('[App] Usuário deslogado, resetando favoritos...');
+      resetFavorites();
+    }
+  }, [user, loading, refreshFavorites, resetFavorites]);
 
   useEffect(() => {
     // Verificar se o app foi aberto através de um deep link
@@ -163,9 +176,7 @@ export default function App() {
       <AuthProvider>
         <LoadingProvider>
           <AdminProvider>
-            <FavoritesProvider>
-              <AppContent />
-            </FavoritesProvider>
+            <AppContent />
           </AdminProvider>
         </LoadingProvider>
       </AuthProvider>

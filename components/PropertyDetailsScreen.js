@@ -18,7 +18,7 @@ import { Video } from 'expo-av';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import FavoriteButton from './FavoriteButton';
 import { useAuth } from '../contexts/AuthContext';
-import { useFavorites } from '../contexts/FavoritesContext';
+import { useFavoritesStore } from '../stores/favoritesStore';
 import { supabase } from '../lib/supabase';
 
 const { width, height } = Dimensions.get('window');
@@ -26,7 +26,9 @@ const { width, height } = Dimensions.get('window');
 export default function PropertyDetailsScreen({ route, navigation }) {
     const { property } = route.params;
     const { user } = useAuth();
-    const { isFavorite: isFavorited, toggleFavorite } = useFavorites();
+    // Zustand
+    const isFavorited = useFavoritesStore(state => state.isFavorite(property.id));
+    const toggleFavorite = useFavoritesStore(state => state.toggleFavorite);
     const [loading, setLoading] = useState(false);
     const [showFullscreenModal, setShowFullscreenModal] = useState(false);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -64,17 +66,17 @@ export default function PropertyDetailsScreen({ route, navigation }) {
     }, []);
 
     // Usar o estado do contexto em vez de verificar manualmente
-    const isFavorite = isFavorited(property.id);
+    // isFavorited já é o valor booleano direto do Zustand
 
     useEffect(() => {
         navigation.setOptions({
             headerRight: () => (
                 <View style={styles.headerButton}>
-                    <FavoriteButton isFavorited={isFavorite} disabled={loading} propertyId={property.id} />
+                    <FavoriteButton disabled={loading} propertyId={property.id} />
                 </View>
             ),
         });
-    }, [isFavorite, loading]);
+    }, [loading]);
 
     // Removido: não precisamos mais verificar status manualmente
 

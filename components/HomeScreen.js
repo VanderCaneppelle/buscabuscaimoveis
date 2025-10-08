@@ -20,7 +20,7 @@ import { Ionicons } from '@expo/vector-icons';
 import FavoriteButton from './FavoriteButton';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext';
-import { useFavorites } from '../contexts/FavoritesContext';
+import { useFavoritesStore } from '../stores/favoritesStore';
 import { supabase } from '../lib/supabase';
 import PropertyCacheService from '../lib/propertyCacheService';
 import StoriesComponent from './StoriesComponent';
@@ -49,7 +49,12 @@ export default function HomeScreen({ navigation }) {
     // console.log('ðŸ  HomeScreen: COMPONENTE MONTADO/RENDERIZADO'); // Removido para evitar logs excessivos
 
     const { user, signOut } = useAuth();
-    const { favorites, toggleFavorite, isFavorite, refreshFavorites, favoritesChanged, setFavoritesChanged } = useFavorites();
+    // Zustand: selecionar apenas o que precisa (evita re-renders)
+    const isFavorite = useFavoritesStore(state => state.isFavorite);
+    const toggleFavorite = useFavoritesStore(state => state.toggleFavorite);
+    const refreshFavorites = useFavoritesStore(state => state.refreshFavorites);
+    const favoritesChanged = useFavoritesStore(state => state.favoritesChanged);
+    const clearFavoritesChanged = useFavoritesStore(state => state.clearFavoritesChanged);
     const insets = useSafeAreaInsets();
     const colorScheme = useColorScheme();
     const [profile, setProfile] = useState(null);
@@ -130,7 +135,7 @@ export default function HomeScreen({ navigation }) {
             // Recarregar favoritos APENAS se foram modificados em outra tela
             if (favoritesChanged) {
                 console.log('[HomeScreen] Focus -> favoritesChanged=true. SKIP refreshFavorites (usar estado otimista)');
-                setFavoritesChanged(false);
+                clearFavoritesChanged();
             }
         }, [user?.id, hasInitialData, favoritesChanged])
     );

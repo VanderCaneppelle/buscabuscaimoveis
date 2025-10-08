@@ -13,7 +13,6 @@ import {
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { BoostService } from '../lib/boostService';
@@ -27,7 +26,6 @@ export default function DiscoverScreen({ navigation }) {
     console.log('Rendered DiscoverScreen');
 
     const { user } = useAuth();
-    const insets = useSafeAreaInsets();
     const [featuredProperties, setFeaturedProperties] = useState([]);
     const [userPlan, setUserPlan] = useState(null);
 
