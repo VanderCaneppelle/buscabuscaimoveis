@@ -38,7 +38,6 @@ export default function CreateAdScreen({ navigation, route }) {
 
     const { user } = useAuth();
     const insets = useSafeAreaInsets();
-    const [userPlanInfo, setUserPlanInfo] = useState(null);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [showPlanModal, setShowPlanModal] = useState(false);
@@ -147,10 +146,20 @@ export default function CreateAdScreen({ navigation, route }) {
         try {
             setLoading(true);
             const info = await PlanService.getUserEligibility(user.id);
+            console.log('📋 CreateAdScreen - Eligibility carregado:', {
+                canCreate: info.canCreate,
+                currentAds: info.currentAds,
+                maxAds: info.maxAds,
+                planName: info.planName,
+                reason: info.reason
+            });
             setEligibility(info);
 
             if (!info.canCreate) {
+                console.log('⚠️ CreateAdScreen - Usuário NÃO pode criar anúncio:', info.reason);
                 setShowPlanModal(true);
+            } else {
+                console.log('✅ CreateAdScreen - Usuário PODE criar anúncio');
             }
         } catch (error) {
             console.error('Erro ao verificar permissões:', error);
@@ -516,7 +525,7 @@ export default function CreateAdScreen({ navigation, route }) {
         const withinLimits = await validateMediaLimitsByPlan({
             imagesCount: mediaFiles.filter(file => file.type !== 'video').length,
             videosCount: mediaFiles.filter(file => file.type === 'video').length,
-            planInfo: userPlanInfo,
+            planInfo: eligibility,
         });
         if (!withinLimits) return;
 
@@ -662,17 +671,17 @@ export default function CreateAdScreen({ navigation, route }) {
                             contentContainerStyle={{ paddingBottom: 30 }}
                         >
                             {/* Plan Info Card */}
-                            {userPlanInfo?.plan && (
+                            {eligibility && (
                                 <View style={styles.planInfoCard}>
                                     <Ionicons name="information-circle" size={20} color="#3498db" />
                                     <View style={styles.planInfoContent}>
                                         <Text style={styles.planInfoTitle}>
-                                            Plano {userPlanInfo.plan.display_name}
+                                            Plano {eligibility.planDisplayName}
                                         </Text>
                                         <Text style={styles.planInfoText}>
-                                            {userPlanInfo.canCreate.can_create
-                                                ? `${userPlanInfo.canCreate.current_ads}/${userPlanInfo.canCreate.max_ads} anúncios ativos`
-                                                : userPlanInfo.canCreate.reason
+                                            {eligibility.canCreate
+                                                ? `${eligibility.currentAds}/${eligibility.maxAds} anúncios ativos`
+                                                : eligibility.reason
                                             }
                                         </Text>
                                     </View>
@@ -969,10 +978,10 @@ export default function CreateAdScreen({ navigation, route }) {
                                 <TouchableOpacity
                                     style={[
                                         styles.submitButton,
-                                        (!userPlanInfo?.canCreate.can_create || submitting) && styles.disabledButton
+                                        (!eligibility?.canCreate || submitting) && styles.disabledButton
                                     ]}
                                     onPress={handleSubmit}
-                                    disabled={!userPlanInfo?.canCreate.can_create || submitting}
+                                    disabled={!eligibility?.canCreate || submitting}
                                 >
                                     {submitting ? (
                                         <ActivityIndicator size="small" color="#fff" />
