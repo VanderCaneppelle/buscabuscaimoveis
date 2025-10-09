@@ -26,7 +26,7 @@
   "submit": {
     "production": {
       "android": {
-        "track": "internal" // ou "production", dependendo do canal do Google Play
+        "track": "internal"
       }
     }
   }

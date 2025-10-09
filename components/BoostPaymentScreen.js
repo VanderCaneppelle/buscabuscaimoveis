@@ -78,7 +78,7 @@ export default function BoostPaymentScreen({ navigation, route }) {
 
     const handleWebViewClose = () => {
         setWebViewVisible(false);
-        navigation.navigate('MyProperties');
+        navigation.goBack();
     };
 
     // Polling do status enquanto a WebView está aberta
@@ -326,7 +326,8 @@ export default function BoostPaymentScreen({ navigation, route }) {
                 animationType="fade"
                 onRequestClose={() => {
                     setShowBoostSuccessModal(false);
-                    navigation.navigate('MyProperties');
+                    navigation.navigate('MyProperties')
+                        ;
                 }}
             >
                 <View style={styles.modalOverlay}>

@@ -116,6 +116,15 @@ export default function AdBoostingScreen({ navigation }) {
                         <Ionicons name="alert-circle" size={48} color="#95a5a6" />
                         <Text style={styles.emptyText}>Nenhum anúncio disponível para impulsionar.</Text>
                         <Text style={styles.emptySub}>Apenas anúncios aprovados e ativos aparecem aqui.</Text>
+                        <Text style={styles.emptySub}>Se você tiver anúncios criados, acesse Anuncie - Gerenciar anúncios</Text>
+                        <View style={styles.emptyButton}>
+                            <TouchableOpacity
+                                style={styles.emptyButtonTouchable}
+                                onPress={() => navigation.replace('MyProperties')}
+                            >
+                                <Text style={styles.emptyButtonText}>Acessar Gerenciar anúncios</Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 }
             />
@@ -125,6 +134,20 @@ export default function AdBoostingScreen({ navigation }) {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#fff' },
+    emptyButton: {
+        marginTop: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    emptyButtonText: {
+        color: '#fff',
+        backgroundColor: '#00335e',
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+        borderRadius: 8,
+        fontSize: 14,
+        fontWeight: '600',
+    },
 
     list: { padding: 16 },
     card: {
@@ -164,7 +187,25 @@ const styles = StyleSheet.create({
     loading: { flex: 1, alignItems: 'center', justifyContent: 'center' },
     empty: { alignItems: 'center', paddingVertical: 40 },
     emptyText: { color: '#2c3e50', fontSize: 14, fontWeight: '600', marginTop: 10 },
-    emptySub: { color: '#7f8c8d', fontSize: 12, marginTop: 4 }
+    emptySub: { color: '#7f8c8d', fontSize: 12, marginTop: 4 },
+    emptyButton: { marginTop: 20 },
+    emptyButtonTouchable: {
+        backgroundColor: '#6c5ce7',
+        paddingVertical: 12,
+        paddingHorizontal: 24,
+        borderRadius: 10,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    emptyButtonText: {
+        color: '#fff',
+        fontSize: 15,
+        fontWeight: 'bold',
+    }
 });
 
 

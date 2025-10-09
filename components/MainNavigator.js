@@ -106,6 +106,13 @@ function AdvertiseStack() {
                 }}
             />
             <Stack.Screen
+                name="AdBoosting"
+                component={AdBoostingScreen}
+                options={{
+                    headerShown: false,
+                }}
+            />
+            <Stack.Screen
                 name="VideoUploadTest"
                 component={VideoUploadTestScreen}
                 options={{
@@ -526,22 +533,6 @@ export default function MainNavigator() {
                     tabBarStyle: { display: 'none' },
                 }}
             />
-
-            {/* Ad Boosting - tela de impulsionamento de anúncios */}
-            <Stack.Screen
-                name="AdBoosting"
-                component={AdBoostingScreen}
-                options={{
-                    title: 'Impulsionar Anúncios',
-                    headerBackTitle: 'Voltar',
-                    presentation: 'fullScreenModal',
-                    headerShown: false,
-                    cardStyle: { backgroundColor: 'white' },
-                    animation: 'none',
-                    tabBarStyle: { display: 'none' },
-                }}
-            />
-
 
             {/* MapaImoveis como modal - acessível de qualquer tela */}
             <Stack.Screen

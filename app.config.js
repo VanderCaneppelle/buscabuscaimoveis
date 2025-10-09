@@ -16,8 +16,12 @@ export default {
       "**/*"
     ],
     ios: {
+      bundleIdentifier: "com.buscabuscaimoveis.app",
       supportsTablet: true,
-      jsEngine: "hermes"
+      jsEngine: "hermes",
+      config: {
+        usesNonExemptEncryption: false
+      }
     },
     android: {
       package: "com.buscabuscaimoveis.app",

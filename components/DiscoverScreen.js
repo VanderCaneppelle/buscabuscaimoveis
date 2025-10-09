@@ -340,7 +340,7 @@ export default function DiscoverScreen({ navigation }) {
                                     <Text style={styles.ctaText}>Quer dar mais visibilidade para seus anúncios?</Text>
                                     <TouchableOpacity
                                         style={styles.ctaButton}
-                                        onPress={() => navigation.navigate('AdBoosting')}
+                                        onPress={() => navigation.navigate('Anuncie', { screen: 'AdBoosting' })}
                                     >
                                         <Ionicons name="rocket" size={16} color="#fff" />
                                         <Text style={styles.ctaButtonText}>Impulsionar agora</Text>
