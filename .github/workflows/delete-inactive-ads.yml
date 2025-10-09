@@ -1,0 +1,55 @@
+name: Excluir Anúncios Inativos
+
+on:
+  schedule:
+    # Executar diariamente às 4h da manhã (horário de Brasília)
+    # UTC-3 = UTC+0 + 3h, então 4h BRT = 7h UTC
+    - cron: '0 7 * * *'
+  workflow_dispatch: # Permitir execução manual
+
+jobs:
+  delete-inactive-ads:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+      
+      - name: Instalar dependências
+        working-directory: ./backend
+        run: npm ci
+      
+      - name: Excluir anúncios inativos há mais de 3 dias
+        working-directory: ./backend
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        run: |
+          echo "🗑️ Iniciando exclusão de anúncios inativos..."
+          echo "📅 Data/hora atual: $(date)"
+          echo "🌍 Timezone: $(date +%Z)"
+          echo "ℹ️  Pré-requisitos:"
+          echo "   - Job 1 'Marcar Planos Vencidos' executou à meia-noite"
+          echo "   - Job 2 'Inativar Anúncios' executou às 3h da manhã"
+          echo "   - Este job exclui anúncios inativos há mais de 3 dias"
+          
+          node scripts/delete-inactive-ads.js
+      
+      - name: Notificar resultado
+        if: always()
+        run: |
+          if [ $? -eq 0 ]; then
+            echo "✅ Exclusão de anúncios inativos executada com sucesso"
+          else
+            echo "❌ Erro na exclusão de anúncios inativos"
+            exit 1
+          fi
+
