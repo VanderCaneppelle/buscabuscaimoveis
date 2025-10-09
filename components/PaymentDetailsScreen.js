@@ -17,6 +17,7 @@ import { PushNotificationService } from '../lib/pushNotificationService';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase.js';
 import StandardHeader from './StandardHeader';
+import { PlanService } from '../lib/planService';
 
 
 export default function PaymentDetailsScreen({ route, navigation }) {
@@ -240,6 +241,23 @@ export default function PaymentDetailsScreen({ route, navigation }) {
                 setLoading(false);
                 return;
             }
+
+            // 🔍 VALIDAÇÃO: Verificar anúncios inativos antes do pagamento
+            console.log('🔍 Validando anúncios inativos...');
+            const validation = await PlanService.validatePlanSelection(user.id, selectedPlan.max_ads);
+
+            if (!validation.canProceed) {
+                console.log('❌ Validação falhou:', validation);
+                Alert.alert(
+                    'Anúncios Inativos',
+                    validation.reason,
+                    [{ text: 'Entendi', style: 'default' }]
+                );
+                setLoading(false);
+                return;
+            }
+
+            console.log('✅ Validação aprovada:', validation);
 
             // Criar pagamento no backend
             const result = await BackendService.createPayment(selectedPlan, user);
