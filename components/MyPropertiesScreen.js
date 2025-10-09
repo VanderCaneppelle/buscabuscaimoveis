@@ -466,6 +466,8 @@ export default function MyPropertiesScreen({ navigation }) {
         rejected: 'Rejeitado'
     }[status] || 'Desconhecido');
 
+    // estilos para botão de alternar ad_status
+
     // Função para verificar se é vídeo
     const isVideoFile = useCallback((url) => {
         if (!url || typeof url !== 'string') return false;
@@ -613,6 +615,13 @@ export default function MyPropertiesScreen({ navigation }) {
                                             {getStatusText(item.status)}
                                         </Text>
                                     </View>
+                                    {/* Badge de Ativação (ad_status) */}
+                                    {item.ad_status && (
+                                        <View style={[styles.boostedBadge, { backgroundColor: item.ad_status === 'active' ? '#16a34a' : '#9ca3af' }]}>
+                                            <Ionicons name={item.ad_status === 'active' ? 'flash' : 'pause'} size={10} color="#fff" />
+                                            <Text style={styles.boostedBadgeText}>{item.ad_status === 'active' ? 'Ativo' : 'Inativo'}</Text>
+                                        </View>
+                                    )}
                                     {/* Badge de Impulsionado */}
                                     {activeBoosts[item.id] && (
                                         <View style={styles.boostedBadge}>
@@ -716,6 +725,40 @@ export default function MyPropertiesScreen({ navigation }) {
                                     }
                                     return null;
                                 })()}
+                            </View>
+                        )}
+
+                        {/* Alternar ad_status quando aprovado */}
+                        {item.status === 'approved' && (
+                            <View style={[styles.expandedSection, { paddingTop: 0 }]}>
+                                <Text style={styles.expandedSectionTitle}>Disponibilidade</Text>
+                                <TouchableOpacity
+                                    style={[styles.toggleAdStatusBtn, { backgroundColor: item.ad_status === 'active' ? '#f59e0b' : '#16a34a' }]}
+                                    onPress={async () => {
+                                        try {
+                                            const next = item.ad_status === 'active' ? 'inactive' : 'active';
+                                            const confirmText = next === 'active' ? 'Ativar este anúncio?' : 'Inativar este anúncio?';
+                                            Alert.alert('Confirmar', confirmText, [
+                                                { text: 'Cancelar', style: 'cancel' },
+                                                {
+                                                    text: 'Confirmar', onPress: async () => {
+                                                        try {
+                                                            await PropertyService.updateAdStatus(item.id, next);
+                                                            setProperties(prev => prev.map(p => p.id === item.id ? { ...p, ad_status: next } : p));
+                                                        } catch (e) {
+                                                            Alert.alert('Erro', 'Não foi possível atualizar o status.');
+                                                        }
+                                                    }
+                                                }
+                                            ]);
+                                        } catch (e) { }
+                                    }}
+                                >
+                                    <Ionicons name={item.ad_status === 'active' ? 'pause' : 'play'} size={16} color="#fff" />
+                                    <Text style={styles.toggleAdStatusText}>
+                                        {item.ad_status === 'active' ? 'Inativar anúncio' : 'Ativar anúncio'}
+                                    </Text>
+                                </TouchableOpacity>
                             </View>
                         )}
 
@@ -1637,6 +1680,27 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 10,
         fontWeight: '600',
+    },
+    toggleAdStatusBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+        paddingVertical: 10,
+        paddingHorizontal: 14,
+        borderRadius: 10,
+        alignSelf: 'flex-start',
+        marginTop: 6,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        elevation: 2,
+    },
+    toggleAdStatusText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: '700',
     },
     propertyTitle: {
         fontSize: 16,
