@@ -36,7 +36,7 @@ async function deleteInactiveAds() {
         const { data: inactiveUsers, error: usersError } = await supabase
             .from('user_subscriptions')
             .select('user_id, status, end_date, updated_at')
-            .in('status', ['cancelled', 'expired'])
+            .in('status', ['expired'])
             .lt('updated_at', threeDaysAgo.toISOString())
             .order('user_id');
 
