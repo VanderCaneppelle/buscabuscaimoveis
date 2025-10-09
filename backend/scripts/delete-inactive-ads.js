@@ -15,26 +15,12 @@
  */
 
 import { supabase } from '../lib/supabase.js';
-
-/**
- * Importar PropertyService dinamicamente
- */
-async function getPropertyService() {
-    try {
-        const propertyServiceModule = await import('../../lib/propertyService.js');
-        return propertyServiceModule.PropertyService || propertyServiceModule.default?.PropertyService;
-    } catch (error) {
-        console.error('❌ Erro ao importar PropertyService:', error);
-        throw error;
-    }
-}
+import { PropertyService } from '../lib/propertyService.js';
 
 /**
  * Excluir anúncios inativos de usuários sem plano ativo há mais de 3 dias
  */
 async function deleteInactiveAds() {
-    // Importar PropertyService dinamicamente
-    const PropertyService = await getPropertyService();
     try {
         console.log('🗑️ Iniciando exclusão de anúncios inativos...');
 
