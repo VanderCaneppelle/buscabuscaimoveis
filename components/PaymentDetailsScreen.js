@@ -609,10 +609,7 @@ export default function PaymentDetailsScreen({ route, navigation }) {
 
                     {/* Payment Method Card */}
                     <View style={styles.paymentMethodCard}>
-                        <View style={styles.paymentMethodHeader}>
-                            <Ionicons name="card-outline" size={24} color="#27ae60" />
-                            <Text style={styles.paymentMethodTitle}>Método de Pagamento</Text>
-                        </View>
+
                         <View style={styles.mercadopagoInfo}>
                             <Ionicons name="shield-checkmark" size={20} color="#27ae60" />
                             <Text style={styles.mercadopagoText}>
@@ -847,9 +844,10 @@ const styles = StyleSheet.create({
         lineHeight: 20,
     },
     planCard: {
+        width: '90%',
         backgroundColor: '#fff',
         marginHorizontal: 20,
-        marginBottom: 20,
+        marginBottom: 10,
         borderRadius: 12,
         padding: 24,
         paddingTop: 10,
@@ -862,7 +860,7 @@ const styles = StyleSheet.create({
     planHeader: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 16,
+        marginBottom: 8,
     },
     planName: {
         fontSize: 24,
@@ -914,9 +912,9 @@ const styles = StyleSheet.create({
     paymentMethodCard: {
         backgroundColor: '#fff',
         marginHorizontal: 20,
-        marginBottom: 20,
+        marginBottom: 10,
         borderRadius: 12,
-        padding: 20,
+        padding: 0,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
@@ -1054,8 +1052,9 @@ const styles = StyleSheet.create({
     periodSelectionCard: {
         backgroundColor: '#fff',
         borderRadius: 12,
-        padding: 20,
-        marginBottom: 20,
+        padding: 10,
+        marginHorizontal: 20,
+        marginBottom: 10,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
@@ -1068,6 +1067,7 @@ const styles = StyleSheet.create({
         color: '#2c3e50',
         marginBottom: 20,
         textAlign: 'center',
+
     },
     periodOption: {
         flexDirection: 'row',

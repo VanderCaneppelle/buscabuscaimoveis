@@ -11,6 +11,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import StandardHeader from './StandardHeader';
+import { CommonActions } from '@react-navigation/native';
 
 export default function PaymentConfirmationScreen({ route, navigation }) {
     console.log('Rendered PaymentConfirmationScreen');
@@ -25,17 +26,24 @@ export default function PaymentConfirmationScreen({ route, navigation }) {
     };
 
     const handleVerImoveis = () => {
-        navigation.navigate('Main', {
-            screen: 'MainTabs',
-            params: {
-                screen: 'Busca'
-            }
-        });
+        navigation.dispatch(
+            CommonActions.reset({
+                index: 0,
+                routes: [
+                    {
+                        name: 'Main',
+                        params: {
+                            screen: 'MainTabs',
+                            params: {
+                                screen: 'Busca',
+                            },
+                        },
+                    },
+                ],
+            })
+        );
     };
 
-    const handleTentarNovamente = () => {
-        navigation.goBack();
-    };
 
     const renderSuccessContent = () => (
         <>
@@ -55,10 +63,10 @@ export default function PaymentConfirmationScreen({ route, navigation }) {
 
             {/* Action Buttons */}
             <View style={styles.actionButtons}>
-                <TouchableOpacity style={styles.primaryButton} onPress={handleAnunciar}>
+                {/* <TouchableOpacity style={styles.primaryButton} onPress={handleAnunciar}>
                     <Ionicons name="add-circle" size={20} color="#fff" />
                     <Text style={styles.primaryButtonText}>Criar Anúncio</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
                 <TouchableOpacity style={styles.secondaryButton} onPress={handleVerImoveis}>
                     <Ionicons name="home-outline" size={20} color="#27ae60" />
                     <Text style={styles.secondaryButtonText}>Ver Imóveis</Text>
@@ -73,7 +81,7 @@ export default function PaymentConfirmationScreen({ route, navigation }) {
                 title="Pagamento Aprovado"
                 subtitle="Seu pagamento foi aprovado com sucesso"
                 showBackButton={false}
-                onBackPress={() => navigation.goBack()}
+
             />
 
             <View style={styles.contentContainer}>

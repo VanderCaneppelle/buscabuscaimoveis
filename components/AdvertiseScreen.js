@@ -233,7 +233,7 @@ export default function AdvertiseScreen({ navigation }) {
                         <Text style={styles.sectionTitle}>Resumo</Text>
                         <View style={styles.statsGrid}>
                             {renderStatsCard(
-                                'Anúncios Ativos',
+                                'Anúncios',
                                 eligibility?.currentAds || 0,
                                 'home',
                                 '#3498db'

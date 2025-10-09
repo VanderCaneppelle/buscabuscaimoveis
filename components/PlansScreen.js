@@ -366,18 +366,18 @@ export default function PlansScreen({ navigation, route }) {
                         <View style={styles.featuresGrid}>
                             <View style={styles.featureCard}>
                                 <Ionicons name="camera" size={24} color="#3498db" />
-                                <Text style={styles.featureCardTitle}>Fotos Ilimitadas</Text>
+                                <Text style={styles.featureCardTitle}>Limites de fotos de acordo com o plano</Text>
                                 <Text style={styles.featureCardText}>
-                                    Adicione quantas fotos quiser aos seus anúncios
+                                    Quanto maior o plano, mais fotos você pode adicionar aos seus anúncios
                                 </Text>
                             </View>
-                            <View style={styles.featureCard}>
+                            {/* <View style={styles.featureCard}>
                                 <Ionicons name="analytics" size={24} color="#e74c3c" />
                                 <Text style={styles.featureCardTitle}>Relatórios</Text>
                                 <Text style={styles.featureCardText}>
                                     Acompanhe o desempenho dos seus anúncios
                                 </Text>
-                            </View>
+                            </View> */}
                             <View style={styles.featureCard}>
                                 <Ionicons name="headset" size={24} color="#2ecc71" />
                                 <Text style={styles.featureCardTitle}>Suporte</Text>
@@ -389,7 +389,7 @@ export default function PlansScreen({ navigation, route }) {
                                 <Ionicons name="trending-up" size={24} color="#f39c12" />
                                 <Text style={styles.featureCardTitle}>Destaque</Text>
                                 <Text style={styles.featureCardText}>
-                                    Seus anúncios aparecem em destaque
+                                    Possibilidade de Impulsionar seus anúncios para alcançar mais clientes
                                 </Text>
                             </View>
                         </View>
