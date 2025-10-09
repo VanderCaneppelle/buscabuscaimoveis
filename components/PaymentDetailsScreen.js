@@ -18,6 +18,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase.js';
 import StandardHeader from './StandardHeader';
 import { PlanService } from '../lib/planService';
+// Modal removido: fluxo migrado para telas dedicadas
 
 
 export default function PaymentDetailsScreen({ route, navigation }) {
@@ -36,6 +37,8 @@ export default function PaymentDetailsScreen({ route, navigation }) {
     const [currentPaymentId, setCurrentPaymentId] = useState(null);
     const [checkingStatus, setCheckingStatus] = useState(false);
     const [showPaymentInfoModal, setShowPaymentInfoModal] = useState(false);
+
+    // Estados do fluxo antigo removidos
 
     useEffect(() => {
         // Carregar opções de plano (mensal e anual) e plano atual do usuário
@@ -248,12 +251,13 @@ export default function PaymentDetailsScreen({ route, navigation }) {
 
             if (!validation.canProceed) {
                 console.log('❌ Validação falhou:', validation);
-                Alert.alert(
-                    'Anúncios Inativos',
-                    validation.reason,
-                    [{ text: 'Entendi', style: 'default' }]
-                );
+                // Navegar para tela de opções
                 setLoading(false);
+                navigation.navigate('InactiveAdsOptions', {
+                    validation,
+                    userId: user.id,
+                    plan
+                });
                 return;
             }
 
@@ -303,6 +307,29 @@ export default function PaymentDetailsScreen({ route, navigation }) {
                 plan: plan
             });
         }
+    };
+
+    // Handlers para o modal de anúncios inativos
+    const handlePlanChange = () => {
+        console.log('📋 Usuário optou por escolher outro plano');
+        setShowInactiveAdsModal(false);
+        navigation.goBack(); // Volta para PlansScreen
+    };
+
+    const handleAdsDeleted = (deletedAds) => {
+        console.log('🗑️ Anúncios excluídos:', deletedAds);
+        setShowInactiveAdsModal(false);
+        // Retentar pagamento após exclusão
+        Alert.alert(
+            'Anúncios Excluídos',
+            'Anúncios excluídos com sucesso! Você pode prosseguir com o pagamento.',
+            [
+                {
+                    text: 'Prosseguir',
+                    onPress: () => handlePayment()
+                }
+            ]
+        );
     };
 
     // Polling do status enquanto a WebView está aberta
@@ -729,6 +756,7 @@ export default function PaymentDetailsScreen({ route, navigation }) {
                     </View>
                 </View>
             </Modal>
+
         </SafeAreaView >
     );
 }

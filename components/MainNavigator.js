@@ -18,6 +18,8 @@ import CreateAdScreen from './CreateAdScreen';
 import PropertyDetailsScreen from './PropertyDetailsScreen';
 import PaymentDetailsScreen from './PaymentDetailsScreen';
 import PaymentConfirmationScreen from './PaymentConfirmationScreen';
+import InactiveAdsOptionsScreen from './InactiveAdsOptionsScreen';
+import InactiveAdsSelectScreen from './InactiveAdsSelectScreen';
 import CreateStoryScreen from './CreateStoryScreen';
 import StoryViewerScreen from './StoryViewerScreen';
 import VideoUploadTestScreen from './VideoUploadTestScreen';
@@ -411,6 +413,28 @@ export default function MainNavigator() {
                     },
                     animation: 'none',
                     tabBarStyle: { display: 'none' }, // Esconde a barra de rodapé
+                }}
+            />
+            <Stack.Screen
+                name="InactiveAdsOptions"
+                component={InactiveAdsOptionsScreen}
+                options={{
+                    presentation: 'fullScreenModal',
+                    headerShown: false,
+                    cardStyle: { backgroundColor: 'white' },
+                    animation: 'none',
+                    tabBarStyle: { display: 'none' },
+                }}
+            />
+            <Stack.Screen
+                name="InactiveAdsSelect"
+                component={InactiveAdsSelectScreen}
+                options={{
+                    presentation: 'fullScreenModal',
+                    headerShown: false,
+                    cardStyle: { backgroundColor: 'white' },
+                    animation: 'none',
+                    tabBarStyle: { display: 'none' },
                 }}
             />
             {/* PaymentConfirmation como modal - mesmo nível das outras telas */}
