@@ -5,6 +5,14 @@
 
 import { supabase } from './supabase.js';
 import fetch from 'node-fetch';
+import { v2 as cloudinary } from 'cloudinary';
+
+// Configurar Cloudinary
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 /**
  * Extrair public_id do Cloudinary a partir da URL
@@ -24,41 +32,52 @@ function extractCloudinaryPublicId(url) {
 }
 
 /**
- * Deletar arquivo do Cloudinary via backend API
- * Usa o mesmo endpoint que o frontend: backend/api/delete-cloudinary.js
+git * Detectar tipo de recurso da URL do Cloudinary
+ */
+function detectResourceType(url) {
+    if (url.includes('/video/')) {
+        return 'video';
+    } else if (url.includes('/image/')) {
+        return 'image';
+    } else {
+        return 'raw';
+    }
+}
+
+/**
+ * Deletar arquivo do Cloudinary usando SDK direto
+ * Mais confiável que chamar a API via HTTP
  */
 async function deleteFromCloudinary(url) {
     try {
-        console.log('   🗑️ Excluindo do Cloudinary via API:', url);
+        console.log('   🗑️ Excluindo do Cloudinary:', url);
 
-        // URL do backend (Vercel)
-        const backendUrl = process.env.BACKEND_URL || 'https://buscabuscaimoveis.vercel.app';
-        const deleteEndpoint = `${backendUrl}/api/delete-cloudinary`;
-
-        console.log('   🌐 Endpoint:', deleteEndpoint);
-
-        const response = await fetch(deleteEndpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            },
-            body: JSON.stringify({ url })
-        });
-
-        console.log('   📡 Resposta:', {
-            status: response.status,
-            statusText: response.statusText,
-            ok: response.ok
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.warn(`   ⚠️ Erro ao excluir do Cloudinary (${response.status}):`, errorText);
+        // Extrair public_id da URL
+        const publicId = extractCloudinaryPublicId(url);
+        if (!publicId) {
+            console.warn('   ⚠️ Não foi possível extrair public_id da URL');
             return false;
         }
 
-        const result = await response.json();
+        // Detectar tipo de recurso
+        const resourceType = detectResourceType(url);
+
+        console.log('   📋 Public ID:', publicId);
+        console.log('   📋 Resource Type:', resourceType);
+
+        // Usar SDK do Cloudinary para exclusão direta
+        const result = await new Promise((resolve, reject) => {
+            cloudinary.uploader.destroy(publicId, {
+                resource_type: resourceType
+            }, (error, result) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(result);
+                }
+            });
+        });
+
         console.log('   ✅ Arquivo excluído do Cloudinary:', result);
         return true;
 
