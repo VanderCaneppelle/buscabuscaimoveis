@@ -326,8 +326,11 @@ export default function BoostPaymentScreen({ navigation, route }) {
                 animationType="fade"
                 onRequestClose={() => {
                     setShowBoostSuccessModal(false);
-                    navigation.navigate('MyProperties')
-                        ;
+                    // Resetar a pilha e ir para a tab "Busca" (que contém a Home)
+                    navigation.reset({
+                        index: 0,
+                        routes: [{ name: 'Busca' }],
+                    });
                 }}
             >
                 <View style={styles.modalOverlay}>
@@ -343,10 +346,14 @@ export default function BoostPaymentScreen({ navigation, route }) {
                             style={styles.modalButton}
                             onPress={() => {
                                 setShowBoostSuccessModal(false);
-                                navigation.navigate('MyProperties');
+                                // Resetar a pilha e ir para a tab "Busca" (que contém a Home)
+                                navigation.reset({
+                                    index: 0,
+                                    routes: [{ name: 'Busca' }],
+                                });
                             }}
                         >
-                            <Text style={styles.modalButtonText}>Ver Meus Anúncios</Text>
+                            <Text style={styles.modalButtonText}>Ir para Início</Text>
                         </TouchableOpacity>
                     </View>
                 </View>

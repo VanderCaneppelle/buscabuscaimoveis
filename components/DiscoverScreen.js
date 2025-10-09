@@ -68,10 +68,11 @@ export default function DiscoverScreen({ navigation }) {
             const boostedProperties = await BoostService.getBoostedProperties();
 
             console.log(`✨ ${boostedProperties.length} anúncios em destaque carregados`);
+            console.log('🔍 Debug - IDs das propriedades:', boostedProperties.map(p => p.property_id));
 
             // Transformar para o formato esperado pelo componente
-            const properties = boostedProperties.map(item => ({
-                id: item.property_id,
+            const properties = boostedProperties.map((item, index) => ({
+                id: item.property_id || `boost_${index}_${Date.now()}`, // Garantir ID único
                 title: item.title,
                 description: item.description,
                 price: item.price,
@@ -101,7 +102,13 @@ export default function DiscoverScreen({ navigation }) {
                 }
             }));
 
-            setFeaturedProperties(properties);
+            // Remover duplicatas baseado no ID da propriedade
+            const uniqueProperties = properties.filter((item, index, self) =>
+                index === self.findIndex(t => t.id === item.id)
+            );
+
+            console.log(`📊 Propriedades únicas: ${uniqueProperties.length} (de ${properties.length} total)`);
+            setFeaturedProperties(uniqueProperties);
         } catch (error) {
             console.error('Erro ao buscar anúncios em destaque:', error);
         } finally {
@@ -171,7 +178,7 @@ export default function DiscoverScreen({ navigation }) {
                     <FlatList
                         data={displayMediaFiles}
                         renderItem={renderMediaItem}
-                        keyExtractor={(mediaItem, mediaIndex) => `${index}-${mediaIndex}`}
+                        keyExtractor={(mediaItem, mediaIndex) => `media_${item.id}_${mediaIndex}`}
                         horizontal
                         pagingEnabled
                         showsHorizontalScrollIndicator={false}
@@ -326,7 +333,7 @@ export default function DiscoverScreen({ navigation }) {
                 <FlatList
                     data={featuredProperties}
                     renderItem={renderProperty}
-                    keyExtractor={(item) => item.id}
+                    keyExtractor={(item, index) => `discover_${item.id}_${index}`}
                     refreshControl={
                         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
                     }
