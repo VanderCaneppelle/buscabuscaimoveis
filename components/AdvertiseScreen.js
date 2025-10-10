@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
-import { PlanService } from '../lib/planService';
+import { useUserPlanStore } from '../stores/userPlanStore';
 import { useFocusEffect } from '@react-navigation/native';
 import StandardHeader from './StandardHeader';
 
@@ -19,13 +19,25 @@ export default function AdvertiseScreen({ navigation }) {
     console.log('Rendered AdvertiseScreen');
 
     const { user } = useAuth();
-    const [eligibility, setEligibility] = useState(null);
-    const [manageAdsInfo, setManageAdsInfo] = useState(null);
-    const [loading, setLoading] = useState(true);
+    
+    // ✅ Zustand: User Plan Store
+    const canCreateAd = useUserPlanStore(state => state.canCreateAd);
+    const canManageAds = useUserPlanStore(state => state.canManageAds);
+    const canBoostAd = useUserPlanStore(state => state.canBoostAd);
+    const createAdReason = useUserPlanStore(state => state.createAdReason);
+    const manageAdsReason = useUserPlanStore(state => state.manageAdsReason);
+    const boostAdReason = useUserPlanStore(state => state.boostAdReason);
+    const planName = useUserPlanStore(state => state.plan?.display_name);
+    const currentAds = useUserPlanStore(state => state.currentAds);
+    const maxAds = useUserPlanStore(state => state.maxAds);
+    const availableAds = useUserPlanStore(state => state.availableAds);
+    const isFreePlan = useUserPlanStore(state => state.isFreePlan);
+    const fetchUserPlanData = useUserPlanStore(state => state.fetchUserPlanData);
+    const loading = useUserPlanStore(state => state.loading);
 
     useEffect(() => {
         if (user?.id) {
-            checkUserPermissions();
+            fetchUserPlanData(user.id); // Cache de 3 min
         }
     }, [user?.id]);
 
@@ -34,42 +46,18 @@ export default function AdvertiseScreen({ navigation }) {
         React.useCallback(() => {
             if (user?.id) {
                 console.log('🔄 AdvertiseScreen: Atualizando dados...');
-                checkUserPermissions();
+                fetchUserPlanData(user.id);
             }
         }, [user?.id])
     );
 
-    const checkUserPermissions = async () => {
-        try {
-            setLoading(true);
-            const eligibilityData = await PlanService.getUserEligibility(user.id);
-            setEligibility(eligibilityData);
-
-            // Verificar se pode gerenciar anúncios (separado de criar)
-            const manageResult = await PlanService.userCanManageAds(user.id);
-            setManageAdsInfo(manageResult);
-
-            console.log('📋 AdvertiseScreen - Permissões:', {
-                canCreate: eligibilityData.canCreate,
-                canManage: manageResult.canManageAds,
-                manageReason: manageResult.reason,
-                planName: eligibilityData.planName,
-                isFreePlan: eligibilityData.isFreePlan
-            });
-        } catch (error) {
-            console.error('Erro ao verificar permissões:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     const handleCreateAd = () => {
-        if (eligibility?.canCreate) {
+        if (canCreateAd) {
             navigation.navigate('CreateAd');
         } else {
             Alert.alert(
                 'Você não pode criar anúncios no momento.',
-                eligibility?.reason || 'Você não pode criar anúncios no momento.',
+                createAdReason || 'Você não pode criar anúncios no momento.',
                 [
                     { text: 'Cancelar', style: 'cancel' },
                     { text: 'Ver Planos', onPress: () => navigation.navigate('Plans') }
@@ -77,13 +65,14 @@ export default function AdvertiseScreen({ navigation }) {
             );
         }
     };
+    
     const handleManageAds = () => {
-        if (manageAdsInfo?.canManageAds) {
+        if (canManageAds) {
             navigation.navigate('MyProperties');
         } else {
             Alert.alert(
                 'Não é possível gerenciar anúncios',
-                manageAdsInfo?.reason || 'Você precisa de um plano ativo para gerenciar anúncios.',
+                manageAdsReason || 'Você precisa de um plano ativo para gerenciar anúncios.',
                 [
                     { text: 'Cancelar', style: 'cancel' },
                     { text: 'Ver Planos', onPress: () => navigation.navigate('Plans') }
@@ -91,13 +80,14 @@ export default function AdvertiseScreen({ navigation }) {
             );
         }
     };
+    
     const handleBoostAds = () => {
-        if (manageAdsInfo?.canManageAds) {
+        if (canBoostAd) {
             navigation.navigate('AdBoosting');
         } else {
             Alert.alert(
                 'Você não pode impulsionar anúncios no momento.',
-                manageAdsInfo?.reason || 'Você não pode impulsionar anúncios no momento.',
+                boostAdReason || 'Você não pode impulsionar anúncios no momento.',
                 [
                     { text: 'Cancelar', style: 'cancel' },
                     { text: 'Ver Planos', onPress: () => navigation.navigate('Plans') }
@@ -110,36 +100,34 @@ export default function AdvertiseScreen({ navigation }) {
     };
 
     const renderPlanInfoCard = () => {
-        if (!eligibility) return null;
-
-        const availableAds = Math.max(0, (eligibility.maxAds ?? 0) - (eligibility.currentAds ?? 0));
-        const isExpired = eligibility.isExpired === true;
-        const planDisplayName = isExpired
-            ? `${eligibility.planDisplayName} (Vencido)`
-            : (eligibility.planDisplayName || 'Gratuito');
+        const isPlanExpired = useUserPlanStore.getState().isPlanExpired;
+        const planEndDate = useUserPlanStore.getState().planEndDate;
+        const planDisplayName = isPlanExpired
+            ? `${planName} (Vencido)`
+            : (planName || 'Gratuito');
 
         return (
             <View style={styles.planInfoCard}>
                 <View style={styles.planInfoHeader}>
-                    <Ionicons name="card" size={24} color={isExpired ? "#e74c3c" : "#3498db"} />
+                    <Ionicons name="card" size={24} color={isPlanExpired ? "#e74c3c" : "#3498db"} />
                     <Text style={styles.planInfoTitle}>Seu Plano Atual</Text>
                 </View>
-                <Text style={[styles.planName, isExpired && styles.planNameExpired]}>
+                <Text style={[styles.planName, isPlanExpired && styles.planNameExpired]}>
                     {planDisplayName}
                 </Text>
-                {isExpired && eligibility?.endDate && (
+                {isPlanExpired && planEndDate && (
                     <Text style={styles.planExpiredDate}>
-                        Venceu em {new Date(eligibility.endDate).toLocaleDateString('pt-BR')}
+                        Venceu em {new Date(planEndDate).toLocaleDateString('pt-BR')}
                     </Text>
                 )}
                 <Text style={styles.planStatus}>
-                    {eligibility.canCreate
-                        ? `${eligibility.currentAds}/${eligibility.maxAds} anúncios ativos`
-                        : eligibility.reason}
+                    {canCreateAd
+                        ? `${currentAds}/${maxAds} anúncios ativos`
+                        : createAdReason}
                 </Text>
 
                 {/* Aviso de Plano Vencido */}
-                {isExpired && (
+                {isPlanExpired && (
                     <View style={styles.expiredWarning}>
                         <View style={styles.expiredWarningHeader}>
                             <Ionicons name="warning" size={20} color="#e74c3c" />
@@ -161,10 +149,10 @@ export default function AdvertiseScreen({ navigation }) {
                 )}
 
                 {/* Botão para liberar mais anúncios quando disponível < 2 */}
-                {!isExpired && availableAds < 2 && (
+                {!isPlanExpired && availableAds < 2 && (
                     <View style={styles.upgradeSection}>
                         <Text style={styles.upgradeMessage}>
-                            {planDisplayName === 'Gratuito' ? 'Contrate um plano e comece a anunciar.' :
+                            {isFreePlan ? 'Contrate um plano e comece a anunciar.' :
                                 availableAds === 0
                                     ? '⚠️ Você não tem mais anúncios disponíveis! Não fique sem anunciar, renove seu plano.'
                                     : '⚠️ Seu limite de anúncios esta quase esgotado! Não fique sem vender! Libere mais anúncios.'}
@@ -234,19 +222,19 @@ export default function AdvertiseScreen({ navigation }) {
                         <View style={styles.statsGrid}>
                             {renderStatsCard(
                                 'Anúncios',
-                                eligibility?.currentAds || 0,
+                                currentAds,
                                 'home',
                                 '#3498db'
                             )}
                             {renderStatsCard(
                                 'Limite',
-                                eligibility?.maxAds || 0,
+                                maxAds,
                                 'trending-up',
                                 '#2ecc71'
                             )}
                             {renderStatsCard(
                                 'Disponíveis',
-                                Math.max(0, (eligibility?.maxAds || 0) - (eligibility?.currentAds || 0)),
+                                availableAds,
                                 'add-circle',
                                 '#f39c12'
                             )}
@@ -257,46 +245,32 @@ export default function AdvertiseScreen({ navigation }) {
                     <View style={styles.actionsSection}>
                         {/* <Text style={styles.sectionTitle}>Ações</Text> */}
 
-                        {(() => {
-                            const isDisabled = !eligibility?.canCreate;
-                            return renderActionCard(
-                                'Criar Novo Anúncio',
-                                'Publique um novo imóvel',
-                                'add-circle',
-                                '#3498db',
-                                handleCreateAd,
-                                isDisabled
-                            );
-                        })()}
+                        {renderActionCard(
+                            'Criar Novo Anúncio',
+                            'Publique um novo imóvel',
+                            'add-circle',
+                            '#3498db',
+                            handleCreateAd,
+                            !canCreateAd
+                        )}
 
-                        {(() => {
-                            const isDisabled = !manageAdsInfo?.canManageAds;
-                            console.log('🎯 Botão Gerenciar Anúncios:', {
-                                manageAdsInfo,
-                                isDisabled,
-                                canManageAds: manageAdsInfo?.canManageAds
-                            });
-                            return renderActionCard(
-                                'Gerenciar Anúncios',
-                                'Veja e edite seus anúncios',
-                                'list',
-                                '#2ecc71',
-                                handleManageAds,
-                                isDisabled
-                            );
-                        })()}
+                        {renderActionCard(
+                            'Gerenciar Anúncios',
+                            'Veja e edite seus anúncios',
+                            'list',
+                            '#2ecc71',
+                            handleManageAds,
+                            !canManageAds
+                        )}
 
-                        {(() => {
-                            const isDisabled = !manageAdsInfo?.canManageAds;
-                            return renderActionCard(
-                                'Impulsionar Anúncios',
-                                'Dê mais visibilidade aos seus anúncios',
-                                'rocket',
-                                '#e67e22',
-                                handleBoostAds,
-                                isDisabled
-                            );
-                        })()}
+                        {renderActionCard(
+                            'Impulsionar Anúncios',
+                            'Dê mais visibilidade aos seus anúncios',
+                            'rocket',
+                            '#e67e22',
+                            handleBoostAds,
+                            !canBoostAd
+                        )}
 
                         {renderActionCard(
                             'Ver Planos',
