@@ -46,7 +46,7 @@ const debounce = (func, wait) => {
 
 
 export default function HomeScreen({ navigation }) {
-    // console.log('ðŸ  HomeScreen: COMPONENTE MONTADO/RENDERIZADO'); // Removido para evitar logs excessivos
+    // console.log('  HomeScreen: COMPONENTE MONTADO/RENDERIZADO'); // Removido para evitar logs excessivos
 
     const { user, signOut } = useAuth();
 
@@ -113,9 +113,9 @@ export default function HomeScreen({ navigation }) {
     };
 
     useEffect(() => {
-        console.log('ðŸ  HomeScreen: useEffect dados - user?.id:', !!user?.id, 'hasInitialData:', hasInitialData);
+        console.log('  HomeScreen: useEffect dados - user?.id:', !!user?.id, 'hasInitialData:', hasInitialData);
         if (!hasInitialData) {
-            console.log('ðŸ‘¤ðŸ‘¤ðŸ‘¤ HomeScreen: CARREGANDO DADOS INICIAIS ðŸ‘¤ðŸ‘¤ðŸ‘¤');
+            console.log('HomeScreen: CARREGANDO DADOS INICIAIS ');
             // Carregar dados apenas uma vez
             if (user?.id) {
                 fetchProfile();
@@ -129,9 +129,9 @@ export default function HomeScreen({ navigation }) {
     // Garantir que os dados sejam carregados quando a tela ganhar foco
     useFocusEffect(
         useCallback(() => {
-            console.log('ðŸ  HomeScreen: TELA GANHOU FOCO');
+            console.log('  HomeScreen: TELA GANHOU FOCO');
             if (!hasInitialData) {
-                console.log('ðŸ‘¤ðŸ‘¤ðŸ‘¤ HomeScreen: CARREGANDO DADOS NO FOCUS ðŸ‘¤ðŸ‘¤ðŸ‘¤');
+                console.log(' HomeScreen: CARREGANDO DADOS NO FOCUS');
                 if (user?.id) {
                     fetchProfile();
                 }
@@ -150,9 +150,9 @@ export default function HomeScreen({ navigation }) {
 
     // Detectar quando o componente Ã© desmontado
     useEffect(() => {
-        console.log('ðŸ  HomeScreen: COMPONENTE MONTADO - useEffect cleanup');
+        console.log('  HomeScreen: COMPONENTE MONTADO - useEffect cleanup');
         return () => {
-            console.log('ðŸ  HomeScreen: COMPONENTE DESMONTADO');
+            console.log('  HomeScreen: COMPONENTE DESMONTADO');
         };
     }, []);
 
@@ -214,7 +214,7 @@ export default function HomeScreen({ navigation }) {
                 enableParallelUpdate: true // Habilitar atualizaÃ§Ã£o em background (SWR)
             });
 
-            console.log('ðŸ  HomeScreen: Resultado recebido:', {
+            console.log('  HomeScreen: Resultado recebido:', {
                 dataLength: result.data?.length || 0,
                 hasMore: result.hasMore,
                 totalCount: result.totalCount
@@ -367,7 +367,7 @@ export default function HomeScreen({ navigation }) {
                     a.toLowerCase().localeCompare(b.toLowerCase())
                 );
 
-                console.log('ðŸ™ï¸ Cidades carregadas:', uniqueCities.length, uniqueCities.slice(0, 5));
+                console.log('™ï¸ Cidades carregadas:', uniqueCities.length, uniqueCities.slice(0, 5));
                 setCities(uniqueCities);
             }
         } catch (error) {

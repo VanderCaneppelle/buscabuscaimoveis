@@ -174,7 +174,7 @@ export default function AdvertiseScreen({ navigation }) {
                         <Text style={styles.upgradeMessage}>
                             {isFreePlan ? 'Contrate um plano e comece a anunciar.' :
                                 availableAds === 0
-                                    ? '⚠️ Você não tem mais anúncios disponíveis! Não fique sem anunciar, renove seu plano.'
+                                    ? '⚠️ Você não tem mais anúncios disponíveis! Não fique sem anunciar, aumente seus limites.'
                                     : '⚠️ Seu limite de anúncios esta quase esgotado! Não fique sem vender! Libere mais anúncios.'}
                         </Text>
                         <TouchableOpacity

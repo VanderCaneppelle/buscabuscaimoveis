@@ -452,7 +452,7 @@ export default function CreateAdScreen({ navigation, route }) {
             const currentVideos = mediaFiles.filter(f => f.type === 'video').length;
             const maxImages = plan?.max_images || 10;
             const maxVideos = plan?.max_videos || 0;
-            
+
             // Bloquear se tentar adicionar vídeo e já atingiu o limite
             if (type === 'video' && currentVideos >= maxVideos) {
                 Alert.alert(
@@ -462,7 +462,7 @@ export default function CreateAdScreen({ navigation, route }) {
                 );
                 return; // ❌ BLOQUEIA
             }
-            
+
             // Bloquear se tentar adicionar imagem e já atingiu o limite
             if (type !== 'video' && currentImages >= maxImages) {
                 Alert.alert(
@@ -472,7 +472,7 @@ export default function CreateAdScreen({ navigation, route }) {
                 );
                 return; // ❌ BLOQUEIA
             }
-            
+
             console.log('✅ Validação preventiva passou:', {
                 type,
                 currentImages,
@@ -480,7 +480,7 @@ export default function CreateAdScreen({ navigation, route }) {
                 maxImages,
                 maxVideos
             });
-            
+
             let result = null;
 
             if (type === 'camera') {

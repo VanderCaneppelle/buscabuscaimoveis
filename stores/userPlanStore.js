@@ -88,7 +88,7 @@ export const useUserPlanStore = create((set, get) => ({
 
             // Calcular availableAds
             const calculatedAvailableAds = Math.max(0, eligibility.maxAds - eligibility.currentAds);
-            
+
             console.log('[UserPlanStore] ✅ Dados carregados:', {
                 planName: eligibility.planName,
                 planDisplayName: eligibility.planDisplayName,
@@ -110,7 +110,7 @@ export const useUserPlanStore = create((set, get) => ({
                 : eligibility.isExpired
                     ? 'Seu plano está vencido. Renove para impulsionar anúncios'
                     : '';
-            
+
             console.log('[UserPlanStore] 🎯 Cálculo de boost:', {
                 isFreePlan: eligibility.isFreePlan,
                 isExpired: eligibility.isExpired,
