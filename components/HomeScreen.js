@@ -21,12 +21,12 @@ import FavoriteButton from './FavoriteButton';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext';
 import { useFavoritesStore } from '../stores/favoritesStore';
+import { useBoostsStore } from '../stores/boostsStore';
 import { supabase } from '../lib/supabase';
 import PropertyCacheService from '../lib/propertyCacheService';
 import StoriesComponent from './StoriesComponent';
 import { CardStyleInterpolators } from '@react-navigation/stack';
 import { FiltersModal } from './modals';
-import { BoostService } from '../lib/boostService';
 
 const { width } = Dimensions.get('window');
 
@@ -49,12 +49,19 @@ export default function HomeScreen({ navigation }) {
     // console.log('ðŸ  HomeScreen: COMPONENTE MONTADO/RENDERIZADO'); // Removido para evitar logs excessivos
 
     const { user, signOut } = useAuth();
-    // Zustand: selecionar apenas o que precisa (evita re-renders)
+    
+    // Zustand: Favoritos
     const isFavorite = useFavoritesStore(state => state.isFavorite);
     const toggleFavorite = useFavoritesStore(state => state.toggleFavorite);
     const refreshFavorites = useFavoritesStore(state => state.refreshFavorites);
     const favoritesChanged = useFavoritesStore(state => state.favoritesChanged);
     const clearFavoritesChanged = useFavoritesStore(state => state.clearFavoritesChanged);
+    
+    // Zustand: Boosts
+    const boostedPropertyIds = useBoostsStore(state => state.boostedPropertyIds);
+    const fetchBoostedIds = useBoostsStore(state => state.fetchBoostedIds);
+    const isBoosted = useBoostsStore(state => state.isBoosted);
+    
     const insets = useSafeAreaInsets();
     const colorScheme = useColorScheme();
     const [profile, setProfile] = useState(null);
@@ -63,7 +70,6 @@ export default function HomeScreen({ navigation }) {
     const [listLoading, setListLoading] = useState(false); // Loading apenas para a lista
     const [refreshing, setRefreshing] = useState(false);
     const [loadingMore, setLoadingMore] = useState(false);
-    const [boostedPropertyIds, setBoostedPropertyIds] = useState(new Set()); // IDs de propriedades impulsionadas
     const [searchTerm, setSearchTerm] = useState('');
     const [searchInputValue, setSearchInputValue] = useState(''); // Valor do input separado do termo de busca
     const [isSearching, setIsSearching] = useState(false); // Estado para indicar se estÃ¡ buscando
@@ -130,6 +136,8 @@ export default function HomeScreen({ navigation }) {
                     fetchProfile();
                 }
                 fetchProperties();
+                // ✅ Carregar boosts (com cache de 5 min)
+                fetchBoostedIds();
                 setHasInitialData(true);
             }
             // Recarregar favoritos APENAS se foram modificados em outra tela
@@ -137,7 +145,7 @@ export default function HomeScreen({ navigation }) {
                 console.log('[HomeScreen] Focus -> favoritesChanged=true. SKIP refreshFavorites (usar estado otimista)');
                 clearFavoritesChanged();
             }
-        }, [user?.id, hasInitialData, favoritesChanged])
+        }, [user?.id, hasInitialData, favoritesChanged, fetchBoostedIds])
     );
 
     // Detectar quando o componente Ã© desmontado
@@ -166,21 +174,7 @@ export default function HomeScreen({ navigation }) {
         }
     };
 
-    const fetchBoostedProperties = async (propertyIds, shouldMerge = false) => {
-        try {
-            const boostedIds = await BoostService.getBoostedPropertyIds(propertyIds);
-
-            if (shouldMerge) {
-                // Mesclar com IDs existentes (para paginação)
-                setBoostedPropertyIds(prev => new Set([...prev, ...boostedIds]));
-            } else {
-                // Substituir (para primeira carga ou refresh)
-                setBoostedPropertyIds(boostedIds);
-            }
-        } catch (err) {
-            console.error('Erro ao buscar boosts ativos:', err);
-        }
-    };
+    // ❌ REMOVIDO: fetchBoostedProperties - agora usa Zustand (useBoostsStore)
 
     const fetchProperties = async (customFilters = null, searchQuery = null, page = 0, forceRefresh = false, isSearchOrFilterChange = false) => {
         // Evitar recarregamento se jÃ¡ temos dados e nÃ£o Ã© forceRefresh
@@ -236,11 +230,8 @@ export default function HomeScreen({ navigation }) {
             setHasMore(result.hasMore);
             setTotalCount(result.totalCount);
 
-            // Buscar boosts ativos para as propriedades carregadas
-            if (result.data && result.data.length > 0) {
-                const shouldMerge = page > 0; // Se não é primeira página, mesclar com existentes
-                fetchBoostedProperties(result.data.map(p => p.id), shouldMerge);
-            }
+            // ✅ Boosts são carregados uma vez no início via Zustand (cache de 5 min)
+            // Não precisa buscar a cada paginação
 
         } catch (error) {
             console.error('âŒ Erro ao carregar propriedades:', error);
@@ -414,10 +405,11 @@ export default function HomeScreen({ navigation }) {
 
 
     // Componente simplificado para renderizar propriedades
-    const PropertyItem = React.memo(({ item, index, isFavorited, handleToggleFavorite, navigation, boostedPropertyIds }) => {
+    const PropertyItem = React.memo(({ item, index, isFavorited, handleToggleFavorite, navigation }) => {
         const mediaFiles = item.images || [];
         const [currentIndex, setCurrentIndex] = useState(0);
-        const isBoosted = boostedPropertyIds.has(item.id);
+        // ✅ Usar Zustand para verificar boost (O(1))
+        const isPropertyBoosted = isBoosted(item.id);
 
         // Memoizar o onPress para evitar re-renderizaÃ§Ãµes
         const handlePress = useCallback(() => {
@@ -573,7 +565,7 @@ export default function HomeScreen({ navigation }) {
                     </Text>
 
                     {/* Badge de Destaque - Canto inferior direito */}
-                    {isBoosted && (
+                    {isPropertyBoosted && (
                         <View style={styles.boostBadge}>
                             <Ionicons name="rocket" size={12} color="#fff" />
                             <Text style={styles.boostBadgeText}>Destaque</Text>
@@ -608,10 +600,9 @@ export default function HomeScreen({ navigation }) {
                 isFavorited={isFavorited}
                 handleToggleFavorite={handleToggleFavorite}
                 navigation={navigation}
-                boostedPropertyIds={boostedPropertyIds}
             />
         );
-    }, [isFavorite, handleToggleFavorite, navigation, boostedPropertyIds]);
+    }, [isFavorite, handleToggleFavorite, navigation]);
 
     if (loading) {
         return (

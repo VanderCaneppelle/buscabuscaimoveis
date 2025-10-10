@@ -15,7 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
-import { BoostService } from '../lib/boostService';
+import { useBoostsStore } from '../stores/boostsStore';
 import { PlanService } from '../lib/planService';
 import StandardHeader from './StandardHeader';
 import AdBoostingScreen from './AdBoostingScreen';
@@ -26,6 +26,12 @@ export default function DiscoverScreen({ navigation }) {
     console.log('Rendered DiscoverScreen');
 
     const { user } = useAuth();
+    
+    // Zustand: Boosts
+    const boostedProperties = useBoostsStore(state => state.boostedProperties);
+    const fetchBoostedProperties = useBoostsStore(state => state.fetchBoostedProperties);
+    const boostsLoading = useBoostsStore(state => state.loading);
+    
     const [featuredProperties, setFeaturedProperties] = useState([]);
     const [userPlan, setUserPlan] = useState(null);
 
@@ -64,14 +70,13 @@ export default function DiscoverScreen({ navigation }) {
         try {
             setLoading(true);
 
-            // Usar a função do banco para buscar anúncios impulsionados
-            const boostedProperties = await BoostService.getBoostedProperties();
+            // ✅ Buscar do Zustand (com cache de 5 min)
+            const boostedPropertiesData = await fetchBoostedProperties();
 
-            console.log(`✨ ${boostedProperties.length} anúncios em destaque carregados`);
-            console.log('🔍 Debug - IDs das propriedades:', boostedProperties.map(p => p.property_id));
+            console.log(`✨ ${boostedPropertiesData.length} anúncios em destaque carregados`);
 
             // Transformar para o formato esperado pelo componente
-            const properties = boostedProperties.map((item, index) => ({
+            const properties = boostedPropertiesData.map((item, index) => ({
                 id: item.property_id || `boost_${index}_${Date.now()}`, // Garantir ID único
                 title: item.title,
                 description: item.description,
@@ -118,6 +123,8 @@ export default function DiscoverScreen({ navigation }) {
 
     const onRefresh = async () => {
         setRefreshing(true);
+        // ✅ Forçar refresh do Zustand (ignora cache)
+        await fetchBoostedProperties(true);
         await loadData();
         setRefreshing(false);
     };
