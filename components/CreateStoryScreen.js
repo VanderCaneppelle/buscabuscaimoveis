@@ -19,11 +19,28 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import { Video } from 'expo-av';
+import * as VideoThumbnails from 'expo-video-thumbnails';
 import { useAdmin } from '../contexts/AdminContext';
 import { supabase } from '../lib/supabase';
 import { Platform } from 'react-native';
 import { MediaServiceOptimized as MediaService } from '../lib/mediaServiceOptimized';
 import { useAuth } from '../contexts/AuthContext';
+
+// ✅ Função helper para obter informações do vídeo
+const getVideoInfo = async (uri) => {
+    try {
+        const { durationMillis } = await VideoThumbnails.getThumbnailAsync(uri, {
+            time: 0,
+        });
+        
+        return {
+            duration: durationMillis ? durationMillis / 1000 : 0, // Converter ms para segundos
+        };
+    } catch (error) {
+        console.error('Erro ao obter info do vídeo:', error);
+        return { duration: 0 };
+    }
+};
 
 // Componente DraggableTitle
 const DraggableTitle = ({ title, coordinates, onCoordinatesChange, onEdit, onDelete, onDragToTrash, scale = 1.0, onScaleChange }) => {
