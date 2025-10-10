@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
     View,
     Text,
@@ -22,9 +22,23 @@ export default function AccountScreen({ navigation }) {
 
     const { user, signOut } = useAuth();
     
-    // ✅ Zustand: User Plan Store (usar APENAS getPlanSummary para evitar loops)
-    const planSummary = useUserPlanStore(state => state.getPlanSummary());
+    // ✅ Zustand: User Plan Store (selecionar campos individuais para evitar loops)
+    const plan = useUserPlanStore(state => state.plan);
+    const planEndDate = useUserPlanStore(state => state.planEndDate);
+    const isPlanExpired = useUserPlanStore(state => state.isPlanExpired);
+    const currentAds = useUserPlanStore(state => state.currentAds);
+    const maxAds = useUserPlanStore(state => state.maxAds);
+    const canCreateAd = useUserPlanStore(state => state.canCreateAd);
     const fetchUserPlanData = useUserPlanStore(state => state.fetchUserPlanData);
+    
+    // Memoizar planSummary para evitar recriação
+    const planSummary = useMemo(() => ({
+        planName: plan?.display_name || 'Gratuito',
+        endDate: planEndDate,
+        isExpired: isPlanExpired,
+        ads: { current: currentAds, max: maxAds },
+        permissions: { canCreate: canCreateAd }
+    }), [plan?.display_name, planEndDate, isPlanExpired, currentAds, maxAds, canCreateAd]);
 
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
