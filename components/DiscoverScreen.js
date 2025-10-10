@@ -16,7 +16,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useBoostsStore } from '../stores/boostsStore';
-import { PlanService } from '../lib/planService';
+import { useUserPlanStore } from '../stores/userPlanStore';
 import StandardHeader from './StandardHeader';
 import AdBoostingScreen from './AdBoostingScreen';
 
@@ -31,9 +31,12 @@ export default function DiscoverScreen({ navigation }) {
     const boostedProperties = useBoostsStore(state => state.boostedProperties);
     const fetchBoostedProperties = useBoostsStore(state => state.fetchBoostedProperties);
     const boostsLoading = useBoostsStore(state => state.loading);
-
+    
+    // Zustand: User Plan
+    const isFreePlan = useUserPlanStore(state => state.isFreePlan);
+    const fetchUserPlanData = useUserPlanStore(state => state.fetchUserPlanData);
+    
     const [featuredProperties, setFeaturedProperties] = useState([]);
-    const [userPlan, setUserPlan] = useState(null);
 
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -41,7 +44,7 @@ export default function DiscoverScreen({ navigation }) {
     useEffect(() => {
         loadData();
         if (user?.id) {
-            loadUserPlan();
+            fetchUserPlanData(user.id); // ✅ Usar Zustand (cache de 3 min)
         }
     }, [user?.id]);
 
@@ -51,20 +54,12 @@ export default function DiscoverScreen({ navigation }) {
             console.log('🔄 DiscoverScreen: Atualizando dados...');
             loadData();
             if (user?.id) {
-                loadUserPlan();
+                fetchUserPlanData(user.id); // ✅ Usar Zustand (cache de 3 min)
             }
         }, [user?.id])
     );
 
-    const loadUserPlan = async () => {
-        try {
-            const planSnapshot = await PlanService.getUserPlanSnapshot(user.id);
-            setUserPlan(planSnapshot);
-        } catch (error) {
-            console.error('Erro ao carregar plano do usuário:', error);
-            setUserPlan(null);
-        }
-    };
+    // ❌ REMOVIDO: loadUserPlan - agora usa Zustand
 
     const loadData = async () => {
         try {
@@ -347,7 +342,7 @@ export default function DiscoverScreen({ navigation }) {
 
                     ListHeaderComponent={
                         // Mostrar CTA apenas para usuários com plano pago (não free)
-                        userPlan && !userPlan.isFreePlan ? (
+                        user && !isFreePlan ? (
                             <View style={styles.ctaContainer}>
                                 <View style={styles.ctaCard}>
                                     <Ionicons name="ribbon" size={18} color="#6c5ce7" />
