@@ -86,12 +86,16 @@ export const useUserPlanStore = create((set, get) => ({
                 PlanService.getUserPlanSnapshot(userId) // ✅ Buscar snapshot para ter plano completo
             ]);
 
+            // Calcular availableAds
+            const calculatedAvailableAds = Math.max(0, eligibility.maxAds - eligibility.currentAds);
+            
             console.log('[UserPlanStore] ✅ Dados carregados:', {
                 planName: eligibility.planName,
                 planDisplayName: eligibility.planDisplayName,
                 snapshotPlan: snapshot.plan,
                 currentAds: eligibility.currentAds,
                 maxAds: eligibility.maxAds,
+                availableAds: calculatedAvailableAds,
                 canCreate: eligibility.canCreate,
                 canManage: manageInfo.canManageAds
             });
@@ -123,7 +127,7 @@ export const useUserPlanStore = create((set, get) => ({
                 // Anúncios
                 currentAds: eligibility.currentAds,
                 maxAds: eligibility.maxAds,
-                availableAds: eligibility.availableAds,
+                availableAds: Math.max(0, eligibility.maxAds - eligibility.currentAds), // ✅ Calcular
                 inactiveAds: eligibility.inactiveAds || 0,
 
                 // Permissões

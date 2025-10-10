@@ -59,7 +59,7 @@ export default function AdvertiseScreen({ navigation }) {
             manageAdsReason,
             boostAdReason
         });
-    }, [planName, currentAds, maxAds, availableAds, isFreePlan, isPlanExpired, 
+    }, [planName, currentAds, maxAds, availableAds, isFreePlan, isPlanExpired,
         canCreateAd, canManageAds, canBoostAd]);
 
     // Atualizar dados sempre que a tela ganhar foco
