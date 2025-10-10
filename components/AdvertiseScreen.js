@@ -154,7 +154,7 @@ export default function AdvertiseScreen({ navigation }) {
                             <Text style={styles.expiredWarningTitle}>Atenção: Plano Vencido</Text>
                         </View>
                         <Text style={styles.expiredWarningText}>
-                            Seus anúncios permanecerão inativos por até 24 horas.
+                            Seus anúncios foram inativados e ficarão em nosso sistema por até 72 horas.
                             {'\n'}
                             Caso o plano não seja renovado, eles serão permanentemente excluídos.
                         </Text>
