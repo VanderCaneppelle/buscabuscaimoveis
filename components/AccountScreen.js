@@ -11,7 +11,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
-import { PlanService } from '../lib/planService';
+import { useUserPlanStore } from '../stores/userPlanStore';
 import PropertyCacheService from '../lib/propertyCacheService';
 import { useFocusEffect } from '@react-navigation/native';
 import StandardHeader from './StandardHeader';
@@ -21,8 +21,19 @@ export default function AccountScreen({ navigation }) {
     console.log('Rendered AccountScreen');
 
     const { user, signOut } = useAuth();
+    
+    // ✅ Zustand: User Plan Store
+    const planSummary = useUserPlanStore(state => state.getPlanSummary());
+    const planName = useUserPlanStore(state => state.plan?.display_name);
+    const planEndDate = useUserPlanStore(state => state.planEndDate);
+    const isPlanExpired = useUserPlanStore(state => state.isPlanExpired);
+    const currentAds = useUserPlanStore(state => state.currentAds);
+    const maxAds = useUserPlanStore(state => state.maxAds);
+    const canCreateAd = useUserPlanStore(state => state.canCreateAd);
+    const createAdReason = useUserPlanStore(state => state.createAdReason);
+    const fetchUserPlanData = useUserPlanStore(state => state.fetchUserPlanData);
+    
     const [profile, setProfile] = useState(null);
-    const [eligibility, setEligibility] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -46,7 +57,7 @@ export default function AccountScreen({ navigation }) {
             setLoading(true);
             await Promise.all([
                 fetchProfile(),
-                fetchEligibility()
+                fetchUserPlanData(user.id) // ✅ Usar Zustand (cache de 3 min)
             ]);
         } catch (error) {
             console.error('Erro ao carregar dados do usuário:', error);
@@ -73,14 +84,7 @@ export default function AccountScreen({ navigation }) {
         }
     };
 
-    const fetchEligibility = async () => {
-        try {
-            const info = await PlanService.getUserEligibility(user.id);
-            setEligibility(info);
-        } catch (error) {
-            console.error('Erro ao buscar elegibilidade:', error);
-        }
-    };
+    // ❌ REMOVIDO: fetchEligibility - agora usa Zustand
 
     const handleSignOut = async () => {
         Alert.alert(
@@ -239,29 +243,29 @@ export default function AccountScreen({ navigation }) {
                         <Text style={styles.sectionTitle}>Plano Atual</Text>
                         <View style={styles.planCard}>
                             <View style={styles.planHeader}>
-                                <Ionicons name="card" size={24} color={eligibility?.isExpired ? '#e74c3c' : '#3498db'} />
+                                <Ionicons name="card" size={24} color={isPlanExpired ? '#e74c3c' : '#3498db'} />
                                 <Text style={styles.planName}>
-                                    {eligibility?.isExpired
-                                        ? `${eligibility?.planDisplayName || 'Gratuito'} (Vencido)`
-                                        : (eligibility?.planDisplayName || 'Gratuito')}
+                                    {isPlanExpired
+                                        ? `${planName || 'Gratuito'} (Vencido)`
+                                        : (planName || 'Gratuito')}
                                 </Text>
                             </View>
                             <Text style={styles.planStatus}>
-                                {eligibility?.canCreate
-                                    ? `${eligibility.currentAds || 0}/${eligibility.maxAds || 0} anúncios`
-                                    : eligibility?.reason || '—'}
+                                {canCreateAd
+                                    ? `${currentAds}/${maxAds} anúncios`
+                                    : createAdReason || '—'}
                             </Text>
 
-                            {eligibility?.endDate && (
+                            {planEndDate && (
                                 <View style={styles.expirationInfo}>
                                     <Ionicons name="calendar-outline" size={16} color="#7f8c8d" />
                                     <Text style={styles.expirationText}>
-                                        Vence em: {formatExpirationDate(eligibility.endDate)}
+                                        Vence em: {formatExpirationDate(planEndDate)}
                                     </Text>
                                 </View>
                             )}
 
-                            {eligibility?.endDate && isExpiringSoon(eligibility.endDate) && (
+                            {planEndDate && isExpiringSoon(planEndDate) && (
                                 <View style={styles.renewalReminder}>
                                     <View style={styles.reminderHeader}>
                                         <Ionicons name="warning" size={16} color="#f39c12" />
