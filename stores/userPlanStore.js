@@ -80,9 +80,10 @@ export const useUserPlanStore = create((set, get) => ({
 
         try {
             // Buscar dados em paralelo (mais rápido)
-            const [eligibility, manageInfo] = await Promise.all([
+            const [eligibility, manageInfo, snapshot] = await Promise.all([
                 PlanService.getUserEligibility(userId),
-                PlanService.userCanManageAds(userId)
+                PlanService.userCanManageAds(userId),
+                PlanService.getUserPlanSnapshot(userId) // ✅ Buscar snapshot para ter plano completo
             ]);
 
             console.log('[UserPlanStore] ✅ Dados carregados:', {
@@ -104,14 +105,14 @@ export const useUserPlanStore = create((set, get) => ({
                     : '';
 
             // Atualizar store com TODOS os dados
+            // ✅ Usar snapshot.plan (objeto completo) e sobrescrever campos básicos
             set({
-                // Plano (criar objeto com display_name para compatibilidade)
+                // Plano (mesclar snapshot.plan com dados do eligibility)
                 plan: {
+                    ...(snapshot.plan || {}), // Plano completo (max_images, max_videos, etc)
                     name: eligibility.planName,
                     display_name: eligibility.planDisplayName,
-                    max_ads: eligibility.maxAds,
-                    // Nota: max_images e max_videos virão do snapshot.plan se disponível
-                    ...(snapshot.plan || {})
+                    max_ads: eligibility.maxAds
                 },
                 planStatus: eligibility.status,
                 planEndDate: eligibility.endDate,
