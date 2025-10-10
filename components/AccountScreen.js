@@ -21,16 +21,9 @@ export default function AccountScreen({ navigation }) {
     console.log('Rendered AccountScreen');
 
     const { user, signOut } = useAuth();
-
-    // ✅ Zustand: User Plan Store
+    
+    // ✅ Zustand: User Plan Store (usar APENAS getPlanSummary para evitar loops)
     const planSummary = useUserPlanStore(state => state.getPlanSummary());
-    const planName = useUserPlanStore(state => state.plan?.display_name);
-    const planEndDate = useUserPlanStore(state => state.planEndDate);
-    const isPlanExpired = useUserPlanStore(state => state.isPlanExpired);
-    const currentAds = useUserPlanStore(state => state.currentAds);
-    const maxAds = useUserPlanStore(state => state.maxAds);
-    const canCreateAd = useUserPlanStore(state => state.canCreateAd);
-    const createAdReason = useUserPlanStore(state => state.createAdReason);
     const fetchUserPlanData = useUserPlanStore(state => state.fetchUserPlanData);
 
     const [profile, setProfile] = useState(null);
@@ -56,7 +49,7 @@ export default function AccountScreen({ navigation }) {
 
     const loadUserData = useCallback(async () => {
         if (!user?.id) return;
-        
+
         try {
             setLoading(true);
             await Promise.all([
@@ -243,29 +236,29 @@ export default function AccountScreen({ navigation }) {
                         <Text style={styles.sectionTitle}>Plano Atual</Text>
                         <View style={styles.planCard}>
                             <View style={styles.planHeader}>
-                                <Ionicons name="card" size={24} color={isPlanExpired ? '#e74c3c' : '#3498db'} />
+                                <Ionicons name="card" size={24} color={planSummary.isExpired ? '#e74c3c' : '#3498db'} />
                                 <Text style={styles.planName}>
-                                    {isPlanExpired
-                                        ? `${planName || 'Gratuito'} (Vencido)`
-                                        : (planName || 'Gratuito')}
+                                    {planSummary.isExpired
+                                        ? `${planSummary.planName} (Vencido)`
+                                        : planSummary.planName}
                                 </Text>
                             </View>
                             <Text style={styles.planStatus}>
-                                {canCreateAd
-                                    ? `${currentAds}/${maxAds} anúncios`
-                                    : createAdReason || '—'}
+                                {planSummary.permissions.canCreate
+                                    ? `${planSummary.ads.current}/${planSummary.ads.max} anúncios`
+                                    : '—'}
                             </Text>
 
-                            {planEndDate && (
+                            {planSummary.endDate && (
                                 <View style={styles.expirationInfo}>
                                     <Ionicons name="calendar-outline" size={16} color="#7f8c8d" />
                                     <Text style={styles.expirationText}>
-                                        Vence em: {formatExpirationDate(planEndDate)}
+                                        Vence em: {formatExpirationDate(planSummary.endDate)}
                                     </Text>
                                 </View>
                             )}
 
-                            {planEndDate && isExpiringSoon(planEndDate) && (
+                            {planSummary.endDate && isExpiringSoon(planSummary.endDate) && (
                                 <View style={styles.renewalReminder}>
                                     <View style={styles.reminderHeader}>
                                         <Ionicons name="warning" size={16} color="#f39c12" />
