@@ -41,6 +41,7 @@ export default function CreateAdScreen({ navigation, route }) {
     const insets = useSafeAreaInsets();
 
     // ✅ Zustand: User Plan Store
+    const plan = useUserPlanStore(state => state.plan); // Objeto completo do plano (com max_images, max_videos)
     const canCreateAd = useUserPlanStore(state => state.canCreateAd);
     const createAdReason = useUserPlanStore(state => state.createAdReason);
     const currentAds = useUserPlanStore(state => state.currentAds);
@@ -50,7 +51,7 @@ export default function CreateAdScreen({ navigation, route }) {
     const fetchUserPlanData = useUserPlanStore(state => state.fetchUserPlanData);
     const incrementAdCount = useUserPlanStore(state => state.incrementAdCount);
     const userPlanLoading = useUserPlanStore(state => state.loading);
-    
+
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [showPlanModal, setShowPlanModal] = useState(false);
@@ -154,15 +155,15 @@ export default function CreateAdScreen({ navigation, route }) {
     );
 
     // ❌ REMOVIDO: eligibility e checkUserPermissions - agora usa Zustand
-    
+
     useEffect(() => {
         const loadUserPlan = async () => {
             if (!user?.id) return;
-            
+
             try {
                 setLoading(true);
                 await fetchUserPlanData(user.id);
-                
+
                 console.log('📋 CreateAdScreen - Permissões carregadas:', {
                     canCreate: canCreateAd,
                     currentAds,
@@ -184,7 +185,7 @@ export default function CreateAdScreen({ navigation, route }) {
                 setLoading(false);
             }
         };
-        
+
         loadUserPlan();
     }, [user?.id]);
 
@@ -543,7 +544,9 @@ export default function CreateAdScreen({ navigation, route }) {
         if (!validateForm()) return;
         
         // ✅ Criar objeto eligibility compatível com validateMediaLimitsByPlan
+        // IMPORTANTE: Passar o objeto 'plan' completo que contém max_images e max_videos
         const eligibilityData = {
+            plan: plan, // Objeto completo do plano do Zustand
             planName,
             planDisplayName: planName,
             maxAds,
@@ -552,6 +555,14 @@ export default function CreateAdScreen({ navigation, route }) {
             reason: createAdReason,
             isExpired: isPlanExpired
         };
+        
+        console.log('🔍 Validando limites de mídia:', {
+            imagesCount: mediaFiles.filter(file => file.type !== 'video').length,
+            videosCount: mediaFiles.filter(file => file.type === 'video').length,
+            maxImages: plan?.max_images,
+            maxVideos: plan?.max_videos,
+            planName
+        });
         
         const withinLimits = await validateMediaLimitsByPlan({
             imagesCount: mediaFiles.filter(file => file.type !== 'video').length,
