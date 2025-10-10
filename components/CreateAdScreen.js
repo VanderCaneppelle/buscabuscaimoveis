@@ -39,9 +39,18 @@ export default function CreateAdScreen({ navigation, route }) {
 
     const { user } = useAuth();
     const insets = useSafeAreaInsets();
-    
-    // ✅ Zustand: Atualização otimista de contador
+
+    // ✅ Zustand: User Plan Store
+    const canCreateAd = useUserPlanStore(state => state.canCreateAd);
+    const createAdReason = useUserPlanStore(state => state.createAdReason);
+    const currentAds = useUserPlanStore(state => state.currentAds);
+    const maxAds = useUserPlanStore(state => state.maxAds);
+    const planName = useUserPlanStore(state => state.plan?.display_name);
+    const isPlanExpired = useUserPlanStore(state => state.isPlanExpired);
+    const fetchUserPlanData = useUserPlanStore(state => state.fetchUserPlanData);
     const incrementAdCount = useUserPlanStore(state => state.incrementAdCount);
+    const userPlanLoading = useUserPlanStore(state => state.loading);
+    
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [showPlanModal, setShowPlanModal] = useState(false);
@@ -123,9 +132,7 @@ export default function CreateAdScreen({ navigation, route }) {
         longitude: null
     });
 
-    useEffect(() => {
-        checkUserPermissions();
-    }, []);
+    // ❌ REMOVIDO: useEffect que chamava checkUserPermissions - substituído por loadUserPlan acima
 
     useEffect(() => {
         const showSub = Keyboard.addListener('keyboardDidShow', () => setIsKeyboardVisible(true));
@@ -139,39 +146,47 @@ export default function CreateAdScreen({ navigation, route }) {
     // Atualizar dados sempre que a tela ganhar foco
     useFocusEffect(
         React.useCallback(() => {
-            console.log('🔄 CreateAdScreen: Atualizando dados...');
-            checkUserPermissions();
-        }, [])
+            if (user?.id) {
+                console.log('🔄 CreateAdScreen: Atualizando dados...');
+                fetchUserPlanData(user.id);
+            }
+        }, [user?.id])
     );
 
-    const [eligibility, setEligibility] = useState(null);
+    // ❌ REMOVIDO: eligibility e checkUserPermissions - agora usa Zustand
+    
+    useEffect(() => {
+        const loadUserPlan = async () => {
+            if (!user?.id) return;
+            
+            try {
+                setLoading(true);
+                await fetchUserPlanData(user.id);
+                
+                console.log('📋 CreateAdScreen - Permissões carregadas:', {
+                    canCreate: canCreateAd,
+                    currentAds,
+                    maxAds,
+                    planName,
+                    reason: createAdReason
+                });
 
-    const checkUserPermissions = async () => {
-        try {
-            setLoading(true);
-            const info = await PlanService.getUserEligibility(user.id);
-            console.log('📋 CreateAdScreen - Eligibility carregado:', {
-                canCreate: info.canCreate,
-                currentAds: info.currentAds,
-                maxAds: info.maxAds,
-                planName: info.planName,
-                reason: info.reason
-            });
-            setEligibility(info);
-
-            if (!info.canCreate) {
-                console.log('⚠️ CreateAdScreen - Usuário NÃO pode criar anúncio:', info.reason);
-                setShowPlanModal(true);
-            } else {
-                console.log('✅ CreateAdScreen - Usuário PODE criar anúncio');
+                if (!canCreateAd) {
+                    console.log('⚠️ CreateAdScreen - Usuário NÃO pode criar anúncio:', createAdReason);
+                    setShowPlanModal(true);
+                } else {
+                    console.log('✅ CreateAdScreen - Usuário PODE criar anúncio');
+                }
+            } catch (error) {
+                console.error('Erro ao verificar permissões:', error);
+                Alert.alert('Erro', 'Não foi possível verificar suas permissões');
+            } finally {
+                setLoading(false);
             }
-        } catch (error) {
-            console.error('Erro ao verificar permissões:', error);
-            Alert.alert('Erro', 'Não foi possível verificar suas permissões');
-        } finally {
-            setLoading(false);
-        }
-    };
+        };
+        
+        loadUserPlan();
+    }, [user?.id]);
 
     const handleInputChange = (field, value) => {
         setFormData(prev => ({
@@ -526,10 +541,22 @@ export default function CreateAdScreen({ navigation, route }) {
 
     const handleSubmit = async () => {
         if (!validateForm()) return;
+        
+        // ✅ Criar objeto eligibility compatível com validateMediaLimitsByPlan
+        const eligibilityData = {
+            planName,
+            planDisplayName: planName,
+            maxAds,
+            currentAds,
+            canCreate: canCreateAd,
+            reason: createAdReason,
+            isExpired: isPlanExpired
+        };
+        
         const withinLimits = await validateMediaLimitsByPlan({
             imagesCount: mediaFiles.filter(file => file.type !== 'video').length,
             videosCount: mediaFiles.filter(file => file.type === 'video').length,
-            planInfo: eligibility,
+            planInfo: eligibilityData,
         });
         if (!withinLimits) return;
 
@@ -555,7 +582,7 @@ export default function CreateAdScreen({ navigation, route }) {
             // ✅ Atualização otimista: incrementar contador imediatamente
             console.log('✨ Anúncio criado! Atualizando contador no Zustand...');
             incrementAdCount();
-            
+
             setShowProgressModal(false);
             Alert.alert(
                 'Sucesso!',
@@ -679,17 +706,17 @@ export default function CreateAdScreen({ navigation, route }) {
                             contentContainerStyle={{ paddingBottom: 30 }}
                         >
                             {/* Plan Info Card */}
-                            {eligibility && (
+                            {planName && (
                                 <View style={styles.planInfoCard}>
                                     <Ionicons name="information-circle" size={20} color="#3498db" />
                                     <View style={styles.planInfoContent}>
                                         <Text style={styles.planInfoTitle}>
-                                            Plano {eligibility.planDisplayName}
+                                            Plano {planName}
                                         </Text>
                                         <Text style={styles.planInfoText}>
-                                            {eligibility.canCreate
-                                                ? `${eligibility.currentAds}/${eligibility.maxAds} anúncios ativos`
-                                                : eligibility.reason
+                                            {canCreateAd
+                                                ? `${currentAds}/${maxAds} anúncios ativos`
+                                                : createAdReason
                                             }
                                         </Text>
                                     </View>
@@ -986,10 +1013,10 @@ export default function CreateAdScreen({ navigation, route }) {
                                 <TouchableOpacity
                                     style={[
                                         styles.submitButton,
-                                        (!eligibility?.canCreate || submitting) && styles.disabledButton
+                                        (!canCreateAd || submitting) && styles.disabledButton
                                     ]}
                                     onPress={handleSubmit}
-                                    disabled={!eligibility?.canCreate || submitting}
+                                    disabled={!canCreateAd || submitting}
                                 >
                                     {submitting ? (
                                         <ActivityIndicator size="small" color="#fff" />
@@ -1422,15 +1449,15 @@ export default function CreateAdScreen({ navigation, route }) {
                             </View>
                             <Text style={styles.modalTitle}>Você não pode criar anúncios no momento.</Text>
                             <Text style={styles.modalText}>
-                                {!eligibility
+                                {!planName
                                     ? 'Não foi possível verificar suas permissões agora.'
-                                    : eligibility.isExpired
-                                        ? `Seu plano (${eligibility.planDisplayName}) está vencido. Renove para criar novos anúncios.`
-                                        : eligibility.maxAds === 0
+                                    : isPlanExpired
+                                        ? `Seu plano (${planName}) está vencido. Renove para criar novos anúncios.`
+                                        : maxAds === 0
                                             ? 'Seu plano atual não permite criar anúncios.'
-                                            : eligibility.currentAds >= eligibility.maxAds
-                                                ? `Você atingiu o limite de ${eligibility.maxAds} anúncios do seu plano (${eligibility.planDisplayName}).`
-                                                : eligibility.reason || 'Não é possível criar anúncios no momento.'
+                                            : currentAds >= maxAds
+                                                ? `Você atingiu o limite de ${maxAds} anúncios do seu plano (${planName}).`
+                                                : createAdReason || 'Não é possível criar anúncios no momento.'
                                 }
                             </Text>
 
