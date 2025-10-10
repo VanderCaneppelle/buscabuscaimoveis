@@ -19,7 +19,7 @@ export default function AdvertiseScreen({ navigation }) {
     console.log('Rendered AdvertiseScreen');
 
     const { user } = useAuth();
-    
+
     // ✅ Zustand: User Plan Store
     const canCreateAd = useUserPlanStore(state => state.canCreateAd);
     const canManageAds = useUserPlanStore(state => state.canManageAds);
@@ -32,6 +32,8 @@ export default function AdvertiseScreen({ navigation }) {
     const maxAds = useUserPlanStore(state => state.maxAds);
     const availableAds = useUserPlanStore(state => state.availableAds);
     const isFreePlan = useUserPlanStore(state => state.isFreePlan);
+    const isPlanExpired = useUserPlanStore(state => state.isPlanExpired);
+    const planEndDate = useUserPlanStore(state => state.planEndDate);
     const fetchUserPlanData = useUserPlanStore(state => state.fetchUserPlanData);
     const loading = useUserPlanStore(state => state.loading);
 
@@ -40,6 +42,25 @@ export default function AdvertiseScreen({ navigation }) {
             fetchUserPlanData(user.id); // Cache de 3 min
         }
     }, [user?.id]);
+
+    // 🔍 Debug: Verificar todos os valores do Zustand
+    useEffect(() => {
+        console.log('🔍 AdvertiseScreen - Valores do Zustand:', {
+            planName,
+            currentAds,
+            maxAds,
+            availableAds,
+            isFreePlan,
+            isPlanExpired,
+            canCreateAd,
+            canManageAds,
+            canBoostAd,
+            createAdReason,
+            manageAdsReason,
+            boostAdReason
+        });
+    }, [planName, currentAds, maxAds, availableAds, isFreePlan, isPlanExpired, 
+        canCreateAd, canManageAds, canBoostAd]);
 
     // Atualizar dados sempre que a tela ganhar foco
     useFocusEffect(
@@ -65,7 +86,7 @@ export default function AdvertiseScreen({ navigation }) {
             );
         }
     };
-    
+
     const handleManageAds = () => {
         if (canManageAds) {
             navigation.navigate('MyProperties');
@@ -80,7 +101,7 @@ export default function AdvertiseScreen({ navigation }) {
             );
         }
     };
-    
+
     const handleBoostAds = () => {
         if (canBoostAd) {
             navigation.navigate('AdBoosting');
@@ -100,8 +121,7 @@ export default function AdvertiseScreen({ navigation }) {
     };
 
     const renderPlanInfoCard = () => {
-        const isPlanExpired = useUserPlanStore.getState().isPlanExpired;
-        const planEndDate = useUserPlanStore.getState().planEndDate;
+        // ✅ Usar valores já selecionados no topo do componente
         const planDisplayName = isPlanExpired
             ? `${planName} (Vencido)`
             : (planName || 'Gratuito');
