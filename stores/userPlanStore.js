@@ -19,7 +19,7 @@ import { PlanService } from '../lib/planService';
  */
 export const useUserPlanStore = create((set, get) => ({
     // ========== ESTADO ==========
-    
+
     // Dados do plano atual
     plan: null,                    // { id, name, display_name, max_ads, period, ... }
     planStatus: null,              // 'active', 'expired', 'cancelled', 'free'
@@ -27,23 +27,23 @@ export const useUserPlanStore = create((set, get) => ({
     daysRemaining: null,           // Dias até expirar
     isFreePlan: false,             // Se é plano gratuito
     isPlanExpired: false,          // Se o plano está vencido
-    
+
     // Dados de anúncios
     currentAds: 0,                 // Quantidade de anúncios ativos
     maxAds: 0,                     // Limite de anúncios do plano
     availableAds: 0,               // Anúncios disponíveis (maxAds - currentAds)
     inactiveAds: 0,                // Quantidade de anúncios inativos
-    
+
     // Permissões calculadas
     canCreateAd: false,            // Pode criar novo anúncio?
     canManageAds: false,           // Pode gerenciar anúncios existentes?
     canBoostAd: false,             // Pode impulsionar anúncios?
-    
+
     // Razões (para mensagens ao usuário)
     createAdReason: '',            // Por que não pode criar?
     manageAdsReason: '',           // Por que não pode gerenciar?
     boostAdReason: '',             // Por que não pode impulsionar?
-    
+
     // Controle
     lastFetch: null,               // Timestamp da última busca
     loading: false,                // Estado de carregamento
@@ -87,6 +87,8 @@ export const useUserPlanStore = create((set, get) => ({
 
             console.log('[UserPlanStore] ✅ Dados carregados:', {
                 planName: eligibility.planName,
+                planDisplayName: eligibility.planDisplayName,
+                snapshotPlan: snapshot.plan,
                 currentAds: eligibility.currentAds,
                 maxAds: eligibility.maxAds,
                 canCreate: eligibility.canCreate,
@@ -95,38 +97,44 @@ export const useUserPlanStore = create((set, get) => ({
 
             // Calcular permissão de boost (usuário com plano pago pode impulsionar)
             const canBoostAd = !eligibility.isFreePlan && !eligibility.isExpired;
-            const boostAdReason = eligibility.isFreePlan 
+            const boostAdReason = eligibility.isFreePlan
                 ? 'Você precisa de um plano pago para impulsionar anúncios'
-                : eligibility.isExpired 
+                : eligibility.isExpired
                     ? 'Seu plano está vencido. Renove para impulsionar anúncios'
                     : '';
 
             // Atualizar store com TODOS os dados
             set({
-                // Plano
-                plan: eligibility.plan,
+                // Plano (criar objeto com display_name para compatibilidade)
+                plan: {
+                    name: eligibility.planName,
+                    display_name: eligibility.planDisplayName,
+                    max_ads: eligibility.maxAds,
+                    // Nota: max_images e max_videos virão do snapshot.plan se disponível
+                    ...(snapshot.plan || {})
+                },
                 planStatus: eligibility.status,
                 planEndDate: eligibility.endDate,
                 daysRemaining: eligibility.daysRemaining,
                 isFreePlan: eligibility.isFreePlan,
                 isPlanExpired: eligibility.isExpired,
-                
+
                 // Anúncios
                 currentAds: eligibility.currentAds,
                 maxAds: eligibility.maxAds,
                 availableAds: eligibility.availableAds,
                 inactiveAds: eligibility.inactiveAds || 0,
-                
+
                 // Permissões
                 canCreateAd: eligibility.canCreate,
                 canManageAds: manageInfo.canManageAds,
                 canBoostAd: canBoostAd,
-                
+
                 // Razões
                 createAdReason: eligibility.reason,
                 manageAdsReason: manageInfo.reason,
                 boostAdReason: boostAdReason,
-                
+
                 // Controle
                 lastFetch: now,
                 loading: false,
@@ -136,9 +144,9 @@ export const useUserPlanStore = create((set, get) => ({
             return get();
         } catch (error) {
             console.error('[UserPlanStore] ❌ Erro ao buscar dados:', error);
-            set({ 
-                error: error.message, 
-                loading: false 
+            set({
+                error: error.message,
+                loading: false
             });
             throw error;
         }
@@ -189,7 +197,7 @@ export const useUserPlanStore = create((set, get) => ({
      */
     updatePlanStatus: (newPlanData) => {
         console.log('[UserPlanStore] 🔄 Atualizando status do plano:', newPlanData);
-        
+
         set({
             plan: newPlanData.plan || get().plan,
             planStatus: newPlanData.status || get().planStatus,
