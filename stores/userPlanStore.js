@@ -96,6 +96,9 @@ export const useUserPlanStore = create((set, get) => ({
                 currentAds: eligibility.currentAds,
                 maxAds: eligibility.maxAds,
                 availableAds: calculatedAvailableAds,
+                isFreePlan: eligibility.isFreePlan,
+                isExpired: eligibility.isExpired,
+                status: eligibility.status,
                 canCreate: eligibility.canCreate,
                 canManage: manageInfo.canManageAds
             });
@@ -107,6 +110,13 @@ export const useUserPlanStore = create((set, get) => ({
                 : eligibility.isExpired
                     ? 'Seu plano está vencido. Renove para impulsionar anúncios'
                     : '';
+            
+            console.log('[UserPlanStore] 🎯 Cálculo de boost:', {
+                isFreePlan: eligibility.isFreePlan,
+                isExpired: eligibility.isExpired,
+                canBoostAd,
+                boostAdReason
+            });
 
             // Atualizar store com TODOS os dados
             // ✅ Usar snapshot.plan (objeto completo) e sobrescrever campos básicos
@@ -118,9 +128,9 @@ export const useUserPlanStore = create((set, get) => ({
                     display_name: eligibility.planDisplayName,
                     max_ads: eligibility.maxAds
                 },
-                planStatus: eligibility.status,
+                planStatus: snapshot.subscription?.status || 'free', // ✅ Status do snapshot
                 planEndDate: eligibility.endDate,
-                daysRemaining: eligibility.daysRemaining,
+                daysRemaining: snapshot.daysRemaining || 0,
                 isFreePlan: eligibility.isFreePlan,
                 isPlanExpired: eligibility.isExpired,
 

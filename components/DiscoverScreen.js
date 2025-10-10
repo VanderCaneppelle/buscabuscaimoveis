@@ -31,11 +31,14 @@ export default function DiscoverScreen({ navigation }) {
     const boostedProperties = useBoostsStore(state => state.boostedProperties);
     const fetchBoostedProperties = useBoostsStore(state => state.fetchBoostedProperties);
     const boostsLoading = useBoostsStore(state => state.loading);
-    
+
     // Zustand: User Plan
     const isFreePlan = useUserPlanStore(state => state.isFreePlan);
+    const isPlanExpired = useUserPlanStore(state => state.isPlanExpired);
+    const currentAds = useUserPlanStore(state => state.currentAds);
+    const canBoostAd = useUserPlanStore(state => state.canBoostAd);
     const fetchUserPlanData = useUserPlanStore(state => state.fetchUserPlanData);
-    
+
     const [featuredProperties, setFeaturedProperties] = useState([]);
 
     const [loading, setLoading] = useState(true);
@@ -341,8 +344,8 @@ export default function DiscoverScreen({ navigation }) {
                     }
 
                     ListHeaderComponent={
-                        // Mostrar CTA apenas para usuários com plano pago (não free)
-                        user && !isFreePlan ? (
+                        // Mostrar CTA apenas para usuários com plano pago, não expirado e com anúncios ativos
+                        user && canBoostAd && currentAds > 0 ? (
                             <View style={styles.ctaContainer}>
                                 <View style={styles.ctaCard}>
                                     <Ionicons name="ribbon" size={18} color="#6c5ce7" />
