@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     View,
     Text,
@@ -21,7 +21,7 @@ export default function AccountScreen({ navigation }) {
     console.log('Rendered AccountScreen');
 
     const { user, signOut } = useAuth();
-    
+
     // ✅ Zustand: User Plan Store
     const planSummary = useUserPlanStore(state => state.getPlanSummary());
     const planName = useUserPlanStore(state => state.plan?.display_name);
@@ -32,41 +32,11 @@ export default function AccountScreen({ navigation }) {
     const canCreateAd = useUserPlanStore(state => state.canCreateAd);
     const createAdReason = useUserPlanStore(state => state.createAdReason);
     const fetchUserPlanData = useUserPlanStore(state => state.fetchUserPlanData);
-    
+
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        if (user?.id) {
-            loadUserData();
-        }
-    }, [user?.id]);
-
-    // Atualizar dados sempre que a tela ganhar foco
-    useFocusEffect(
-        React.useCallback(() => {
-            if (user?.id) {
-                console.log('🔄 AccountScreen: Atualizando dados...');
-                loadUserData();
-            }
-        }, [user?.id])
-    );
-
-    const loadUserData = async () => {
-        try {
-            setLoading(true);
-            await Promise.all([
-                fetchProfile(),
-                fetchUserPlanData(user.id) // ✅ Usar Zustand (cache de 3 min)
-            ]);
-        } catch (error) {
-            console.error('Erro ao carregar dados do usuário:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const fetchProfile = async () => {
+    const fetchProfile = useCallback(async () => {
         try {
             const { data, error } = await supabase
                 .from('profiles')
@@ -82,9 +52,39 @@ export default function AccountScreen({ navigation }) {
         } catch (error) {
             console.error('Erro ao buscar perfil:', error);
         }
-    };
+    }, [user?.id]);
 
-    // ❌ REMOVIDO: fetchEligibility - agora usa Zustand
+    const loadUserData = useCallback(async () => {
+        if (!user?.id) return;
+        
+        try {
+            setLoading(true);
+            await Promise.all([
+                fetchProfile(),
+                fetchUserPlanData(user.id) // ✅ Usar Zustand (cache de 3 min)
+            ]);
+        } catch (error) {
+            console.error('Erro ao carregar dados do usuário:', error);
+        } finally {
+            setLoading(false);
+        }
+    }, [user?.id, fetchProfile, fetchUserPlanData]);
+
+    useEffect(() => {
+        loadUserData();
+    }, [loadUserData]);
+
+    // Atualizar dados sempre que a tela ganhar foco
+    useFocusEffect(
+        useCallback(() => {
+            if (user?.id) {
+                console.log('🔄 AccountScreen: Atualizando dados...');
+                loadUserData();
+            }
+        }, [user?.id, loadUserData])
+    );
+
+    // ❌ REMOVIDO: fetchProfile duplicado e fetchEligibility - agora usa Zustand
 
     const handleSignOut = async () => {
         Alert.alert(
