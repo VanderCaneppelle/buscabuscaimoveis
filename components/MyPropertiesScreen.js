@@ -24,8 +24,11 @@ const { width } = Dimensions.get('window');
 export default function MyPropertiesScreen({ navigation }) {
     const { user } = useAuth();
     const insets = useSafeAreaInsets();
-    
-    // ✅ Zustand: Atualização otimista de contador
+
+    // ✅ Zustand: User Plan Store
+    const canCreateAd = useUserPlanStore(state => state.canCreateAd);
+    const createAdReason = useUserPlanStore(state => state.createAdReason);
+    const fetchUserPlanData = useUserPlanStore(state => state.fetchUserPlanData);
     const decrementAdCount = useUserPlanStore(state => state.decrementAdCount);
 
     const [properties, setProperties] = useState([]);
@@ -252,6 +255,8 @@ export default function MyPropertiesScreen({ navigation }) {
                 console.log('🔄 Tela MyPropertiesScreen recebeu foco, recarregando dados...');
                 fetchStatsAndPlan();
                 fetchProperties();
+                // ✅ Carregar dados do plano (cache de 3 min)
+                fetchUserPlanData(user.id);
             }
         }, [user?.id])
     );
@@ -395,11 +400,11 @@ export default function MyPropertiesScreen({ navigation }) {
         setDeleteLoading(true);
         try {
             await PropertyService.deleteProperty(selectedProperty.id);
-            
+
             // ✅ Atualização otimista: decrementar contador imediatamente
             console.log('🗑️ Anúncio deletado! Atualizando contador no Zustand...');
             decrementAdCount();
-            
+
             Alert.alert('Sucesso', 'Anúncio excluído com sucesso!');
             setDeleteModalVisible(false);
             // Limpar cache e recarregar
@@ -977,23 +982,19 @@ export default function MyPropertiesScreen({ navigation }) {
                         </Text>
                         <TouchableOpacity
                             style={styles.createAdButton}
-                            onPress={async () => {
-                                try {
-                                    const info = await PlanService.getUserEligibility(user.id);
-                                    if (info.canCreate) {
-                                        navigation.navigate('CreateAd');
-                                    } else {
-                                        Alert.alert(
-                                            'Não é possível criar anúncio',
-                                            info.reason || 'Verifique seu plano.',
-                                            [
-                                                { text: 'Cancelar', style: 'cancel' },
-                                                { text: 'Ver Planos', onPress: () => navigation.navigate('Plans') }
-                                            ]
-                                        );
-                                    }
-                                } catch (e) {
-                                    Alert.alert('Erro', 'Não foi possível verificar seu plano agora.');
+                            onPress={() => {
+                                // ✅ Usar dados do Zustand (sem chamada ao banco)
+                                if (canCreateAd) {
+                                    navigation.navigate('CreateAd');
+                                } else {
+                                    Alert.alert(
+                                        'Não é possível criar anúncio',
+                                        createAdReason || 'Verifique seu plano.',
+                                        [
+                                            { text: 'Cancelar', style: 'cancel' },
+                                            { text: 'Ver Planos', onPress: () => navigation.navigate('Plans') }
+                                        ]
+                                    );
                                 }
                             }}
                         >
