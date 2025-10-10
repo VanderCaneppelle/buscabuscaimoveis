@@ -49,19 +49,19 @@ export default function HomeScreen({ navigation }) {
     // console.log('ðŸ  HomeScreen: COMPONENTE MONTADO/RENDERIZADO'); // Removido para evitar logs excessivos
 
     const { user, signOut } = useAuth();
-    
+
     // Zustand: Favoritos
     const isFavorite = useFavoritesStore(state => state.isFavorite);
     const toggleFavorite = useFavoritesStore(state => state.toggleFavorite);
     const refreshFavorites = useFavoritesStore(state => state.refreshFavorites);
     const favoritesChanged = useFavoritesStore(state => state.favoritesChanged);
     const clearFavoritesChanged = useFavoritesStore(state => state.clearFavoritesChanged);
-    
+
     // Zustand: Boosts
     const boostedPropertyIds = useBoostsStore(state => state.boostedPropertyIds);
     const fetchBoostedIds = useBoostsStore(state => state.fetchBoostedIds);
     const isBoosted = useBoostsStore(state => state.isBoosted);
-    
+
     const insets = useSafeAreaInsets();
     const colorScheme = useColorScheme();
     const [profile, setProfile] = useState(null);

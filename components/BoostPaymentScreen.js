@@ -23,11 +23,11 @@ export default function BoostPaymentScreen({ navigation, route }) {
 
     const { property, boostPlan } = route.params;
     const { user } = useAuth();
-    
+
     // Zustand: Boosts
     const addBoost = useBoostsStore(state => state.addBoost);
     const invalidateCache = useBoostsStore(state => state.invalidateCache);
-    
+
     const [loading, setLoading] = useState(false);
     const [webViewVisible, setWebViewVisible] = useState(false);
     const [checkoutUrl, setCheckoutUrl] = useState('');
@@ -112,12 +112,12 @@ export default function BoostPaymentScreen({ navigation, route }) {
                     if (!isCancelled) {
                         setCheckingStatus(false);
                         setWebViewVisible(false);
-                        
+
                         // ✅ Atualização otimista: adicionar boost ao store imediatamente
                         console.log('✨ Adicionando boost ao store (otimista):', property.id);
                         addBoost(property.id);
                         invalidateCache(); // Forçar próxima busca do servidor
-                        
+
                         setShowBoostSuccessModal(true);
                     }
                     return;

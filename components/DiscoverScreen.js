@@ -26,12 +26,12 @@ export default function DiscoverScreen({ navigation }) {
     console.log('Rendered DiscoverScreen');
 
     const { user } = useAuth();
-    
+
     // Zustand: Boosts
     const boostedProperties = useBoostsStore(state => state.boostedProperties);
     const fetchBoostedProperties = useBoostsStore(state => state.fetchBoostedProperties);
     const boostsLoading = useBoostsStore(state => state.loading);
-    
+
     const [featuredProperties, setFeaturedProperties] = useState([]);
     const [userPlan, setUserPlan] = useState(null);
 

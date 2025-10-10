@@ -29,7 +29,7 @@ export default function InactiveAdsOptionsScreen({ route, navigation }) {
                     <View style={styles.infoTextWrap}>
                         <Text style={styles.title}>Seus anúncios não cabem no plano</Text>
                         <Text style={styles.subtitle}>
-                            Você possui {validation?.inactiveAdsCount || 0} anúncios inativos, mas o plano selecionado permite apenas {validation?.targetPlanMaxAds || 0}.
+                            Você possui {validation?.inactiveAdsCount || 0} anúncios, mas o plano selecionado permite apenas {validation?.targetPlanMaxAds || 0}.
                         </Text>
                     </View>
                 </View>
