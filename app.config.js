@@ -21,6 +21,12 @@ export default {
       jsEngine: "hermes",
       config: {
         usesNonExemptEncryption: false
+      },
+      infoPlist: {
+        NSPhotoLibraryUsageDescription: "Precisamos acessar suas fotos para você adicionar imagens dos imóveis que deseja anunciar.",
+        NSCameraUsageDescription: "Precisamos acessar sua câmera para você tirar fotos dos imóveis que deseja anunciar.",
+        NSPhotoLibraryAddUsageDescription: "Precisamos salvar fotos na sua galeria.",
+        NSMicrophoneUsageDescription: "Precisamos acessar o microfone para gravar vídeos dos imóveis."
       }
     },
     android: {
