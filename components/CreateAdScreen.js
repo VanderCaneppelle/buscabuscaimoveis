@@ -452,42 +452,35 @@ export default function CreateAdScreen({ navigation, route }) {
             const currentVideos = mediaFiles.filter(f => f.type === 'video').length;
             const maxImages = plan?.max_images || 10;
             const maxVideos = plan?.max_videos || 0;
-
-            console.log('🔍 Verificando limites antes de adicionar mídia:', {
-                type,
-                currentImages,
-                currentVideos,
-                maxImages,
-                maxVideos,
-                planName
-            });
-
+            
             // Bloquear se tentar adicionar vídeo e já atingiu o limite
             if (type === 'video' && currentVideos >= maxVideos) {
                 Alert.alert(
                     'Limite de vídeos atingido',
                     `Seu plano ${planName || 'atual'} permite no máximo ${maxVideos} vídeo(s) por anúncio.\n\nVocê já adicionou ${currentVideos} vídeo(s).`,
-                    [
-                        { text: 'OK', style: 'cancel' },
-                        { text: 'Ver Planos', onPress: () => navigation.navigate('Plans') }
-                    ]
+                    [{ text: 'OK' }]
                 );
-                return; // ❌ BLOQUEIA antes de abrir o picker
+                return; // ❌ BLOQUEIA
             }
-
+            
             // Bloquear se tentar adicionar imagem e já atingiu o limite
             if (type !== 'video' && currentImages >= maxImages) {
                 Alert.alert(
                     'Limite de imagens atingido',
                     `Seu plano ${planName || 'atual'} permite no máximo ${maxImages} imagens por anúncio.\n\nVocê já adicionou ${currentImages} imagens.`,
-                    [
-                        { text: 'OK', style: 'cancel' },
-                        { text: 'Ver Planos', onPress: () => navigation.navigate('Plans') }
-                    ]
+                    [{ text: 'OK' }]
                 );
-                return; // ❌ BLOQUEIA antes de abrir o picker
+                return; // ❌ BLOQUEIA
             }
-
+            
+            console.log('✅ Validação preventiva passou:', {
+                type,
+                currentImages,
+                currentVideos,
+                maxImages,
+                maxVideos
+            });
+            
             let result = null;
 
             if (type === 'camera') {
@@ -501,38 +494,6 @@ export default function CreateAdScreen({ navigation, route }) {
             if (result) {
                 // Se result for um array (múltiplas imagens), processar cada uma
                 const results = Array.isArray(result) ? result : [result];
-
-                // ✅ VALIDAÇÃO: Verificar se adicionar essas mídias vai exceder o limite
-                const newImages = results.filter(r => r.type !== 'video').length;
-                const newVideos = results.filter(r => r.type === 'video').length;
-                const currentImages = mediaFiles.filter(f => f.type !== 'video').length;
-                const currentVideos = mediaFiles.filter(f => f.type === 'video').length;
-                const maxImages = plan?.max_images || 10;
-                const maxVideos = plan?.max_videos || 0;
-
-                if (currentImages + newImages > maxImages) {
-                    Alert.alert(
-                        'Limite de imagens excedido',
-                        `Você está tentando adicionar ${newImages} imagem(ns), mas seu plano ${planName || 'atual'} permite no máximo ${maxImages} imagens.\n\nAtualmente você tem ${currentImages} imagem(ns). Você pode adicionar apenas ${maxImages - currentImages} imagem(ns).`,
-                        [
-                            { text: 'OK', style: 'cancel' },
-                            { text: 'Ver Planos', onPress: () => navigation.navigate('Plans') }
-                        ]
-                    );
-                    return; // ❌ BLOQUEIA
-                }
-
-                if (currentVideos + newVideos > maxVideos) {
-                    Alert.alert(
-                        'Limite de vídeos excedido',
-                        `Você está tentando adicionar ${newVideos} vídeo(s), mas seu plano ${planName || 'atual'} permite no máximo ${maxVideos} vídeo(s).\n\nAtualmente você tem ${currentVideos} vídeo(s).`,
-                        [
-                            { text: 'OK', style: 'cancel' },
-                            { text: 'Ver Planos', onPress: () => navigation.navigate('Plans') }
-                        ]
-                    );
-                    return; // ❌ BLOQUEIA
-                }
 
                 for (const mediaResult of results) {
                     // Verificar tamanho do arquivo
@@ -809,31 +770,10 @@ export default function CreateAdScreen({ navigation, route }) {
 
                             {/* Media Section */}
                             <View style={styles.formSection}>
-                                <View style={styles.sectionHeaderWithCounter}>
-                                    <View>
-                                        <Text style={styles.sectionTitle}>Fotos e Vídeos</Text>
-                                        <Text style={styles.sectionSubtitle}>
-                                            Adicione fotos e vídeos do seu imóvel
-                                        </Text>
-                                    </View>
-                                    {/* ✅ Contador visual de limites */}
-                                    <View style={styles.mediaCounterContainer}>
-                                        <View style={styles.mediaCounterItem}>
-                                            <Ionicons name="image" size={16} color="#3498db" />
-                                            <Text style={styles.mediaCounterText}>
-                                                {mediaFiles.filter(f => f.type !== 'video').length}/{plan?.max_images || 10}
-                                            </Text>
-                                        </View>
-                                        {(plan?.max_videos || 0) > 0 && (
-                                            <View style={styles.mediaCounterItem}>
-                                                <Ionicons name="videocam" size={16} color="#e74c3c" />
-                                                <Text style={styles.mediaCounterText}>
-                                                    {mediaFiles.filter(f => f.type === 'video').length}/{plan?.max_videos || 0}
-                                                </Text>
-                                            </View>
-                                        )}
-                                    </View>
-                                </View>
+                                <Text style={styles.sectionTitle}>Fotos e Vídeos</Text>
+                                <Text style={styles.sectionSubtitle}>
+                                    Adicione fotos e vídeos do seu imóvel (máximo 10 arquivos, 50MB cada)
+                                </Text>
 
                                 {mediaFiles.length > 0 && (
                                     <FlatList
@@ -1728,30 +1668,6 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#7f8c8d',
         marginBottom: 15,
-    },
-    sectionHeaderWithCounter: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        marginBottom: 15,
-    },
-    mediaCounterContainer: {
-        flexDirection: 'row',
-        gap: 12,
-    },
-    mediaCounterItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#f8f9fa',
-        paddingHorizontal: 10,
-        paddingVertical: 6,
-        borderRadius: 8,
-        gap: 6,
-    },
-    mediaCounterText: {
-        fontSize: 13,
-        fontWeight: '600',
-        color: '#2c3e50',
     },
     mediaList: {
         marginBottom: 15,
