@@ -10,6 +10,7 @@ import { Video } from 'expo-av';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
+import { useUserPlanStore } from '../stores/userPlanStore';
 import { PropertyService } from '../lib/propertyService';
 import { BoostService } from '../lib/boostService';
 
@@ -23,6 +24,9 @@ const { width } = Dimensions.get('window');
 export default function MyPropertiesScreen({ navigation }) {
     const { user } = useAuth();
     const insets = useSafeAreaInsets();
+    
+    // ✅ Zustand: Atualização otimista de contador
+    const decrementAdCount = useUserPlanStore(state => state.decrementAdCount);
 
     const [properties, setProperties] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -391,6 +395,11 @@ export default function MyPropertiesScreen({ navigation }) {
         setDeleteLoading(true);
         try {
             await PropertyService.deleteProperty(selectedProperty.id);
+            
+            // ✅ Atualização otimista: decrementar contador imediatamente
+            console.log('🗑️ Anúncio deletado! Atualizando contador no Zustand...');
+            decrementAdCount();
+            
             Alert.alert('Sucesso', 'Anúncio excluído com sucesso!');
             setDeleteModalVisible(false);
             // Limpar cache e recarregar

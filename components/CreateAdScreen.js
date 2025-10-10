@@ -22,6 +22,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PlanService } from '../lib/planService';
+import { useUserPlanStore } from '../stores/userPlanStore';
 import { validateMediaLimitsByPlan } from '../lib/validation/mediaLimits';
 import { PropertyService } from '../lib/propertyService';
 import { MediaServiceOptimized } from '../lib/mediaServiceOptimized';
@@ -38,6 +39,9 @@ export default function CreateAdScreen({ navigation, route }) {
 
     const { user } = useAuth();
     const insets = useSafeAreaInsets();
+    
+    // ✅ Zustand: Atualização otimista de contador
+    const incrementAdCount = useUserPlanStore(state => state.incrementAdCount);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [showPlanModal, setShowPlanModal] = useState(false);
@@ -548,6 +552,10 @@ export default function CreateAdScreen({ navigation, route }) {
 
             const newProperty = await PropertyService.createProperty(propertyData, mediaFiles, onUploadProgress);
 
+            // ✅ Atualização otimista: incrementar contador imediatamente
+            console.log('✨ Anúncio criado! Atualizando contador no Zustand...');
+            incrementAdCount();
+            
             setShowProgressModal(false);
             Alert.alert(
                 'Sucesso!',
