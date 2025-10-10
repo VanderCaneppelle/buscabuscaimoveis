@@ -11,6 +11,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LoadingProvider } from './contexts/LoadingContext';
 import { AdminProvider } from './contexts/AdminContext';
 import { useFavoritesStore } from './stores/favoritesStore';
+import { useUserPlanStore } from './stores/userPlanStore';
 import LoginScreen from './components/LoginScreen';
 import MainNavigator from './components/MainNavigator';
 
@@ -27,21 +28,25 @@ function AppContent() {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const navigationRef = useRef(null);
 
-  // Zustand: Inicializar favoritos quando usuário logar
+  // Zustand: Inicializar favoritos e plano quando usuário logar
   const refreshFavorites = useFavoritesStore(state => state.refreshFavorites);
   const resetFavorites = useFavoritesStore(state => state.reset);
+  const resetUserPlan = useUserPlanStore(state => state.reset);
+  const fetchUserPlanData = useUserPlanStore(state => state.fetchUserPlanData);
 
   // Debug: Log do estado de autenticação
   useEffect(() => {
     console.log('AppContent - Estado atual:', { user: user?.email, loading });
 
-    // Carregar favoritos quando usuário logar
+    // Carregar favoritos e plano quando usuário logar
     if (user?.id) {
-      console.log('[App] Usuário logado, carregando favoritos...');
+      console.log('[App] Usuário logado, carregando favoritos e plano...');
       refreshFavorites();
+      fetchUserPlanData(user.id); // ✅ Carregar dados do plano
     } else {
-      console.log('[App] Usuário deslogado, resetando favoritos...');
+      console.log('[App] Usuário deslogado, resetando stores...');
       resetFavorites();
+      resetUserPlan(); // ✅ Resetar dados do plano
     }
   }, [user, loading, refreshFavorites, resetFavorites]);
 
