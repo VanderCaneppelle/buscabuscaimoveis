@@ -336,7 +336,7 @@ export default function MapaImoveis({ navigation, route }) {
             <View style={styles.mapContainer}>
                 <MapView
                     style={styles.map}
-                    provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : PROVIDER_GOOGLE}
+                    provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : PROVIDER_DEFAULT}
                     initialRegion={{
                         latitude: -26.91884, // Itajaí como região inicial padrão
                         longitude: -48.673108,

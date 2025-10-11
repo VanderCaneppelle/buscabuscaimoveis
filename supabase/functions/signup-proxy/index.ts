@@ -210,7 +210,7 @@ Deno.serve(async (req) => {
 
             return json({
                 success: false,
-                message: 'Erro ao criar perfil. Tente novamente.',
+                message: 'Erro ao criar perfi . Tente novamente.',
                 details: profileError.message
             }, 200, origin);
         }

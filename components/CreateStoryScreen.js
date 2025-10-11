@@ -32,7 +32,7 @@ const getVideoInfo = async (uri) => {
         const { durationMillis } = await VideoThumbnails.getThumbnailAsync(uri, {
             time: 0,
         });
-        
+
         return {
             duration: durationMillis ? durationMillis / 1000 : 0, // Converter ms para segundos
         };
