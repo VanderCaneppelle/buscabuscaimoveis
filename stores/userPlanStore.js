@@ -93,6 +93,8 @@ export const useUserPlanStore = create((set, get) => ({
                 planName: eligibility.planName,
                 planDisplayName: eligibility.planDisplayName,
                 snapshotPlan: snapshot.plan,
+                 maxImages: snapshot.plan?.max_images,
+                maxVideos: snapshot.plan?.max_videos,
                 currentAds: eligibility.currentAds,
                 maxAds: eligibility.maxAds,
                 availableAds: calculatedAvailableAds,

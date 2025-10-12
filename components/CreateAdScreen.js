@@ -172,6 +172,12 @@ export default function CreateAdScreen({ navigation, route }) {
                     reason: createAdReason
                 });
 
+                console.log('📸 CreateAdScreen - Limites de mídia:', {
+                    maxImages: plan?.max_images,
+                    maxVideos: plan?.max_videos,
+                    planObject: plan
+                });
+
                 if (!canCreateAd) {
                     console.log('⚠️ CreateAdScreen - Usuário NÃO pode criar anúncio:', createAdReason);
                     setShowPlanModal(true);
@@ -495,6 +501,41 @@ export default function CreateAdScreen({ navigation, route }) {
                 // Se result for um array (múltiplas imagens), processar cada uma
                 const results = Array.isArray(result) ? result : [result];
 
+                // ✅ VALIDAÇÃO: Verificar quantas imagens/vídeos podem ser adicionados
+                const currentImagesCount = mediaFiles.filter(f => f.type !== 'video').length;
+                const currentVideosCount = mediaFiles.filter(f => f.type === 'video').length;
+                const maxImages = plan?.max_images || 10;
+                const maxVideos = plan?.max_videos || 0;
+
+                // Separar imagens e vídeos dos resultados selecionados
+                const selectedImages = results.filter(r => r.type !== 'video');
+                const selectedVideos = results.filter(r => r.type === 'video');
+
+                // Calcular quantos ainda podem ser adicionados
+                const availableImageSlots = maxImages - currentImagesCount;
+                const availableVideoSlots = maxVideos - currentVideosCount;
+
+                // Verificar se vai ultrapassar o limite de imagens
+                if (selectedImages.length > availableImageSlots) {
+                    Alert.alert(
+                        'Limite de imagens excedido',
+                        `Você selecionou ${selectedImages.length} imagem(ns), mas só pode adicionar mais ${availableImageSlots}.\n\nSeu plano ${planName || 'atual'} permite no máximo ${maxImages} imagens por anúncio.`,
+                        [{ text: 'OK' }]
+                    );
+                    return; // ❌ BLOQUEIA todas se ultrapassar
+                }
+
+                // Verificar se vai ultrapassar o limite de vídeos
+                if (selectedVideos.length > availableVideoSlots) {
+                    Alert.alert(
+                        'Limite de vídeos excedido',
+                        `Você selecionou ${selectedVideos.length} vídeo(s), mas só pode adicionar mais ${availableVideoSlots}.\n\nSeu plano ${planName || 'atual'} permite no máximo ${maxVideos} vídeos por anúncio.`,
+                        [{ text: 'OK' }]
+                    );
+                    return; // ❌ BLOQUEIA todos se ultrapassar
+                }
+
+                // Se passou nas validações, processar os arquivos
                 for (const mediaResult of results) {
                     // Verificar tamanho do arquivo
                     const fileSizeMB = (mediaResult.fileSize / 1024 / 1024).toFixed(2);
@@ -771,9 +812,22 @@ export default function CreateAdScreen({ navigation, route }) {
                             {/* Media Section */}
                             <View style={styles.formSection}>
                                 <Text style={styles.sectionTitle}>Fotos e Vídeos</Text>
-                                <Text style={styles.sectionSubtitle}>
-                                    Adicione fotos e vídeos do seu imóvel (máximo 10 arquivos, 50MB cada)
-                                </Text>
+                                
+                                {/* Contadores de mídia */}
+                                <View style={styles.mediaCountersContainer}>
+                                    <View style={styles.mediaCounter}>
+                                        <Ionicons name="images" size={16} color="#3498db" />
+                                        <Text style={styles.mediaCounterText}>
+                                            Imagens: {mediaFiles.filter(f => f.type !== 'video').length}/{plan?.max_images || 10}
+                                        </Text>
+                                    </View>
+                                    <View style={styles.mediaCounter}>
+                                        <Ionicons name="videocam" size={16} color="#e74c3c" />
+                                        <Text style={styles.mediaCounterText}>
+                                            Vídeos: {mediaFiles.filter(f => f.type === 'video').length}/{plan?.max_videos || 0}
+                                        </Text>
+                                    </View>
+                                </View>
 
                                 {mediaFiles.length > 0 && (
                                     <FlatList
@@ -786,21 +840,28 @@ export default function CreateAdScreen({ navigation, route }) {
                                     />
                                 )}
 
-                                {mediaFiles.length < 10 && (
-                                    <TouchableOpacity
-                                        style={styles.addMediaButton}
-                                        onPress={() => setShowMediaModal(true)}
-                                    >
-                                        <Ionicons name="add" size={24} color="#3498db" />
-                                        <Text style={styles.addMediaText}>Adicionar Mídia</Text>
-                                    </TouchableOpacity>
-                                )}
+                                {(() => {
+                                    const currentImages = mediaFiles.filter(f => f.type !== 'video').length;
+                                    const currentVideos = mediaFiles.filter(f => f.type === 'video').length;
+                                    const maxImages = plan?.max_images || 10;
+                                    const maxVideos = plan?.max_videos || 0;
+                                    const maxTotal = maxImages + maxVideos;
+                                    const hasReachedLimit = currentImages >= maxImages && currentVideos >= maxVideos;
 
-                                {mediaFiles.length >= 10 && (
-                                    <Text style={styles.mediaLimitText}>
-                                        Limite máximo de 10 arquivos atingido
-                                    </Text>
-                                )}
+                                    return !hasReachedLimit ? (
+                                        <TouchableOpacity
+                                            style={styles.addMediaButton}
+                                            onPress={() => setShowMediaModal(true)}
+                                        >
+                                            <Ionicons name="add" size={24} color="#3498db" />
+                                            <Text style={styles.addMediaText}>Adicionar Mídia</Text>
+                                        </TouchableOpacity>
+                                    ) : (
+                                        <Text style={styles.mediaLimitText}>
+                                            Limite máximo atingido ({currentImages} imagens / {currentVideos} vídeos)
+                                        </Text>
+                                    );
+                                })()}
                             </View>
 
                             {/* Localização - Movida para depois da mídia */}
@@ -1720,6 +1781,25 @@ const styles = StyleSheet.create({
         fontSize: 14,
         textAlign: 'center',
         fontStyle: 'italic',
+    },
+    mediaCountersContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        backgroundColor: '#f8f9fa',
+        borderRadius: 8,
+        padding: 12,
+        marginBottom: 15,
+    },
+    mediaCounter: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+    },
+    mediaCounterText: {
+        fontSize: 14,
+        color: '#2c3e50',
+        fontWeight: '600',
+        marginLeft: 6,
     },
     inputGroup: {
         marginBottom: 15,
