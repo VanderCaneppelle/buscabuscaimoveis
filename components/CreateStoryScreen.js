@@ -1203,7 +1203,9 @@ const styles = StyleSheet.create({
     closeButton: {
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
         borderRadius: 20,
-        padding: 10,
+        padding:10,
+        gap: 10,
+        marginTop: 25,
     },
     previewContainer: {
         flex: 1,
@@ -1224,11 +1226,13 @@ const styles = StyleSheet.create({
     headerActions: {
         flexDirection: 'row',
         gap: 15,
+        paddingTop: 30,
     },
     headerActionButton: {
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        backgroundColor: 'rgba(11, 11, 11, 0.78)',
         borderRadius: 20,
         padding: 10,
+        paddingTop: 10,
     },
     permanentTrash: {
         backgroundColor: 'rgba(255, 255, 255, 0.9)',
