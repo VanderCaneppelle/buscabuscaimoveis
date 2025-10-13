@@ -197,68 +197,107 @@ const InteractiveTitle = ({
 };
 
 // ============================================================================
-// Componente DraggableLink
+// Componente InteractiveLink - Link com gestos (pinch + pan)
 // ============================================================================
-const DraggableLink = ({ 
+const InteractiveLink = ({ 
     linkData, 
-    coordinates, 
-    onCoordinatesChange, 
-    onEdit, 
-    onDelete, 
-    onDragToTrash, 
-    scale = 1.0, 
-    onScaleChange 
+    coordinates,
+    scale = 1.0,
+    onCoordinatesChange,
+    onScaleChange,
+    onEdit 
 }) => {
-    const [isDragging, setIsDragging] = useState(false);
-    const [showDeleteIcon, setShowDeleteIcon] = useState(false);
-    const [showControls, setShowControls] = useState(false);
+    const [isGesturing, setIsGesturing] = useState(false);
+    const baseScale = useRef(scale);
+    const baseDistance = useRef(0);
+    const lastTouches = useRef([]);
+    const translateX = useRef(new Animated.Value(coordinates.x)).current;
+    const translateY = useRef(new Animated.Value(coordinates.y)).current;
+    const animatedScale = useRef(new Animated.Value(scale)).current;
 
-    const panResponder = useRef(
-        PanResponder.create({
-            onStartShouldSetPanResponder: () => true,
-            onMoveShouldSetPanResponder: () => true,
-            onPanResponderGrant: () => {
-                setIsDragging(true);
-                setShowDeleteIcon(true);
-            },
-            onPanResponderMove: (evt, gestureState) => {
-                const newX = Math.max(0, Math.min(width - 150, coordinates.x + gestureState.dx));
-                const newY = Math.max(100, Math.min(height - 120, coordinates.y + gestureState.dy));
+    // Atualizar posição quando coordinates mudam externamente
+    React.useEffect(() => {
+        translateX.setValue(coordinates.x);
+        translateY.setValue(coordinates.y);
+    }, [coordinates.x, coordinates.y]);
+
+    // Atualizar escala quando scale muda externamente
+    React.useEffect(() => {
+        animatedScale.setValue(scale);
+        baseScale.current = scale;
+    }, [scale]);
+
+    // Calcular distância entre dois toques
+    const getDistance = (touches) => {
+        if (touches.length < 2) return 0;
+        const [touch1, touch2] = touches;
+        return Math.sqrt(
+            Math.pow(touch2.pageX - touch1.pageX, 2) +
+            Math.pow(touch2.pageY - touch1.pageY, 2)
+        );
+    };
+
+    const handleTouchStart = (event) => {
+        const touches = event.nativeEvent.touches;
+        lastTouches.current = Array.from(touches);
+        
+        if (touches.length === 2) {
+            baseDistance.current = getDistance(touches);
+            baseScale.current = scale;
+            setIsGesturing(true);
+        } else if (touches.length === 1) {
+            setIsGesturing(true);
+        }
+    };
+
+    const handleTouchMove = (event) => {
+        const touches = event.nativeEvent.touches;
+        
+        if (touches.length === 2) {
+            // Pinch gesture - mesma sensibilidade do título
+            const distance = getDistance(touches);
+            if (baseDistance.current > 0) {
+                const distanceDiff = Math.abs(distance - baseDistance.current);
+                if (distanceDiff > 10) {
+                    const scaleMultiplier = distance / baseDistance.current;
+                    const dampedMultiplier = 1 + (scaleMultiplier - 1) * 0.5;
+                    let newScale = baseScale.current * dampedMultiplier;
+                    
+                    newScale = Math.max(0.5, Math.min(3.0, newScale));
+                    
+                    animatedScale.setValue(newScale);
+                    onScaleChange(newScale);
+                }
+            }
+        } else if (touches.length === 1 && lastTouches.current.length === 1) {
+            // Pan gesture - mesma sensibilidade do título
+            const touch = touches[0];
+            const lastTouch = lastTouches.current[0];
+            
+            const deltaX = touch.pageX - lastTouch.pageX;
+            const deltaY = touch.pageY - lastTouch.pageY;
+            
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            if (distance > 3) {
+                const dampedDeltaX = deltaX * 0.7;
+                const dampedDeltaY = deltaY * 0.7;
+                
+                const newX = Math.max(0, Math.min(width - 150, coordinates.x + dampedDeltaX));
+                const newY = Math.max(100, Math.min(height - 120, coordinates.y + dampedDeltaY));
+                
+                translateX.setValue(newX);
+                translateY.setValue(newY);
                 onCoordinatesChange({ x: newX, y: newY });
+            }
+        }
+        
+        lastTouches.current = Array.from(touches);
+    };
 
-                // Verificar se está próximo da lixeira
-                const trashX = width - 60;
-                const trashY = 100;
-                const distance = Math.sqrt(
-                    Math.pow(newX - trashX, 2) + Math.pow(newY - trashY, 2)
-                );
-
-                if (distance < 50) {
-                    setShowDeleteIcon(true);
-                    onDragToTrash(true);
-                } else {
-                    setShowDeleteIcon(false);
-                    onDragToTrash(false);
-                }
-            },
-            onPanResponderRelease: (evt, gestureState) => {
-                setIsDragging(false);
-
-                // Verificar se soltou na lixeira
-                const trashX = width - 60;
-                const trashY = 100;
-                const distance = Math.sqrt(
-                    Math.pow(coordinates.x - trashX, 2) + Math.pow(coordinates.y - trashY, 2)
-                );
-
-                if (distance < 50) {
-                    onDelete();
-                }
-
-                setShowDeleteIcon(false);
-            },
-        })
-    ).current;
+    const handleTouchEnd = () => {
+        setIsGesturing(false);
+        lastTouches.current = [];
+    };
 
     const getLinkStyle = (type) => {
         switch (type) {
@@ -275,88 +314,57 @@ const DraggableLink = ({
         }
     };
 
+    const baseFontSize = 14;
+    const baseIconSize = 16;
+
     return (
-        <>
-            <Animated.View
-                {...panResponder.panHandlers}
-                style={[
-                    styles.draggableLink,
-                    getLinkStyle(linkData.type),
-                    {
-                        left: coordinates.x,
-                        top: coordinates.y,
-                        transform: [{ scale: isDragging ? 1.1 : 1 }],
-                        opacity: isDragging ? 0.8 : 1,
-                    }
-                ]}
+        <Animated.View
+            style={[
+                styles.interactiveLinkContainer,
+                {
+                    transform: [
+                        { translateX: translateX },
+                        { translateY: translateY },
+                        { scale: animatedScale },
+                    ],
+                    opacity: isGesturing ? 0.8 : 1,
+                }
+            ]}
+        >
+            {/* Área de toque expandida */}
+            <View
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+                onTouchCancel={handleTouchEnd}
+                style={styles.expandedTouchArea}
             >
-                <View style={styles.draggableContent}>
-                    <Ionicons
-                        name={linkData.type === 'whatsapp' ? 'logo-whatsapp' : 'link'}
-                        size={16 * scale}
-                        color="#fff"
-                    />
-                    <Text style={[styles.draggableLinkText, { fontSize: 14 * scale }]}>
-                        {linkData.text}
-                    </Text>
-                </View>
-            </Animated.View>
-
-            {/* Controles de redimensionamento */}
-            {showControls && (
-                <View style={[
-                    styles.controlsContainer,
-                    {
-                        left: coordinates.x - 20,
-                        top: coordinates.y - 30,
-                    }
-                ]}>
-                    <TouchableOpacity
-                        onPress={() => onScaleChange && onScaleChange(Math.max(0.5, scale - 0.1))}
-                        style={styles.controlButton}
-                        activeOpacity={0.7}
-                    >
-                        <Ionicons name="remove" size={16} color="#fff" />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        onPress={onEdit}
-                        style={styles.controlButton}
-                        activeOpacity={0.7}
-                    >
-                        <Ionicons name="create" size={16} color="#fff" />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        onPress={() => onScaleChange && onScaleChange(Math.min(2.0, scale + 0.1))}
-                        style={styles.controlButton}
-                        activeOpacity={0.7}
-                    >
-                        <Ionicons name="add" size={16} color="#fff" />
-                    </TouchableOpacity>
-                </View>
-            )}
-
-            {/* Botão para mostrar controles */}
-            <TouchableOpacity
-                style={[
-                    styles.showControlsButton,
-                    {
-                        left: coordinates.x + 10,
-                        top: coordinates.y + 10,
-                    }
-                ]}
-                onPress={() => setShowControls(!showControls)}
-                activeOpacity={0.7}
-            >
-                <Ionicons name="settings" size={12} color="#fff" />
-            </TouchableOpacity>
-
-            {/* Ícone de lixeira que aparece durante o arrasto */}
-            {showDeleteIcon && (
-                <View style={styles.trashIcon}>
-                    <Ionicons name="trash" size={24} color="#e74c3c" />
-                </View>
-            )}
-        </>
+                <TouchableOpacity 
+                    onLongPress={onEdit}
+                    delayLongPress={500}
+                    activeOpacity={0.9}
+                    style={[styles.linkTouchArea, getLinkStyle(linkData.type)]}
+                >
+                    <View style={styles.draggableContent}>
+                        <Ionicons
+                            name={linkData.type === 'whatsapp' ? 'logo-whatsapp' : 'link'}
+                            size={baseIconSize}
+                            color="#fff"
+                        />
+                        <Text style={[styles.draggableLinkText, { fontSize: baseFontSize }]}>
+                            {linkData.text}
+                        </Text>
+                    </View>
+                    
+                    {/* Hint visual */}
+                    {!isGesturing && (
+                        <View style={styles.gestureHint}>
+                            <Ionicons name="hand-left-outline" size={12} color="rgba(255, 255, 255, 0.6)" />
+                        </View>
+                    )}
+                </TouchableOpacity>
+            </View>
+        </Animated.View>
     );
 };
 
@@ -393,7 +401,6 @@ export default function StoryPreviewModal({
 }) {
     const [showTitleModal, setShowTitleModal] = useState(false);
     const [showLinkModal, setShowLinkModal] = useState(false);
-    const [isDraggingToTrash, setIsDraggingToTrash] = useState(false);
 
     // Função helper para placeholders dos links
     const getLinkPlaceholder = (type) => {
@@ -437,14 +444,6 @@ export default function StoryPreviewModal({
                         >
                             <Ionicons name="text" size={24} color="#fff" />
                         </TouchableOpacity>
-
-                        {/* Lixeira permanente */}
-                        <View style={[
-                            styles.permanentTrash,
-                            isDraggingToTrash && styles.permanentTrashActive
-                        ]}>
-                            <Ionicons name="trash" size={20} color="#e74c3c" />
-                        </View>
                     </View>
                 </View>
 
@@ -479,20 +478,18 @@ export default function StoryPreviewModal({
                         />
                     )}
 
-                    {/* Link Draggable */}
+                    {/* Link Interativo (com gestos de pinça e arrasto) */}
                     {storyLink.trim() && (
-                        <DraggableLink
+                        <InteractiveLink
                             linkData={{
                                 type: linkType,
                                 text: linkText.trim() || 'Saiba mais'
                             }}
                             coordinates={linkCoordinates}
-                            onCoordinatesChange={onLinkCoordinatesChange}
-                            onEdit={() => setShowLinkModal(true)}
-                            onDelete={onLinkDelete}
-                            onDragToTrash={setIsDraggingToTrash}
                             scale={linkScale}
+                            onCoordinatesChange={onLinkCoordinatesChange}
                             onScaleChange={onLinkScaleChange}
+                            onEdit={() => setShowLinkModal(true)}
                         />
                     )}
                 </View>
@@ -710,17 +707,6 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(11, 11, 11, 0.78)',
         borderRadius: 20,
         padding: 10,
-    },
-    permanentTrash: {
-        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-        borderRadius: 20,
-        padding: 10,
-        borderWidth: 2,
-        borderColor: '#e74c3c',
-    },
-    permanentTrashActive: {
-        backgroundColor: '#e74c3c',
-        transform: [{ scale: 1.2 }],
     },
     previewContent: {
         flex: 1,
@@ -959,74 +945,33 @@ const styles = StyleSheet.create({
         color: '#0d47a1',
     },
     
-    // Draggable elements
+    // Interactive Link (com gestos)
+    interactiveLinkContainer: {
+        position: 'absolute',
+        zIndex: 999,
+    },
+    linkTouchArea: {
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 20,
+        borderWidth: 2,
+        borderColor: 'rgba(255, 255, 255, 0.2)',
+        minWidth: 100,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+        elevation: 10,
+    },
     draggableContent: {
         flexDirection: 'row',
         alignItems: 'center',
         gap: 8,
     },
-    draggableLink: {
-        position: 'absolute',
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-        borderRadius: 20,
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-        zIndex: 9999,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 4,
-        elevation: 10,
-        minWidth: 100,
-    },
     draggableLinkText: {
         color: '#fff',
         fontSize: 14,
         fontWeight: '600',
-    },
-    // Controles do link draggable
-    controlsContainer: {
-        position: 'absolute',
-        flexDirection: 'row',
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        borderRadius: 20,
-        padding: 8,
-        gap: 8,
-        zIndex: 10000,
-    },
-    controlButton: {
-        width: 28,
-        height: 28,
-        borderRadius: 14,
-        backgroundColor: 'rgba(255, 255, 255, 0.2)',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    showControlsButton: {
-        position: 'absolute',
-        width: 24,
-        height: 24,
-        borderRadius: 12,
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 9999,
-    },
-    trashIcon: {
-        position: 'absolute',
-        top: 100,
-        right: 20,
-        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-        borderRadius: 25,
-        padding: 15,
-        zIndex: 10000,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 4,
-        elevation: 10,
     },
 });
 
