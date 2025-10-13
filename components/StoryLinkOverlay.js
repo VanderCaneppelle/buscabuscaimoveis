@@ -31,11 +31,10 @@ const LINK_TYPES = {
     },
 };
 
-function StoryLinkOverlay({ linkData, onPress, style, position = 'bottom-right', coordinates = null, scale = 1.0 }) {
+function StoryLinkOverlay({ linkData, onPress, style, coordinates = null, scale = 1.0 }) {
     if (!linkData || !linkData.url) {
         return null;
     }
-    console.log('🔗 StoryLinkOverlay recebeu:', linkData);
 
     const linkType = LINK_TYPES[linkData.type] || LINK_TYPES.website;
     const iconName = linkData.icon || linkType.icon;
@@ -72,33 +71,21 @@ function StoryLinkOverlay({ linkData, onPress, style, position = 'bottom-right',
         }
     }, [linkData, onPress]);
 
-    // Função para obter o estilo de posicionamento
-    const getPositionStyle = (pos) => {
-        // Se tem coordenadas personalizadas, usar elas
-        if (coordinates) {
-            return { left: coordinates.x, top: coordinates.y };
-        }
-
-        // Senão, usar posições predefinidas
-        switch (pos) {
-            case 'top-left':
-                return { top: 80, left: 20 };
-            case 'top-right':
-                return { top: 80, right: 20 };
-            case 'bottom-left':
-                return { bottom: 80, left: 20 };
-            case 'bottom-right':
-            default:
-                return { bottom: 80, right: 20 };
-        }
-    };
+    // Se não tem coordenadas, não mostrar (agora sempre usa coordenadas customizadas)
+    if (!coordinates) {
+        return null;
+    }
 
     return (
         <TouchableOpacity
             style={[
                 styles.linkOverlay,
-                { backgroundColor },
-                getPositionStyle(position),
+                { 
+                    backgroundColor,
+                    left: coordinates.x,
+                    top: coordinates.y,
+                    transform: [{ scale: scale }],
+                },
                 style
             ]}
             onPress={handlePress}
@@ -106,10 +93,10 @@ function StoryLinkOverlay({ linkData, onPress, style, position = 'bottom-right',
         >
             <Ionicons
                 name={iconName}
-                size={20 * scale}
+                size={16}
                 color={textColor}
             />
-            <Text style={[styles.linkText, { color: textColor, fontSize: 14 * scale }]}>
+            <Text style={[styles.linkText, { color: textColor }]}>
                 {linkData.text || 'Saiba mais'}
             </Text>
         </TouchableOpacity>
@@ -122,6 +109,8 @@ const styles = StyleSheet.create({
         paddingHorizontal: 12,
         paddingVertical: 8,
         borderRadius: 20,
+        borderWidth: 2,
+        borderColor: 'rgba(255, 255, 255, 0.2)',
         flexDirection: 'row',
         alignItems: 'center',
         gap: 6,
@@ -131,7 +120,7 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
         elevation: 10,
         minWidth: 100,
-        zIndex: 9999,
+        zIndex: 999,
     },
     linkText: {
         fontSize: 14,

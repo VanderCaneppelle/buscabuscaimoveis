@@ -1,59 +1,59 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import StoryLinkOverlay from './StoryLinkOverlay';
+
+const { width, height } = Dimensions.get('window');
 
 function StoryOverlays({ story }) {
     if (!story) return null;
 
-    // Função para obter o estilo de posicionamento do título
-    const getTitlePositionStyle = (position, coordinates) => {
-        if (coordinates) {
-            try {
-                const coords = JSON.parse(coordinates);
-                return { left: coords.x, top: coords.y };
-            } catch (e) {
-                console.error('Erro ao parsear coordenadas do título:', e);
-            }
+    // Parse de coordenadas do título
+    let titleCoords = null;
+    if (story.title_coordinates) {
+        try {
+            titleCoords = typeof story.title_coordinates === 'string' 
+                ? JSON.parse(story.title_coordinates) 
+                : story.title_coordinates;
+        } catch (e) {
+            console.error('Erro ao parsear coordenadas do título:', e);
         }
+    }
 
-        switch (position) {
-            case 'top-left':
-                return { top: 100, left: 20 };
-            case 'top-right':
-                return { top: 100, right: 20 };
-            case 'top-center':
-                return { top: 100, left: 20, right: 20 };
-            case 'center':
-                return { top: '50%', left: 20, right: 20, transform: [{ translateY: -25 }] };
-            case 'bottom-left':
-                return { bottom: 100, left: 20 };
-            case 'bottom-right':
-                return { bottom: 100, right: 20 };
-            case 'bottom-center':
-            default:
-                return { bottom: 100, left: 20, right: 20 };
+    // Parse de coordenadas do link
+    let linkCoords = null;
+    if (story.link_coordinates) {
+        try {
+            linkCoords = typeof story.link_coordinates === 'string' 
+                ? JSON.parse(story.link_coordinates) 
+                : story.link_coordinates;
+        } catch (e) {
+            console.error('Erro ao parsear coordenadas do link:', e);
         }
-    };
+    }
+
+    const titleScale = story.title_scale || 1.0;
+    const linkScale = story.link_scale || 1.0;
 
     return (
         <>
-            {/* Título do Story */}
-            {story.title && story.title.trim() !== '' && (
+            {/* Título do Story - Estilo igual ao preview */}
+            {story.title && story.title.trim() !== '' && titleCoords && (
                 <View style={[
                     styles.storyTitleContainer,
-                    getTitlePositionStyle(story.title_position || 'bottom-center', story.title_coordinates)
+                    {
+                        left: titleCoords.x,
+                        top: titleCoords.y,
+                        transform: [{ scale: titleScale }],
+                    }
                 ]}>
-                    <Text style={[
-                        styles.storyTitle,
-                        { fontSize: 16 * (story.title_scale || 1.0) }
-                    ]}>
+                    <Text style={styles.storyTitle} numberOfLines={3}>
                         {story.title}
                     </Text>
                 </View>
             )}
 
-            {/* Story Link Overlay */}
-            {story.link_url && (
+            {/* Story Link Overlay - Estilo igual ao preview */}
+            {story.link_url && linkCoords && (
                 <StoryLinkOverlay
                     linkData={{
                         type: story.link_url.includes('wa.me') ? 'whatsapp' :
@@ -62,9 +62,8 @@ function StoryOverlays({ story }) {
                         url: story.link_url,
                         text: story.link_text || 'Saiba mais'
                     }}
-                    position={story.link_position || 'bottom-right'}
-                    coordinates={story.link_coordinates ? JSON.parse(story.link_coordinates) : null}
-                    scale={story.link_scale || 1.0}
+                    coordinates={linkCoords}
+                    scale={linkScale}
                 />
             )}
         </>
@@ -74,22 +73,28 @@ function StoryOverlays({ story }) {
 const styles = StyleSheet.create({
     storyTitleContainer: {
         position: "absolute",
-        backgroundColor: "rgba(0, 0, 0, 0.7)",
+        backgroundColor: "rgba(0, 0, 0, 0.4)",
         paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 20,
+        paddingVertical: 12,
+        borderRadius: 8,
+        borderWidth: 2,
+        borderColor: 'rgba(255, 255, 255, 0.2)',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.3,
         shadowRadius: 4,
         elevation: 10,
-        zIndex: 9999,
+        zIndex: 999,
+        maxWidth: width - 40,
     },
     storyTitle: {
-        color: "white",
-        fontSize: 16,
+        color: "#fff",
+        fontSize: 20,
         fontWeight: "bold",
         textAlign: "center",
+        textShadowColor: 'rgba(0, 0, 0, 0.75)',
+        textShadowOffset: { width: 0, height: 1 },
+        textShadowRadius: 3,
     },
 });
 
