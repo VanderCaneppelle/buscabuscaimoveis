@@ -56,6 +56,7 @@ export default function CreateAdScreen({ navigation, route }) {
     const [submitting, setSubmitting] = useState(false);
     const [showPlanModal, setShowPlanModal] = useState(false);
     const [showMediaModal, setShowMediaModal] = useState(false);
+    const [isImportingMedia, setIsImportingMedia] = useState(false);
     const [mediaFiles, setMediaFiles] = useState([]);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [showProgressModal, setShowProgressModal] = useState(false);
@@ -497,9 +498,19 @@ export default function CreateAdScreen({ navigation, route }) {
                 result = await MediaServiceOptimized.pickVideo();
             }
 
+            // ✅ Fechar modal de seleção imediatamente após escolher
+            setShowMediaModal(false);
+
             if (result) {
                 // Se result for um array (múltiplas imagens), processar cada uma
                 const results = Array.isArray(result) ? result : [result];
+
+                // 🔄 Mostrar loading overlay
+                console.log('🔄 Importando', results.length, 'arquivo(s)...');
+                setIsImportingMedia(true);
+
+                // Aguardar um momento para o overlay renderizar
+                await new Promise(resolve => setTimeout(resolve, 100));
 
                 // ✅ VALIDAÇÃO: Verificar quantas imagens/vídeos podem ser adicionados
                 const currentImagesCount = mediaFiles.filter(f => f.type !== 'video').length;
@@ -517,6 +528,7 @@ export default function CreateAdScreen({ navigation, route }) {
 
                 // Verificar se vai ultrapassar o limite de imagens
                 if (selectedImages.length > availableImageSlots) {
+                    setIsImportingMedia(false); // Fechar loading
                     Alert.alert(
                         'Limite de imagens excedido',
                         `Você selecionou ${selectedImages.length} imagem(ns), mas só pode adicionar mais ${availableImageSlots}.\n\nSeu plano ${planName || 'atual'} permite no máximo ${maxImages} imagens por anúncio.`,
@@ -527,6 +539,7 @@ export default function CreateAdScreen({ navigation, route }) {
 
                 // Verificar se vai ultrapassar o limite de vídeos
                 if (selectedVideos.length > availableVideoSlots) {
+                    setIsImportingMedia(false); // Fechar loading
                     Alert.alert(
                         'Limite de vídeos excedido',
                         `Você selecionou ${selectedVideos.length} vídeo(s), mas só pode adicionar mais ${availableVideoSlots}.\n\nSeu plano ${planName || 'atual'} permite no máximo ${maxVideos} vídeos por anúncio.`,
@@ -535,7 +548,12 @@ export default function CreateAdScreen({ navigation, route }) {
                     return; // ❌ BLOQUEIA todos se ultrapassar
                 }
 
+                console.log('✅ Validações passaram, processando arquivos...');
+
                 // Se passou nas validações, processar os arquivos
+                const mediaToAdd = [];
+                let hasLargeFiles = false;
+
                 for (const mediaResult of results) {
                     // Verificar tamanho do arquivo
                     const fileSizeMB = (mediaResult.fileSize / 1024 / 1024).toFixed(2);
@@ -543,6 +561,7 @@ export default function CreateAdScreen({ navigation, route }) {
 
                     // Bloquear arquivos maiores que 200MB
                     if (mediaResult.fileSize > maxSizeMB * 1024 * 1024) {
+                        setIsImportingMedia(false);
                         Alert.alert(
                             'Arquivo Muito Grande',
                             `O arquivo ${mediaResult.fileName} tem ${fileSizeMB}MB e excede o limite de ${maxSizeMB}MB. Por favor, escolha um arquivo menor ou reduza a qualidade.`,
@@ -551,38 +570,66 @@ export default function CreateAdScreen({ navigation, route }) {
                         continue; // Pular este arquivo
                     }
 
-                    // Se arquivo for maior que 50MB, mostrar aviso mas permitir
+                    // Se arquivo for maior que 50MB, marcar para confirmação
                     if (mediaResult.fileSize > 50 * 1024 * 1024) {
-                        Alert.alert(
-                            'Arquivo Grande',
-                            `O arquivo ${mediaResult.fileName} tem ${fileSizeMB}MB. Arquivos grandes podem demorar mais para fazer upload. Deseja continuar?`,
-                            [
-                                { text: 'Cancelar', style: 'cancel' },
-                                {
-                                    text: 'Continuar',
-                                    onPress: () => {
-                                        setMediaFiles(prev => [...prev, {
-                                            uri: mediaResult.uri,
-                                            type: mediaResult.type || 'image',
-                                            fileName: mediaResult.fileName || `media_${Date.now()}`,
-                                            fileSize: mediaResult.fileSize || 0
-                                        }]);
+                        hasLargeFiles = true;
+                        // Fechar loading antes de mostrar alert
+                        setIsImportingMedia(false);
+                        
+                        await new Promise((resolve) => {
+                            Alert.alert(
+                                'Arquivo Grande',
+                                `O arquivo ${mediaResult.fileName} tem ${fileSizeMB}MB. Arquivos grandes podem demorar mais para fazer upload. Deseja continuar?`,
+                                [
+                                    { 
+                                        text: 'Cancelar', 
+                                        style: 'cancel',
+                                        onPress: () => resolve(false)
+                                    },
+                                    {
+                                        text: 'Continuar',
+                                        onPress: () => {
+                                            mediaToAdd.push({
+                                                uri: mediaResult.uri,
+                                                type: mediaResult.type || 'image',
+                                                fileName: mediaResult.fileName || `media_${Date.now()}`,
+                                                fileSize: mediaResult.fileSize || 0
+                                            });
+                                            resolve(true);
+                                        }
                                     }
-                                }
-                            ]
-                        );
+                                ]
+                            );
+                        });
                     } else {
-                        setMediaFiles(prev => [...prev, {
+                        mediaToAdd.push({
                             uri: mediaResult.uri,
                             type: mediaResult.type || 'image',
                             fileName: mediaResult.fileName || `media_${Date.now()}`,
                             fileSize: mediaResult.fileSize || 0
-                        }]);
+                        });
                     }
                 }
+
+                // Adicionar todas as mídias processadas de uma vez
+                if (mediaToAdd.length > 0) {
+                    setMediaFiles(prev => [...prev, ...mediaToAdd]);
+                }
+
+                // Aguardar um pouco antes de fechar (mínimo 800ms de visibilidade)
+                if (!hasLargeFiles) {
+                    await new Promise(resolve => setTimeout(resolve, 800));
+                }
+
+                // ✅ Fechar loading após processar
+                console.log('🔒 Fechando loading');
+                setIsImportingMedia(false);
             }
         } catch (error) {
             console.error('Erro ao adicionar mídia:', error);
+
+            // ✅ Fechar loading em caso de erro
+            setIsImportingMedia(false);
 
             // Verificar se é erro de arquivo muito grande
             if (error.message && error.message.includes('muito grande')) {
@@ -595,7 +642,6 @@ export default function CreateAdScreen({ navigation, route }) {
                 Alert.alert('Erro', 'Não foi possível adicionar a mídia. Tente novamente.');
             }
         }
-        setShowMediaModal(false);
     };
 
     const handleRemoveMedia = (index) => {
@@ -1621,6 +1667,13 @@ export default function CreateAdScreen({ navigation, route }) {
                     </View>
                 </Modal>
 
+                {/* Loading overlay durante importação de mídias */}
+                {isImportingMedia && (
+                    <View style={styles.importingOverlay}>
+                        <ActivityIndicator size="large" color="#fff" />
+                    </View>
+                )}
+
                 {/* Modal para escolher endereço no mapa */}
                 <Modal
                     visible={showMapPicker}
@@ -2338,6 +2391,17 @@ const styles = StyleSheet.create({
         color: '#2563EB',
         fontWeight: '700',
         fontSize: 14,
+    },
+    importingOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 9999,
     },
 
 }); 
