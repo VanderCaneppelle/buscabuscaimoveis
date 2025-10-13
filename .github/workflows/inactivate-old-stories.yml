@@ -1,0 +1,54 @@
+name: Inativar Stories Antigos
+
+on:
+  schedule:
+    # Executar diariamente às 00:30 (horário de Brasília)
+    # UTC-3 = UTC+0 + 3h, então 00:30 BRT = 03:30 UTC
+    - cron: '30 3 * * *'
+  workflow_dispatch: # Permitir execução manual
+
+jobs:
+  inactivate-old-stories:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+      
+      - name: Instalar dependências
+        working-directory: ./backend
+        run: npm ci
+      
+      - name: Inativar stories com mais de 24 horas
+        working-directory: ./backend
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+        run: |
+          echo "⏰ Iniciando inativação de stories antigos..."
+          echo "📅 Data/hora atual: $(date)"
+          echo "🌍 Timezone: $(date +%Z)"
+          
+          node scripts/inactivate-old-stories.js
+      
+      - name: Notificar resultado
+        if: always()
+        run: |
+          if [ $? -eq 0 ]; then
+            echo "✅ Inativação de stories executada com sucesso"
+          else
+            echo "❌ Erro na inativação de stories"
+            exit 1
+          fi
+

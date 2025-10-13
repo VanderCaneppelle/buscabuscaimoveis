@@ -1,0 +1,54 @@
+name: Excluir Stories Antigos
+
+on:
+  schedule:
+    # Executar diariamente às 12:15 (horário de Brasília)
+    # UTC-3 = UTC+0 + 3h, então 12:15 BRT = 15:15 UTC
+    - cron: '15 15 * * *'
+  workflow_dispatch: # Permitir execução manual
+
+jobs:
+  delete-old-stories:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+      
+      - name: Instalar dependências
+        working-directory: ./backend
+        run: npm ci
+      
+      - name: Excluir stories inativos com mais de 48 horas
+        working-directory: ./backend
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+        run: |
+          echo "🗑️ Iniciando exclusão de stories antigos..."
+          echo "📅 Data/hora atual: $(date)"
+          echo "🌍 Timezone: $(date +%Z)"
+          
+          node scripts/delete-old-stories.js
+      
+      - name: Notificar resultado
+        if: always()
+        run: |
+          if [ $? -eq 0 ]; then
+            echo "✅ Exclusão de stories executada com sucesso"
+          else
+            echo "❌ Erro na exclusão de stories"
+            exit 1
+          fi
+
