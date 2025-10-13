@@ -459,8 +459,8 @@ export default function CreateStoryScreen({ navigation }) {
         try {
             const result = await ImagePicker.launchCameraAsync({
                 mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                allowsEditing: true,
-                aspect: [9, 16],
+                allowsEditing: false,
+               aspect: [9, 16],
                 quality: 0.8,
                 base64: true,
             });
@@ -644,7 +644,7 @@ export default function CreateStoryScreen({ navigation }) {
         try {
             const result = await ImagePicker.launchImageLibraryAsync({
                 mediaTypes: ImagePicker.MediaTypeOptions.All,
-                allowsEditing: true,
+                allowsEditing: false,
                 aspect: [9, 16], // Aspecto vertical para stories
                 quality: 0.8,
                 base64: false, // Não usar base64 (pode causar problemas com vídeos)
