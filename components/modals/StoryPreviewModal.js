@@ -18,156 +18,98 @@ import { Video } from 'expo-av';
 const { width, height } = Dimensions.get('window');
 
 // ============================================================================
-// Componente DraggableTitle
+// Componente FixedTitle - Título fixo como no WhatsApp Stories
 // ============================================================================
-const DraggableTitle = ({ 
+const FixedTitle = ({ 
     title, 
-    coordinates, 
-    onCoordinatesChange, 
-    onEdit, 
-    onDelete, 
-    onDragToTrash, 
+    layout = 'center',
     scale = 1.0, 
-    onScaleChange 
+    onEdit 
 }) => {
-    const [isDragging, setIsDragging] = useState(false);
-    const [showDeleteIcon, setShowDeleteIcon] = useState(false);
-    const [showControls, setShowControls] = useState(false);
+    const getTitleStyle = () => {
+        const baseFontSize = 20;
+        const baseLineHeight = 26;
+        
+        let alignStyle = {};
+        let positionStyle = {};
+        
+        switch (layout) {
+            case 'left':
+                alignStyle = { 
+                    textAlign: 'left',
+                    alignItems: 'flex-start',
+                };
+                positionStyle = {
+                    left: 20,
+                };
+                break;
+            case 'right':
+                alignStyle = { 
+                    textAlign: 'right',
+                    alignItems: 'flex-end',
+                };
+                positionStyle = {
+                    right: 20,
+                };
+                break;
+            case 'center':
+            default:
+                alignStyle = { 
+                    textAlign: 'center',
+                    alignItems: 'center',
+                };
+                positionStyle = {
+                    left: 0,
+                    right: 0,
+                };
+                break;
+        }
 
-    const getTitleSizeStyle = () => {
-        const baseFontSize = 16;
-        const basePadding = 16;
         return {
             fontSize: baseFontSize * scale,
-            paddingHorizontal: basePadding * scale,
-            paddingVertical: (basePadding * 0.5) * scale
+            lineHeight: baseLineHeight * scale,
+            alignStyle,
+            positionStyle,
         };
     };
 
-    const panResponder = useRef(
-        PanResponder.create({
-            onStartShouldSetPanResponder: () => true,
-            onMoveShouldSetPanResponder: () => true,
-            onPanResponderGrant: () => {
-                setIsDragging(true);
-                setShowDeleteIcon(true);
-            },
-            onPanResponderMove: (evt, gestureState) => {
-                const newX = Math.max(0, Math.min(width - 200, coordinates.x + gestureState.dx));
-                const newY = Math.max(100, Math.min(height - 150, coordinates.y + gestureState.dy));
-                onCoordinatesChange({ x: newX, y: newY });
-
-                // Verificar se está próximo da lixeira
-                const trashX = width - 60;
-                const trashY = 100;
-                const distance = Math.sqrt(
-                    Math.pow(newX - trashX, 2) + Math.pow(newY - trashY, 2)
-                );
-
-                if (distance < 50) {
-                    setShowDeleteIcon(true);
-                    onDragToTrash(true);
-                } else {
-                    setShowDeleteIcon(false);
-                    onDragToTrash(false);
-                }
-            },
-            onPanResponderRelease: (evt, gestureState) => {
-                setIsDragging(false);
-
-                // Verificar se soltou na lixeira
-                const trashX = width - 60;
-                const trashY = 100;
-                const distance = Math.sqrt(
-                    Math.pow(coordinates.x - trashX, 2) + Math.pow(coordinates.y - trashY, 2)
-                );
-
-                if (distance < 50) {
-                    onDelete();
-                }
-
-                setShowDeleteIcon(false);
-            },
-        })
-    ).current;
+    const titleStyle = getTitleStyle();
 
     return (
-        <>
-            <Animated.View
-                {...panResponder.panHandlers}
-                style={[
-                    styles.draggableTitle,
-                    getTitleSizeStyle(),
-                    {
-                        left: coordinates.x,
-                        top: coordinates.y,
-                        transform: [{ scale: isDragging ? 1.1 : 1 }],
-                        opacity: isDragging ? 0.8 : 1,
-                    }
-                ]}
+        <View 
+            style={[
+                styles.fixedTitleContainer,
+                titleStyle.positionStyle,
+                titleStyle.alignStyle,
+            ]}
+        >
+            <TouchableOpacity 
+                onPress={onEdit}
+                activeOpacity={0.8}
+                style={[styles.titleTouchArea, titleStyle.alignStyle]}
             >
-                <View style={styles.draggableContent}>
-                    <Text style={[styles.draggableTitleText, { fontSize: getTitleSizeStyle().fontSize }]}>
+                <View style={styles.titleBackground}>
+                    <Text 
+                        style={[
+                            styles.fixedTitleText, 
+                            { 
+                                fontSize: titleStyle.fontSize,
+                                lineHeight: titleStyle.lineHeight,
+                                textAlign: titleStyle.alignStyle.textAlign,
+                            }
+                        ]}
+                        numberOfLines={3}
+                    >
                         {title}
                     </Text>
                 </View>
-            </Animated.View>
-
-            {/* Controles de redimensionamento */}
-            {showControls && (
-                <View style={[
-                    styles.controlsContainer,
-                    {
-                        left: coordinates.x - 20,
-                        top: coordinates.y - 30,
-                    }
-                ]}>
-                    <TouchableOpacity
-                        onPress={() => onScaleChange && onScaleChange(Math.max(0.5, scale - 0.1))}
-                        style={styles.controlButton}
-                        activeOpacity={0.7}
-                    >
-                        <Ionicons name="remove" size={16} color="#fff" />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        onPress={onEdit}
-                        style={styles.controlButton}
-                        activeOpacity={0.7}
-                    >
-                        <Ionicons name="create" size={16} color="#fff" />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        onPress={() => onScaleChange && onScaleChange(Math.min(2.0, scale + 0.1))}
-                        style={styles.controlButton}
-                        activeOpacity={0.7}
-                    >
-                        <Ionicons name="add" size={16} color="#fff" />
-                    </TouchableOpacity>
+                
+                {/* Ícone de editar pequeno */}
+                <View style={styles.editIconSmall}>
+                    <Ionicons name="create-outline" size={14} color="rgba(255, 255, 255, 0.8)" />
                 </View>
-            )}
-
-            {/* Botão para mostrar controles */}
-            <TouchableOpacity
-                style={[
-                    styles.showControlsButton,
-                    {
-                        left: coordinates.x + 10,
-                        top: coordinates.y + 10,
-                    }
-                ]}
-                onPress={() => setShowControls(!showControls)}
-                activeOpacity={0.7}
-            >
-                <Ionicons name="settings" size={12} color="#fff" />
             </TouchableOpacity>
-
-            {/* Ícone de lixeira que aparece durante o arrasto */}
-            {showDeleteIcon && (
-                <View style={styles.trashIcon}>
-                    <Ionicons name="trash" size={24} color="#e74c3c" />
-                </View>
-            )}
-        </>
+        </View>
     );
 };
 
@@ -442,17 +384,13 @@ export default function StoryPreviewModal({
                         />
                     )}
 
-                    {/* Título Draggable */}
+                    {/* Título Fixo (estilo WhatsApp) */}
                     {storyTitle && storyTitle.trim() !== '' && (
-                        <DraggableTitle
+                        <FixedTitle
                             title={storyTitle}
-                            coordinates={titleCoordinates}
-                            onCoordinatesChange={onTitleCoordinatesChange}
-                            onEdit={() => setShowTitleModal(true)}
-                            onDelete={onTitleDelete}
-                            onDragToTrash={setIsDraggingToTrash}
+                            layout={titleLayout}
                             scale={titleScale}
-                            onScaleChange={onTitleScaleChange}
+                            onEdit={() => setShowTitleModal(true)}
                         />
                     )}
 
@@ -560,14 +498,25 @@ export default function StoryPreviewModal({
                             </View>
 
                             <View style={styles.modalActions}>
+                                {storyTitle && storyTitle.trim() !== '' && (
+                                    <TouchableOpacity
+                                        style={[styles.modalButton, styles.modalButtonDanger]}
+                                        onPress={() => {
+                                            onTitleDelete();
+                                            setShowTitleModal(false);
+                                        }}
+                                    >
+                                        <Ionicons name="trash-outline" size={18} color="#fff" />
+                                    </TouchableOpacity>
+                                )}
                                 <TouchableOpacity
-                                    style={styles.modalButton}
+                                    style={[styles.modalButton, { flex: 1 }]}
                                     onPress={() => setShowTitleModal(false)}
                                 >
                                     <Text style={styles.modalButtonText}>Cancelar</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
-                                    style={[styles.modalButton, styles.modalButtonPrimary]}
+                                    style={[styles.modalButton, styles.modalButtonPrimary, { flex: 1 }]}
                                     onPress={() => setShowTitleModal(false)}
                                 >
                                     <Text style={[styles.modalButtonText, styles.modalButtonTextPrimary]}>
@@ -632,14 +581,25 @@ export default function StoryPreviewModal({
                             />
 
                             <View style={styles.modalActions}>
+                                {storyLink && storyLink.trim() !== '' && (
+                                    <TouchableOpacity
+                                        style={[styles.modalButton, styles.modalButtonDanger]}
+                                        onPress={() => {
+                                            onLinkDelete();
+                                            setShowLinkModal(false);
+                                        }}
+                                    >
+                                        <Ionicons name="trash-outline" size={18} color="#fff" />
+                                    </TouchableOpacity>
+                                )}
                                 <TouchableOpacity
-                                    style={styles.modalButton}
+                                    style={[styles.modalButton, { flex: 1 }]}
                                     onPress={() => setShowLinkModal(false)}
                                 >
                                     <Text style={styles.modalButtonText}>Cancelar</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
-                                    style={[styles.modalButton, styles.modalButtonPrimary]}
+                                    style={[styles.modalButton, styles.modalButtonPrimary, { flex: 1 }]}
                                     onPress={() => setShowLinkModal(false)}
                                 >
                                     <Text style={[styles.modalButtonText, styles.modalButtonTextPrimary]}>
@@ -864,6 +824,11 @@ const styles = StyleSheet.create({
     modalButtonPrimary: {
         backgroundColor: '#1e3a8a',
     },
+    modalButtonDanger: {
+        backgroundColor: '#e74c3c',
+        minWidth: 50,
+        flex: 0,
+    },
     modalButtonText: {
         fontSize: 16,
         fontWeight: '600',
@@ -873,30 +838,48 @@ const styles = StyleSheet.create({
         color: '#fff',
     },
 
-    // Draggable elements
-    draggableTitle: {
+    // Fixed Title (WhatsApp style)
+    fixedTitleContainer: {
         position: 'absolute',
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 20,
-        zIndex: 9999,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 4,
-        elevation: 10,
+        top: 100,
+        paddingHorizontal: 20,
+        zIndex: 999,
+        maxWidth: width - 40,
     },
+    titleTouchArea: {
+        position: 'relative',
+    },
+    titleBackground: {
+        backgroundColor: 'rgba(0, 0, 0, 0.3)',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        borderRadius: 8,
+    },
+    fixedTitleText: {
+        color: '#fff',
+        fontSize: 20,
+        fontWeight: 'bold',
+        textShadowColor: 'rgba(0, 0, 0, 0.75)',
+        textShadowOffset: { width: 0, height: 1 },
+        textShadowRadius: 3,
+    },
+    editIconSmall: {
+        position: 'absolute',
+        top: -8,
+        right: -8,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        borderRadius: 12,
+        width: 24,
+        height: 24,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    
+    // Draggable elements
     draggableContent: {
         flexDirection: 'row',
         alignItems: 'center',
         gap: 8,
-    },
-    draggableTitleText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: 'bold',
-        textAlign: 'center',
     },
     draggableLink: {
         position: 'absolute',
@@ -919,6 +902,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '600',
     },
+    // Controles do link draggable
     controlsContainer: {
         position: 'absolute',
         flexDirection: 'row',
