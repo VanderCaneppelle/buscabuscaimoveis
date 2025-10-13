@@ -18,98 +18,181 @@ import { Video } from 'expo-av';
 const { width, height } = Dimensions.get('window');
 
 // ============================================================================
-// Componente FixedTitle - Título fixo como no WhatsApp Stories
+// Componente InteractiveTitle - Título com gestos (pinch + pan)
 // ============================================================================
-const FixedTitle = ({ 
+const InteractiveTitle = ({ 
     title, 
-    layout = 'center',
-    scale = 1.0, 
+    coordinates,
+    scale = 1.0,
+    onCoordinatesChange,
+    onScaleChange,
     onEdit 
 }) => {
-    const getTitleStyle = () => {
-        const baseFontSize = 20;
-        const baseLineHeight = 26;
-        
-        let alignStyle = {};
-        let positionStyle = {};
-        
-        switch (layout) {
-            case 'left':
-                alignStyle = { 
-                    textAlign: 'left',
-                    alignItems: 'flex-start',
-                };
-                positionStyle = {
-                    left: 20,
-                };
-                break;
-            case 'right':
-                alignStyle = { 
-                    textAlign: 'right',
-                    alignItems: 'flex-end',
-                };
-                positionStyle = {
-                    right: 20,
-                };
-                break;
-            case 'center':
-            default:
-                alignStyle = { 
-                    textAlign: 'center',
-                    alignItems: 'center',
-                };
-                positionStyle = {
-                    left: 0,
-                    right: 0,
-                };
-                break;
-        }
+    const [isGesturing, setIsGesturing] = useState(false);
+    const baseScale = useRef(scale);
+    const baseDistance = useRef(0);
+    const lastTouches = useRef([]);
+    const translateX = useRef(new Animated.Value(coordinates.x)).current;
+    const translateY = useRef(new Animated.Value(coordinates.y)).current;
+    const animatedScale = useRef(new Animated.Value(scale)).current;
 
+    // Atualizar posição quando coordinates mudam externamente
+    React.useEffect(() => {
+        translateX.setValue(coordinates.x);
+        translateY.setValue(coordinates.y);
+    }, [coordinates.x, coordinates.y]);
+
+    // Atualizar escala quando scale muda externamente
+    React.useEffect(() => {
+        animatedScale.setValue(scale);
+        baseScale.current = scale;
+    }, [scale]);
+
+    // Calcular distância entre dois toques (para pinch)
+    const getDistance = (touches) => {
+        if (touches.length < 2) return 0;
+        const [touch1, touch2] = touches;
+        return Math.sqrt(
+            Math.pow(touch2.pageX - touch1.pageX, 2) +
+            Math.pow(touch2.pageY - touch1.pageY, 2)
+        );
+    };
+
+    // Calcular centro entre dois toques
+    const getCenter = (touches) => {
+        if (touches.length < 2) return { x: touches[0].pageX, y: touches[0].pageY };
+        const [touch1, touch2] = touches;
         return {
-            fontSize: baseFontSize * scale,
-            lineHeight: baseLineHeight * scale,
-            alignStyle,
-            positionStyle,
+            x: (touch1.pageX + touch2.pageX) / 2,
+            y: (touch1.pageY + touch2.pageY) / 2,
         };
     };
 
-    const titleStyle = getTitleStyle();
+    const handleTouchStart = (event) => {
+        const touches = event.nativeEvent.touches;
+        lastTouches.current = Array.from(touches);
+        
+        if (touches.length === 2) {
+            // Pinch iniciado
+            baseDistance.current = getDistance(touches);
+            baseScale.current = scale;
+            setIsGesturing(true);
+        } else if (touches.length === 1) {
+            // Pan iniciado
+            setIsGesturing(true);
+        }
+    };
+
+    const handleTouchMove = (event) => {
+        const touches = event.nativeEvent.touches;
+        
+        if (touches.length === 2) {
+            // Pinch gesture - REDUZIR SENSIBILIDADE
+            const distance = getDistance(touches);
+            if (baseDistance.current > 0) {
+                // Só começa a escalar se mudou mais de 10px
+                const distanceDiff = Math.abs(distance - baseDistance.current);
+                if (distanceDiff > 10) {
+                    const scaleMultiplier = distance / baseDistance.current;
+                    
+                    // Reduzir sensibilidade: usar 50% da mudança
+                    const dampedMultiplier = 1 + (scaleMultiplier - 1) * 0.5;
+                    let newScale = baseScale.current * dampedMultiplier;
+                    
+                    // Limitar escala entre 0.5 e 3.0
+                    newScale = Math.max(0.5, Math.min(3.0, newScale));
+                    
+                    animatedScale.setValue(newScale);
+                    onScaleChange(newScale);
+                }
+            }
+        } else if (touches.length === 1 && lastTouches.current.length === 1) {
+            // Pan gesture - REDUZIR SENSIBILIDADE
+            const touch = touches[0];
+            const lastTouch = lastTouches.current[0];
+            
+            const deltaX = touch.pageX - lastTouch.pageX;
+            const deltaY = touch.pageY - lastTouch.pageY;
+            
+            // Só move se passou de 3px (evita tremidas)
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            if (distance > 3) {
+                // Reduzir velocidade: usar 70% do movimento
+                const dampedDeltaX = deltaX * 0.7;
+                const dampedDeltaY = deltaY * 0.7;
+                
+                const newX = Math.max(0, Math.min(width - 200, coordinates.x + dampedDeltaX));
+                const newY = Math.max(60, Math.min(height - 150, coordinates.y + dampedDeltaY));
+                
+                translateX.setValue(newX);
+                translateY.setValue(newY);
+                onCoordinatesChange({ x: newX, y: newY });
+            }
+        }
+        
+        lastTouches.current = Array.from(touches);
+    };
+
+    const handleTouchEnd = () => {
+        setIsGesturing(false);
+        lastTouches.current = [];
+    };
+
+    const baseFontSize = 20;
+    const baseLineHeight = 26;
 
     return (
-        <View 
+        <Animated.View
             style={[
-                styles.fixedTitleContainer,
-                titleStyle.positionStyle,
-                titleStyle.alignStyle,
+                styles.interactiveTitleContainer,
+                {
+                    transform: [
+                        { translateX: translateX },
+                        { translateY: translateY },
+                        { scale: animatedScale },
+                    ],
+                    opacity: isGesturing ? 0.8 : 1,
+                }
             ]}
         >
-            <TouchableOpacity 
-                onPress={onEdit}
-                activeOpacity={0.8}
-                style={[styles.titleTouchArea, titleStyle.alignStyle]}
+            {/* Área de toque expandida (invisível) */}
+            <View
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+                onTouchCancel={handleTouchEnd}
+                style={styles.expandedTouchArea}
             >
-                <View style={styles.titleBackground}>
-                    <Text 
-                        style={[
-                            styles.fixedTitleText, 
-                            { 
-                                fontSize: titleStyle.fontSize,
-                                lineHeight: titleStyle.lineHeight,
-                                textAlign: titleStyle.alignStyle.textAlign,
-                            }
-                        ]}
-                        numberOfLines={3}
-                    >
-                        {title}
-                    </Text>
-                </View>
-                
-                {/* Ícone de editar pequeno */}
-                <View style={styles.editIconSmall}>
-                    <Ionicons name="create-outline" size={14} color="rgba(255, 255, 255, 0.8)" />
-                </View>
-            </TouchableOpacity>
-        </View>
+                <TouchableOpacity 
+                    onLongPress={onEdit}
+                    delayLongPress={500}
+                    activeOpacity={0.9}
+                    style={styles.titleTouchArea}
+                >
+                    <View style={styles.titleBackground}>
+                        <Text 
+                            style={[
+                                styles.fixedTitleText, 
+                                { 
+                                    fontSize: baseFontSize,
+                                    lineHeight: baseLineHeight,
+                                }
+                            ]}
+                            numberOfLines={3}
+                        >
+                            {title}
+                        </Text>
+                    </View>
+                    
+                    {/* Hint visual para gestos */}
+                    {!isGesturing && (
+                        <View style={styles.gestureHint}>
+                            <Ionicons name="hand-left-outline" size={12} color="rgba(255, 255, 255, 0.6)" />
+                        </View>
+                    )}
+                </TouchableOpacity>
+            </View>
+        </Animated.View>
     );
 };
 
@@ -384,12 +467,14 @@ export default function StoryPreviewModal({
                         />
                     )}
 
-                    {/* Título Fixo (estilo WhatsApp) */}
+                    {/* Título Interativo (com gestos de pinça e arrasto) */}
                     {storyTitle && storyTitle.trim() !== '' && (
-                        <FixedTitle
+                        <InteractiveTitle
                             title={storyTitle}
-                            layout={titleLayout}
+                            coordinates={titleCoordinates}
                             scale={titleScale}
+                            onCoordinatesChange={onTitleCoordinatesChange}
+                            onScaleChange={onTitleScaleChange}
                             onEdit={() => setShowTitleModal(true)}
                         />
                     )}
@@ -464,37 +549,12 @@ export default function StoryPreviewModal({
                                 autoFocus
                             />
 
-                            {/* Opções de Layout */}
-                            <View style={styles.layoutSection}>
-                                <Text style={styles.modalLabel}>Layout:</Text>
-                                <View style={styles.layoutButtons}>
-                                    {[
-                                        { key: 'center', label: 'Centro', icon: 'apps' },
-                                        { key: 'left', label: 'Esquerda', icon: 'arrow-back' },
-                                        { key: 'right', label: 'Direita', icon: 'arrow-forward' }
-                                    ].map((layout) => (
-                                        <TouchableOpacity
-                                            key={layout.key}
-                                            style={[
-                                                styles.layoutButton,
-                                                titleLayout === layout.key && styles.layoutButtonActive
-                                            ]}
-                                            onPress={() => onTitleLayoutChange(layout.key)}
-                                        >
-                                            <Ionicons
-                                                name={layout.icon}
-                                                size={16}
-                                                color={titleLayout === layout.key ? '#fff' : '#666'}
-                                            />
-                                            <Text style={[
-                                                styles.layoutButtonText,
-                                                titleLayout === layout.key && styles.layoutButtonTextActive
-                                            ]}>
-                                                {layout.label}
-                                            </Text>
-                                        </TouchableOpacity>
-                                    ))}
-                                </View>
+                            {/* Dica de uso dos gestos */}
+                            <View style={styles.gestureInfoBox}>
+                                <Ionicons name="information-circle-outline" size={18} color="#1e3a8a" />
+                                <Text style={styles.gestureInfoText}>
+                                    Use <Text style={styles.gestureInfoBold}>1 dedo</Text> para arrastar e <Text style={styles.gestureInfoBold}>2 dedos</Text> para aumentar/diminuir
+                                </Text>
                             </View>
 
                             <View style={styles.modalActions}>
@@ -815,7 +875,6 @@ const styles = StyleSheet.create({
         marginTop: 10,
     },
     modalButton: {
-        flex: 1,
         padding: 15,
         borderRadius: 8,
         backgroundColor: '#f1f5f9',
@@ -838,22 +897,27 @@ const styles = StyleSheet.create({
         color: '#fff',
     },
 
-    // Fixed Title (WhatsApp style)
-    fixedTitleContainer: {
+    // Interactive Title (com gestos)
+    interactiveTitleContainer: {
         position: 'absolute',
-        top: 100,
-        paddingHorizontal: 20,
         zIndex: 999,
         maxWidth: width - 40,
+    },
+    expandedTouchArea: {
+        // Área de toque expandida - padding invisível de 40px em todos os lados
+        padding: 40,
+        margin: -40, // Compensa o padding para não afetar o layout
     },
     titleTouchArea: {
         position: 'relative',
     },
     titleBackground: {
-        backgroundColor: 'rgba(0, 0, 0, 0.3)',
+        backgroundColor: 'rgba(0, 0, 0, 0.4)',
         paddingHorizontal: 16,
         paddingVertical: 12,
         borderRadius: 8,
+        borderWidth: 2,
+        borderColor: 'rgba(255, 255, 255, 0.2)',
     },
     fixedTitleText: {
         color: '#fff',
@@ -863,16 +927,36 @@ const styles = StyleSheet.create({
         textShadowOffset: { width: 0, height: 1 },
         textShadowRadius: 3,
     },
-    editIconSmall: {
+    gestureHint: {
         position: 'absolute',
-        top: -8,
-        right: -8,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        borderRadius: 12,
-        width: 24,
-        height: 24,
+        top: -6,
+        right: -6,
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        borderRadius: 10,
+        width: 20,
+        height: 20,
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    // Info box para gestos
+    gestureInfoBox: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#e3f2fd',
+        padding: 12,
+        borderRadius: 8,
+        marginBottom: 15,
+        gap: 8,
+    },
+    gestureInfoText: {
+        flex: 1,
+        fontSize: 12,
+        color: '#1e3a8a',
+        lineHeight: 18,
+    },
+    gestureInfoBold: {
+        fontWeight: 'bold',
+        color: '#0d47a1',
     },
     
     // Draggable elements
