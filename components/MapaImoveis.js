@@ -102,8 +102,8 @@ export default function MapaImoveis({ navigation, route }) {
 
     // Debounce para evitar atualizações excessivas durante navegação (iOS precisa de mais tempo)
     const debouncedRegionChange = debounce((region) => {
-        setVisibleRegion(region);
-    }, Platform.OS === 'ios' ? 800 : 300);
+    setVisibleRegion(region);
+    }, Platform.OS === 'ios' ? 1200 : 300); // iOS = 1,2s, Android = 0,3s 
 
     // Handler para mudanças de região com debounce
     const handleRegionChangeComplete = (region) => {
@@ -145,7 +145,7 @@ export default function MapaImoveis({ navigation, route }) {
                 return null;
             }
         }).filter(Boolean);
-    }, [properties, visibleRegion?.latitude, visibleRegion?.longitude, visibleRegion?.latitudeDelta, visibleRegion?.longitudeDelta]);
+    }, [properties, visibleRegion]);
 
 
 
@@ -343,7 +343,7 @@ export default function MapaImoveis({ navigation, route }) {
                         latitudeDelta: 0.1,
                         longitudeDelta: 0.1,
                     }}
-                    region={mapRegion}
+                    //region={mapRegion}
                     showsUserLocation={true}
                     showsMyLocationButton={true}
                     showsCompass={true}
