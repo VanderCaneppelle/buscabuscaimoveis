@@ -29,17 +29,29 @@ export default function NotificationsScreen({ navigation }) {
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [hasLoadedOnce, setHasLoadedOnce] = useState(false); // ✨ Flag para evitar múltiplos loads
 
-    // Carregar notificações ao montar
+    // Carregar notificações apenas na primeira montagem
     useEffect(() => {
-        loadNotifications();
-    }, []);
+        if (!hasLoadedOnce && user?.id) {
+            console.log('📱 Primeira carga de notificações');
+            loadNotifications();
+            setHasLoadedOnce(true);
+        }
+    }, [user?.id, hasLoadedOnce]);
 
-    // Recarregar quando a tela ganhar foco
+    // Recarregar APENAS quando a tela ganhar foco VINDO DE OUTRA TAB
+    // (não recarrega quando volta da navegação interna)
     useFocusEffect(
         useCallback(() => {
-            loadNotifications();
-        }, [])
+            // Não recarregar na primeira vez (já carregou no useEffect acima)
+            // Apenas recarregar quando voltar para a tela depois de ter saído
+            if (hasLoadedOnce && notifications.length > 0) {
+                console.log('📱 Tela ganhou foco - SKIP reload (Realtime atualiza automaticamente)');
+                // Não recarrega - deixa o Realtime fazer o trabalho
+                // Só recarrega no pull-to-refresh manual
+            }
+        }, [hasLoadedOnce, notifications.length])
     );
 
     // ✨ NOVO: Atualizar com Realtime (instantâneo!)
