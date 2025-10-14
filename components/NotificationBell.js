@@ -12,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { InAppNotificationAPI } from '../lib/inAppNotificationService';
 import { useFocusEffect } from '@react-navigation/native';
+import { supabase } from '../lib/supabase'; // ✨ NOVO - Para Realtime
 
 export default function NotificationBell({ navigation }) {
     const { user } = useAuth();
@@ -34,13 +35,83 @@ export default function NotificationBell({ navigation }) {
         }, [user?.id])
     );
 
-    // Atualizar periodicamente (a cada 30 segundos)
+    // ✨ NOVO: Atualizar com Realtime (instantâneo!)
+    useEffect(() => {
+        if (!user?.id) return;
+
+        console.log('🔴 NotificationBell: Configurando Realtime para userId:', user.id.substring(0, 8));
+
+        // Inscrever para novas notificações do usuário atual
+        const channel = supabase
+            .channel('notifications-changes')
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'in_app_notifications',
+                    filter: `user_id=eq.${user.id}`,
+                },
+                (payload) => {
+                    console.log('🔔 Nova notificação recebida via Realtime!', payload.new);
+                    // Incrementar contador
+                    setUnreadCount(prev => prev + 1);
+                }
+            )
+            .on(
+                'postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'in_app_notifications',
+                    filter: `user_id=eq.${user.id}`,
+                },
+                (payload) => {
+                    console.log('🔄 Notificação atualizada via Realtime!', payload.new);
+                    // Se foi marcada como lida, decrementar contador
+                    if (payload.new.read && !payload.old.read) {
+                        setUnreadCount(prev => Math.max(0, prev - 1));
+                    }
+                    // Se foi marcada como não lida, incrementar contador
+                    else if (!payload.new.read && payload.old.read) {
+                        setUnreadCount(prev => prev + 1);
+                    }
+                }
+            )
+            .on(
+                'postgres_changes',
+                {
+                    event: 'DELETE',
+                    schema: 'public',
+                    table: 'in_app_notifications',
+                    filter: `user_id=eq.${user.id}`,
+                },
+                (payload) => {
+                    console.log('🗑️ Notificação deletada via Realtime!', payload.old);
+                    // Se era não lida, decrementar contador
+                    if (!payload.old.read) {
+                        setUnreadCount(prev => Math.max(0, prev - 1));
+                    }
+                }
+            )
+            .subscribe((status) => {
+                console.log('📡 Status da subscrição Realtime:', status);
+            });
+
+        // Cleanup ao desmontar
+        return () => {
+            console.log('🔴 NotificationBell: Desconectando Realtime');
+            supabase.removeChannel(channel);
+        };
+    }, [user?.id]);
+
+    // Fallback: Atualizar periodicamente (a cada 60 segundos como backup)
     useEffect(() => {
         if (!user?.id) return;
 
         const interval = setInterval(() => {
             loadUnreadCount();
-        }, 30000); // 30 segundos
+        }, 120000); // 120 segundos (menos frequente pois Realtime é instantâneo)
 
         return () => clearInterval(interval);
     }, [user?.id]);

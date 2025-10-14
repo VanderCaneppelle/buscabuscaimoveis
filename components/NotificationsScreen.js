@@ -22,6 +22,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { InAppNotificationAPI, NotificationUtils } from '../lib/inAppNotificationService';
 import { useFocusEffect } from '@react-navigation/native';
+import { supabase } from '../lib/supabase'; // ✨ NOVO - Para Realtime
 
 export default function NotificationsScreen({ navigation }) {
     const { user } = useAuth();
@@ -40,6 +41,70 @@ export default function NotificationsScreen({ navigation }) {
             loadNotifications();
         }, [])
     );
+
+    // ✨ NOVO: Atualizar com Realtime (instantâneo!)
+    useEffect(() => {
+        if (!user?.id) return;
+
+        console.log('🔴 NotificationsScreen: Configurando Realtime para userId:', user.id.substring(0, 8));
+
+        // Inscrever para mudanças nas notificações do usuário atual
+        const channel = supabase
+            .channel('notifications-list-changes')
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'in_app_notifications',
+                    filter: `user_id=eq.${user.id}`,
+                },
+                (payload) => {
+                    console.log('🔔 Nova notificação recebida via Realtime!', payload.new);
+                    // Adicionar no topo da lista
+                    setNotifications(prev => [payload.new, ...prev]);
+                }
+            )
+            .on(
+                'postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'in_app_notifications',
+                    filter: `user_id=eq.${user.id}`,
+                },
+                (payload) => {
+                    console.log('🔄 Notificação atualizada via Realtime!', payload.new);
+                    // Atualizar na lista
+                    setNotifications(prev =>
+                        prev.map(n => n.id === payload.new.id ? payload.new : n)
+                    );
+                }
+            )
+            .on(
+                'postgres_changes',
+                {
+                    event: 'DELETE',
+                    schema: 'public',
+                    table: 'in_app_notifications',
+                    filter: `user_id=eq.${user.id}`,
+                },
+                (payload) => {
+                    console.log('🗑️ Notificação deletada via Realtime!', payload.old);
+                    // Remover da lista
+                    setNotifications(prev => prev.filter(n => n.id !== payload.old.id));
+                }
+            )
+            .subscribe((status) => {
+                console.log('📡 Status da subscrição Realtime (lista):', status);
+            });
+
+        // Cleanup ao desmontar
+        return () => {
+            console.log('🔴 NotificationsScreen: Desconectando Realtime');
+            supabase.removeChannel(channel);
+        };
+    }, [user?.id]);
 
     const loadNotifications = async () => {
         if (!user?.id) return;
