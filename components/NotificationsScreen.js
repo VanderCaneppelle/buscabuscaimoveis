@@ -205,32 +205,57 @@ export default function NotificationsScreen({ navigation }) {
 
         // Navegar baseado no tipo
         try {
+            console.log('🧭 Navegando para:', notification.type);
+            
             switch (notification.type) {
                 case 'property_approved':
                 case 'property_rejected':
-                    // Navegar para "Meus Anúncios"
-                    navigation.navigate('MyProperties');
+                    // Navegar para "Meus Anúncios" no AdvertiseStack
+                    // Primeiro voltar para Home, depois navegar para a tab
+                    navigation.goBack(); // Fecha a tela de notificações
+                    setTimeout(() => {
+                        const rootNav = navigation.getParent();
+                        console.log('🧭 Root navigation:', rootNav ? 'encontrado' : 'não encontrado');
+                        if (rootNav) {
+                            rootNav.navigate('Anuncie', {
+                                screen: 'MyProperties'
+                            });
+                        }
+                    }, 300); // Pequeno delay para garantir que voltou
                     break;
 
                 case 'plan_expiring':
-                    // Navegar para "Planos"
-                    navigation.navigate('Plans');
+                    // Navegar para "Planos" (modal no nível raiz)
+                    navigation.goBack(); // Fecha notificações
+                    setTimeout(() => {
+                        navigation.navigate('Plans');
+                    }, 300);
                     break;
 
                 case 'whatsapp_contact':
-                    // Pode navegar para detalhes do imóvel se tiver property_id
-                    if (notification.data?.property_id && !notification.data?.is_admin_notification) {
-                        // navigation.navigate('PropertyDetails', { propertyId: notification.data.property_id });
-                        // Por enquanto, não navega - pode implementar depois
+                    // Para admins: não navega (é só informativo)
+                    // Para donos: navegar para MyProperties
+                    if (!notification.data?.is_admin_notification) {
+                        navigation.goBack();
+                        setTimeout(() => {
+                            const rootNav = navigation.getParent();
+                            if (rootNav) {
+                                rootNav.navigate('Anuncie', {
+                                    screen: 'MyProperties'
+                                });
+                            }
+                        }, 300);
                     }
                     break;
 
                 default:
                     // Não navega para nenhum lugar
+                    console.log('⚠️ Tipo de notificação não reconhecido:', notification.type);
                     break;
             }
         } catch (error) {
-            console.error('Erro ao navegar:', error);
+            console.error('❌ Erro ao navegar:', error);
+            Alert.alert('Erro', 'Não foi possível navegar para a tela solicitada');
         }
     };
 
