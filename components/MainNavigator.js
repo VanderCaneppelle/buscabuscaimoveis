@@ -97,6 +97,39 @@ function HomeStack() {
                 component={NotificationsScreen}
                 options={{
                     headerShown: false,
+                    // ✨ Animação slide suave para iOS
+                    ...(Platform.OS === 'ios' && {
+                        cardStyleInterpolator: ({ current, layouts }) => ({
+                            cardStyle: {
+                                transform: [
+                                    {
+                                        translateX: current.progress.interpolate({
+                                            inputRange: [0, 1],
+                                            outputRange: [layouts.screen.width, 0], // Slide da direita
+                                        }),
+                                    },
+                                ],
+                            },
+                        }),
+                        transitionSpec: {
+                            open: {
+                                animation: 'spring',
+                                config: {
+                                    stiffness: 300,
+                                    damping: 30,
+                                    mass: 0.8,
+                                },
+                            },
+                            close: {
+                                animation: 'spring',
+                                config: {
+                                    stiffness: 300,
+                                    damping: 30,
+                                    mass: 0.8,
+                                },
+                            },
+                        },
+                    }),
                 }}
             />
 
