@@ -222,6 +222,58 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                 return;
             }
 
+            // ✨ NOVO: Criar notificações in-app ANTES de abrir WhatsApp
+            try {
+                const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'https://buscabusca.vercel.app';
+                
+                console.log('📱 Criando notificações in-app...');
+                
+                // Notificar dono do imóvel
+                const ownerNotificationResponse = await fetch(`${apiUrl}/api/in-app-notifications?action=create`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: property.user_id,
+                        type: 'whatsapp_contact',
+                        title: '💬 Novo Interessado!',
+                        message: `Alguém demonstrou interesse no seu anúncio "${property.title}" e clicou no botão de WhatsApp!`,
+                        data: { 
+                            property_id: property.id,
+                            property_title: property.title,
+                            contact_type: 'whatsapp',
+                            action: 'view_property'
+                        }
+                    })
+                });
+
+                if (ownerNotificationResponse.ok) {
+                    console.log('✅ Notificação in-app criada para o dono do imóvel');
+                } else {
+                    console.warn('⚠️ Erro ao criar notificação para o dono:', ownerNotificationResponse.status);
+                }
+
+                // Notificar admins (opcional - remova este bloco se não quiser)
+                const adminNotificationResponse = await fetch(`${apiUrl}/api/in-app-notifications?action=notify-admins`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        propertyId: property.id,
+                        propertyTitle: property.title,
+                        ownerName: userProfile.full_name
+                    })
+                });
+
+                if (adminNotificationResponse.ok) {
+                    console.log('✅ Notificações in-app criadas para admins');
+                } else {
+                    console.warn('⚠️ Erro ao criar notificações para admins:', adminNotificationResponse.status);
+                }
+
+            } catch (notifError) {
+                console.error('⚠️ Erro ao criar notificações in-app (não-crítico):', notifError);
+                // Não interrompe o fluxo - continua abrindo o WhatsApp
+            }
+
             const phoneNumber = userProfile.phone;
             const userName = userProfile.full_name || 'Anunciante';
             const message = `Olá ${userName}! Vi seu anúncio "${property.title}" no Busca Busca Imóveis e gostaria de mais informações.`;

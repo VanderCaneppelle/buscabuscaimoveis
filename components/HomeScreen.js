@@ -27,6 +27,7 @@ import PropertyCacheService from '../lib/propertyCacheService';
 import StoriesComponent from './StoriesComponent';
 import { CardStyleInterpolators } from '@react-navigation/stack';
 import { FiltersModal } from './modals';
+import NotificationBell from './NotificationBell'; // ✨ NOVO
 
 const { width } = Dimensions.get('window');
 
@@ -641,6 +642,8 @@ export default function HomeScreen({ navigation }) {
                             resizeMode="contain"
                         />
                         <Text style={styles.storiesTitle}>Busca Busca Imóveis</Text>
+                        {/* ✨ NOVO: Sininho de notificações */}
+                        <NotificationBell navigation={navigation} />
                     </View>
                     <View style={styles.storiesWrapper}>
                         <StoriesComponent navigation={navigation} />
@@ -822,9 +825,9 @@ const styles = StyleSheet.create({
     titleContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'space-between', // ✨ Mudado de 'center' para 'space-between'
         marginBottom: 5,
-        paddingHorizontal: 0,
+        paddingHorizontal: 15, // ✨ Adicionado padding
     },
     titleLogo: {
         width: 30,

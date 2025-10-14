@@ -1,5 +1,6 @@
 // Script para enviar lembretes de vencimento de plano
 import { NotificationService } from '../lib/notificationService.js';
+import { InAppNotificationService } from '../lib/inAppNotificationService.js'; // ✨ NOVO
 import { supabase } from '../lib/supabase.js';
 
 
@@ -99,6 +100,7 @@ async function sendExpirationReminders() {
         console.log(`📊 Encontrados ${expiringSubscriptions.length} planos vencendo em breve`);
 
         const notificationService = new NotificationService();
+        const inAppService = new InAppNotificationService(); // ✨ NOVO
         let sentCount = 0;
         let errorCount = 0;
 
@@ -155,10 +157,29 @@ async function sendExpirationReminders() {
 
                 if (result.success) {
                     sentCount++;
-                    console.log(`   ✅ Enviado com sucesso (${result.sent}/${result.total} dispositivos)`);
+                    console.log(`   ✅ Push enviado com sucesso (${result.sent}/${result.total} dispositivos)`);
                 } else {
                     errorCount++;
-                    console.log(`   ❌ Erro: ${result.error}`);
+                    console.log(`   ❌ Erro no push: ${result.error}`);
+                }
+
+                // ✨ NOVO: Criar notificação in-app
+                try {
+                    const formattedEndDate = endDate.toLocaleDateString('pt-BR');
+                    const inAppResult = await inAppService.notifyPlanExpiring(
+                        subscription.user_id,
+                        subscription.plans.display_name,
+                        diffDays,
+                        formattedEndDate
+                    );
+
+                    if (inAppResult.success) {
+                        console.log(`   📱 Notificação in-app criada com sucesso`);
+                    } else {
+                        console.log(`   ⚠️ Erro ao criar notificação in-app: ${inAppResult.error}`);
+                    }
+                } catch (inAppError) {
+                    console.error(`   ⚠️ Erro ao criar notificação in-app (não-crítico):`, inAppError);
                 }
 
                 // Pequena pausa entre envios para não sobrecarregar

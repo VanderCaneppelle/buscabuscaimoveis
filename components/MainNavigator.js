@@ -31,6 +31,7 @@ import HelpSupportScreen from './HelpSupportScreen';
 import EditProfileScreen from './EditProfileScreen';
 import BoostOptionsScreen from './BoostOptionsScreen';
 import BoostPaymentScreen from './BoostPaymentScreen';
+import NotificationsScreen from './NotificationsScreen'; // ✨ NOVO
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -87,6 +88,15 @@ function HomeStack() {
                     headerTitleStyle: {
                         fontWeight: 'bold',
                     },
+                }}
+            />
+
+            {/* ✨ NOVO: Tela de Notificações In-App */}
+            <Stack.Screen
+                name="Notifications"
+                component={NotificationsScreen}
+                options={{
+                    headerShown: false,
                 }}
             />
 
