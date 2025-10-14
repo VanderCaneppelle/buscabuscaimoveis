@@ -54,10 +54,13 @@ export default function PaymentConfirmationScreen({ route, navigation }) {
                     <Text style={styles.successTitle}>Pagamento Aprovado!</Text>
                 </View>
                 <Text style={styles.successText}>
-                    Seu plano <Text style={styles.planHighlight}>{plan.display_name}</Text> foi ativado com sucesso!
+                    Seu plano <Text style={styles.planHighlight}>{plan.display_name}</Text> foi contratado com sucesso!
                 </Text>
                 <Text style={styles.successSubtext}>
                     Agora você pode criar anúncios e aproveitar todos os benefícios.
+                </Text>
+                <Text style={styles.successSubtext2}>
+                    Caso não apareça, aguarde alguns minutos e atualize a página. A ativação do plano pode levar até 5 minutos. 
                 </Text>
             </View>
 
@@ -299,6 +302,13 @@ const styles = StyleSheet.create({
         color: '#7f8c8d',
         textAlign: 'center',
         lineHeight: 20,
+    },
+    successSubtext2: {
+        fontSize: 14,
+        color: '#e74c3c',
+        textAlign: 'center',
+        lineHeight: 20,
+        fontWeight: 'bold',
     },
     errorCard: {
         backgroundColor: '#fff',
