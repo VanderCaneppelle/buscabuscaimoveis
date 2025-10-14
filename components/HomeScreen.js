@@ -820,7 +820,7 @@ const styles = StyleSheet.create({
         paddingTop: 5,
         paddingBottom: 5,
         backgroundColor: '#ffcc1e',
-        height: 120, // Altura reduzida jÃ¡ que removemos os botÃµes de admin
+        height: 130, // Altura reduzida jÃ¡ que removemos os botÃµes de admin
     },
     titleContainer: {
         flexDirection: 'row',
@@ -861,6 +861,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
+        
     },
     headerLogo: {
         alignItems: 'center',
@@ -1411,7 +1412,8 @@ const styles = StyleSheet.create({
     },
     storiesWrapper: {
         height: 80, // Altura reduzida para o container dos stories
-        overflow: 'hidden', // Evita que o conteÃºdo extrapole
+        overflow: 'hidden',
+        paddingbottom: 10, // Evita que o conteÃºdo extrapole
     },
     contentPlaceholder: {
         flex: 1,

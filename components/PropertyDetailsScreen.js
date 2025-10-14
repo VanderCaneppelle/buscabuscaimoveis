@@ -222,13 +222,31 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                 return;
             }
 
+            // ✨ NOVO: Buscar perfil do usuário ATUAL (quem está clicando)
+            let currentUserName = 'Alguém';
+            if (user?.id) {
+                try {
+                    const { data: currentUserProfile, error: currentUserError } = await supabase
+                        .from('profiles')
+                        .select('full_name')
+                        .eq('id', user.id)
+                        .single();
+
+                    if (!currentUserError && currentUserProfile?.full_name) {
+                        currentUserName = currentUserProfile.full_name;
+                    }
+                } catch (err) {
+                    console.warn('⚠️ Não foi possível obter nome do usuário atual:', err);
+                }
+            }
+
             // ✨ NOVO: Criar notificações in-app ANTES de abrir WhatsApp
             try {
                 const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'https://buscabusca.vercel.app';
                 
                 console.log('📱 Criando notificações in-app...');
                 
-                // Notificar dono do imóvel
+                // Notificar dono do imóvel (SEM NOME - LGPD)
                 const ownerNotificationResponse = await fetch(`${apiUrl}/api/in-app-notifications?action=create`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -236,7 +254,7 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                         userId: property.user_id,
                         type: 'whatsapp_contact',
                         title: '💬 Novo Interessado!',
-                        message: `Alguém demonstrou interesse no seu anúncio "${property.title}" e clicou no botão de WhatsApp!`,
+                        message: `Um usuário demonstrou interesse no seu anúncio "${property.title}" e clicou no botão de WhatsApp!`,
                         data: { 
                             property_id: property.id,
                             property_title: property.title,
@@ -252,14 +270,15 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                     console.warn('⚠️ Erro ao criar notificação para o dono:', ownerNotificationResponse.status);
                 }
 
-                // Notificar admins (opcional - remova este bloco se não quiser)
+                // Notificar admins (COM NOME do interessado - fins de moderação)
                 const adminNotificationResponse = await fetch(`${apiUrl}/api/in-app-notifications?action=notify-admins`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         propertyId: property.id,
                         propertyTitle: property.title,
-                        ownerName: userProfile.full_name
+                        ownerName: userProfile.full_name,
+                        interestedUserName: currentUserName // Nome de quem clicou (fins de moderação)
                     })
                 });
 

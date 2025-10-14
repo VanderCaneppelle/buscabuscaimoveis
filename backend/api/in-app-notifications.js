@@ -359,14 +359,14 @@ async function handleDelete(req, res, service) {
 /**
  * Notificar admins sobre contato WhatsApp
  * POST /api/in-app-notifications?action=notify-admins
- * Body: { propertyId, propertyTitle, ownerName }
+ * Body: { propertyId, propertyTitle, ownerName, interestedUserName }
  */
 async function handleNotifyAdmins(req, res, service) {
     if (req.method !== 'POST') {
         return res.status(405).json({ success: false, error: 'Método não permitido' });
     }
 
-    const { propertyId, propertyTitle, ownerName } = req.body;
+    const { propertyId, propertyTitle, ownerName, interestedUserName } = req.body;
 
     if (!propertyId || !propertyTitle) {
         return res.status(400).json({
@@ -378,7 +378,8 @@ async function handleNotifyAdmins(req, res, service) {
     const result = await service.notifyAdminsWhatsAppContact(
         propertyId,
         propertyTitle,
-        ownerName
+        ownerName,
+        interestedUserName
     );
 
     if (result.success) {

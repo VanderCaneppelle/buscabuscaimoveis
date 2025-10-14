@@ -355,9 +355,10 @@ export class InAppNotificationService {
      * @param {string} propertyId - ID do imóvel
      * @param {string} propertyTitle - Título do imóvel
      * @param {string} ownerName - Nome do dono (opcional)
+     * @param {string} interestedUserName - Nome de quem demonstrou interesse (opcional)
      * @returns {Object} - Resultado da operação
      */
-    async notifyAdminsWhatsAppContact(propertyId, propertyTitle, ownerName = null) {
+    async notifyAdminsWhatsAppContact(propertyId, propertyTitle, ownerName = null, interestedUserName = null) {
         try {
             console.log(`📊 Notificando admins sobre contato: "${propertyTitle}"`);
 
@@ -379,6 +380,10 @@ export class InAppNotificationService {
 
             console.log(`📧 Enviando notificação para ${admins.length} admin(s)`);
 
+            // Criar mensagem detalhada para admins (fins de moderação)
+            const interestedName = interestedUserName || 'Um usuário';
+            const ownerInfo = ownerName ? ` anunciado por ${ownerName}` : '';
+            
             // Criar notificação para cada admin
             const notifications = await Promise.all(
                 admins.map(admin => 
@@ -386,11 +391,12 @@ export class InAppNotificationService {
                         userId: admin.id,
                         type: 'whatsapp_contact',
                         title: '📊 Novo Contato no Sistema',
-                        message: `${ownerName || 'Um usuário'} recebeu um contato via WhatsApp no anúncio "${propertyTitle}"`,
+                        message: `${interestedName} demonstrou interesse no imóvel "${propertyTitle}"${ownerInfo} via WhatsApp.`,
                         data: { 
                             property_id: propertyId,
                             property_title: propertyTitle,
                             owner_name: ownerName,
+                            interested_user_name: interestedUserName,
                             is_admin_notification: true,
                             action: 'view_property'
                         }
