@@ -31,10 +31,10 @@ export default function FavoritesScreen({ navigation }) {
     // Zustand
     const toggleFavorite = useFavoritesStore(state => state.toggleFavorite);
     const isFavorite = useFavoritesStore(state => state.isFavorite);
+    const favoritesStore = useFavoritesStore(state => state.favorites); // ✨ NOVO - Observar mudanças
 
     useEffect(() => {
         if (user?.id) {
-
             fetchFavorites();
         }
     }, [user?.id]);
@@ -43,11 +43,62 @@ export default function FavoritesScreen({ navigation }) {
     useFocusEffect(
         React.useCallback(() => {
             if (user?.id) {
-
                 fetchFavorites();
             }
         }, [user?.id])
     );
+
+    // ✨ NOVO: Atualizar com Realtime - Remove favoritos automaticamente
+    useEffect(() => {
+        if (!user?.id) return;
+
+        console.log('🔴 [FavoritesScreen] Configurando Realtime para userId:', user.id.substring(0, 8));
+
+        // Inscrever para mudanças nos favoritos do usuário
+        const channel = supabase
+            .channel('favorites-screen-sync')
+            .on(
+                'postgres_changes',
+                {
+                    event: 'DELETE',
+                    schema: 'public',
+                    table: 'favorites',
+                    filter: `user_id=eq.${user.id}`,
+                },
+                (payload) => {
+                    console.log('🗑️ [FavoritesScreen] Favorito REMOVIDO via Realtime:', payload.old.property_id);
+                    
+                    // Remover da lista local
+                    setFavorites(prev => 
+                        prev.filter(fav => fav.property_id !== payload.old.property_id)
+                    );
+                }
+            )
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'favorites',
+                    filter: `user_id=eq.${user.id}`,
+                },
+                (payload) => {
+                    console.log('🔔 [FavoritesScreen] Favorito ADICIONADO via Realtime:', payload.new.property_id);
+                    
+                    // Recarregar favoritos para pegar os dados do imóvel
+                    fetchFavorites();
+                }
+            )
+            .subscribe((status) => {
+                console.log('📡 [FavoritesScreen] Status Realtime:', status);
+            });
+
+        // Cleanup ao desmontar
+        return () => {
+            console.log('🔴 [FavoritesScreen] Desconectando Realtime');
+            supabase.removeChannel(channel);
+        };
+    }, [user?.id]);
 
     const fetchFavorites = async () => {
         try {

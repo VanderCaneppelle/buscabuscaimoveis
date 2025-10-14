@@ -31,6 +31,8 @@ function AppContent() {
   // Zustand: Inicializar favoritos e plano quando usuário logar
   const refreshFavorites = useFavoritesStore(state => state.refreshFavorites);
   const resetFavorites = useFavoritesStore(state => state.reset);
+  const connectRealtimeFavorites = useFavoritesStore(state => state.connectRealtime); // ✨ NOVO
+  const disconnectRealtimeFavorites = useFavoritesStore(state => state.disconnectRealtime); // ✨ NOVO
   const resetUserPlan = useUserPlanStore(state => state.reset);
   const fetchUserPlanData = useUserPlanStore(state => state.fetchUserPlanData);
 
@@ -43,8 +45,10 @@ function AppContent() {
       console.log('[App] Usuário logado, carregando favoritos e plano...');
       refreshFavorites();
       fetchUserPlanData(user.id); // ✅ Carregar dados do plano
+      connectRealtimeFavorites(user.id); // ✨ NOVO - Conectar Realtime de favoritos
     } else {
       console.log('[App] Usuário deslogado, resetando stores...');
+      disconnectRealtimeFavorites(); // ✨ NOVO - Desconectar Realtime primeiro
       resetFavorites();
       resetUserPlan(); // ✅ Resetar dados do plano
     }

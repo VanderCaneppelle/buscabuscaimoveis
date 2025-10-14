@@ -5,9 +5,11 @@ import { useFavoritesStore } from '../stores/favoritesStore';
 
 /**
  * FavoriteButton - Botão de favoritar usando Zustand
- * Simplificado: não precisa mais de estado local duplicado
+ * ✨ Se inscreve DIRETAMENTE na store - atualiza quando Realtime dispara
+ * React.memo SEM comparação customizada - deixa Zustand notificar mudanças
  */
 const FavoriteButton = React.memo(({ propertyId, disabled }) => {
+    // ✨ Zustand notifica automaticamente quando favorites mudam via Realtime
     const isFavorited = useFavoritesStore(state => state.isFavorite(propertyId));
     const toggleFavorite = useFavoritesStore(state => state.toggleFavorite);
     const inFlight = useFavoritesStore(state => state.inFlight.has(propertyId));
@@ -37,10 +39,7 @@ const FavoriteButton = React.memo(({ propertyId, disabled }) => {
             </TouchableOpacity>
         </View>
     );
-}, (prev, next) =>
-    prev.disabled === next.disabled &&
-    prev.propertyId === next.propertyId
-);
+}); // ✨ Removida comparação customizada - deixa Zustand notificar
 
 export default FavoriteButton;
 

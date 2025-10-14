@@ -376,9 +376,7 @@ export default function HomeScreen({ navigation }) {
         }
     };
 
-    const handleToggleFavorite = useCallback(async (propertyId) => {
-        await toggleFavorite(propertyId);
-    }, [toggleFavorite]);
+    // ❌ REMOVIDO: handleToggleFavorite - FavoriteButton agora gerencia diretamente via Zustand
 
     const loadMoreProperties = async () => {
         if (loadingMore || !hasMore) {
@@ -406,7 +404,7 @@ export default function HomeScreen({ navigation }) {
 
 
     // Componente simplificado para renderizar propriedades
-    const PropertyItem = React.memo(({ item, index, isFavorited, handleToggleFavorite, navigation }) => {
+    const PropertyItem = React.memo(({ item, index, navigation }) => {
         const mediaFiles = item.images || [];
         const [currentIndex, setCurrentIndex] = useState(0);
         // ✅ Usar Zustand para verificar boost (O(1))
@@ -416,11 +414,6 @@ export default function HomeScreen({ navigation }) {
         const handlePress = useCallback(() => {
             navigation.navigate('PropertyDetails', { property: item });
         }, [navigation, item]);
-
-        const handleFavoritePress = useCallback((event) => {
-            event.stopPropagation(); // NÃ£o propagar para o card
-            handleToggleFavorite(item.id);
-        }, [handleToggleFavorite, item.id]);
 
         // Separar imagens e vÃ­deos (simplificado)
         const imageFiles = mediaFiles.filter(file =>
@@ -515,7 +508,7 @@ export default function HomeScreen({ navigation }) {
 
                     {/* BotÃ£o de Favoritos (componente isolado e memoizado) */}
                     <View style={styles.favoriteButton}>
-                        <FavoriteButton isFavorited={isFavorited} onPress={() => toggleFavorite(item.id)} disabled={false} propertyId={item.id} />
+                        <FavoriteButton disabled={false} propertyId={item.id} />
                     </View>
 
                 </View>
@@ -586,24 +579,19 @@ export default function HomeScreen({ navigation }) {
             </TouchableOpacity>
         );
     }, (prevProps, nextProps) => {
-        return (
-            prevProps.item.id === nextProps.item.id &&
-            prevProps.isFavorited === nextProps.isFavorited
-        );
+        // ✨ Só compara o ID do item - FavoriteButton gerencia próprio estado via Zustand
+        return prevProps.item.id === nextProps.item.id;
     });
 
     const renderProperty = useCallback(({ item, index }) => {
-        const isFavorited = isFavorite(item.id);
         return (
             <PropertyItem
                 item={item}
                 index={index}
-                isFavorited={isFavorited}
-                handleToggleFavorite={handleToggleFavorite}
                 navigation={navigation}
             />
         );
-    }, [isFavorite, handleToggleFavorite, navigation]);
+    }, [navigation]); // ✨ Simplificado - FavoriteButton gerencia próprio estado
 
     if (loading) {
         return (
