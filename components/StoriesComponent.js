@@ -22,6 +22,7 @@ import StoryLinkOverlay from './StoryLinkOverlay';
 const { width } = Dimensions.get('window');
 const STORY_SIZE = 70;
 const CACHE_KEY = 'cached_stories';
+const CACHE_DURATION = 10 * 60 * 1000; // ✨ 10 minutos de cache
 
 export default function StoriesComponent({ navigation }) {
     const { isAdmin } = useAdmin();
@@ -39,6 +40,37 @@ export default function StoriesComponent({ navigation }) {
             loadStories();
         }
     }, [hasLoadedOnce]);
+
+    // ✨ Auto-renovação: Verifica cache expirado a cada 1 minuto
+    useEffect(() => {
+        const checkCacheExpiration = async () => {
+            try {
+                const cached = await AsyncStorage.getItem(CACHE_KEY);
+                if (cached) {
+                    const cacheData = JSON.parse(cached);
+                    const cacheTimestamp = cacheData.timestamp || 0;
+                    const cacheAge = Date.now() - cacheTimestamp;
+
+                    // Se cache expirou (>10 min), recarregar automaticamente
+                    if (cacheAge > CACHE_DURATION) {
+                        console.log('⏰ [Auto-Renovação] Cache expirou, atualizando stories...');
+                        await loadStories(false);
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Erro ao verificar expiração do cache:', error);
+            }
+        };
+
+        // Verificar a cada 1 minuto (60000ms)
+        const interval = setInterval(checkCacheExpiration, 60 * 1000);
+
+        // Cleanup: Limpar interval ao desmontar componente
+        return () => {
+            console.log('🧹 Limpando interval de verificação de cache');
+            clearInterval(interval);
+        };
+    }, []); // Só cria o interval uma vez
 
     // Recarregar stories quando voltar para a tela (otimizado para iOS)
     useFocusEffect(
@@ -89,25 +121,34 @@ export default function StoriesComponent({ navigation }) {
             if (!forceReload) {
                 const cached = await AsyncStorage.getItem(CACHE_KEY);
                 if (cached) {
-                    const cachedStories = JSON.parse(cached);
+                    const cacheData = JSON.parse(cached);
+                    const cachedStories = cacheData.stories || cacheData; // Suporte para cache antigo
+                    const cacheTimestamp = cacheData.timestamp || 0;
+                    const cacheAge = Date.now() - cacheTimestamp;
+                    
                     console.log('📦 Stories do cache:', cachedStories.length);
-                    console.log('📦 Cache stories:', cachedStories.map(s => ({ id: s.id, title: s.title, created_at: s.created_at })));
+                    console.log('⏰ Cache age:', Math.floor(cacheAge / 1000), 'segundos');
 
-                    // Verificar se o cache está sincronizado com o Supabase
-                    const cachedIds = cachedStories.map(s => s.id).sort();
-                    const currentIds = currentStories.map(s => s.id).sort();
+                    // ✨ Verificar se cache expirou (10 minutos)
+                    const isCacheExpired = cacheAge > CACHE_DURATION;
 
-                    const isCacheValid = JSON.stringify(cachedIds) === JSON.stringify(currentIds);
-
-                    if (isCacheValid && cachedStories.length === currentStories.length) {
-                        console.log('✅ Cache está sincronizado, usando cache');
-                        setStories(cachedStories);
-                        setLoading(false);
-                        return;
+                    if (isCacheExpired) {
+                        console.log('⏰ Cache expirado (>10 min), buscando do Supabase...');
                     } else {
-                        console.log('🔄 Cache desatualizado, atualizando...');
-                        console.log('📊 Cache IDs:', cachedIds);
-                        console.log('📊 Current IDs:', currentIds);
+                        // Verificar se o cache está sincronizado com o Supabase
+                        const cachedIds = cachedStories.map(s => s.id).sort();
+                        const currentIds = currentStories.map(s => s.id).sort();
+
+                        const isCacheValid = JSON.stringify(cachedIds) === JSON.stringify(currentIds);
+
+                        if (isCacheValid && cachedStories.length === currentStories.length) {
+                            console.log('✅ Cache válido e sincronizado, usando cache');
+                            setStories(cachedStories);
+                            setLoading(false);
+                            return;
+                        } else {
+                            console.log('🔄 Cache desatualizado (IDs diferentes), atualizando...');
+                        }
                     }
                 } else {
                     console.log('📦 Nenhum cache encontrado');
@@ -120,10 +161,14 @@ export default function StoriesComponent({ navigation }) {
             // Atualizar o estado e o cache com os stories atuais
             setStories(currentStories);
 
-            // Salvar no cache
-            await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(currentStories));
-            console.log('💾 Stories salvos no cache:', currentStories.length);
-            console.log('💾 Cache content:', currentStories.map(s => ({ id: s.id, title: s.title, created_at: s.created_at })));
+            // ✨ Salvar no cache com timestamp
+            const cacheData = {
+                stories: currentStories,
+                timestamp: Date.now()
+            };
+            await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
+            console.log('💾 Stories salvos no cache:', currentStories.length, '(expires in 10 min)');
+            console.log('💾 Cache content:', currentStories.map(s => ({ id: s.id, title: s.title })));
 
         } catch (error) {
             console.error('❌ Erro ao carregar stories:', error);
