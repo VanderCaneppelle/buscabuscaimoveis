@@ -231,12 +231,18 @@ function AccountStack() {
 function TabNavigator() {
     const insets = useSafeAreaInsets();
 
-    // Zustand: selecionar apenas o necessário
-    const favCount = useFavoritesStore(state => state.getFavoriteCount());
+    // ✨ Zustand: Observar o Set diretamente para reagir ao Realtime
+    const favorites = useFavoritesStore(state => state.favorites);
+    const favCount = favorites.size; // Calcular tamanho diretamente
     const favoritesChanged = useFavoritesStore(state => state.favoritesChanged);
     const clearFavoritesChanged = useFavoritesStore(state => state.clearFavoritesChanged);
 
     const favIconScale = React.useRef(new Animated.Value(1)).current;
+
+    // ✨ Debug: Log quando favCount mudar
+    React.useEffect(() => {
+        console.log('📊 [TabNavigator] Badge de favoritos atualizado:', favCount);
+    }, [favCount]);
 
     React.useEffect(() => {
         if (favoritesChanged) {

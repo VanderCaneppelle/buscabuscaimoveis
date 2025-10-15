@@ -123,11 +123,13 @@ export default function FavoritesScreen({ navigation }) {
                         city,
                         state,
                         images,
-                        status
+                        status,
+                        ad_status
                     )
                 `)
                 .eq('user_id', user.id)
                 .eq('properties.status', 'approved')
+                .eq('properties.ad_status', 'active') // ✨ NOVO - Filtrar apenas ativos
                 .order('created_at', { ascending: false });
 
             if (error) {

@@ -22,12 +22,13 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext';
 import { useFavoritesStore } from '../stores/favoritesStore';
 import { useBoostsStore } from '../stores/boostsStore';
+import { usePropertiesStore } from '../stores/propertiesStore'; // ✨ NOVO
 import { supabase } from '../lib/supabase';
 import PropertyCacheService from '../lib/propertyCacheService';
 import StoriesComponent from './StoriesComponent';
 import { CardStyleInterpolators } from '@react-navigation/stack';
 import { FiltersModal } from './modals';
-import NotificationBell from './NotificationBell'; // ✨ NOVO
+import NotificationBell from './NotificationBell';
 
 const { width } = Dimensions.get('window');
 
@@ -62,6 +63,10 @@ export default function HomeScreen({ navigation }) {
     const boostedPropertyIds = useBoostsStore(state => state.boostedPropertyIds);
     const fetchBoostedIds = useBoostsStore(state => state.fetchBoostedIds);
     const isBoosted = useBoostsStore(state => state.isBoosted);
+
+    // ✨ NOVO: Zustand Properties Store (Realtime)
+    const connectRealtimeProperties = usePropertiesStore(state => state.connectRealtime);
+    const disconnectRealtimeProperties = usePropertiesStore(state => state.disconnectRealtime);
 
     const insets = useSafeAreaInsets();
     const colorScheme = useColorScheme();
@@ -149,13 +154,53 @@ export default function HomeScreen({ navigation }) {
         }, [user?.id, hasInitialData, favoritesChanged, fetchBoostedIds])
     );
 
-    // Detectar quando o componente Ã© desmontado
+    // ✨ NOVO: Conectar/Desconectar Realtime quando HomeScreen monta/desmonta
     useEffect(() => {
-        console.log('  HomeScreen: COMPONENTE MONTADO - useEffect cleanup');
-        return () => {
-            console.log('  HomeScreen: COMPONENTE DESMONTADO');
+        console.log('  HomeScreen: COMPONENTE MONTADO');
+        
+        // Callback para atualizar lista local quando Realtime disparar
+        const handleRealtimeUpdate = ({ type, data }) => {
+            console.log(`📡 [HomeScreen] Realtime update: ${type}`, data.id?.substring(0, 8));
+            
+            if (type === 'INSERT') {
+                // Adicionar novo imóvel no topo
+                setProperties(prev => {
+                    // Verificar se já existe (evitar duplicação)
+                    if (prev.some(p => p.id === data.id)) {
+                        return prev;
+                    }
+                    return [data, ...prev];
+                });
+                setTotalCount(prev => prev + 1);
+            } 
+            else if (type === 'REMOVE' || type === 'DELETE') {
+                // Remover imóvel da lista
+                setProperties(prev => prev.filter(p => p.id !== data.id));
+                setTotalCount(prev => Math.max(0, prev - 1));
+            }
+            else if (type === 'UPDATE') {
+                // Atualizar imóvel existente
+                setProperties(prev => {
+                    const index = prev.findIndex(p => p.id === data.id);
+                    if (index >= 0) {
+                        const newProps = [...prev];
+                        newProps[index] = data;
+                        return newProps;
+                    }
+                    return prev;
+                });
+            }
         };
-    }, []);
+        
+        // Conectar Realtime com callback
+        connectRealtimeProperties(handleRealtimeUpdate);
+        
+        return () => {
+            console.log('  HomeScreen: COMPONENTE DESMONTADO - desconectando Realtime');
+            // Desconectar Realtime ao desmontar (economia de recursos)
+            disconnectRealtimeProperties();
+        };
+    }, []); // Sem dependências - conecta 1x ao montar
 
     const fetchProfile = async () => {
         try {

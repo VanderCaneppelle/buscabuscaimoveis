@@ -205,6 +205,7 @@ export const useFavoritesStore = create((set, get) => ({
         }
 
         console.log('🔴 [FavoritesStore] Conectando Realtime para userId:', userId.substring(0, 8));
+        console.log('📊 [FavoritesStore] Favoritos atuais no Set:', get().favorites.size);
 
         // Criar canal Realtime
         const channel = supabase
@@ -248,16 +249,20 @@ export const useFavoritesStore = create((set, get) => ({
                     
                     const { favorites, inFlight } = get();
                     
-                    // Só remover se não estiver em processamento local (evita duplicação)
-                    if (!inFlight.has(payload.old.property_id)) {
-                        const newFavorites = new Set(favorites);
-                        newFavorites.delete(payload.old.property_id);
-                        
+                    // Sempre remover quando vem do Realtime
+                    // (pode ser trigger automático ou ação de outro dispositivo)
+                    const newFavorites = new Set(favorites);
+                    const wasRemoved = newFavorites.delete(payload.old.property_id);
+                    
+                    if (wasRemoved) {
+                        console.log('✅ [FavoritesStore] Favorito removido do Set. Total agora:', newFavorites.size);
                         set({
                             favorites: newFavorites,
                             favoritesChanged: true,
                             lastChangedId: payload.old.property_id
                         });
+                    } else {
+                        console.log('⚠️ [FavoritesStore] Favorito já não estava no Set');
                     }
                 }
             )
