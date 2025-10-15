@@ -163,13 +163,23 @@ export const usePropertiesStore = create((set, get) => ({
                 },
                 (payload) => {
                     console.log('🔄 [PropertiesStore] Imóvel ATUALIZADO via Realtime:', payload.new.id);
+                    console.log('📊 [PropertiesStore] Status:', {
+                        ad_status: payload.new.ad_status,
+                        status: payload.new.status
+                    });
                     
                     // Se foi inativado ou rejeitado, notificar remoção
                     if (payload.new.ad_status === 'inactive' || payload.new.status === 'rejected') {
                         console.log('🗑️ [PropertiesStore] Removendo imóvel inativo/rejeitado:', payload.new.id);
+                        console.log('🗑️ [PropertiesStore] Motivo:', 
+                            payload.new.ad_status === 'inactive' ? 'INATIVO' : 'REJEITADO'
+                        );
                         
                         if (onUpdate) {
+                            console.log('📤 [PropertiesStore] Enviando REMOVE para HomeScreen');
                             onUpdate({ type: 'REMOVE', data: payload.new });
+                        } else {
+                            console.log('⚠️ [PropertiesStore] onUpdate callback não foi fornecido!');
                         }
                     }
                     // Se foi aprovado, notificar adição/atualização

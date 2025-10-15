@@ -135,9 +135,9 @@ export default function HomeScreen({ navigation }) {
     // Garantir que os dados sejam carregados quando a tela ganhar foco
     useFocusEffect(
         useCallback(() => {
-            console.log('  HomeScreen: TELA GANHOU FOCO');
+            console.log('  HomeScreen: TELA GANHOU FOCO');
             if (!hasInitialData) {
-                console.log(' HomeScreen: CARREGANDO DADOS NO FOCUS');
+                console.log(' HomeScreen: CARREGANDO DADOS NO FOCUS (primeira vez)');
                 if (user?.id) {
                     fetchProfile();
                 }
@@ -146,6 +146,9 @@ export default function HomeScreen({ navigation }) {
                 fetchBoostedIds();
                 setHasInitialData(true);
             }
+            // ✨ NÃO chamar fetchProperties aqui - causa piscada ao favoritar/desfavoritar
+            // Smart revalidation será feita via pull to refresh ou Realtime
+            
             // Recarregar favoritos APENAS se foram modificados em outra tela
             if (favoritesChanged) {
                 console.log('[HomeScreen] Focus -> favoritesChanged=true. SKIP refreshFavorites (usar estado otimista)');
@@ -154,13 +157,53 @@ export default function HomeScreen({ navigation }) {
         }, [user?.id, hasInitialData, favoritesChanged, fetchBoostedIds])
     );
 
+    // ✨ Auto-renovação: Verifica cache expirado a cada 1 minuto (igual Stories)
+    useEffect(() => {
+        console.log('✅ [HomeScreen] Iniciando auto-renovação de cache (intervalo: 1 min)');
+        
+        const checkCacheExpiration = async () => {
+            try {
+                // Usar a mesma lógica do PropertyCacheService
+                const result = await PropertyCacheService.needsRevalidation(filters, searchTerm, 'date_desc', 0);
+                
+                if (result) {
+                    console.log(`🔍 [Auto-Renovação HomePage] Resultado:`, result.reason);
+                    
+                    // Se precisa atualizar, refazer busca
+                    if (result.needsUpdate) {
+                        console.log('⏰ [Auto-Renovação HomePage] Cache expirou e detectou mudanças, atualizando...');
+                        await fetchProperties(null, null, 0, true, false);
+                    } else if (result.renewed) {
+                        console.log('✅ [Auto-Renovação HomePage] Cache renovado (sem mudanças no servidor)');
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Erro ao verificar cache de propriedades:', error);
+            }
+        };
+
+        // Verificar a cada 1 minuto (60000ms)
+        const interval = setInterval(checkCacheExpiration, 60 * 1000);
+
+        // Cleanup: Limpar interval ao desmontar componente
+        return () => {
+            console.log('🧹 Limpando interval de verificação de cache (HomePage)');
+            clearInterval(interval);
+        };
+    }, [filters, searchTerm]); // Dependências: se filtros mudarem, recriar interval
+
     // ✨ NOVO: Conectar/Desconectar Realtime quando HomeScreen monta/desmonta
     useEffect(() => {
         console.log('  HomeScreen: COMPONENTE MONTADO');
         
         // Callback para atualizar lista local quando Realtime disparar
         const handleRealtimeUpdate = ({ type, data }) => {
-            console.log(`📡 [HomeScreen] Realtime update: ${type}`, data.id?.substring(0, 8));
+            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            console.log(`📡 [HomeScreen] Realtime update recebido!`);
+            console.log(`📡 [HomeScreen] Type: ${type}`);
+            console.log(`📡 [HomeScreen] ID: ${data.id?.substring(0, 8)}`);
+            console.log(`📡 [HomeScreen] Status: ${data.status}, Ad_status: ${data.ad_status}`);
+            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
             
             if (type === 'INSERT') {
                 // Adicionar novo imóvel no topo
@@ -175,19 +218,35 @@ export default function HomeScreen({ navigation }) {
             } 
             else if (type === 'REMOVE' || type === 'DELETE') {
                 // Remover imóvel da lista
-                setProperties(prev => prev.filter(p => p.id !== data.id));
+                console.log('🗑️ [HomeScreen] Removendo imóvel da lista:', data.id?.substring(0, 8));
+                setProperties(prev => {
+                    const filtered = prev.filter(p => p.id !== data.id);
+                    console.log('📊 [HomeScreen] Lista antes:', prev.length, '→ Lista depois:', filtered.length);
+                    return filtered;
+                });
                 setTotalCount(prev => Math.max(0, prev - 1));
             }
             else if (type === 'UPDATE') {
-                // Atualizar imóvel existente
+                // ✨ Tratar UPDATE de forma inteligente
                 setProperties(prev => {
-                    const index = prev.findIndex(p => p.id === data.id);
-                    if (index >= 0) {
-                        const newProps = [...prev];
-                        newProps[index] = data;
-                        return newProps;
+                    const existsInList = prev.some(p => p.id === data.id);
+                    
+                    // Caso 1: Imóvel foi APROVADO e não está na lista → Adicionar
+                    if (!existsInList && data.status === 'approved' && data.ad_status === 'active') {
+                        console.log('✅ [HomeScreen] Imóvel aprovado via UPDATE, adicionando na lista');
+                        setTotalCount(c => c + 1);
+                        return [data, ...prev]; // Adicionar no topo
                     }
-                    return prev;
+                    // Caso 2: Imóvel está na lista → Atualizar dados
+                    else if (existsInList) {
+                        console.log('🔄 [HomeScreen] Atualizando dados do imóvel na lista');
+                        return prev.map(p => p.id === data.id ? { ...p, ...data } : p);
+                    }
+                    // Caso 3: Imóvel não está na lista e não foi aprovado → Ignorar
+                    else {
+                        console.log('ℹ️ [HomeScreen] UPDATE ignorado (imóvel não aprovado)');
+                        return prev;
+                    }
                 });
             }
         };
@@ -223,20 +282,20 @@ export default function HomeScreen({ navigation }) {
     // ❌ REMOVIDO: fetchBoostedProperties - agora usa Zustand (useBoostsStore)
 
     const fetchProperties = async (customFilters = null, searchQuery = null, page = 0, forceRefresh = false, isSearchOrFilterChange = false) => {
-        // Evitar recarregamento se jÃ¡ temos dados e nÃ£o Ã© forceRefresh
-        // Mas sempre executar se for forceRefresh ou mudanÃ§a de busca/filtro
+        // Evitar recarregamento se já temos dados e não é forceRefresh
+        // Mas sempre executar se for forceRefresh ou mudança de busca/filtro
         if (page === 0 && properties.length > 0 && !forceRefresh && !isSearchOrFilterChange && hasInitialData) {
-            console.log('  HomeScreen: Dados já carregados, pulando fetchProperties');
-            return;
+            console.log('  HomeScreen: Dados já carregados, pulando fetchProperties');
+            return; // ✅ REVERTIDO - evita piscada ao favoritar
         }
 
-        // Se nÃ£o temos dados iniciais e nÃ£o Ã© uma mudanÃ§a de filtro/busca, forÃ§ar carregamento
+        // Se não temos dados iniciais e não é uma mudança de filtro/busca, forçar carregamento
         if (page === 0 && !hasInitialData && !isSearchOrFilterChange) {
-            console.log('  HomeScreen: Primeiro carregamento, forçando busca');
+            console.log('  HomeScreen: Primeiro carregamento, forçando busca');
             forceRefresh = true;
         }
 
-        console.log('  HomeScreen: Carregando propriedades...');
+        console.log('  HomeScreen: Carregando propriedades...');
         console.log('  HomeScreen: Parâmetros:', { customFilters, searchQuery, page, forceRefresh, isSearchOrFilterChange });
 
         // Controlar loading baseado no tipo de operaÃ§Ã£o

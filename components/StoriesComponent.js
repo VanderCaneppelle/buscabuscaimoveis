@@ -43,6 +43,8 @@ export default function StoriesComponent({ navigation }) {
 
     // ✨ Auto-renovação: Verifica cache expirado a cada 1 minuto
     useEffect(() => {
+        console.log('✅ [StoriesComponent] Iniciando auto-renovação (intervalo: 1 min)');
+        
         const checkCacheExpiration = async () => {
             try {
                 const cached = await AsyncStorage.getItem(CACHE_KEY);
@@ -50,11 +52,16 @@ export default function StoriesComponent({ navigation }) {
                     const cacheData = JSON.parse(cached);
                     const cacheTimestamp = cacheData.timestamp || 0;
                     const cacheAge = Date.now() - cacheTimestamp;
+                    const cacheMinutes = Math.floor(cacheAge / 60000);
+
+                    console.log(`🔍 [Auto-Renovação] Verificando... Cache: ${cacheMinutes} min (limite: 10 min)`);
 
                     // Se cache expirou (>10 min), recarregar automaticamente
                     if (cacheAge > CACHE_DURATION) {
                         console.log('⏰ [Auto-Renovação] Cache expirou, atualizando stories...');
                         await loadStories(false);
+                    } else {
+                        console.log(`✅ [Auto-Renovação] Cache ainda válido (faltam ${10 - cacheMinutes} min)`);
                     }
                 }
             } catch (error) {
@@ -127,14 +134,16 @@ export default function StoriesComponent({ navigation }) {
                     const cacheAge = Date.now() - cacheTimestamp;
                     
                     console.log('📦 Stories do cache:', cachedStories.length);
-                    console.log('⏰ Cache age:', Math.floor(cacheAge / 1000), 'segundos');
+                    console.log('⏰ Cache age:', Math.floor(cacheAge / 1000), 'segundos', `(${Math.floor(cacheAge / 60000)} min)`);
 
                     // ✨ Verificar se cache expirou (10 minutos)
                     const isCacheExpired = cacheAge > CACHE_DURATION;
 
                     if (isCacheExpired) {
-                        console.log('⏰ Cache expirado (>10 min), buscando do Supabase...');
+                        console.log('⏰ Cache expirado (>' + (CACHE_DURATION / 60000) + ' min), buscando do Supabase...');
                     } else {
+                        console.log('✅ Cache ainda válido (<' + (CACHE_DURATION / 60000) + ' min)');
+                        
                         // Verificar se o cache está sincronizado com o Supabase
                         const cachedIds = cachedStories.map(s => s.id).sort();
                         const currentIds = currentStories.map(s => s.id).sort();
