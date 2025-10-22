@@ -12,6 +12,7 @@ import {
     Dimensions,
     Platform,
     useColorScheme,
+    Modal,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -107,6 +108,18 @@ export default function HomeScreen({ navigation }) {
     // Refs para controle
     const searchInputRef = useRef(null);
     const flatListRef = useRef(null);
+    
+    // ✨ NOVO: Estado de ordenação
+    const [sortOption, setSortOption] = useState('date_desc'); // Padrão: mais recentes
+    const [showSortModal, setShowSortModal] = useState(false);
+    
+    // Opções de ordenação
+    const sortOptions = [
+        { key: 'date_desc', label: 'Mais recentes', icon: 'time-outline' },
+        { key: 'date_asc', label: 'Mais antigos', icon: 'time-outline' },
+        { key: 'price_asc', label: 'Menor preço', icon: 'trending-up-outline' },
+        { key: 'price_desc', label: 'Maior preço', icon: 'trending-down-outline' },
+    ];
 
     // Cores dinÃ¢micas baseadas no tema do dispositivo
     const colors = {
@@ -296,7 +309,7 @@ export default function HomeScreen({ navigation }) {
         }
 
         console.log('  HomeScreen: Carregando propriedades...');
-        console.log('  HomeScreen: Parâmetros:', { customFilters, searchQuery, page, forceRefresh, isSearchOrFilterChange });
+        console.log('  HomeScreen: Parâmetros:', { customFilters, searchQuery, page, forceRefresh, isSearchOrFilterChange, sortOption });
 
         // Controlar loading baseado no tipo de operaÃ§Ã£o
         if (page === 0) {
@@ -311,12 +324,15 @@ export default function HomeScreen({ navigation }) {
             const activeFilters = customFilters || filters;
             const activeSearch = searchQuery !== null ? searchQuery : searchTerm;
 
+            console.log('🔍 HomeScreen: Passando sortOption para PropertyCacheService:', sortOption);
+            
             const result = await PropertyCacheService.getProperties({
                 page,
                 filters: activeFilters,
                 searchTerm: activeSearch,
+                sortOption, // ✨ NOVO: Incluir ordenação
                 forceRefresh,
-                enableParallelUpdate: true // Habilitar atualizaÃ§Ã£o em background (SWR)
+                enableParallelUpdate: true // Habilitar atualização em background (SWR)
             });
 
             console.log('  HomeScreen: Resultado recebido:', {
@@ -415,8 +431,22 @@ export default function HomeScreen({ navigation }) {
         setSearchInputValue(''); // Limpar o input de busca
         setSearchTerm(''); // Limpar o termo de busca ativo
         setCurrentPage(0);
+        // ✨ NOVO: Limpar ordenação também
+        setSortOption('date_desc');
         // Mostrar imediatamente do cache e revalidar em background
         fetchProperties(clearedFilters, '', 0, false, true);
+    };
+    
+    // ✨ NOVO: Função para lidar com mudança de ordenação (EXATAMENTE igual aos filtros)
+    const applySort = (newSortOption) => {
+        console.log('📊📊📊 HomeScreen: APLICANDO ORDENAÇÃO 📊📊📊');
+        setSortOption(newSortOption);
+        setSearchInputValue(''); // Limpar busca ao aplicar ordenação (igual aos filtros)
+        setSearchTerm('');
+        setCurrentPage(0);
+        setShowSortModal(false);
+        // Aplicar ordenação e buscar propriedades (EXATAMENTE igual aos filtros)
+        fetchProperties(filters, '', 0, true, true);
     };
 
     const openFiltersModal = () => {
@@ -796,7 +826,10 @@ export default function HomeScreen({ navigation }) {
                                 <Ionicons name="options-outline" size={16} color="#00335e" />
                                 <Text style={styles.filtersText}>Filtros</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity style={styles.filtersButton}>
+                            <TouchableOpacity 
+                                style={styles.filtersButton}
+                                onPress={() => setShowSortModal(true)}
+                            >
                                 <Ionicons name="swap-vertical" size={16} color="#00335e" />
                                 <Text style={styles.filtersText}>Ordenar</Text>
                             </TouchableOpacity>
@@ -891,6 +924,56 @@ export default function HomeScreen({ navigation }) {
                     onApplyFilters={applyFilters}
                     cities={cities}
                 />
+                
+                {/* ✨ NOVO: Modal de Ordenação */}
+                <Modal
+                    visible={showSortModal}
+                    transparent={true}
+                    animationType="slide"
+                    onRequestClose={() => setShowSortModal(false)}
+                >
+                    <View style={styles.sortModalOverlay}>
+                        <View style={styles.sortModalContent}>
+                            <View style={styles.sortModalHeader}>
+                                <Text style={styles.sortModalTitle}>Ordenar por</Text>
+                                <TouchableOpacity 
+                                    onPress={() => setShowSortModal(false)}
+                                    style={styles.sortModalCloseButton}
+                                >
+                                    <Ionicons name="close" size={24} color="#666" />
+                                </TouchableOpacity>
+                            </View>
+                            
+                            <View style={styles.sortOptionsContainer}>
+                                {sortOptions.map((option) => (
+                                    <TouchableOpacity
+                                        key={option.key}
+                                        style={[
+                                            styles.sortOption,
+                                            sortOption === option.key && styles.sortOptionSelected
+                                        ]}
+                                        onPress={() => applySort(option.key)}
+                                    >
+                                        <Ionicons 
+                                            name={option.icon} 
+                                            size={20} 
+                                            color={sortOption === option.key ? '#00335e' : '#666'} 
+                                        />
+                                        <Text style={[
+                                            styles.sortOptionText,
+                                            sortOption === option.key && styles.sortOptionTextSelected
+                                        ]}>
+                                            {option.label}
+                                        </Text>
+                                        {sortOption === option.key && (
+                                            <Ionicons name="checkmark" size={20} color="#00335e" />
+                                        )}
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                        </View>
+                    </View>
+                </Modal>
             </View>
         </View>
     );
@@ -1519,6 +1602,62 @@ const styles = StyleSheet.create({
         color: '#00335e', // Cor mais escura para contrastar com o fundo amarelo
         textAlign: 'center',
         fontWeight: '500', // Deixar um pouco mais bold para melhor visibilidade
+    },
+    
+    // ✨ NOVO: Estilos do Modal de Ordenação
+    sortModalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'flex-end',
+    },
+    sortModalContent: {
+        backgroundColor: '#fff',
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        paddingBottom: 40,
+    },
+    sortModalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 20,
+        borderBottomWidth: 1,
+        borderBottomColor: '#e2e8f0',
+    },
+    sortModalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#00335e',
+    },
+    sortModalCloseButton: {
+        padding: 5,
+    },
+    sortOptionsContainer: {
+        padding: 20,
+    },
+    sortOption: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 15,
+        paddingHorizontal: 20,
+        borderRadius: 12,
+        marginBottom: 8,
+        backgroundColor: '#f8f9fa',
+    },
+    sortOptionSelected: {
+        backgroundColor: '#e3f2fd',
+        borderWidth: 1,
+        borderColor: '#00335e',
+    },
+    sortOptionText: {
+        fontSize: 16,
+        color: '#666',
+        marginLeft: 15,
+        flex: 1,
+    },
+    sortOptionTextSelected: {
+        color: '#00335e',
+        fontWeight: '600',
     },
 
 }); 
