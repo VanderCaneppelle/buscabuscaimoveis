@@ -23,9 +23,9 @@ export default {
         usesNonExemptEncryption: false
       },
       infoPlist: {
-        NSPhotoLibraryUsageDescription: "Precisamos acessar suas fotos para você adicionar imagens dos imóveis que deseja anunciar.",
-        NSCameraUsageDescription: "Precisamos acessar sua câmera para você tirar fotos dos imóveis que deseja anunciar.",
-        NSPhotoLibraryAddUsageDescription: "Precisamos salvar fotos na sua galeria.",
+        NSPhotoLibraryUsageDescription: "Este app precisa acessar sua galeria de fotos para selecionar e editar imagens dos imóveis.",
+        NSCameraUsageDescription: "Este app precisa acessar sua câmera para capturar fotos dos imóveis.",
+        NSPhotoLibraryAddUsageDescription: "Este app precisa salvar fotos editadas na sua galeria.",
         NSMicrophoneUsageDescription: "Precisamos acessar o microfone para gravar vídeos dos imóveis."
       }
     },

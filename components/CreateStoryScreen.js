@@ -218,27 +218,16 @@ export default function CreateStoryScreen({ navigation }) {
             
             // ✅ Usar nova função específica para stories
             const result = await MediaService.pickStoryMedia({
-                // aspect: [9, 16],  // Aspect ratio vertical para stories
+                aspect: [9, 16],  // Aspect ratio vertical para stories
                 quality: 0.8,     // Qualidade para stories
             });
 
-            console.log('🔍 DEBUG - CreateStoryScreen pickFromGallery: Resultado recebido:', result);
-            console.log('🔍 DEBUG - CreateStoryScreen pickFromGallery: Tipo do resultado:', typeof result);
-            console.log('🔍 DEBUG - CreateStoryScreen pickFromGallery: Resultado é null?', result === null);
-            console.log('🔍 DEBUG - CreateStoryScreen pickFromGallery: Resultado é undefined?', result === undefined);
-
-            if (result) {
-                console.log('✅ CreateStoryScreen: Mídia selecionada com sucesso');
-                console.log('🔍 DEBUG - CreateStoryScreen pickFromGallery: URI:', result.uri);
-                console.log('🔍 DEBUG - CreateStoryScreen pickFromGallery: Type:', result.type);
-                console.log('🔍 DEBUG - CreateStoryScreen pickFromGallery: FileName:', result.fileName);
-                
+            if (result) {             
                 setCapturedMedia(result);
                 setShowPreview(true);
-                
-                console.log('🔍 DEBUG - CreateStoryScreen pickFromGallery: capturedMedia setado, showPreview = true');
+
             } else {
-                console.log('⚠️ CreateStoryScreen: Nenhuma mídia selecionada');
+
             }
         } catch (error) {
             console.error('❌ CreateStoryScreen: Erro ao selecionar da galeria:', error);

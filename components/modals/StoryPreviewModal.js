@@ -454,7 +454,7 @@ export default function StoryPreviewModal({
                             source={{ uri: capturedMedia.uri }}
                             style={styles.previewMedia}
                             useNativeControls={false}
-                            resizeMode="cover"
+                            resizeMode="contain"
                             shouldPlay
                             isLooping
                         />
@@ -462,7 +462,7 @@ export default function StoryPreviewModal({
                         <Image
                             source={{ uri: capturedMedia?.uri }}
                             style={styles.previewMedia}
-                            resizeMode="cover"
+                            resizeMode="contain"
                         />
                     )}
 
