@@ -9,30 +9,11 @@ import {
     Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system';
-import * as VideoThumbnails from 'expo-video-thumbnails';
 import { useAdmin } from '../contexts/AdminContext';
-import { Platform } from 'react-native';
 import { MediaServiceOptimized as MediaService } from '../lib/mediaServiceOptimized';
 import { useAuth } from '../contexts/AuthContext';
 import StoryPreviewModal from './modals/StoryPreviewModal';
 
-// ✅ Função helper para obter informações do vídeo
-const getVideoInfo = async (uri) => {
-    try {
-        const { durationMillis } = await VideoThumbnails.getThumbnailAsync(uri, {
-            time: 0,
-        });
-
-        return {
-            duration: durationMillis ? durationMillis / 1000 : 0, // Converter ms para segundos
-        };
-    } catch (error) {
-        console.error('Erro ao obter info do vídeo:', error);
-        return { duration: 0 };
-    }
-};
 
 const { width, height } = Dimensions.get('window');
 
@@ -151,147 +132,60 @@ export default function CreateStoryScreen({ navigation }) {
 
     const takePicture = async () => {
         try {
-            const result = await ImagePicker.launchCameraAsync({
-                mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                allowsEditing: false,
-               aspect: [9, 16],
-                quality: 0.8,
-                base64: true,
+            console.log('📸 CreateStoryScreen: Iniciando captura de foto...');
+            
+            // ✅ Usar função específica para stories (sem obrigatoriedade de edição)
+            const result = await MediaService.captureStoryPhoto({
+                quality: 0.8,     // Qualidade para stories
             });
 
-            if (!result.canceled && result.assets[0]) {
-                setCapturedMedia(result.assets[0]);
+            console.log('🔍 DEBUG - CreateStoryScreen takePicture: Resultado recebido:', result);
+            console.log('🔍 DEBUG - CreateStoryScreen takePicture: Tipo do resultado:', typeof result);
+
+            if (result) {
+                console.log('✅ CreateStoryScreen: Foto capturada com sucesso');
+                console.log('🔍 DEBUG - CreateStoryScreen takePicture: URI:', result.uri);
+                console.log('🔍 DEBUG - CreateStoryScreen takePicture: Type:', result.type);
+                console.log('🔍 DEBUG - CreateStoryScreen takePicture: FileName:', result.fileName);
+                
+                setCapturedMedia(result);
                 setShowPreview(true); // Abrir modal automaticamente
+                
+                console.log('🔍 DEBUG - CreateStoryScreen takePicture: capturedMedia setado, showPreview = true');
+            } else {
+                console.log('⚠️ CreateStoryScreen: Nenhuma foto capturada');
             }
         } catch (error) {
-            console.error('Erro ao tirar foto:', error);
+            console.error('❌ CreateStoryScreen: Erro ao tirar foto:', error);
             Alert.alert('Erro', 'Não foi possível tirar a foto');
         }
     };
 
 
 
-    // 🎯 Função para gravar vídeo com qualidade média
+    // 🎯 Função para gravar vídeo usando MediaService
     const recordVideo = async () => {
         try {
-            // 🎯 SOLUÇÃO HÍBRIDA: iOS vs Android
-            if (Platform.OS === 'ios') {
-                // ✅ iOS: videoMaxDuration funciona nativamente
-                const config = {
-                    mediaTypes: ImagePicker.MediaTypeOptions.Videos,
-                    allowsEditing: true,
-                    aspect: [9, 16],
-                    base64: false,
-                    allowsMultipleSelection: false,
-                    exif: false,
-                    videoQuality: ImagePicker.UIImagePickerControllerQualityType.IFrame1280x720,
-                    videoMaxDuration: 30, // ✅ 30 segundos no iOS
-                    presentationStyle: 'fullScreen',
-                    cameraType: ImagePicker.CameraType.back,
-                };
+            console.log('🎥 CreateStoryScreen: Iniciando gravação de vídeo...');
+            
+            const result = await MediaService.captureStoryVideo({
+                aspect: [9, 16],  // Aspect ratio vertical para stories
+                quality: 0.8,     // Qualidade para stories
+            });
 
-                const result = await ImagePicker.launchCameraAsync(config);
-                if (!result.canceled && result.assets[0]) {
-                    // ✅ Vai direto para preview sem compressão
-                    await checkVideoAndShowPreview(result.assets[0].uri);
-                }
-            } else {
-                // ⚠️ Android: videoMaxDuration não funciona, usar timer visual
-                Alert.alert(
-                    'Gravar Vídeo',
-                    'Você terá 30 segundos para gravar o vídeo.\n\n' +
-                    'Toque em "Gravar" para começar.',
-                    [
-                        { text: 'Cancelar', style: 'cancel' },
-                        {
-                            text: 'Gravar',
-                            onPress: startAndroidRecording
-                        }
-                    ]
-                );
-            }
-        } catch (error) {
-            console.error('Erro ao gravar vídeo:', error);
-            Alert.alert('Erro', 'Não foi possível gravar o vídeo');
-        }
-    };
-
-    // 🎯 Função específica para Android com timer visual
-    const startAndroidRecording = async () => {
-        try {
-            const config = {
-                mediaTypes: ImagePicker.MediaTypeOptions.Videos,
-                allowsEditing: true,
-                aspect: [9, 16],
-                base64: false,
-                allowsMultipleSelection: false,
-                exif: false,
-                quality: 0.65,
-                cameraType: ImagePicker.CameraType.back,
-            };
-
-            const result = await ImagePicker.launchCameraAsync(config);
-
-            if (!result.canceled && result.assets[0]) {
-                // ✅ Validar duração do vídeo gravado
-                const asset = result.assets[0];
-                const durationSeconds = asset.duration ? Math.round(asset.duration / 1000) : null; // alguns devices retornam em ms
-
-                if (durationSeconds && durationSeconds > 30) {
-                    Alert.alert(
-                        'Vídeo muito longo',
-                        `O vídeo tem ${durationSeconds} segundos.\n\n` +
-                        'O limite é de 30 segundos. Deseja gravar novamente?',
-                        [
-                            { text: 'Cancelar', style: 'cancel' },
-                            {
-                                text: 'Gravar Novamente',
-                                onPress: startAndroidRecording
-                            }
-                        ]
-                    );
-                    return;
-                }
-
-                // ✅ Vídeo dentro do limite, vai direto para preview
-                await checkVideoAndShowPreview(asset.uri);
-            }
-        } catch (error) {
-            console.error('Erro ao gravar vídeo no Android:', error);
-            Alert.alert('Erro', 'Não foi possível gravar o vídeo');
-        }
-    };
-
-
-    // Função para verificar tamanho do vídeo e ir direto para preview
-    const checkVideoAndShowPreview = async (videoUri) => {
-        try {
-            console.log('🔍 DEBUG - checkVideoAndShowPreview iniciado');
-            console.log('🔍 DEBUG - videoUri:', videoUri);
-            const fileInfo = await FileSystem.getInfoAsync(videoUri);
-            const fileSizeMB = fileInfo.size / 1024 / 1024;
-            const MAX_SIZE_MB = 100; // Limite do Cloudinary
-
-            if (fileSizeMB > MAX_SIZE_MB) {
-                // Vídeo muito grande, mostrar alerta
-                Alert.alert(
-                    'Vídeo Muito Grande',
-                    `Este vídeo tem ${fileSizeMB.toFixed(1)}MB e excede o limite de ${MAX_SIZE_MB}MB.\n\n` +
-                    'Grave um vídeo mais curto ou com menor qualidade.',
-                    [{ text: 'OK' }]
-                );
-            } else {
-                // Vídeo OK, ir direto para preview
-                setCapturedMedia({ uri: videoUri, type: 'video' });
+            if (result) {
+                console.log('✅ CreateStoryScreen: Vídeo gravado com sucesso');
+                setCapturedMedia(result);
                 setShowPreview(true);
             }
         } catch (error) {
-            console.error('Erro ao verificar tamanho do vídeo:', error);
-            // Em caso de erro, assume que está OK
-            setCapturedMedia({ uri: videoUri, type: 'video' });
-            setShowPreview(true);
+            console.error('❌ CreateStoryScreen: Erro ao gravar vídeo:', error);
+            Alert.alert('Erro', 'Não foi possível gravar o vídeo');
         }
     };
+
+
+
 
 
 
@@ -320,42 +214,34 @@ export default function CreateStoryScreen({ navigation }) {
 
     const pickFromGallery = async () => {
         try {
-            const result = await ImagePicker.launchImageLibraryAsync({
-                mediaTypes: ImagePicker.MediaTypeOptions.All,
-                allowsEditing: false,
-                aspect: [9, 16], // Aspecto vertical para stories
-                quality: 0.8,
-                base64: false, // Não usar base64 (pode causar problemas com vídeos)
+            console.log('🖼️ CreateStoryScreen: Iniciando seleção da galeria...');
+            
+            // ✅ Usar nova função específica para stories
+            const result = await MediaService.pickStoryMedia({
+                // aspect: [9, 16],  // Aspect ratio vertical para stories
+                quality: 0.8,     // Qualidade para stories
             });
 
-            if (!result.canceled && result.assets[0]) {
-                const mediaAsset = result.assets[0];
+            console.log('🔍 DEBUG - CreateStoryScreen pickFromGallery: Resultado recebido:', result);
+            console.log('🔍 DEBUG - CreateStoryScreen pickFromGallery: Tipo do resultado:', typeof result);
+            console.log('🔍 DEBUG - CreateStoryScreen pickFromGallery: Resultado é null?', result === null);
+            console.log('🔍 DEBUG - CreateStoryScreen pickFromGallery: Resultado é undefined?', result === undefined);
 
-                if (mediaAsset.type === 'video' || mediaAsset.uri.includes('.mp4') || mediaAsset.uri.includes('.mov')) {
-                    // ✅ É um vídeo, verificar duração e tamanho
-                    const videoInfo = await getVideoInfo(mediaAsset.uri);
-                    const durationSeconds = videoInfo.duration;
-
-                    if (durationSeconds > 30) {
-                        Alert.alert(
-                            'Vídeo muito longo',
-                            `O vídeo selecionado tem ${Math.round(durationSeconds)} segundos.\n\n` +
-                            'O limite é de 30 segundos. Selecione um vídeo mais curto.',
-                            [{ text: 'OK' }]
-                        );
-                        return;
-                    }
-
-                    // ✅ Vídeo dentro do limite, vai direto para preview
-                    await checkVideoAndShowPreview(mediaAsset.uri);
-                } else {
-                    // É uma imagem, ir direto para preview
-                    setCapturedMedia(mediaAsset);
-                    setShowPreview(true);
-                }
+            if (result) {
+                console.log('✅ CreateStoryScreen: Mídia selecionada com sucesso');
+                console.log('🔍 DEBUG - CreateStoryScreen pickFromGallery: URI:', result.uri);
+                console.log('🔍 DEBUG - CreateStoryScreen pickFromGallery: Type:', result.type);
+                console.log('🔍 DEBUG - CreateStoryScreen pickFromGallery: FileName:', result.fileName);
+                
+                setCapturedMedia(result);
+                setShowPreview(true);
+                
+                console.log('🔍 DEBUG - CreateStoryScreen pickFromGallery: capturedMedia setado, showPreview = true');
+            } else {
+                console.log('⚠️ CreateStoryScreen: Nenhuma mídia selecionada');
             }
         } catch (error) {
-            console.error('Erro ao selecionar da galeria:', error);
+            console.error('❌ CreateStoryScreen: Erro ao selecionar da galeria:', error);
             Alert.alert('Erro', 'Não foi possível selecionar da galeria');
         }
     };
