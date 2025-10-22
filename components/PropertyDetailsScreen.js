@@ -12,6 +12,7 @@ import {
     ScrollView,
     StatusBar,
     Modal,
+    Platform,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { Video } from 'expo-av';
@@ -633,6 +634,7 @@ export default function PropertyDetailsScreen({ route, navigation }) {
 
 const styles = StyleSheet.create({
     container: {
+        
         flex: 1,
         backgroundColor: '#fff',
     },
@@ -914,7 +916,8 @@ const styles = StyleSheet.create({
         color: '#fff',
     },
     headerButton: {
-        padding: 8,
+        padding: 5,
+        paddingTop: Platform.OS === 'ios' ? 15 : 5, // ✅ Extra padding para iOS
     },
     // Botões fixos no bottom com margens de segurança
     fixedBottomButtons: {

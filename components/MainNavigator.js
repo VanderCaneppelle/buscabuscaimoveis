@@ -395,6 +395,7 @@ export default function MainNavigator() {
                     cardStyle: { backgroundColor: 'white' },
                     headerStyle: {
                         backgroundColor: '#00335e',
+                        height: Platform.OS === 'ios' ? 125 : 60, // ✅ Altura maior para iOS com safe area
                     },
                     headerTintColor: '#fff',
                     headerTitleStyle: {

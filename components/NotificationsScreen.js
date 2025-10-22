@@ -229,9 +229,17 @@ export default function NotificationsScreen({ navigation }) {
                         const rootNav = navigation.getParent();
                         console.log('🧭 Root navigation:', rootNav ? 'encontrado' : 'não encontrado');
                         if (rootNav) {
+                            // ✅ SOLUÇÃO: Resetar stack do AdvertiseStack
+                            // Primeiro vai para AdvertiseMain (tela inicial do tab)
                             rootNav.navigate('Anuncie', {
-                                screen: 'MyProperties'
+                                screen: 'AdvertiseMain'
                             });
+                            // Depois navega para MyProperties
+                            setTimeout(() => {
+                                rootNav.navigate('Anuncie', {
+                                    screen: 'MyProperties'
+                                });
+                            }, 100); // Pequeno delay para garantir transição
                         }
                     }, 300); // Pequeno delay para garantir que voltou
                     break;
@@ -252,9 +260,17 @@ export default function NotificationsScreen({ navigation }) {
                         setTimeout(() => {
                             const rootNav = navigation.getParent();
                             if (rootNav) {
+                                // ✅ SOLUÇÃO: Resetar stack do AdvertiseStack
+                                // Primeiro vai para AdvertiseMain (tela inicial do tab)
                                 rootNav.navigate('Anuncie', {
-                                    screen: 'MyProperties'
+                                    screen: 'AdvertiseMain'
                                 });
+                                // Depois navega para MyProperties
+                                setTimeout(() => {
+                                    rootNav.navigate('Anuncie', {
+                                        screen: 'MyProperties'
+                                    });
+                                }, 100); // Pequeno delay para garantir transição
                             }
                         }, 300);
                     }

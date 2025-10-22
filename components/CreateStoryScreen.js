@@ -218,7 +218,7 @@ export default function CreateStoryScreen({ navigation }) {
             
             // ✅ Usar nova função específica para stories
             const result = await MediaService.pickStoryMedia({
-                aspect: [9, 16],  // Aspect ratio vertical para stories
+                // aspect: [9, 16],  // Aspect ratio vertical para stories
                 quality: 0.8,     // Qualidade para stories
             });
 

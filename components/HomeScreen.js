@@ -1234,8 +1234,8 @@ const styles = StyleSheet.create({
     },
     favoriteButton: {
         position: 'absolute',
-        top: 15,
-        left: 15,
+        top: 5,
+        left: 5,
         backgroundColor: 'rgba(255, 255, 255, 0)',
         borderRadius: 15,
         padding: 8,
