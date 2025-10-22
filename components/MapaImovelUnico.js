@@ -21,10 +21,47 @@ export default function MapaImovelUnico({ navigation, route }) {
     const [loading, setLoading] = useState(true);
     const [mapReady, setMapReady] = useState(false);
 
+    // Validar coordenadas antes de usar no mapa
+    const lat = parseFloat(property.latitude);
+    const lng = parseFloat(property.longitude);
+    
+    console.log('🔍 DEBUG - MapaImovelUnico - Coordenadas recebidas:', { 
+        rawLat: property.latitude, 
+        rawLng: property.longitude,
+        parsedLat: lat,
+        parsedLng: lng
+    });
+    
+    // Verificar se as coordenadas são válidas
+    if (isNaN(lat) || isNaN(lng) || lat === 0 || lng === 0) {
+        console.error('❌ ERRO: Coordenadas inválidas no MapaImovelUnico:', { lat, lng });
+        return (
+            <SafeAreaView style={styles.container}>
+                <View style={styles.header}>
+                    <TouchableOpacity
+                        style={styles.backButton}
+                        onPress={() => navigation.goBack()}
+                    >
+                        <Ionicons name="arrow-back" size={24} color="#00335e" />
+                    </TouchableOpacity>
+                    <Text style={styles.headerTitle}>Erro de Localização</Text>
+                    <View style={styles.headerSpacer} />
+                </View>
+                <View style={styles.errorContainer}>
+                    <Ionicons name="location-outline" size={64} color="#ef4444" />
+                    <Text style={styles.errorTitle}>Localização não disponível</Text>
+                    <Text style={styles.errorMessage}>
+                        Este imóvel não possui coordenadas válidas para exibir no mapa.
+                    </Text>
+                </View>
+            </SafeAreaView>
+        );
+    }
+
     // Região do mapa centralizada na propriedade
     const mapRegion = {
-        latitude: parseFloat(property.latitude),
-        longitude: parseFloat(property.longitude),
+        latitude: lat,
+        longitude: lng,
         latitudeDelta: 0.005, // Zoom bem próximo
         longitudeDelta: 0.005,
     };
@@ -88,8 +125,8 @@ export default function MapaImovelUnico({ navigation, route }) {
                     {/* Marker único da propriedade */}
                     <Marker
                         coordinate={{
-                            latitude: parseFloat(property.latitude),
-                            longitude: parseFloat(property.longitude)
+                            latitude: lat,
+                            longitude: lng
                         }}
                         title={property.title}
                         description={`R$ ${property.price?.toLocaleString('pt-BR')} - ${property.transaction_type === 'rent' ? 'Aluguel' : 'Venda'}`}
@@ -245,5 +282,26 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#6b7280',
         marginLeft: 4,
+    },
+    errorContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+        backgroundColor: '#fff',
+    },
+    errorTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#ef4444',
+        marginTop: 16,
+        marginBottom: 8,
+        textAlign: 'center',
+    },
+    errorMessage: {
+        fontSize: 16,
+        color: '#6b7280',
+        textAlign: 'center',
+        lineHeight: 24,
     },
 });

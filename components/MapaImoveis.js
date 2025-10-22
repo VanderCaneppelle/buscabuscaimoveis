@@ -125,6 +125,7 @@ export default function MapaImoveis({ navigation, route }) {
                 lat < -90 || lat > 90 ||
                 lng < -180 || lng > 180) {
                 console.log(`⚠️ Coordenadas inválidas ignoradas: ${property.title} (${lat}, ${lng})`);
+                console.log(`🔍 DEBUG - Raw coordinates: lat=${property.latitude}, lng=${property.longitude}`);
                 return null;
             }
 

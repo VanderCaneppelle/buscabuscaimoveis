@@ -227,6 +227,12 @@ export default function CreateAdScreen({ navigation, route }) {
                 console.log('🔍 Buscando endereços para:', query);
 
                 const suggestions = await searchAddresses(query, { limit: 5 });
+                console.log('🔍 DEBUG - Sugestões retornadas:', suggestions);
+                console.log('🔍 DEBUG - Primeira sugestão:', suggestions[0]);
+                if (suggestions[0]) {
+                    console.log('🔍 DEBUG - Coordinates da primeira:', suggestions[0].coordinates);
+                }
+                
                 setAddressSuggestions(suggestions);
                 setShowAddressSuggestions(suggestions.length > 0);
 
@@ -244,21 +250,55 @@ export default function CreateAdScreen({ navigation, route }) {
     // Função para selecionar um endereço da lista
     const handleAddressSelect = (selectedSuggestion) => {
         console.log('📍 Endereço selecionado:', selectedSuggestion);
+        console.log('🔍 DEBUG - Estrutura completa:', JSON.stringify(selectedSuggestion, null, 2));
+        console.log('🔍 DEBUG - Coordinates:', selectedSuggestion.coordinates);
+        console.log('🔍 DEBUG - Latitude:', selectedSuggestion.coordinates?.latitude);
+        console.log('🔍 DEBUG - Longitude:', selectedSuggestion.coordinates?.longitude);
 
         setSelectedAddress(selectedSuggestion);
         setAddressQuery(selectedSuggestion.formattedAddress);
         setShowAddressSuggestions(false);
 
+        // Validar coordenadas antes de salvar
+        const lat = selectedSuggestion.coordinates?.latitude;
+        const lng = selectedSuggestion.coordinates?.longitude;
+        
+        console.log('🔍 DEBUG - Validação coordenadas:');
+        console.log('🔍 DEBUG - Lat raw:', lat, 'Type:', typeof lat);
+        console.log('🔍 DEBUG - Lng raw:', lng, 'Type:', typeof lng);
+        
+        // Verificar se as coordenadas são válidas
+        const isValidLat = lat !== null && lat !== undefined && !isNaN(parseFloat(lat));
+        const isValidLng = lng !== null && lng !== undefined && !isNaN(parseFloat(lng));
+        
+        console.log('🔍 DEBUG - Is valid lat:', isValidLat);
+        console.log('🔍 DEBUG - Is valid lng:', isValidLng);
+        
+        if (!isValidLat || !isValidLng) {
+            console.error('❌ ERRO: Coordenadas inválidas!');
+            console.error('❌ Latitude:', lat, 'Longitude:', lng);
+            Alert.alert('Erro', 'Coordenadas inválidas encontradas. Tente selecionar outro endereço.');
+            return;
+        }
+
         // Preencher campos automaticamente
-        setFormData(prev => ({
-            ...prev,
+        const newFormData = {
             address: selectedSuggestion.address || selectedSuggestion.formattedAddress,
             neighborhood: selectedSuggestion.neighborhood || '',
             city: selectedSuggestion.city || '',
             state: selectedSuggestion.state || '',
             zipCode: selectedSuggestion.zipCode || '',
-            latitude: selectedSuggestion.coordinates.latitude,
-            longitude: selectedSuggestion.coordinates.longitude
+            latitude: parseFloat(lat),
+            longitude: parseFloat(lng)
+        };
+
+        console.log('🔍 DEBUG - FormData que será salvo:', newFormData);
+        console.log('🔍 DEBUG - Latitude final:', newFormData.latitude);
+        console.log('🔍 DEBUG - Longitude final:', newFormData.longitude);
+
+        setFormData(prev => ({
+            ...prev,
+            ...newFormData
         }));
     };
 
