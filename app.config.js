@@ -1,4 +1,11 @@
+import 'dotenv/config';
+
+console.log('✅ Carregando variáveis de ambiente:');
+console.log('API_BASE_URL =>', process.env.API_BASE_URL);
+console.log('RESET_PASSWORD_URL =>', process.env.RESET_PASSWORD_URL);
+
 export default {
+
   expo: {
     name: "Busca Busca Imóveis",
     slug: "buscabuscaimoveis",
@@ -43,16 +50,7 @@ export default {
     extra: {
       eas: {
         projectId: "3d62b9b3-f6a9-47db-93db-666f037084e3"
-      }
-    },
-    plugins: [
-      "expo-notifications",
-      "expo-font",
-      "./plugins/withMaps.js"
-    ],
-    scheme: "buscabuscaimoveis",
-    // ✅ CONFIGURAÇÕES DE APIs ATUALIZADAS
-    env: {
+      },
       EXPO_PUBLIC_MERCADO_PAGO_ACCESS_TOKEN: process.env.EXPO_PUBLIC_MERCADO_PAGO_ACCESS_TOKEN,
       EXPO_PUBLIC_MERCADO_PAGO_PUBLIC_KEY: process.env.EXPO_PUBLIC_MERCADO_PAGO_PUBLIC_KEY,
       GOOGLE_MAPS_API_KEY: process.env.GOOGLE_MAPS_API_KEY || "YOUR_GOOGLE_MAPS_API_KEY_HERE",
@@ -60,10 +58,18 @@ export default {
       // ✅ SUPABASE - PRODUÇÃO
       EXPO_PUBLIC_SUPABASE_URL: process.env.EXPO_PUBLIC_SUPABASE_URL,
       EXPO_PUBLIC_SUPABASE_ANON_KEY: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
-      
-      
-      // ✅ AMBIENTE (production ou qa)
-      EXPO_PUBLIC_ENVIRONMENT: process.env.EXPO_PUBLIC_ENVIRONMENT || "production",
-    }
+      API_BASE_URL: process.env.API_BASE_URL,
+      RESET_PASSWORD_URL: process.env.RESET_PASSWORD_URL,
+
+        // ✅ AMBIENTE (production ou qa)
+      EXPO_PUBLIC_ENVIRONMENT: process.env.EXPO_PUBLIC_ENVIRONMENT || "qa",
+    },
+    plugins: [
+      "expo-notifications",
+      "expo-font",
+      "./plugins/withMaps.js"
+    ],
+    scheme: "buscabuscaimoveis",
+  
   }
 };

@@ -104,6 +104,7 @@ export default async function handler(req, res) {
 // Função para criar preferência no Mercado Pago para boost
 async function createBoostMercadoPagoPreference(property, boostPlan, user) {
     const MERCADO_PAGO_ACCESS_TOKEN = process.env.EXPO_PUBLIC_MERCADO_PAGO_ACCESS_TOKEN;
+    const BASE_URL = process.env.API_BASE_URL;  // https://buscabusca.vercel.app
 
     if (!MERCADO_PAGO_ACCESS_TOKEN) {
         throw new Error('Token do Mercado Pago não configurado');
@@ -127,11 +128,11 @@ async function createBoostMercadoPagoPreference(property, boostPlan, user) {
             email: userEmail
         },
         back_urls: {
-            success: 'https://buscabusca.vercel.app/api/payments/success',
-            failure: 'https://buscabusca.vercel.app/api/payments/failure',
-            pending: 'https://buscabusca.vercel.app/api/payments/pending'
+            success: `${BASE_URL}/api/payments/success`,
+            failure: `${BASE_URL}/api/payments/failure`,
+            pending: `${BASE_URL}/api/payments/pending`
         },
-        notification_url: 'https://buscabusca.vercel.app/api/webhook/mercadopago',
+        notification_url: `${BASE_URL}/api/webhook/mercadopago`,
         external_reference: `boost_${property.id}_user_${user.id}_days_${boostPlan.duration_days}`,
         auto_return: 'approved',
         expires: true,

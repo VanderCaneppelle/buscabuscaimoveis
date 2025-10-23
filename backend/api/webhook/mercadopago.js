@@ -12,7 +12,7 @@ export default async function handler(req, res) {
 
     if (req.method === 'GET') {
         return res.status(200).json({
-            message: 'Webhook test endpoint is working!',
+            message: 'Webhook Mercado Pago endpoint is working!',
             timestamp: new Date().toISOString()
         });
     }
@@ -23,7 +23,7 @@ export default async function handler(req, res) {
 
     try {
         const webhookData = req.body;
-        console.log('🧪 TESTE WEBHOOK RECEBIDO:', JSON.stringify(webhookData, null, 2));
+        console.log('🧪 WEBHOOK Mercado Pago RECEBIDO:', JSON.stringify(webhookData, null, 2));
 
         const { type, data } = webhookData;
 

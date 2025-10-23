@@ -77,10 +77,13 @@ export default async function handler(req, res) {
 // Função unificada para criar preferência no Mercado Pago
 async function createMercadoPagoPreference(plan, user) {
     const MERCADO_PAGO_ACCESS_TOKEN = process.env.EXPO_PUBLIC_MERCADO_PAGO_ACCESS_TOKEN;
+    const BASE_URL = process.env.API_BASE_URL;
+    console.log('BASE_URL - create.js:', BASE_URL); // https://buscabusca.vercel.app
 
     if (!MERCADO_PAGO_ACCESS_TOKEN) {
         throw new Error('Token do Mercado Pago não configurado');
     }
+    console.log('MERCADO_PAGO_ACCESS_TOKEN - create.js:', MERCADO_PAGO_ACCESS_TOKEN); // sku_test_5678901234567890
 
     const userEmail = user.email || `${user.id}@buscabusca.com`;
     const userName = user.name || userEmail.split('@')[0];
@@ -99,11 +102,11 @@ async function createMercadoPagoPreference(plan, user) {
             email: userEmail
         },
         back_urls: {
-            success: 'https://buscabusca.vercel.app/api/payments/success',
-            failure: 'https://buscabusca.vercel.app/api/payments/failure',
-            pending: 'https://buscabusca.vercel.app/api/payments/pending'
+            success: `${BASE_URL}/api/payments/success`,
+            failure: `${BASE_URL}/api/payments/failure`,
+            pending: `${BASE_URL}/api/payments/pending`
         },
-        notification_url: 'https://buscabusca.vercel.app/api/webhook/mercadopago',
+        notification_url: `${BASE_URL}/api/webhook/mercadopago`,
         external_reference: `plan_${plan.id}_user_${user.id}`,
         auto_return: 'approved',
         expires: true,
@@ -156,11 +159,11 @@ async function createAnnualMercadoPagoPreference(plan, user) {
             email: userEmail
         },
         back_urls: {
-            success: 'https://buscabusca.vercel.app/api/payments/success',
-            failure: 'https://buscabusca.vercel.app/api/payments/failure',
-            pending: 'https://buscabusca.vercel.app/api/payments/pending'
+            success: `${BASE_URL}/api/payments/success`,
+            failure: `${BASE_URL}/api/payments/failure`,
+            pending: `${BASE_URL}/api/payments/pending`
         },
-        notification_url: 'https://buscabusca.vercel.app/api/webhook/mercadopago',
+        notification_url: `${BASE_URL}/api/webhook/mercadopago`,
         external_reference: `plan_${plan.id}_user_${user.id}`,
         auto_return: 'approved',
         expires: true,
