@@ -2,8 +2,7 @@ name: Trigger QA Tests
 
 on:
   push:
-    branches:
-      - qa
+  workflow_dispatch:
 
 jobs:
   dispatch_tests:
