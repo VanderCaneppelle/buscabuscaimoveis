@@ -63,7 +63,7 @@ export default {
       
       
       // ✅ AMBIENTE (production ou qa)
-      EXPO_PUBLIC_ENVIRONMENT: process.env.EXPO_PUBLIC_ENVIRONMENT || "qa",
+      EXPO_PUBLIC_ENVIRONMENT: process.env.EXPO_PUBLIC_ENVIRONMENT || "production",
     }
   }
 };
