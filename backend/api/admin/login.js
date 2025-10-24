@@ -44,8 +44,29 @@ export default async function handler(req, res) {
             .eq('id', data.user.id)
             .single();
 
-        if (profileError || !profile || !profile.is_admin) {
-            console.error('❌ Usuário não é admin:', email);
+        console.log('🔍 DEBUG - Profile encontrado:', profile);
+        console.log('🔍 DEBUG - Profile error:', profileError);
+        console.log('🔍 DEBUG - is_admin value:', profile?.is_admin);
+        console.log('🔍 DEBUG - is_admin type:', typeof profile?.is_admin);
+
+        if (profileError) {
+            console.error('❌ Erro ao buscar perfil:', profileError);
+            return res.status(500).json({ 
+                error: 'Database error',
+                message: 'Failed to fetch user profile' 
+            });
+        }
+
+        if (!profile) {
+            console.error('❌ Perfil não encontrado para usuário:', data.user.id);
+            return res.status(404).json({ 
+                error: 'Profile not found',
+                message: 'User profile not found' 
+            });
+        }
+
+        if (!profile.is_admin) {
+            console.error('❌ Usuário não é admin:', email, 'is_admin:', profile.is_admin);
             return res.status(403).json({ 
                 error: 'Access denied',
                 message: 'User is not an admin' 
