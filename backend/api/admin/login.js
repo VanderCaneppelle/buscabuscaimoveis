@@ -18,6 +18,8 @@ export default async function handler(req, res) {
     console.log('🚀 LOGIN ENDPOINT CHAMADO!');
     console.log('🔍 Method:', req.method);
     console.log('🔍 Body:', req.body);
+    console.log('🔍 URL:', req.url);
+    console.log('🔍 Headers:', req.headers);
     
     // Configurar CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -30,7 +32,28 @@ export default async function handler(req, res) {
     }
 
     if (req.method !== 'POST') {
+        console.log('❌ Method not allowed:', req.method);
         return res.status(405).json({ error: 'Method not allowed' });
+    }
+
+    // Teste simples para verificar se o endpoint está funcionando
+    if (req.body && req.body.test) {
+        console.log('✅ TESTE - Endpoint funcionando!');
+        return res.status(200).json({ 
+            success: true, 
+            message: 'Endpoint funcionando!',
+            timestamp: new Date().toISOString()
+        });
+    }
+
+    // Teste com credenciais específicas para debug
+    if (req.body && req.body.email === 'test@test.com') {
+        console.log('✅ TESTE - Credenciais de teste recebidas!');
+        return res.status(200).json({ 
+            success: true, 
+            message: 'Teste de credenciais funcionando!',
+            timestamp: new Date().toISOString()
+        });
     }
 
     try {
@@ -62,9 +85,11 @@ export default async function handler(req, res) {
         }
 
         // Verificar se o usuário é admin
+        console.log('🔍 DEBUG - Buscando perfil para user ID:', data.user.id);
+        
         const { data: profile, error: profileError } = await supabase
             .from('profiles')
-            .select('is_admin, display_name')
+            .select('is_admin, display_name, id, email')
             .eq('id', data.user.id)
             .single();
 
@@ -72,6 +97,18 @@ export default async function handler(req, res) {
         console.log('🔍 DEBUG - Profile error:', profileError);
         console.log('🔍 DEBUG - is_admin value:', profile?.is_admin);
         console.log('🔍 DEBUG - is_admin type:', typeof profile?.is_admin);
+        
+        // Se não encontrou perfil, buscar todos os perfis para debug
+        if (profileError) {
+            console.log('🔍 DEBUG - Erro ao buscar perfil, listando todos os perfis...');
+            const { data: allProfiles, error: allError } = await supabase
+                .from('profiles')
+                .select('id, email, is_admin, display_name')
+                .limit(5);
+            
+            console.log('🔍 DEBUG - Todos os perfis:', allProfiles);
+            console.log('🔍 DEBUG - Erro ao listar todos:', allError);
+        }
 
         if (profileError) {
             console.error('❌ Erro ao buscar perfil:', profileError);
