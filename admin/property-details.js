@@ -265,7 +265,29 @@ function setupAdminNotes(propertyId, initialNotes) {
 }
 
 // Aprovação/Rejeição - USANDO SERVIÇO CENTRALIZADO
-function setupModerationActions(propertyId) {
+async function setupModerationActions(propertyId) {
+    // ✨ NOVO: Buscar status atual da propriedade
+    try {
+        const { data: property, error } = await supabase
+            .from('properties')
+            .select('status')
+            .eq('id', propertyId)
+            .single();
+
+        if (error) {
+            console.error('Erro ao buscar status da propriedade:', error);
+            return;
+        }
+
+        console.log('🔍 Status atual da propriedade:', property.status);
+        
+        // ✨ NOVO: Mostrar/ocultar botões baseado no status
+        updateModerationButtonsVisibility(property.status);
+        
+    } catch (error) {
+        console.error('Erro ao verificar status da propriedade:', error);
+    }
+
     const approveBtn = document.getElementById('approve-button');
     const rejectBtn = document.getElementById('reject-button');
 
@@ -306,6 +328,31 @@ function setupModerationActions(propertyId) {
     }
 }
 
+// ✨ NOVO: Controlar visibilidade dos botões baseado no status
+function updateModerationButtonsVisibility(status) {
+    const approveBtn = document.getElementById('approve-button');
+    const rejectBtn = document.getElementById('reject-button');
+    
+    console.log('🔍 Atualizando visibilidade dos botões para status:', status);
+    
+    if (status === 'pending') {
+        // Mostrar ambos os botões para propriedades pendentes
+        if (approveBtn) approveBtn.style.display = 'inline-block';
+        if (rejectBtn) rejectBtn.style.display = 'inline-block';
+        console.log('✅ Mostrando botões de aprovar/rejeitar');
+    } else if (status === 'approved') {
+        // Ocultar botões para propriedades aprovadas
+        if (approveBtn) approveBtn.style.display = 'none';
+        if (rejectBtn) rejectBtn.style.display = 'none';
+        console.log('✅ Ocultando botões - propriedade já aprovada');
+    } else if (status === 'rejected') {
+        // Ocultar botões para propriedades rejeitadas
+        if (approveBtn) approveBtn.style.display = 'none';
+        if (rejectBtn) rejectBtn.style.display = 'none';
+        console.log('✅ Ocultando botões - propriedade já rejeitada');
+    }
+}
+
 // Atualizar apenas a UI após moderação (não faz update no banco)
 async function updatePropertyStatusUI(propertyId, newStatus) {
     try {
@@ -315,6 +362,9 @@ async function updatePropertyStatusUI(propertyId, newStatus) {
             statusInline.textContent = getStatusText(newStatus);
             statusInline.className = `badge ${getStatusBadgeClass(newStatus)}`;
         }
+        
+        // ✨ NOVO: Atualizar visibilidade dos botões após moderação
+        updateModerationButtonsVisibility(newStatus);
 
         const statusDisplayEl = document.getElementById('status-display');
         if (statusDisplayEl) {
