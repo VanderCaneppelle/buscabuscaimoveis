@@ -178,38 +178,44 @@ async function initializeAdminPanel(user) {
     }
 }
 
-// Carregar propriedades
+// Carregar propriedades via API segura
 async function fetchPropertiesServer() {
     try {
-        const from = (currentPage - 1) * PAGE_SIZE;
-        const to = from + PAGE_SIZE - 1;
-
-        let query = supabase
-            .from('properties')
-            .select('*', { count: 'exact' })
-            .order('created_at', { ascending: false })
-            .range(from, to);
-
-        // Apply server-side filters
         const status = statusFilter.value;
         const propertyType = typeFilter.value;
         const city = cityFilter.value.trim();
 
-        if (status) query = query.eq('status', status);
-        if (propertyType) query = query.eq('property_type', propertyType);
-        if (city) query = query.ilike('city', `%${city}%`);
+        // Construir query string
+        const params = new URLSearchParams({
+            page: currentPage,
+            limit: PAGE_SIZE
+        });
+        
+        if (status) params.append('status', status);
+        if (propertyType) params.append('propertyType', propertyType);
+        if (city) params.append('city', city);
 
-        const { data, error, count } = await query;
-        if (error) throw error;
+        const response = await fetch(`${API_BASE_URL}/api/admin/properties?${params}`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
 
-        properties = data || [];
-        filteredProperties = properties; // already filtered server-side
-        totalCount = count || 0;
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const result = await response.json();
+        
+        properties = result.data || [];
+        filteredProperties = properties;
+        totalCount = result.pagination?.total || 0;
 
         renderProperties();
         updatePaginationUI();
     } catch (error) {
-        console.error('Erro ao buscar propriedades (server):', error);
+        console.error('Erro ao buscar propriedades (API):', error);
         showError('Erro ao carregar lista.');
     }
 }
@@ -419,36 +425,28 @@ function updatePaginationUI() {
     if (nextPageBtn) nextPageBtn.disabled = currentPage >= totalPages;
 }
 
-// Estatísticas via servidor (contagens reais, sem depender da página atual)
+// Estatísticas via API segura
 async function updateStatsServer() {
     try {
-        const totalPromise = supabase
-            .from('properties')
-            .select('id', { count: 'exact', head: true });
+        // Buscar estatísticas via API
+        const response = await fetch(`${API_BASE_URL}/api/admin/stats`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
 
-        const pendingPromise = supabase
-            .from('properties')
-            .select('id', { count: 'exact', head: true })
-            .eq('status', 'pending');
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
 
-        const approvedPromise = supabase
-            .from('properties')
-            .select('id', { count: 'exact', head: true })
-            .eq('status', 'approved');
+        const stats = await response.json();
 
-        const rejectedPromise = supabase
-            .from('properties')
-            .select('id', { count: 'exact', head: true })
-            .eq('status', 'rejected');
-
-        const [{ count: total }, { count: pending }, { count: approved }, { count: rejected }] = await Promise.all([
-            totalPromise, pendingPromise, approvedPromise, rejectedPromise
-        ]);
-
-        document.getElementById('total-properties').textContent = total ?? 0;
-        document.getElementById('pending-properties').textContent = pending ?? 0;
-        document.getElementById('approved-properties').textContent = approved ?? 0;
-        document.getElementById('rejected-properties').textContent = rejected ?? 0;
+        // Atualizar estatísticas na UI
+        document.getElementById('total-properties').textContent = stats.total ?? 0;
+        document.getElementById('pending-properties').textContent = stats.pending ?? 0;
+        document.getElementById('approved-properties').textContent = stats.approved ?? 0;
+        document.getElementById('rejected-properties').textContent = stats.rejected ?? 0;
     } catch (err) {
         console.error('Erro ao atualizar estatísticas:', err);
     }
