@@ -22,13 +22,25 @@ export async function verifyAdminToken(authHeader) {
         }
 
         // Verificar se o usuário tem is_admin = true
+        console.log('🔍 MIDDLEWARE - Verificando perfil para user ID:', user.id);
+        
         const { data: profile, error: profileError } = await supabase
             .from('profiles')
-            .select('is_admin, display_name')
+            .select('is_admin, full_name')
             .eq('id', user.id)
             .single();
 
+        console.log('🔍 MIDDLEWARE - Profile encontrado:', profile);
+        console.log('🔍 MIDDLEWARE - Profile error:', profileError);
+        console.log('🔍 MIDDLEWARE - is_admin value:', profile?.is_admin);
+        console.log('🔍 MIDDLEWARE - is_admin type:', typeof profile?.is_admin);
+
         if (profileError || !profile || !profile.is_admin) {
+            console.log('❌ MIDDLEWARE - Usuário não é admin:', {
+                profileError,
+                profile,
+                is_admin: profile?.is_admin
+            });
             return { valid: false, error: 'Not an admin' };
         }
 
