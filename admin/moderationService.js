@@ -5,7 +5,7 @@
 (function () {
     const BACKEND_BASE = (typeof window !== 'undefined' && typeof window.getBackendApiBase === 'function')
         ? window.getBackendApiBase()
-        : (window.BACKEND_BASE || 'https://buscabusca.vercel.app');
+        : (window.BACKEND_BASE || 'https://buscabuscaimoveis-qa.vercel.app');
 
     function getClient() {
         const client = window.supabaseClient;
