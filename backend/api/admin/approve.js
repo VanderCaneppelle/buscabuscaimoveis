@@ -30,7 +30,7 @@ async function handler(req, res) {
                 updated_at: new Date().toISOString()
             })
             .eq('id', propertyId)
-            .select()
+            .select('id, title, user_id')
             .single();
 
         if (error) {
@@ -42,6 +42,9 @@ async function handler(req, res) {
         }
 
         // Criar notificação para o usuário
+        console.log('🔔 Criando notificação para user_id:', data.user_id);
+        console.log('🔔 Título da propriedade:', data.title);
+        
         const { error: notificationError } = await supabase
             .from('in_app_notifications')
             .insert({
