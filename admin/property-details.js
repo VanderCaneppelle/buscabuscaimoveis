@@ -22,7 +22,7 @@ function getApiBaseUrl() {
 // ✨ NOVO: Configuração dinâmica do Supabase baseada no ambiente
 function getSupabaseConfig() {
     // Detectar ambiente baseado na URL atual
-    if (window.location.hostname.includes('buscabuscaimoveis-admin-qa')) {
+    if (window.location.hostname.includes('buscabusca-admin-qa')) {
         // QA Environment
         return {
             url: 'https://ftglfnmyxtnygrmkxwos.supabase.co',
@@ -47,7 +47,7 @@ function getSupabaseConfig() {
 const supabaseConfig = getSupabaseConfig();
 console.log('🔍 Supabase Config:', {
     url: supabaseConfig.url,
-    environment: window.location.hostname.includes('buscabuscaimoveis-admin-qa') ? 'QA' : 'PROD'
+    environment: window.location.hostname.includes('buscabusca-admin-qa') ? 'QA' : 'PROD'
 });
 
 // Inicializar Supabase
