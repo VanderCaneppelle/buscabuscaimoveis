@@ -1,5 +1,11 @@
 import { adminMiddleware } from './middleware.js';
-import { supabase } from '../../lib/supabase.js';
+import { createClient } from '@supabase/supabase-js';
+
+// Usar SERVICE_ROLE_KEY para bypass do RLS
+const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 async function handler(req, res) {
     try {
