@@ -2,7 +2,7 @@ import 'dotenv/config';
 
 console.log('✅ Carregando variáveis de ambiente:');
 console.log('API_BASE_URL =>', process.env.API_BASE_URL);
-console.log('RESET_PASSWORD_URL =>', process.env.RESET_PASSWORD_URL);
+console.log('RESET_PASSWORD_URL =>', process.env.EXPO_PUBLIC_RESET_PASSWORD_URL);
 
 export default {
 
@@ -60,6 +60,7 @@ export default {
       EXPO_PUBLIC_SUPABASE_ANON_KEY: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
       API_BASE_URL: process.env.API_BASE_URL,
       RESET_PASSWORD_URL: process.env.RESET_PASSWORD_URL,
+      EXPO_PUBLIC_API_BASE_URL: process.env.EXPO_PUBLIC_API_BASE_URL,
 
         // ✅ AMBIENTE (production ou qa)
       EXPO_PUBLIC_ENVIRONMENT: process.env.EXPO_PUBLIC_ENVIRONMENT || "qa",
