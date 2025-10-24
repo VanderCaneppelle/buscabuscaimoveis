@@ -1,10 +1,18 @@
 import { createClient } from '@supabase/supabase-js';
 
 // Usar SERVICE_ROLE_KEY para bypass do RLS
-const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+console.log('🔍 DEBUG - SUPABASE_URL:', SUPABASE_URL ? 'Configurado' : 'NÃO CONFIGURADO');
+console.log('🔍 DEBUG - SUPABASE_SERVICE_ROLE_KEY:', SUPABASE_SERVICE_ROLE_KEY ? 'Configurado' : 'NÃO CONFIGURADO');
+
+if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    console.error('❌ Variáveis de ambiente não configuradas!');
+    throw new Error('Supabase environment variables not configured');
+}
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 export default async function handler(req, res) {
     // Configurar CORS
