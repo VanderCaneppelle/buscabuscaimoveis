@@ -25,7 +25,7 @@ async function handler(req, res) {
 
         console.log('📋 Buscando propriedades para admin:', { page, limit, status, propertyType, city, search });
 
-        // Construir query base
+        // Construir query base (sem JOIN por enquanto)
         let query = supabase
             .from('properties')
             .select(`
@@ -39,8 +39,7 @@ async function handler(req, res) {
                 ad_status,
                 created_at,
                 updated_at,
-                user_id,
-                profiles!inner(display_name, email)
+                user_id
             `)
             .order('created_at', { ascending: false });
 
