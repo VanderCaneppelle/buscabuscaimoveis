@@ -40,11 +40,11 @@ export default async function handler(req, res) {
         // Verificar se o usuário é admin
         const { data: profile, error: profileError } = await supabase
             .from('profiles')
-            .select('role, display_name')
+            .select('is_admin, display_name')
             .eq('id', data.user.id)
             .single();
 
-        if (profileError || !profile || profile.role !== 'admin') {
+        if (profileError || !profile || !profile.is_admin) {
             console.error('❌ Usuário não é admin:', email);
             return res.status(403).json({ 
                 error: 'Access denied',
@@ -60,7 +60,7 @@ export default async function handler(req, res) {
                 id: data.user.id,
                 email: data.user.email,
                 name: profile.display_name,
-                role: profile.role
+                is_admin: profile.is_admin
             },
             session: {
                 access_token: data.session.access_token,

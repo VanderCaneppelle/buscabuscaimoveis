@@ -15,14 +15,14 @@ export async function verifyAdminToken(authHeader) {
             return { valid: false, error: 'Invalid token' };
         }
 
-        // Verificar se o usuário tem role de admin
+        // Verificar se o usuário tem is_admin = true
         const { data: profile, error: profileError } = await supabase
             .from('profiles')
-            .select('role')
+            .select('is_admin, display_name')
             .eq('id', user.id)
             .single();
 
-        if (profileError || !profile || profile.role !== 'admin') {
+        if (profileError || !profile || !profile.is_admin) {
             return { valid: false, error: 'Not an admin' };
         }
 
