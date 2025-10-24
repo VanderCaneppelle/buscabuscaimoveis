@@ -30,7 +30,7 @@ async function apiCall(endpoint, options = {}) {
         throw new Error('No authentication token found');
     }
 
-    const response = await fetch(`${API_BASE_URL}backend/api/admin/${endpoint}`, {
+    const response = await fetch(`${API_BASE_URL}/api/admin/${endpoint}`, {
         ...options,
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -50,7 +50,7 @@ async function apiCall(endpoint, options = {}) {
 // Função de login
 async function loginAdmin(email, password) {
     try {
-        const response = await fetch(`${API_BASE_URL}backend/api/admin/login`, {
+        const response = await fetch(`${API_BASE_URL}/api/admin/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -178,49 +178,38 @@ async function initializeAdminPanel(user) {
     }
 }
 
-// Carregar propriedades via API segura
+// Carregar propriedades
 async function fetchPropertiesServer() {
     try {
+        const from = (currentPage - 1) * PAGE_SIZE;
+        const to = from + PAGE_SIZE - 1;
+
+        let query = supabase
+            .from('properties')
+            .select('*', { count: 'exact' })
+            .order('created_at', { ascending: false })
+            .range(from, to);
+
+        // Apply server-side filters
         const status = statusFilter.value;
         const propertyType = typeFilter.value;
         const city = cityFilter.value.trim();
 
-        const data = await apiCall('properties', {
-            method: 'GET',
-            // Parâmetros via query string
-        });
+        if (status) query = query.eq('status', status);
+        if (propertyType) query = query.eq('property_type', propertyType);
+        if (city) query = query.ilike('city', `%${city}%`);
 
-        // Construir query string
-        const params = new URLSearchParams({
-            page: currentPage,
-            limit: PAGE_SIZE
-        });
-        
-        if (status) params.append('status', status);
-        if (propertyType) params.append('propertyType', propertyType);
-        if (city) params.append('city', city);
+        const { data, error, count } = await query;
+        if (error) throw error;
 
-        const response = await fetch(`${API_BASE_URL}backend/api/admin/properties?${params}`, {
-            headers: {
-                'Authorization': `Bearer ${authToken}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
-
-        const result = await response.json();
-        
-        properties = result.data || [];
-        filteredProperties = properties;
-        totalCount = result.pagination?.total || 0;
+        properties = data || [];
+        filteredProperties = properties; // already filtered server-side
+        totalCount = count || 0;
 
         renderProperties();
         updatePaginationUI();
     } catch (error) {
-        console.error('Erro ao buscar propriedades (API):', error);
+        console.error('Erro ao buscar propriedades (server):', error);
         showError('Erro ao carregar lista.');
     }
 }

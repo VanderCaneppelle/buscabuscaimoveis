@@ -15,12 +15,17 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 export default async function handler(req, res) {
+    console.log('🚀 LOGIN ENDPOINT CHAMADO!');
+    console.log('🔍 Method:', req.method);
+    console.log('🔍 Body:', req.body);
+    
     // Configurar CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
     if (req.method === 'OPTIONS') {
+        console.log('✅ OPTIONS request, retornando 200');
         return res.status(200).end();
     }
 
@@ -29,9 +34,14 @@ export default async function handler(req, res) {
     }
 
     try {
+        console.log('🔍 INICIANDO PROCESSO DE LOGIN...');
+        
         const { email, password } = req.body;
+        console.log('🔍 Email recebido:', email);
+        console.log('🔍 Password recebido:', password ? 'SIM' : 'NÃO');
 
         if (!email || !password) {
+            console.log('❌ Email ou password não fornecidos');
             return res.status(400).json({ error: 'Email and password are required' });
         }
 
@@ -105,7 +115,8 @@ export default async function handler(req, res) {
         });
 
     } catch (error) {
-        console.error('❌ Erro no endpoint de login:', error);
+        console.error('❌ ERRO GLOBAL NO LOGIN:', error);
+        console.error('❌ Stack trace:', error.stack);
         return res.status(500).json({ 
             error: 'Internal server error',
             message: error.message 
