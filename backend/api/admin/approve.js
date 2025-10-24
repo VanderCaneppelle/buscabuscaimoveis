@@ -64,6 +64,29 @@ async function handler(req, res) {
             console.log('✅ Notificação criada para o usuário');
         }
 
+        // ✨ NOVO: Enviar push notification
+        try {
+            console.log('📱 Enviando push notification de aprovação...');
+            const pushResponse = await fetch(`${process.env.API_BASE_URL || 'https://buscabuscaimoveis-qa.vercel.app'}/api/notifications?action=property-approved`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: data.user_id,
+                    propertyId: propertyId
+                })
+            });
+
+            if (pushResponse.ok) {
+                console.log('✅ Push notification enviada com sucesso');
+            } else {
+                console.error('❌ Erro ao enviar push notification:', pushResponse.status);
+            }
+        } catch (pushError) {
+            console.error('❌ Erro ao enviar push notification:', pushError);
+        }
+
         console.log('✅ Propriedade aprovada com sucesso:', propertyId);
 
         return res.status(200).json({

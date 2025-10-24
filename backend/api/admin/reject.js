@@ -66,6 +66,30 @@ async function handler(req, res) {
             console.log('✅ Notificação de rejeição criada para o usuário');
         }
 
+        // ✨ NOVO: Enviar push notification
+        try {
+            console.log('📱 Enviando push notification de rejeição...');
+            const pushResponse = await fetch(`${process.env.API_BASE_URL || 'https://buscabuscaimoveis-qa.vercel.app'}/api/notifications?action=property-rejected`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: data.user_id,
+                    propertyId: propertyId,
+                    reason: reason
+                })
+            });
+
+            if (pushResponse.ok) {
+                console.log('✅ Push notification enviada com sucesso');
+            } else {
+                console.error('❌ Erro ao enviar push notification:', pushResponse.status);
+            }
+        } catch (pushError) {
+            console.error('❌ Erro ao enviar push notification:', pushError);
+        }
+
         console.log('✅ Propriedade rejeitada com sucesso:', propertyId);
 
         return res.status(200).json({
