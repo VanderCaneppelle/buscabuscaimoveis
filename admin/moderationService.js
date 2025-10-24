@@ -7,7 +7,7 @@
     
     const BACKEND_BASE = (typeof window !== 'undefined' && typeof window.getBackendApiBase === 'function')
         ? window.getBackendApiBase()
-        : (window.BACKEND_BASE);
+        : (window.BACKEND_BASE || process.env.EXPO_PUBLIC_API_BASE_URL);
     
     console.log('🔍 MODERATION - BACKEND_BASE:', BACKEND_BASE);
 
