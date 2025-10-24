@@ -176,14 +176,19 @@
 
     async function approveProperty(propertyId) {
         try {
+            console.log('🔍 MODERATION - Iniciando aprovação:', propertyId);
+            
             const token = localStorage.getItem('adminToken');
             if (!token) {
+                console.error('❌ MODERATION - Token não encontrado');
                 throw new Error('Token de autenticação não encontrado');
             }
 
-            console.log(`✅ Aprovando anúncio ${propertyId}...`);
+            console.log('🔍 MODERATION - Token encontrado:', token ? 'SIM' : 'NÃO');
+            console.log(`✅ MODERATION - Aprovando anúncio ${propertyId}...`);
 
             // Buscar user_id da propriedade primeiro
+            console.log('🔍 MODERATION - Buscando propriedade para aprovação...');
             const propertyResponse = await fetch(`${BACKEND_BASE}/api/admin/properties?page=1&limit=1000`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -191,18 +196,25 @@
                 }
             });
 
+            console.log('🔍 MODERATION - Resposta da busca:', propertyResponse.status);
             if (!propertyResponse.ok) {
+                console.error('❌ MODERATION - Erro ao buscar propriedade:', propertyResponse.status);
                 throw new Error('Erro ao buscar propriedade');
             }
 
             const propertyData = await propertyResponse.json();
+            console.log('🔍 MODERATION - Dados recebidos:', propertyData.data?.length || 0, 'propriedades');
+            
             const property = propertyData.data?.find(p => p.id === propertyId);
+            console.log('🔍 MODERATION - Propriedade encontrada:', !!property);
             
             if (!property) {
+                console.error('❌ MODERATION - Propriedade não encontrada na lista');
                 throw new Error('Propriedade não encontrada');
             }
 
             // Aprovar via API
+            console.log('🔍 MODERATION - Chamando API de aprovação...');
             const response = await fetch(`${BACKEND_BASE}/api/admin/approve`, {
                 method: 'POST',
                 headers: {

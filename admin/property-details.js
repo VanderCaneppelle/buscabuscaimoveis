@@ -347,42 +347,40 @@ function setupAdminNotes(propertyId, initialNotes) {
 
 // Aprovação/Rejeição - USANDO SERVIÇO CENTRALIZADO
 async function setupModerationActions(propertyId) {
-    // ✨ NOVO: Verificar se usuário está autenticado
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    // ✨ NOVO: Verificar se usuário está autenticado via localStorage
+    console.log('🔍 PROPERTY-DETAILS - Verificando autenticação para moderação');
     
-    if (authError || !user) {
-        console.error('❌ Usuário não autenticado:', authError);
+    if (!currentUser || !authToken) {
+        console.error('❌ PROPERTY-DETAILS - Usuário não autenticado para moderação');
         return;
     }
     
-    console.log('✅ Usuário autenticado:', user.id.substring(0, 8));
+    console.log('✅ PROPERTY-DETAILS - Usuário autenticado para moderação:', currentUser.name);
     
     // ✨ NOVO: Buscar status atual da propriedade
     try {
         console.log('🔍 Buscando status da propriedade:', propertyId);
         
-        const { data: property, error } = await supabase
-            .from('properties')
-            .select('status')
-            .eq('id', propertyId)
-            .maybeSingle(); // ✨ MUDANÇA: usar maybeSingle() em vez de single()
+        // ✨ NOVO: Buscar status via API segura
+        const statusResponse = await fetch(`${API_BASE_URL}/api/admin/property-details?id=${propertyId}`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
 
-        if (error) {
-            console.error('❌ Erro ao buscar status da propriedade:', error);
-            console.error('❌ Detalhes do erro:', error.message);
-            console.error('❌ Código do erro:', error.code);
-            console.error('❌ Hint:', error.hint);
+        if (!statusResponse.ok) {
+            console.error('❌ PROPERTY-DETAILS - Erro ao buscar status da propriedade:', statusResponse.status);
             return;
         }
 
-        if (!property) {
-            console.error('❌ Propriedade não encontrada:', propertyId);
-            console.error('❌ Possíveis causas:');
-            console.error('   - Propriedade não existe no banco');
-            console.error('   - RLS está bloqueando o acesso');
-            console.error('   - Usuário não tem permissão de admin');
+        const statusResult = await statusResponse.json();
+        if (!statusResult.success || !statusResult.data) {
+            console.error('❌ PROPERTY-DETAILS - Propriedade não encontrada para status');
             return;
         }
+
+        const property = statusResult.data;
 
         console.log('✅ Status atual da propriedade:', property.status);
         
@@ -607,15 +605,28 @@ async function setupWhatsAppLink(property) {
     const whatsappLink = document.getElementById('whatsapp-link');
 
     try {
-        // Buscar dados do usuário que publicou o anúncio
-        const { data: userProfile, error } = await supabase
-            .from('profiles')
-            .select('full_name, phone')
-            .eq('id', property.user_id)
-            .single();
+        // ✨ NOVO: Buscar dados do usuário via API segura
+        console.log('🔍 PROPERTY-DETAILS - Buscando perfil para WhatsApp:', property.user_id);
+        
+        let userProfile = null;
+        try {
+            const profileResponse = await fetch(`${API_BASE_URL}/api/admin/user-profile?userId=${property.user_id}`, {
+                headers: {
+                    'Authorization': `Bearer ${authToken}`,
+                    'Content-Type': 'application/json'
+                }
+            });
 
-        if (error) {
-            console.error('Erro ao buscar perfil do usuário:', error);
+            if (profileResponse.ok) {
+                const profileResult = await profileResponse.json();
+                userProfile = profileResult.data;
+            }
+        } catch (error) {
+            console.error('❌ PROPERTY-DETAILS - Erro ao buscar perfil para WhatsApp:', error);
+        }
+
+        if (!userProfile) {
+            console.error('❌ PROPERTY-DETAILS - Perfil não encontrado para WhatsApp');
             // Fallback para número padrão
             setupDefaultWhatsApp(property);
             return;
@@ -712,15 +723,16 @@ function formatPhoneNumber(phone) {
 // Configurar nome do admin
 async function setupAdminName() {
     try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('full_name')
-                .eq('id', user.id)
-                .single();
-
-            adminName.textContent = profile?.full_name || user.email;
+        // ✨ NOVO: Usar dados do localStorage em vez de Supabase
+        console.log('🔍 PROPERTY-DETAILS - Configurando nome do admin');
+        
+        if (currentUser) {
+            // ✨ NOVO: Usar dados do localStorage
+            console.log('🔍 PROPERTY-DETAILS - Admin user encontrado:', currentUser.name);
+            adminName.textContent = currentUser.name || currentUser.email || 'Administrador';
+        } else {
+            console.log('🔍 PROPERTY-DETAILS - Admin user não encontrado, usando padrão');
+            adminName.textContent = 'Administrador';
         }
     } catch (error) {
         console.error('Erro ao configurar nome do admin:', error);
