@@ -132,18 +132,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         // Verificar se já está logado
         console.log('🔍 Verificando sessão existente...');
-        const { data: { session } } = await supabase.auth.getSession();
-        console.log('📊 Sessão encontrada:', !!session);
-
-        if (session) {
-            console.log('👤 Usuário já logado:', session.user.email);
-            // Verificar se o usuário é admin
-            const isUserAdmin = await checkIfUserIsAdmin(session.user.id);
-            if (isUserAdmin) {
-                await initializeAdminPanel(session.user);
-            } else {
-                showLoginScreen('Usuário não tem permissões de administrador');
-            }
+        const savedToken = localStorage.getItem('adminToken');
+        const savedUser = localStorage.getItem('adminUser');
+        
+        if (savedToken && savedUser) {
+            console.log('👤 Usuário já logado:', JSON.parse(savedUser).email);
+            authToken = savedToken;
+            currentUser = JSON.parse(savedUser);
+            await initializeAdminPanel(currentUser);
         } else {
             console.log('🔐 Nenhuma sessão encontrada, mostrando tela de login');
             showLoginScreen();
@@ -154,32 +150,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-// Verificar se usuário é admin
-async function checkIfUserIsAdmin(userId) {
-    try {
-        console.log('🔍 Verificando admin para userId:', userId);
-
-        const { data, error } = await supabase
-            .from('profiles')
-            .select('is_admin, full_name')
-            .eq('id', userId)
-            .single();
-
-        if (error) {
-            console.error('❌ Erro na consulta admin:', error);
-            throw error;
-        }
-
-        console.log('📊 Dados do perfil:', data);
-        const isAdmin = data?.is_admin || false;
-        console.log('👑 is_admin value:', isAdmin);
-
-        return isAdmin;
-    } catch (error) {
-        console.error('❌ Erro ao verificar se usuário é admin:', error);
-        return false;
-    }
-}
+// Função removida - verificação de admin agora é feita no backend via API
 
 // Inicializar painel admin
 async function initializeAdminPanel(user) {
@@ -197,16 +168,9 @@ async function initializeAdminPanel(user) {
         console.log('🖥️ Mostrando painel principal...');
         showMainApp();
 
-        // Atualizar nome do admin (email vem do user do Supabase)
+        // Atualizar nome do admin
         console.log('👤 Atualizando nome do admin...');
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('full_name')
-            .eq('id', user.id)
-            .single();
-
-        // user.email vem do Supabase auth, não da tabela profiles
-        adminName.textContent = profile?.full_name || user.email;
+        adminName.textContent = user.name || user.email;
         console.log('✅ Painel admin inicializado com sucesso!');
     } catch (error) {
         console.error('❌ Erro ao inicializar painel:', error);
@@ -214,38 +178,49 @@ async function initializeAdminPanel(user) {
     }
 }
 
-// Carregar propriedades
+// Carregar propriedades via API segura
 async function fetchPropertiesServer() {
     try {
-        const from = (currentPage - 1) * PAGE_SIZE;
-        const to = from + PAGE_SIZE - 1;
-
-        let query = supabase
-            .from('properties')
-            .select('*', { count: 'exact' })
-            .order('created_at', { ascending: false })
-            .range(from, to);
-
-        // Apply server-side filters
         const status = statusFilter.value;
         const propertyType = typeFilter.value;
         const city = cityFilter.value.trim();
 
-        if (status) query = query.eq('status', status);
-        if (propertyType) query = query.eq('property_type', propertyType);
-        if (city) query = query.ilike('city', `%${city}%`);
+        const data = await apiCall('properties', {
+            method: 'GET',
+            // Parâmetros via query string
+        });
 
-        const { data, error, count } = await query;
-        if (error) throw error;
+        // Construir query string
+        const params = new URLSearchParams({
+            page: currentPage,
+            limit: PAGE_SIZE
+        });
+        
+        if (status) params.append('status', status);
+        if (propertyType) params.append('propertyType', propertyType);
+        if (city) params.append('city', city);
 
-        properties = data || [];
-        filteredProperties = properties; // already filtered server-side
-        totalCount = count || 0;
+        const response = await fetch(`${API_BASE_URL}/api/admin/properties?${params}`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const result = await response.json();
+        
+        properties = result.data || [];
+        filteredProperties = properties;
+        totalCount = result.pagination?.total || 0;
 
         renderProperties();
         updatePaginationUI();
     } catch (error) {
-        console.error('Erro ao buscar propriedades (server):', error);
+        console.error('Erro ao buscar propriedades (API):', error);
         showError('Erro ao carregar lista.');
     }
 }
@@ -299,38 +274,23 @@ async function handleLogin(event) {
     try {
         hideLoginError();
 
-        const { data, error } = await supabase.auth.signInWithPassword({
-            email: email,
-            password: password
-        });
-
-        if (error) throw error;
-
+        // Usar nova função de login via API
+        const data = await loginAdmin(email, password);
+        
         console.log('✅ Login bem-sucedido para usuário:', data.user.id);
-
-        // Verificar se é admin
-        console.log('🔍 Verificando se usuário é admin...');
-        const isUserAdmin = await checkIfUserIsAdmin(data.user.id);
-        console.log('👤 Usuário é admin?', isUserAdmin);
-
-        if (isUserAdmin) {
-            console.log('🚀 Inicializando painel admin...');
-            await initializeAdminPanel(data.user);
-        } else {
-            console.log('❌ Usuário não é admin');
-            showLoginError('Usuário não tem permissões de administrador');
-            await supabase.auth.signOut();
-        }
+        console.log('🚀 Inicializando painel admin...');
+        await initializeAdminPanel(data.user);
+        
     } catch (error) {
         console.error('❌ Erro no login:', error);
-        showLoginError('Email ou senha incorretosss');
+        showLoginError(error.message || 'Email ou senha incorretos');
     }
 }
 
 // Handle logout
 async function handleLogout() {
     try {
-        await supabase.auth.signOut();
+        logoutAdmin();
         showLoginScreen();
     } catch (error) {
         console.error('Erro no logout:', error);
