@@ -1,9 +1,57 @@
-// Configuração do Supabase
-const SUPABASE_URL = 'https://rxozhlxmfbioqgqomkrz.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4b3pobHhtZmJpb3FncW9ta3J6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5OTg0MDIsImV4cCI6MjA2OTU3NDQwMn0.MsMaFjnQYvDP7xSmHS-QY2P7jZ4JCnnxDmCo6y0lk4g';
+// Configuração da API
+const API_BASE_URL = getApiBaseUrl();
+console.log('API_BASE_URL - admin.js:', API_BASE_URL);
+
+// Estado de autenticação
+let currentUser = null;
+let authToken = null;
+
+// Função para obter URL da API baseada no ambiente
+function getApiBaseUrl() {
+    // Detectar ambiente baseado na URL atual
+    if (window.location.hostname.includes('buscabuscaimoveis-admin-qa')) {
+        return 'https://buscabuscaimoveis-qa.vercel.app';
+    } else if (window.location.hostname.includes('buscabuscaimoveis-admin-prod')) {
+        return 'https://buscabusca.vercel.app';
+    } else {
+        // Desenvolvimento local
+        return 'https://buscabuscaimoveis-qa.vercel.app';
+    }
+}
+
+// ✨ NOVO: Configuração dinâmica do Supabase baseada no ambiente
+function getSupabaseConfig() {
+    // Detectar ambiente baseado na URL atual
+    if (window.location.hostname.includes('buscabuscaimoveis-admin-qa')) {
+        // QA Environment
+        return {
+            url: 'https://ftglfnmyxtnygrmkxwos.supabase.co',
+            anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0Z2xmbm15eHRueWdybWt4d29zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5OTg0MDIsImV4cCI6MjA2OTU3NDQwMn0.2f007c9c7a29f7589b8816b513a35d0c1a8b5af22ceb5427af6bf2025fd0d690'
+        };
+    } else if (window.location.hostname.includes('buscabuscaimoveis-admin-prod')) {
+        // Production Environment
+        return {
+            url: 'https://rxozhlxmfbioqgqomkrz.supabase.co',
+            anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4b3pobHhtZmJpb3FncW9ta3J6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5OTg0MDIsImV4cCI6MjA2OTU3NDQwMn0.MsMaFjnQYvDP7xSmHS-QY2P7jZ4JCnnxDmCo6y0lk4g'
+        };
+    } else {
+        // Development - usar QA por padrão
+        return {
+            url: 'https://ftglfnmyxtnygrmkxwos.supabase.co',
+            anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0Z2xmbm15eHRueWdybWt4d29zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5OTg0MDIsImV4cCI6MjA2OTU3NDQwMn0.2f007c9c7a29f7589b8816b513a35d0c1a8b5af22ceb5427af6bf2025fd0d690'
+        };
+    }
+}
+
+// Obter configuração do Supabase
+const supabaseConfig = getSupabaseConfig();
+console.log('🔍 Supabase Config:', {
+    url: supabaseConfig.url,
+    environment: window.location.hostname.includes('buscabuscaimoveis-admin-qa') ? 'QA' : 'PROD'
+});
 
 // Inicializar Supabase
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabase = window.supabase.createClient(supabaseConfig.url, supabaseConfig.anonKey);
 // Expor cliente global para serviços auxiliares
 window.supabaseClient = supabase;
 
