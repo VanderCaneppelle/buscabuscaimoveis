@@ -1,9 +1,11 @@
+import Constants from 'expo-constants';
 console.log('🚀 Admin.js carregado!');
 
 // Configuração do Supabase
-const SUPABASE_URL = 'https://rxozhlxmfbioqgqomkrz.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4b3pobHhtZmJpb3FncW9ta3J6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5OTg0MDIsImV4cCI6MjA2OTU3NDQwMn0.MsMaFjnQYvDP7xSmHS-QY2P7jZ4JCnnxDmCo6y0lk4g';
-
+const SUPABASE_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_SUPABASE_URL|| process.env.EXPO_PUBLIC_SUPABASE_URL;
+const SUPABASE_ANON_KEY = Constants.expoConfig?.extra?.EXPO_PUBLIC_SUPABASE_ANON_KEY|| process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+console.log('SUPABASE_URL - admin.js:', SUPABASE_URL);
+console.log('SUPABASE_ANON_KEY - admin.js:', SUPABASE_ANON_KEY);
 
 // Inicializar Supabase
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
