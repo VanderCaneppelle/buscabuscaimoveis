@@ -6,6 +6,30 @@ console.log('API_BASE_URL - admin.js:', API_BASE_URL);
 let currentUser = null;
 let authToken = null;
 
+// ✨ NOVO: Carregar token do localStorage
+function loadAuthData() {
+    try {
+        authToken = localStorage.getItem('adminToken');
+        currentUser = JSON.parse(localStorage.getItem('adminUser') || 'null');
+        
+        console.log('🔍 PROPERTY-DETAILS - Token carregado:', authToken ? 'SIM' : 'NÃO');
+        console.log('🔍 PROPERTY-DETAILS - Usuário carregado:', currentUser ? 'SIM' : 'NÃO');
+        
+        if (!authToken) {
+            console.error('❌ PROPERTY-DETAILS - Token não encontrado no localStorage');
+            console.error('❌ PROPERTY-DETAILS - Redirecionando para login...');
+            window.location.href = 'index.html';
+            return false;
+        }
+        
+        return true;
+    } catch (error) {
+        console.error('❌ PROPERTY-DETAILS - Erro ao carregar dados de autenticação:', error);
+        window.location.href = 'index.html';
+        return false;
+    }
+}
+
 // Função para obter URL da API baseada no ambiente
 function getApiBaseUrl() {
     // Detectar ambiente baseado na URL atual
@@ -36,6 +60,11 @@ let propertyMap = null;
 // Inicializar aplicação
 document.addEventListener('DOMContentLoaded', async () => {
     try {
+        // ✨ NOVO: Carregar dados de autenticação primeiro
+        if (!loadAuthData()) {
+            return; // Redirecionamento já foi feito
+        }
+
         // Verificar se há um ID de propriedade na URL
         const urlParams = new URLSearchParams(window.location.search);
         const propertyId = urlParams.get('id');
@@ -66,6 +95,9 @@ async function loadPropertyDetails(propertyId) {
         console.log('🔍 PROPERTY-DETAILS - Usando API segura:', `${API_BASE_URL}/api/admin/property-details?id=${propertyId}`);
 
         // ✨ NOVO: Usar API segura em vez de Supabase direto
+        console.log('🔍 PROPERTY-DETAILS - Token sendo enviado:', authToken ? 'SIM' : 'NÃO');
+        console.log('🔍 PROPERTY-DETAILS - Token (primeiros 20 chars):', authToken ? authToken.substring(0, 20) + '...' : 'NENHUM');
+        
         const response = await fetch(`${API_BASE_URL}/api/admin/property-details?id=${propertyId}`, {
             headers: {
                 'Authorization': `Bearer ${authToken}`,
@@ -116,6 +148,8 @@ async function populateOwnerData(property) {
         // ✨ NOVO: Buscar dados do perfil via API segura
         console.log('🔍 PROPERTY-DETAILS - Buscando perfil do usuário:', property.user_id);
         
+        console.log('🔍 PROPERTY-DETAILS - Buscando perfil com token:', authToken ? 'SIM' : 'NÃO');
+        
         const profileResponse = await fetch(`${API_BASE_URL}/api/admin/user-profile?userId=${property.user_id}`, {
             headers: {
                 'Authorization': `Bearer ${authToken}`,
@@ -152,6 +186,8 @@ async function populateOwnerData(property) {
         // ✨ NOVO: Buscar email via API segura
         try {
             console.log('🔍 PROPERTY-DETAILS - Buscando email do usuário:', property.user_id);
+            
+            console.log('🔍 PROPERTY-DETAILS - Buscando email com token:', authToken ? 'SIM' : 'NÃO');
             
             const emailResponse = await fetch(`${API_BASE_URL}/api/admin/user-email?userId=${property.user_id}`, {
                 headers: {
