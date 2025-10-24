@@ -5,7 +5,7 @@
 (function () {
     const BACKEND_BASE = (typeof window !== 'undefined' && typeof window.getBackendApiBase === 'function')
         ? window.getBackendApiBase()
-        : (window.BACKEND_BASE || 'https://buscabuscaimoveis-qa.vercel.app');
+        : (window.BACKEND_BASE|| process.env.EXPO_PUBLIC_API_BASE_URL|| Constants.expoConfig?.extra?.EXPO_PUBLIC_API_BASE_URL);
 
     function getClient() {
         // ✨ NOVO: Usar API segura em vez de Supabase direto

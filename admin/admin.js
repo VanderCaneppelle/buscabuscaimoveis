@@ -12,9 +12,9 @@ let authToken = null;
 // Função para obter URL da API baseada no ambiente
 function getApiBaseUrl() {
     // Detectar ambiente baseado na URL atual
-    if (window.location.hostname.includes('buscabuscaimoveis-admin-qa')) {
+    if (window.location.hostname.includes('buscabusca-admin-qa')) {
         return 'https://buscabuscaimoveis-qa.vercel.app';
-    } else if (window.location.hostname.includes('buscabuscaimoveis-admin-prod')) {
+    } else if (window.location.hostname.includes('buscabusca-admin-prod')) {
         return 'https://buscabusca.vercel.app';
     } else {
         // Desenvolvimento local
