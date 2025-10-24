@@ -5,9 +5,24 @@
 (function () {
     console.log('🔍 MODERATION - Iniciando ModerationService...');
     
-    const BACKEND_BASE = (typeof window !== 'undefined' && typeof window.getBackendApiBase === 'function')
-        ? window.getBackendApiBase()
-        : (window.BACKEND_BASE || process.env.EXPO_PUBLIC_API_BASE_URL);
+    // 🔧 DINÂMICO: Detectar ambiente baseado no hostname
+    function getBackendBaseUrl() {
+        if (typeof window === 'undefined') return null;
+        
+        const hostname = window.location.hostname;
+        console.log('🔍 MODERATION - Hostname detectado:', hostname);
+        
+        if (hostname.includes('buscabusca-admin-qa')) {
+            return 'https://buscabuscaimoveis-qa.vercel.app';
+        } else if (hostname.includes('buscabusca-admin-prod')) {
+            return 'https://buscabusca.vercel.app';
+        } else {
+            // Desenvolvimento local - detectar automaticamente
+            return 'https://buscabuscaimoveis-qa.vercel.app';
+        }
+    }
+    
+    const BACKEND_BASE = getBackendBaseUrl();
     
     console.log('🔍 MODERATION - BACKEND_BASE:', BACKEND_BASE);
 

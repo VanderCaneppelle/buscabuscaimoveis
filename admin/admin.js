@@ -499,7 +499,18 @@ function renderPropertyImages(images) {
 
 // Helper: obter base URL do backend (fixo)
 function getBackendApiBase() {
-    return 'https://buscabuscaimoveis-qa.vercel.app';
+    // 🔧 DINÂMICO: Detectar ambiente baseado no hostname
+    const hostname = window.location.hostname;
+    console.log('🔍 ADMIN - Hostname detectado:', hostname);
+    
+    if (hostname.includes('buscabusca-admin-qa')) {
+        return 'https://buscabuscaimoveis-qa.vercel.app';
+    } else if (hostname.includes('buscabusca-admin-prod')) {
+        return 'https://buscabusca.vercel.app';
+    } else {
+        // Desenvolvimento local - detectar automaticamente
+        return 'https://buscabuscaimoveis-qa.vercel.app';
+    }
 }
 
 // Helper: enviar push de aprovação para o dono do anúncio
