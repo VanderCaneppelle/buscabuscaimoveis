@@ -398,11 +398,16 @@ async function setupModerationActions(propertyId) {
     const rejectBtn = document.getElementById('reject-button');
 
     if (approveBtn) {
+        console.log('🔍 PROPERTY-DETAILS - Configurando botão de aprovação');
         approveBtn.addEventListener('click', async () => {
+            console.log('🔍 PROPERTY-DETAILS - Botão de aprovação clicado!');
             const ok = confirm('Confirmar aprovação deste anúncio?');
             if (!ok) return;
 
             try {
+                console.log('🔍 PROPERTY-DETAILS - Chamando ModerationService.approveProperty...');
+                console.log('🔍 PROPERTY-DETAILS - ModerationService disponível?', !!window.ModerationService);
+                
                 // Usar serviço centralizado via global
                 await window.ModerationService.approveProperty(propertyId);
 
@@ -410,16 +415,21 @@ async function setupModerationActions(propertyId) {
                 await updatePropertyStatusUI(propertyId, 'approved');
                 alert('Anúncio aprovado e ativado com sucesso!');
             } catch (err) {
-                console.error('Erro ao aprovar:', err);
+                console.error('❌ PROPERTY-DETAILS - Erro ao aprovar:', err);
                 alert('Erro ao aprovar anúncio. Tente novamente.');
             }
         });
     }
     if (rejectBtn) {
+        console.log('🔍 PROPERTY-DETAILS - Configurando botão de rejeição');
         rejectBtn.addEventListener('click', async () => {
+            console.log('🔍 PROPERTY-DETAILS - Botão de rejeição clicado!');
             const reason = prompt('Motivo da rejeição (opcional):');
 
             try {
+                console.log('🔍 PROPERTY-DETAILS - Chamando ModerationService.rejectProperty...');
+                console.log('🔍 PROPERTY-DETAILS - ModerationService disponível?', !!window.ModerationService);
+                
                 // Usar serviço centralizado via global
                 await window.ModerationService.rejectProperty(propertyId, reason);
 
@@ -427,7 +437,7 @@ async function setupModerationActions(propertyId) {
                 await updatePropertyStatusUI(propertyId, 'rejected');
                 alert('Anúncio rejeitado com sucesso!');
             } catch (err) {
-                console.error('Erro ao rejeitar:', err);
+                console.error('❌ PROPERTY-DETAILS - Erro ao rejeitar:', err);
                 alert('Erro ao rejeitar anúncio. Tente novamente.');
             }
         });

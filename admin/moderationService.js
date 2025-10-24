@@ -8,24 +8,41 @@
         : (window.BACKEND_BASE || 'https://buscabuscaimoveis-qa.vercel.app');
 
     function getClient() {
-        const client = window.supabaseClient;
-        if (!client) throw new Error('Supabase client global não encontrado (window.supabaseClient)');
-        return client;
+        // ✨ NOVO: Usar API segura em vez de Supabase direto
+        console.log('🔍 MODERATION - Usando API segura em vez de Supabase direto');
+        return null; // Não precisamos mais do cliente Supabase
     }
 
     async function sendPushNotification(propertyId, notificationType, reason = null) {
-        const supabase = getClient();
+        // ✨ NOVO: Buscar dados da propriedade via API segura
         try {
-            const { data: property, error: propError } = await supabase
-                .from('properties')
-                .select('user_id, title, ad_id')
-                .eq('id', propertyId)
-                .single();
-
-            if (propError || !property) {
-                console.error('Erro ao buscar propriedade para notificação:', propError);
+            console.log('🔍 MODERATION - Buscando dados da propriedade para notificação:', propertyId);
+            
+            const token = localStorage.getItem('adminToken');
+            if (!token) {
+                console.error('❌ MODERATION - Token não encontrado');
                 return;
             }
+
+            const propertyResponse = await fetch(`${BACKEND_BASE}/api/admin/property-details?id=${propertyId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!propertyResponse.ok) {
+                console.error('❌ MODERATION - Erro ao buscar propriedade:', propertyResponse.status);
+                return;
+            }
+
+            const propertyResult = await propertyResponse.json();
+            if (!propertyResult.success || !propertyResult.data) {
+                console.error('❌ MODERATION - Propriedade não encontrada');
+                return;
+            }
+
+            const property = propertyResult.data;
 
             let url, payload;
 
@@ -71,18 +88,35 @@
 
     // ✨ NOVO: Enviar notificação in-app
     async function sendInAppNotification(propertyId, notificationType, reason = null) {
-        const supabase = getClient();
+        // ✨ NOVO: Buscar dados da propriedade via API segura
         try {
-            const { data: property, error: propError } = await supabase
-                .from('properties')
-                .select('user_id, title')
-                .eq('id', propertyId)
-                .single();
-
-            if (propError || !property) {
-                console.error('Erro ao buscar propriedade para notificação in-app:', propError);
+            console.log('🔍 MODERATION - Buscando dados da propriedade para notificação in-app:', propertyId);
+            
+            const token = localStorage.getItem('adminToken');
+            if (!token) {
+                console.error('❌ MODERATION - Token não encontrado');
                 return;
             }
+
+            const propertyResponse = await fetch(`${BACKEND_BASE}/api/admin/property-details?id=${propertyId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!propertyResponse.ok) {
+                console.error('❌ MODERATION - Erro ao buscar propriedade:', propertyResponse.status);
+                return;
+            }
+
+            const propertyResult = await propertyResponse.json();
+            if (!propertyResult.success || !propertyResult.data) {
+                console.error('❌ MODERATION - Propriedade não encontrada');
+                return;
+            }
+
+            const property = propertyResult.data;
 
             let url, payload;
 
