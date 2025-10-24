@@ -89,7 +89,7 @@ export default async function handler(req, res) {
         
         const { data: profile, error: profileError } = await supabase
             .from('profiles')
-            .select('is_admin, display_name, id')
+            .select('is_admin, full_name, id')
             .eq('id', data.user.id)
             .single();
 
@@ -103,7 +103,7 @@ export default async function handler(req, res) {
             console.log('🔍 DEBUG - Erro ao buscar perfil, listando todos os perfis...');
             const { data: allProfiles, error: allError } = await supabase
                 .from('profiles')
-                .select('id, is_admin, display_name')
+                .select('id, is_admin, full_name')
                 .limit(5);
             
             console.log('🔍 DEBUG - Todos os perfis:', allProfiles);
@@ -141,7 +141,7 @@ export default async function handler(req, res) {
             user: {
                 id: data.user.id,
                 email: data.user.email,
-                name: profile.display_name,
+                name: profile.full_name,
                 is_admin: profile.is_admin
             },
             session: {
