@@ -7,7 +7,7 @@
     
     const BACKEND_BASE = (typeof window !== 'undefined' && typeof window.getBackendApiBase === 'function')
         ? window.getBackendApiBase()
-        : (window.BACKEND_BASE || 'https://buscabuscaimoveis-qa.vercel.app');
+        : (window.BACKEND_BASE);
     
     console.log('🔍 MODERATION - BACKEND_BASE:', BACKEND_BASE);
 
