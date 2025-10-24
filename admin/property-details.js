@@ -314,26 +314,51 @@ function setupAdminNotes(propertyId, initialNotes) {
 
 // Aprovação/Rejeição - USANDO SERVIÇO CENTRALIZADO
 async function setupModerationActions(propertyId) {
+    // ✨ NOVO: Verificar se usuário está autenticado
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
+        console.error('❌ Usuário não autenticado:', authError);
+        return;
+    }
+    
+    console.log('✅ Usuário autenticado:', user.id.substring(0, 8));
+    
     // ✨ NOVO: Buscar status atual da propriedade
     try {
+        console.log('🔍 Buscando status da propriedade:', propertyId);
+        
         const { data: property, error } = await supabase
             .from('properties')
             .select('status')
             .eq('id', propertyId)
-            .single();
+            .maybeSingle(); // ✨ MUDANÇA: usar maybeSingle() em vez de single()
 
         if (error) {
-            console.error('Erro ao buscar status da propriedade:', error);
+            console.error('❌ Erro ao buscar status da propriedade:', error);
+            console.error('❌ Detalhes do erro:', error.message);
+            console.error('❌ Código do erro:', error.code);
+            console.error('❌ Hint:', error.hint);
             return;
         }
 
-        console.log('🔍 Status atual da propriedade:', property.status);
+        if (!property) {
+            console.error('❌ Propriedade não encontrada:', propertyId);
+            console.error('❌ Possíveis causas:');
+            console.error('   - Propriedade não existe no banco');
+            console.error('   - RLS está bloqueando o acesso');
+            console.error('   - Usuário não tem permissão de admin');
+            return;
+        }
+
+        console.log('✅ Status atual da propriedade:', property.status);
         
         // ✨ NOVO: Mostrar/ocultar botões baseado no status
         updateModerationButtonsVisibility(property.status);
         
     } catch (error) {
-        console.error('Erro ao verificar status da propriedade:', error);
+        console.error('❌ Erro ao verificar status da propriedade:', error);
+        console.error('❌ Stack trace:', error.stack);
     }
 
     const approveBtn = document.getElementById('approve-button');
