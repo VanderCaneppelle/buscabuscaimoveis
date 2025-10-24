@@ -141,36 +141,50 @@
     }
 
     async function approveProperty(propertyId) {
-        const supabase = getClient();
         try {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) {
-                throw new Error('Usuário não autenticado');
+            const token = localStorage.getItem('adminToken');
+            if (!token) {
+                throw new Error('Token de autenticação não encontrado');
             }
 
             console.log(`✅ Aprovando anúncio ${propertyId}...`);
 
-            const { error } = await supabase
-                .from('properties')
-                .update({
-                    status: 'approved',
-                    ad_status: 'active',
-                    approved_at: new Date().toISOString(),
-                    approved_by: user.id
+            // Buscar user_id da propriedade primeiro
+            const propertyResponse = await fetch(`${BACKEND_BASE}/api/admin/properties?page=1&limit=1000`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!propertyResponse.ok) {
+                throw new Error('Erro ao buscar propriedade');
+            }
+
+            const propertyData = await propertyResponse.json();
+            const property = propertyData.data?.find(p => p.id === propertyId);
+            
+            if (!property) {
+                throw new Error('Propriedade não encontrada');
+            }
+
+            // Aprovar via API
+            const response = await fetch(`${BACKEND_BASE}/api/admin/approve`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    propertyId: propertyId,
+                    userId: property.user_id
                 })
-                .eq('id', propertyId);
-
-            if (error) throw error;
-
-            // Enviar notificação push (sistema antigo)
-            sendPushNotification(propertyId, 'approved').catch(err => {
-                console.error('Erro ao enviar notificação push (não crítico):', err);
             });
 
-            // ✨ NOVO: Enviar notificação in-app
-            sendInAppNotification(propertyId, 'approved').catch(err => {
-                console.error('Erro ao enviar notificação in-app (não crítico):', err);
-            });
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Erro ao aprovar propriedade');
+            }
 
             console.log(`✅ Anúncio ${propertyId} aprovado e ativado com sucesso`);
             return { success: true };
@@ -181,37 +195,51 @@
     }
 
     async function rejectProperty(propertyId, reason = null) {
-        const supabase = getClient();
         try {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) {
-                throw new Error('Usuário não autenticado');
+            const token = localStorage.getItem('adminToken');
+            if (!token) {
+                throw new Error('Token de autenticação não encontrado');
             }
 
             console.log(`❌ Rejeitando anúncio ${propertyId}...`);
 
-            const { error } = await supabase
-                .from('properties')
-                .update({
-                    status: 'rejected',
-                    ad_status: 'inactive',
-                    rejected_at: new Date().toISOString(),
-                    rejected_by: user.id,
-                    rejection_reason: reason || null
+            // Buscar user_id da propriedade primeiro
+            const propertyResponse = await fetch(`${BACKEND_BASE}/api/admin/properties?page=1&limit=1000`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!propertyResponse.ok) {
+                throw new Error('Erro ao buscar propriedade');
+            }
+
+            const propertyData = await propertyResponse.json();
+            const property = propertyData.data?.find(p => p.id === propertyId);
+            
+            if (!property) {
+                throw new Error('Propriedade não encontrada');
+            }
+
+            // Rejeitar via API
+            const response = await fetch(`${BACKEND_BASE}/api/admin/reject`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    propertyId: propertyId,
+                    userId: property.user_id,
+                    reason: reason
                 })
-                .eq('id', propertyId);
-
-            if (error) throw error;
-
-            // Enviar notificação push (sistema antigo)
-            sendPushNotification(propertyId, 'rejected', reason).catch(err => {
-                console.error('Erro ao enviar notificação push (não crítico):', err);
             });
 
-            // ✨ NOVO: Enviar notificação in-app
-            sendInAppNotification(propertyId, 'rejected', reason).catch(err => {
-                console.error('Erro ao enviar notificação in-app (não crítico):', err);
-            });
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Erro ao rejeitar propriedade');
+            }
 
             console.log(`❌ Anúncio ${propertyId} rejeitado com sucesso`);
             return { success: true };
