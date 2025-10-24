@@ -78,6 +78,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Wire moderation buttons
         setupModerationActions(propertyId);
+        
+        // 🔍 DEBUG: Verificar se ModerationService está disponível
+        console.log('🔍 PROPERTY-DETAILS - Verificando ModerationService após carregamento...');
+        console.log('🔍 PROPERTY-DETAILS - window.ModerationService:', window.ModerationService);
+        console.log('🔍 PROPERTY-DETAILS - typeof window.ModerationService:', typeof window.ModerationService);
 
         // Configurar nome do admin
         await setupAdminName();
