@@ -9,51 +9,19 @@ let authToken = null;
 // Função para obter URL da API baseada no ambiente
 function getApiBaseUrl() {
     // Detectar ambiente baseado na URL atual
-    if (window.location.hostname.includes('buscabuscaimoveis-admin-qa')) {
+    if (window.location.hostname.includes('buscabusca-admin-qa')) {
         return 'https://buscabuscaimoveis-qa.vercel.app';
-    } else if (window.location.hostname.includes('buscabuscaimoveis-admin-prod')) {
+    } else if (window.location.hostname.includes('buscabusca-admin-prod')) {
         return 'https://buscabusca.vercel.app';
     } else {
         // Desenvolvimento local
-        return 'https://buscabuscaimoveis-qa.vercel.app';
+        return 'https://buscabusca-qa.vercel.app';
     }
 }
 
-// ✨ NOVO: Configuração dinâmica do Supabase baseada no ambiente
-function getSupabaseConfig() {
-    // Detectar ambiente baseado na URL atual
-    if (window.location.hostname.includes('buscabusca-admin-qa')) {
-        // QA Environment
-        return {
-            url: 'https://ftglfnmyxtnygrmkxwos.supabase.co',
-            anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0Z2xmbm15eHRueWdybWt4d29zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEyNDE0MDIsImV4cCI6MjA3NjgxNzQwMn0.NP-cn9Ke8i8unlFCpMXCTTZzMPmOZ_L5S-yJoLcS2ro'
-        };
-    } else if (window.location.hostname.includes('buscabuscaimoveis-admin-prod')) {
-        // Production Environment
-        return {
-            url: 'https://rxozhlxmfbioqgqomkrz.supabase.co',
-            anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4b3pobHhtZmJpb3FncW9ta3J6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5OTg0MDIsImV4cCI6MjA2OTU3NDQwMn0.MsMaFjnQYvDP7xSmHS-QY2P7jZ4JCnnxDmCo6y0lk4g'
-        };
-    } else {
-        // Development - usar QA por padrão
-        return {
-            url: 'https://ftglfnmyxtnygrmkxwos.supabase.co',
-            anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0Z2xmbm15eHRueWdybWt4d29zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEyNDE0MDIsImV4cCI6MjA3NjgxNzQwMn0.NP-cn9Ke8i8unlFCpMXCTTZzMPmOZ_L5S-yJoLcS2ro'
-        };
-    }
-}
-
-// Obter configuração do Supabase
-const supabaseConfig = getSupabaseConfig();
-console.log('🔍 Supabase Config:', {
-    url: supabaseConfig.url,
-    environment: window.location.hostname.includes('buscabusca-admin-qa') ? 'QA' : 'PROD'
-});
-
-// Inicializar Supabase
-const supabase = window.supabase.createClient(supabaseConfig.url, supabaseConfig.anonKey);
-// Expor cliente global para serviços auxiliares
-window.supabaseClient = supabase;
+// ✨ NOVO: Usar API segura em vez de Supabase direto
+console.log('🔍 PROPERTY-DETAILS - Usando API segura em vez de Supabase direto');
+console.log('🔍 PROPERTY-DETAILS - API Base URL:', API_BASE_URL);
 
 // Elementos DOM
 const loadingElement = document.getElementById('loading');
@@ -94,21 +62,30 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Carregar detalhes da propriedade
 async function loadPropertyDetails(propertyId) {
     try {
-        console.log('Carregando detalhes da propriedade:', propertyId);
+        console.log('🔍 PROPERTY-DETAILS - Carregando detalhes da propriedade:', propertyId);
+        console.log('🔍 PROPERTY-DETAILS - Usando API segura:', `${API_BASE_URL}/api/admin/property-details?id=${propertyId}`);
 
-        const { data, error } = await supabase
-            .from('properties')
-            .select('*')
-            .eq('id', propertyId)
-            .single();
+        // ✨ NOVO: Usar API segura em vez de Supabase direto
+        const response = await fetch(`${API_BASE_URL}/api/admin/property-details?id=${propertyId}`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
 
-        if (error) throw error;
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || `HTTP ${response.status}`);
+        }
 
-        if (!data) {
+        const result = await response.json();
+        
+        if (!result.success || !result.data) {
             throw new Error('Propriedade não encontrada');
         }
 
-        console.log('Dados da propriedade:', data);
+        const data = result.data;
+        console.log('✅ PROPERTY-DETAILS - Dados da propriedade recebidos:', data);
 
         // Preencher os dados na página
         populatePropertyData(data);
@@ -136,15 +113,24 @@ async function populateOwnerData(property) {
         const ownerCreciWrap = document.getElementById('owner-creci-wrap');
         const ownerCreciEl = document.getElementById('owner-creci');
 
-        // Buscar dados do perfil (nome, telefone, CRECI)
-        const { data: userProfile, error } = await supabase
-            .from('profiles')
-            .select('full_name, phone, creci')
-            .eq('id', property.user_id)
-            .single();
+        // ✨ NOVO: Buscar dados do perfil via API segura
+        console.log('🔍 PROPERTY-DETAILS - Buscando perfil do usuário:', property.user_id);
+        
+        const profileResponse = await fetch(`${API_BASE_URL}/api/admin/user-profile?userId=${property.user_id}`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
 
-        if (error) {
-            console.error('Erro ao buscar perfil:', error);
+        let userProfile = null;
+        if (profileResponse.ok) {
+            const profileResult = await profileResponse.json();
+            userProfile = profileResult.data;
+        }
+
+        if (!userProfile) {
+            console.error('❌ PROPERTY-DETAILS - Perfil não encontrado');
             // Fallback para dados básicos
             ownerNameEl.textContent = 'Usuário não encontrado';
             ownerEmailEl.textContent = '—';
@@ -163,19 +149,30 @@ async function populateOwnerData(property) {
             ownerCreciWrap.style.display = 'none';
         }
 
-        // Buscar email usando função RPC
+        // ✨ NOVO: Buscar email via API segura
         try {
-            const { data: userEmail, error: emailError } = await supabase
-                .rpc('get_user_email', { user_id: property.user_id });
+            console.log('🔍 PROPERTY-DETAILS - Buscando email do usuário:', property.user_id);
+            
+            const emailResponse = await fetch(`${API_BASE_URL}/api/admin/user-email?userId=${property.user_id}`, {
+                headers: {
+                    'Authorization': `Bearer ${authToken}`,
+                    'Content-Type': 'application/json'
+                }
+            });
 
-            if (!emailError && userEmail) {
-                ownerEmailEl.textContent = userEmail;
+            if (emailResponse.ok) {
+                const emailResult = await emailResponse.json();
+                if (emailResult.success && emailResult.data) {
+                    ownerEmailEl.textContent = emailResult.data;
+                } else {
+                    ownerEmailEl.textContent = `ID: ${generateShortId(property.user_id)}`;
+                }
             } else {
-                console.warn('Função RPC get_user_email não encontrada ou erro:', emailError);
+                console.warn('❌ PROPERTY-DETAILS - Erro ao buscar email:', emailResponse.status);
                 ownerEmailEl.textContent = `ID: ${generateShortId(property.user_id)}`;
             }
         } catch (emailErr) {
-            console.error('Erro ao buscar email via RPC:', emailErr);
+            console.error('❌ PROPERTY-DETAILS - Erro ao buscar email:', emailErr);
             ownerEmailEl.textContent = `ID: ${generateShortId(property.user_id)}`;
         }
 
