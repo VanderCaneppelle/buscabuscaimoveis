@@ -30,7 +30,7 @@ async function apiCall(endpoint, options = {}) {
         throw new Error('No authentication token found');
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/admin/${endpoint}`, {
+    const response = await fetch(`${API_BASE_URL}backend/api/admin/${endpoint}`, {
         ...options,
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -50,7 +50,7 @@ async function apiCall(endpoint, options = {}) {
 // Função de login
 async function loginAdmin(email, password) {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/admin/login`, {
+        const response = await fetch(`${API_BASE_URL}backend/api/admin/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -200,7 +200,7 @@ async function fetchPropertiesServer() {
         if (propertyType) params.append('propertyType', propertyType);
         if (city) params.append('city', city);
 
-        const response = await fetch(`${API_BASE_URL}/api/admin/properties?${params}`, {
+        const response = await fetch(`${API_BASE_URL}backend/api/admin/properties?${params}`, {
             headers: {
                 'Authorization': `Bearer ${authToken}`,
                 'Content-Type': 'application/json'
