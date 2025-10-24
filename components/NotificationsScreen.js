@@ -72,7 +72,9 @@ export default function NotificationsScreen({ navigation }) {
                     filter: `user_id=eq.${user.id}`,
                 },
                 (payload) => {
-                    console.log('🔔 Nova notificação recebida via Realtime!', payload.new);
+                    console.log('🔔 [NotificationsScreen] Nova notificação recebida via Realtime!', payload.new);
+                    console.log('🔔 [NotificationsScreen] Tipo:', payload.new.type);
+                    console.log('🔔 [NotificationsScreen] Título:', payload.new.title);
                     // Adicionar no topo da lista
                     setNotifications(prev => [payload.new, ...prev]);
                 }
@@ -121,12 +123,14 @@ export default function NotificationsScreen({ navigation }) {
     const loadNotifications = async () => {
         if (!user?.id) return;
 
+        console.log('🔔 [NotificationsScreen] Carregando notificações para user:', user.id.substring(0, 8));
         setLoading(true);
         try {
             const data = await InAppNotificationAPI.getNotifications(user.id);
+            console.log('🔔 [NotificationsScreen] Notificações carregadas:', data.length);
             setNotifications(data);
         } catch (error) {
-            console.error('Erro ao carregar notificações:', error);
+            console.error('❌ [NotificationsScreen] Erro ao carregar notificações:', error);
             Alert.alert('Erro', 'Não foi possível carregar as notificações');
         } finally {
             setLoading(false);

@@ -53,7 +53,9 @@ export default function NotificationBell({ navigation }) {
                     filter: `user_id=eq.${user.id}`,
                 },
                 (payload) => {
-                    console.log('🔔 Nova notificação recebida via Realtime!', payload.new);
+                    console.log('🔔 [NotificationBell] Nova notificação recebida via Realtime!', payload.new);
+                    console.log('🔔 [NotificationBell] Tipo:', payload.new.type);
+                    console.log('🔔 [NotificationBell] Título:', payload.new.title);
                     // Incrementar contador
                     setUnreadCount(prev => prev + 1);
                 }
