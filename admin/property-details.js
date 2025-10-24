@@ -26,7 +26,7 @@ function getSupabaseConfig() {
         // QA Environment
         return {
             url: 'https://ftglfnmyxtnygrmkxwos.supabase.co',
-            anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0Z2xmbm15eHRueWdybWt4d29zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5OTg0MDIsImV4cCI6MjA2OTU3NDQwMn0.2f007c9c7a29f7589b8816b513a35d0c1a8b5af22ceb5427af6bf2025fd0d690'
+            anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0Z2xmbm15eHRueWdybWt4d29zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEyNDE0MDIsImV4cCI6MjA3NjgxNzQwMn0.NP-cn9Ke8i8unlFCpMXCTTZzMPmOZ_L5S-yJoLcS2ro'
         };
     } else if (window.location.hostname.includes('buscabuscaimoveis-admin-prod')) {
         // Production Environment
@@ -38,7 +38,7 @@ function getSupabaseConfig() {
         // Development - usar QA por padrão
         return {
             url: 'https://ftglfnmyxtnygrmkxwos.supabase.co',
-            anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0Z2xmbm15eHRueWdybWt4d29zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5OTg0MDIsImV4cCI6MjA2OTU3NDQwMn0.2f007c9c7a29f7589b8816b513a35d0c1a8b5af22ceb5427af6bf2025fd0d690'
+            anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0Z2xmbm15eHRueWdybWt4d29zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEyNDE0MDIsImV4cCI6MjA3NjgxNzQwMn0.NP-cn9Ke8i8unlFCpMXCTTZzMPmOZ_L5S-yJoLcS2ro'
         };
     }
 }
