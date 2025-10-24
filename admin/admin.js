@@ -1,16 +1,91 @@
 
 console.log('🚀 Admin.js carregado!');
 
-// Configuração do Supabase
-const SUPABASE_URL =  process.env.EXPO_PUBLIC_SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
-console.log('SUPABASE_URL - admin.js:', SUPABASE_URL);
-console.log('SUPABASE_ANON_KEY - admin.js:', SUPABASE_ANON_KEY);
+// Configuração da API
+const API_BASE_URL = getApiBaseUrl();
+console.log('API_BASE_URL - admin.js:', API_BASE_URL);
 
-// Inicializar Supabase
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-// Expor cliente global para serviços auxiliares
-window.supabaseClient = supabase;
+// Estado de autenticação
+let currentUser = null;
+let authToken = null;
+
+// Função para obter URL da API baseada no ambiente
+function getApiBaseUrl() {
+    // Detectar ambiente baseado na URL atual
+    if (window.location.hostname.includes('buscabuscaimoveis-admin-qa')) {
+        return 'https://buscabuscaimoveis-qa.vercel.app';
+    } else if (window.location.hostname.includes('buscabuscaimoveis-admin-prod')) {
+        return 'https://buscabusca.vercel.app';
+    } else {
+        // Desenvolvimento local
+        return 'https://buscabuscaimoveis-qa.vercel.app';
+    }
+}
+
+// Função para chamadas autenticadas à API
+async function apiCall(endpoint, options = {}) {
+    const token = localStorage.getItem('adminToken');
+    
+    if (!token) {
+        throw new Error('No authentication token found');
+    }
+
+    const response = await fetch(`${API_BASE_URL}/api/admin/${endpoint}`, {
+        ...options,
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP ${response.status}`);
+    }
+
+    return response.json();
+}
+
+// Função de login
+async function loginAdmin(email, password) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Login failed');
+        }
+
+        // Salvar token e dados do usuário
+        authToken = data.session.access_token;
+        currentUser = data.user;
+        localStorage.setItem('adminToken', authToken);
+        localStorage.setItem('adminUser', JSON.stringify(currentUser));
+
+        console.log('✅ Login admin bem-sucedido:', currentUser.email);
+        return data;
+    } catch (error) {
+        console.error('❌ Erro no login:', error);
+        throw error;
+    }
+}
+
+// Função de logout
+function logoutAdmin() {
+    authToken = null;
+    currentUser = null;
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminUser');
+    console.log('✅ Logout realizado');
+}
 
 // Estado da aplicação
 let properties = [];
@@ -473,7 +548,7 @@ function renderPropertyImages(images) {
 
 // Helper: obter base URL do backend (fixo)
 function getBackendApiBase() {
-    return 'https://buscabusca.vercel.app';
+    return 'https://buscabuscaimoveis-qa.vercel.app';
 }
 
 // Helper: enviar push de aprovação para o dono do anúncio
