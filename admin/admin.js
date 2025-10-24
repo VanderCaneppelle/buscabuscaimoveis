@@ -1,9 +1,9 @@
-import Constants from 'expo-constants';
+
 console.log('🚀 Admin.js carregado!');
 
 // Configuração do Supabase
-const SUPABASE_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_SUPABASE_URL|| process.env.EXPO_PUBLIC_SUPABASE_URL;
-const SUPABASE_ANON_KEY = Constants.expoConfig?.extra?.EXPO_PUBLIC_SUPABASE_ANON_KEY|| process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+const SUPABASE_URL =  process.env.EXPO_PUBLIC_SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 console.log('SUPABASE_URL - admin.js:', SUPABASE_URL);
 console.log('SUPABASE_ANON_KEY - admin.js:', SUPABASE_ANON_KEY);
 
