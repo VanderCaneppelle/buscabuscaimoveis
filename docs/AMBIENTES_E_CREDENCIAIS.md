@@ -2,7 +2,9 @@
 
 ## 📋 Visão Geral
 
-O sistema Busca Busca Imóveis possui configuração inteligente para múltiplos ambientes (QA e Produção), com detecção automática baseada em variáveis de ambiente e hostnames.
+O sistema Busca Busca Imóveis possui configuração inteligente para múltiplos
+ambientes (QA e Produção), com detecção automática baseada em variáveis de
+ambiente e hostnames.
 
 ---
 
@@ -10,10 +12,10 @@ O sistema Busca Busca Imóveis possui configuração inteligente para múltiplos
 
 ### ✅ Ambientes Configurados
 
-| Ambiente | Branch | Supabase | Vercel Backend | Admin Panel |
-|----------|--------|----------|----------------|-------------|
-| **QA** | `qa` | `ftglfnmyxtnygrmkxwos.supabase.co` | `buscabuscaimoveis-qa.vercel.app` | `buscabusca-admin-qa.vercel.app` |
-| **PRODUÇÃO** | `main` | `rxozhlxmfbioqgqomkrz.supabase.co` | `buscabusca.vercel.app` | `buscabusca-admin-prod.vercel.app` |
+| Ambiente     | Branch | Supabase                           | Vercel Backend                    | Admin Panel                        |
+| ------------ | ------ | ---------------------------------- | --------------------------------- | ---------------------------------- |
+| **QA**       | `qa`   | `ftglfnmyxtnygrmkxwos.supabase.co` | `buscabuscaimoveis-qa.vercel.app` | `buscabusca-admin-qa.vercel.app`   |
+| **PRODUÇÃO** | `main` | `rxozhlxmfbioqgqomkrz.supabase.co` | `buscabusca.vercel.app`           | `buscabusca-admin-prod.vercel.app` |
 
 ---
 
@@ -25,19 +27,21 @@ O sistema Busca Busca Imóveis possui configuração inteligente para múltiplos
 
 ```javascript
 export default {
-  expo: {
-    // ... outras configurações
-    extra: {
-      // ✅ AMBIENTE (production ou qa)
-      EXPO_PUBLIC_ENVIRONMENT: process.env.EXPO_PUBLIC_ENVIRONMENT || "qa",
-      
-      // ✅ SUPABASE - PRODUÇÃO
-      EXPO_PUBLIC_SUPABASE_URL: process.env.EXPO_PUBLIC_SUPABASE_URL,
-      EXPO_PUBLIC_SUPABASE_ANON_KEY: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
-      API_BASE_URL: process.env.API_BASE_URL,
-      RESET_PASSWORD_URL: process.env.RESET_PASSWORD_URL,
-    }
-  }
+    expo: {
+        // ... outras configurações
+        extra: {
+            // ✅ AMBIENTE (production ou qa)
+            EXPO_PUBLIC_ENVIRONMENT: process.env.EXPO_PUBLIC_ENVIRONMENT ||
+                "qa",
+
+            // ✅ SUPABASE - PRODUÇÃO
+            EXPO_PUBLIC_SUPABASE_URL: process.env.EXPO_PUBLIC_SUPABASE_URL,
+            EXPO_PUBLIC_SUPABASE_ANON_KEY:
+                process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
+            API_BASE_URL: process.env.API_BASE_URL,
+            RESET_PASSWORD_URL: process.env.RESET_PASSWORD_URL,
+        },
+    },
 };
 ```
 
@@ -46,25 +50,24 @@ export default {
 **Arquivo:** `lib/supabase.js`
 
 ```javascript
-import Constants from 'expo-constants';
+import Constants from "expo-constants";
 
 const extra = Constants.expoConfig?.extra ?? {};
 
-const supabaseUrl = 
-  extra.EXPO_PUBLIC_SUPABASE_URL || process.env.EXPO_PUBLIC_SUPABASE_URL;
+const supabaseUrl = extra.EXPO_PUBLIC_SUPABASE_URL ||
+    process.env.EXPO_PUBLIC_SUPABASE_URL;
 
-const supabaseAnonKey = 
-  extra.EXPO_PUBLIC_SUPABASE_ANON_KEY || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseAnonKey = extra.EXPO_PUBLIC_SUPABASE_ANON_KEY ||
+    process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 ```
 
 **Arquivo:** `lib/backendService.js`
 
 ```javascript
-import Constants from 'expo-constants';
+import Constants from "expo-constants";
 
-const API_BASE_URL = 
-  Constants.expoConfig?.extra?.EXPO_PUBLIC_API_BASE_URL || 
-  process.env.EXPO_PUBLIC_API_BASE_URL;
+const API_BASE_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_API_BASE_URL ||
+    process.env.EXPO_PUBLIC_API_BASE_URL;
 ```
 
 ---
@@ -78,12 +81,12 @@ const API_BASE_URL =
 ```javascript
 function getApiBaseUrl() {
     // Detectar ambiente baseado na URL atual
-    if (window.location.hostname.includes('buscabusca-admin-qa')) {
-        return 'https://buscabuscaimoveis-qa.vercel.app';  // ✅ QA
-    } else if (window.location.hostname.includes('buscabusca-admin-prod')) {
-        return 'https://buscabusca.vercel.app';  // ✅ PRODUÇÃO
+    if (window.location.hostname.includes("buscabusca-admin-qa")) {
+        return "https://buscabuscaimoveis-qa.vercel.app"; // ✅ QA
+    } else if (window.location.hostname.includes("buscabusca-admin-prod")) {
+        return "https://buscabusca.vercel.app"; // ✅ PRODUÇÃO
     } else {
-        return 'https://buscabusca-qa.vercel.app';  // ✅ FALLBACK QA
+        return "https://buscabusca-qa.vercel.app"; // ✅ FALLBACK QA
     }
 }
 ```
@@ -95,17 +98,17 @@ function getApiBaseUrl() {
 ```javascript
 function loadAuthData() {
     try {
-        authToken = localStorage.getItem('adminToken');
-        currentUser = JSON.parse(localStorage.getItem('adminUser') || 'null');
-        
+        authToken = localStorage.getItem("adminToken");
+        currentUser = JSON.parse(localStorage.getItem("adminUser") || "null");
+
         if (!authToken) {
-            window.location.href = 'index.html';
+            window.location.href = "index.html";
             return false;
         }
-        
+
         return true;
     } catch (error) {
-        window.location.href = 'index.html';
+        window.location.href = "index.html";
         return false;
     }
 }
@@ -117,26 +120,26 @@ function loadAuthData() {
 
 ### ✅ Configuração de Ambientes
 
-| Variável | QA | Produção |
-|----------|----|---------| 
-| `SUPABASE_URL` | `https://ftglfnmyxtnygrmkxwos.supabase.co` | `https://rxozhlxmfbioqgqomkrz.supabase.co` |
-| `SUPABASE_SERVICE_ROLE_KEY` | QA Service Key | Production Service Key |
-| `API_BASE_URL` | `https://buscabuscaimoveis-qa.vercel.app` | `https://buscabusca.vercel.app` |
-| `CLOUDINARY_URL` | QA Cloudinary | Production Cloudinary |
-| `MERCADO_PAGO_ACCESS_TOKEN` | QA Token | Production Token |
+| Variável                    | QA                                         | Produção                                   |
+| --------------------------- | ------------------------------------------ | ------------------------------------------ |
+| `SUPABASE_URL`              | `https://ftglfnmyxtnygrmkxwos.supabase.co` | `https://rxozhlxmfbioqgqomkrz.supabase.co` |
+| `SUPABASE_SERVICE_ROLE_KEY` | QA Service Key                             | Production Service Key                     |
+| `API_BASE_URL`              | `https://buscabuscaimoveis-qa.vercel.app`  | `https://buscabusca.vercel.app`            |
+| `CLOUDINARY_URL`            | QA Cloudinary                              | Production Cloudinary                      |
+| `MERCADO_PAGO_ACCESS_TOKEN` | QA Token                                   | Production Token                           |
 
 ### ✅ Endpoints Admin
 
-| Endpoint | Descrição | Autenticação |
-|----------|-----------|--------------|
-| `/api/admin/login` | Login do admin | - |
-| `/api/admin/properties` | Listar propriedades | Bearer Token |
+| Endpoint                      | Descrição               | Autenticação |
+| ----------------------------- | ----------------------- | ------------ |
+| `/api/admin/login`            | Login do admin          | -            |
+| `/api/admin/properties`       | Listar propriedades     | Bearer Token |
 | `/api/admin/property-details` | Detalhes da propriedade | Bearer Token |
-| `/api/admin/approve` | Aprovar propriedade | Bearer Token |
-| `/api/admin/reject` | Rejeitar propriedade | Bearer Token |
-| `/api/admin/stats` | Estatísticas | Bearer Token |
-| `/api/admin/user-profile` | Perfil do usuário | Bearer Token |
-| `/api/admin/user-email` | Email do usuário | Bearer Token |
+| `/api/admin/approve`          | Aprovar propriedade     | Bearer Token |
+| `/api/admin/reject`           | Rejeitar propriedade    | Bearer Token |
+| `/api/admin/stats`            | Estatísticas            | Bearer Token |
+| `/api/admin/user-profile`     | Perfil do usuário       | Bearer Token |
+| `/api/admin/user-email`       | Email do usuário        | Bearer Token |
 
 ---
 
@@ -148,8 +151,8 @@ function loadAuthData() {
 
 ```javascript
 export async function verifyAdminToken(authHeader) {
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return { valid: false, error: 'No token provided' };
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return { valid: false, error: "No token provided" };
     }
 
     const token = authHeader.substring(7);
@@ -158,22 +161,22 @@ export async function verifyAdminToken(authHeader) {
         const { data: { user }, error } = await supabase.auth.getUser(token);
 
         if (error || !user) {
-            return { valid: false, error: 'Invalid token' };
+            return { valid: false, error: "Invalid token" };
         }
 
         const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('is_admin, full_name')
-            .eq('id', user.id)
+            .from("profiles")
+            .select("is_admin, full_name")
+            .eq("id", user.id)
             .single();
 
         if (profileError || !profile || !profile.is_admin) {
-            return { valid: false, error: 'Not an admin' };
+            return { valid: false, error: "Not an admin" };
         }
 
         return { valid: true, user };
     } catch (error) {
-        return { valid: false, error: 'Token verification failed' };
+        return { valid: false, error: "Token verification failed" };
     }
 }
 ```
@@ -225,16 +228,19 @@ export async function verifyAdminToken(authHeader) {
 ### ✅ Problemas Comuns
 
 #### **1. App não conecta ao backend correto**
+
 - **Verificar:** `EXPO_PUBLIC_ENVIRONMENT` no `app.config.js`
 - **Verificar:** Variáveis de ambiente no Vercel
 - **Solução:** Rebuild do app
 
 #### **2. Admin Panel não carrega dados**
+
 - **Verificar:** Token no `localStorage`
 - **Verificar:** Hostname correto
 - **Solução:** Limpar cache e relogar
 
 #### **3. Backend retorna 401**
+
 - **Verificar:** `SUPABASE_SERVICE_ROLE_KEY` no Vercel
 - **Verificar:** Token válido no admin
 - **Solução:** Verificar logs do Vercel
@@ -242,24 +248,36 @@ export async function verifyAdminToken(authHeader) {
 ### ✅ Logs de Debug
 
 #### **App Mobile:**
+
 ```javascript
-console.log('🔍 [DEBUG] Ambiente:', Constants.expoConfig.extra.EXPO_PUBLIC_ENVIRONMENT);
-console.log('🔍 [DEBUG] Supabase URL:', supabaseUrl);
-console.log('🔍 [DEBUG] API Base URL:', API_BASE_URL);
+console.log(
+    "🔍 [DEBUG] Ambiente:",
+    Constants.expoConfig.extra.EXPO_PUBLIC_ENVIRONMENT,
+);
+console.log("🔍 [DEBUG] Supabase URL:", supabaseUrl);
+console.log("🔍 [DEBUG] API Base URL:", API_BASE_URL);
 ```
 
 #### **Admin Panel:**
+
 ```javascript
-console.log('🔍 PROPERTY-DETAILS - API Base URL:', API_BASE_URL);
-console.log('🔍 PROPERTY-DETAILS - Token carregado:', authToken ? 'SIM' : 'NÃO');
-console.log('🔍 PROPERTY-DETAILS - Usuário carregado:', currentUser ? 'SIM' : 'NÃO');
+console.log("🔍 PROPERTY-DETAILS - API Base URL:", API_BASE_URL);
+console.log(
+    "🔍 PROPERTY-DETAILS - Token carregado:",
+    authToken ? "SIM" : "NÃO",
+);
+console.log(
+    "🔍 PROPERTY-DETAILS - Usuário carregado:",
+    currentUser ? "SIM" : "NÃO",
+);
 ```
 
 #### **Backend:**
+
 ```javascript
-console.log('🔍 MIDDLEWARE - Verificando perfil para user ID:', user.id);
-console.log('🔍 MIDDLEWARE - Profile encontrado:', profile);
-console.log('🔍 MIDDLEWARE - is_admin value:', profile?.is_admin);
+console.log("🔍 MIDDLEWARE - Verificando perfil para user ID:", user.id);
+console.log("🔍 MIDDLEWARE - Profile encontrado:", profile);
+console.log("🔍 MIDDLEWARE - is_admin value:", profile?.is_admin);
 ```
 
 ---
@@ -268,11 +286,11 @@ console.log('🔍 MIDDLEWARE - is_admin value:', profile?.is_admin);
 
 ### ✅ Health Checks
 
-| Componente | QA | Produção |
-|------------|----|---------| 
-| **App** | `https://buscabuscaimoveis-qa.vercel.app/api/health` | `https://buscabusca.vercel.app/api/health` |
-| **Admin** | `https://buscabusca-admin-qa.vercel.app` | `https://buscabusca-admin-prod.vercel.app` |
-| **Supabase** | QA Database | Production Database |
+| Componente   | QA                                                   | Produção                                   |
+| ------------ | ---------------------------------------------------- | ------------------------------------------ |
+| **App**      | `https://buscabuscaimoveis-qa.vercel.app/api/health` | `https://buscabusca.vercel.app/api/health` |
+| **Admin**    | `https://buscabusca-admin-qa.vercel.app`             | `https://buscabusca-admin-prod.vercel.app` |
+| **Supabase** | QA Database                                          | Production Database                        |
 
 ### ✅ Logs
 

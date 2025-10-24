@@ -75,8 +75,16 @@ export default function NotificationsScreen({ navigation }) {
                     console.log('🔔 [NotificationsScreen] Nova notificação recebida via Realtime!', payload.new);
                     console.log('🔔 [NotificationsScreen] Tipo:', payload.new.type);
                     console.log('🔔 [NotificationsScreen] Título:', payload.new.title);
+                    console.log('🔔 [NotificationsScreen] User ID da notificação:', payload.new.user_id);
+                    console.log('🔔 [NotificationsScreen] User ID atual:', user.id);
+                    console.log('🔔 [NotificationsScreen] Match?', payload.new.user_id === user.id);
                     // Adicionar no topo da lista
-                    setNotifications(prev => [payload.new, ...prev]);
+                    setNotifications(prev => {
+                        console.log('🔔 [NotificationsScreen] Lista anterior:', prev.length, 'notificações');
+                        const newList = [payload.new, ...prev];
+                        console.log('🔔 [NotificationsScreen] Nova lista:', newList.length, 'notificações');
+                        return newList;
+                    });
                 }
             )
             .on(
@@ -128,6 +136,7 @@ export default function NotificationsScreen({ navigation }) {
         try {
             const data = await InAppNotificationAPI.getNotifications(user.id);
             console.log('🔔 [NotificationsScreen] Notificações carregadas:', data.length);
+            console.log('🔔 [NotificationsScreen] Dados das notificações:', data);
             setNotifications(data);
         } catch (error) {
             console.error('❌ [NotificationsScreen] Erro ao carregar notificações:', error);
@@ -292,6 +301,7 @@ export default function NotificationsScreen({ navigation }) {
     };
 
     const renderNotification = ({ item }) => {
+        console.log('🔍 [NotificationsScreen] RENDER ITEM - Renderizando notificação:', item.id, item.title);
         const icon = NotificationUtils.getIconForType(item.type);
         const timeAgo = NotificationUtils.formatRelativeTime(item.created_at);
 
@@ -351,6 +361,12 @@ export default function NotificationsScreen({ navigation }) {
             </Text>
         </View>
     );
+
+    // 🔍 DEBUG: Log do estado atual
+    console.log('🔍 [NotificationsScreen] RENDER - Estado atual:');
+    console.log('🔍 [NotificationsScreen] - Loading:', loading);
+    console.log('🔍 [NotificationsScreen] - Notifications count:', notifications.length);
+    console.log('🔍 [NotificationsScreen] - Notifications data:', notifications);
 
     return (
         <SafeAreaView style={styles.container}>
