@@ -195,6 +195,10 @@ async function fetchPropertiesServer() {
         if (propertyType) params.append('propertyType', propertyType);
         if (city) params.append('city', city);
 
+        console.log('🔍 ADMIN - Fazendo requisição para:', `${API_BASE_URL}/api/admin/properties?${params}`);
+        console.log('🔍 ADMIN - Token sendo enviado:', authToken ? 'SIM' : 'NÃO');
+        console.log('🔍 ADMIN - Token (primeiros 20 chars):', authToken ? authToken.substring(0, 20) + '...' : 'NENHUM');
+
         const response = await fetch(`${API_BASE_URL}/api/admin/properties?${params}`, {
             headers: {
                 'Authorization': `Bearer ${authToken}`,

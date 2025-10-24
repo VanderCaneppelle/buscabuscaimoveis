@@ -8,13 +8,18 @@ const supabase = createClient(
 );
 
 async function handler(req, res) {
+    console.log('🔍 PROPERTIES - Endpoint chamado!');
+    console.log('🔍 PROPERTIES - Method:', req.method);
+    console.log('🔍 PROPERTIES - Query:', req.query);
+    console.log('🔍 PROPERTIES - Headers:', req.headers);
+    
     try {
         const { 
             page = 1, 
             limit = 10, 
             status = '', 
             propertyType = '', 
-            city = '',
+            city = '', 
             search = ''
         } = req.query;
 
