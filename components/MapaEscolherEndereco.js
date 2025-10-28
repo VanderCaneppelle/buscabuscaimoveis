@@ -14,23 +14,40 @@ import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
 import { reverseGeocode, testMapboxToken } from '../lib/geocodingService';
 
-const MapaEscolherEndereco = ({ onAddressSelect, onCancel }) => {
+const MapaEscolherEndereco = ({ 
+    visible = false, 
+    onClose, 
+    onSelectAddress, 
+    initialCoordinates 
+}) => {
 
     const [mapRegion, setMapRegion] = useState({
-        latitude: -27.0903, // Itapema-SC como padrão
-        longitude: -48.6114,
+        latitude: initialCoordinates?.latitude || -27.0903, // Itapema-SC como padrão
+        longitude: initialCoordinates?.longitude || -48.6114,
         latitudeDelta: 0.01,
         longitudeDelta: 0.01,
     });
-    const [selectedCoordinate, setSelectedCoordinate] = useState(null);
+    const [selectedCoordinate, setSelectedCoordinate] = useState(
+        initialCoordinates ? {
+            latitude: initialCoordinates.latitude,
+            longitude: initialCoordinates.longitude
+        } : null
+    );
     const [addressInfo, setAddressInfo] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [loadingLocation, setLoadingLocation] = useState(false); // Não mostrar loading inicial
-    const [userLocation, setUserLocation] = useState(null); // Armazenar localização do usuário
+    const [loadingLocation, setLoadingLocation] = useState(false);
+    const [userLocation, setUserLocation] = useState(null);
 
     useEffect(() => {
-        requestLocationPermission();
-    }, []);
+        if (visible) {
+            requestLocationPermission();
+            
+            // Se tem coordenadas iniciais, buscar o endereço
+            if (initialCoordinates) {
+                handleReverseGeocode(initialCoordinates.latitude, initialCoordinates.longitude);
+            }
+        }
+    }, [visible]);
 
     // Monitorar mudanças no userLocation para debug
     useEffect(() => {
@@ -144,11 +161,15 @@ const MapaEscolherEndereco = ({ onAddressSelect, onCancel }) => {
 
     const handleConfirm = () => {
         if (selectedCoordinate && addressInfo) {
-            onAddressSelect({
+            const dataToSend = {
                 ...addressInfo,
-                latitude: selectedCoordinate.latitude,
-                longitude: selectedCoordinate.longitude,
-            });
+                coordinates: {
+                    latitude: selectedCoordinate.latitude,
+                    longitude: selectedCoordinate.longitude,
+                },
+            };
+            console.log('✅ Confirmando seleção:', dataToSend);
+            onSelectAddress(dataToSend);
         } else {
             Alert.alert('Aviso', 'Selecione uma localização no mapa primeiro.');
         }
@@ -158,22 +179,33 @@ const MapaEscolherEndereco = ({ onAddressSelect, onCancel }) => {
 
 
     return (
-        <View style={styles.container}>
-            <View style={styles.header}>
-                <TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
-                    <Text style={styles.cancelButtonText}>Cancelar</Text>
-                </TouchableOpacity>
-                <Text style={styles.title}>Escolher Endereço</Text>
-                <TouchableOpacity
-                    style={[styles.confirmButton, (!selectedCoordinate || !addressInfo) && styles.confirmButtonDisabled]}
-                    onPress={handleConfirm}
-                    disabled={!selectedCoordinate || !addressInfo}
-                >
-                    <Text style={[styles.confirmButtonText, (!selectedCoordinate || !addressInfo) && styles.confirmButtonTextDisabled]}>
-                        Confirmar
-                    </Text>
-                </TouchableOpacity>
-            </View>
+        <Modal
+            visible={visible}
+            animationType="slide"
+            onRequestClose={onClose}
+        >
+            <View style={styles.container}>
+                <View style={styles.header}>
+                    <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
+                        <Ionicons name="close" size={24} color="#6B7280" />
+                        <Text style={styles.cancelButtonText}>Cancelar</Text>
+                    </TouchableOpacity>
+                    <Text style={styles.title}>Escolher Endereço</Text>
+                    <TouchableOpacity
+                        style={[styles.confirmButton, (!selectedCoordinate || !addressInfo) && styles.confirmButtonDisabled]}
+                        onPress={handleConfirm}
+                        disabled={!selectedCoordinate || !addressInfo}
+                    >
+                        <Text style={[styles.confirmButtonText, (!selectedCoordinate || !addressInfo) && styles.confirmButtonTextDisabled]}>
+                            Confirmar
+                        </Text>
+                        <Ionicons 
+                            name="checkmark" 
+                            size={20} 
+                            color={selectedCoordinate && addressInfo ? "#fff" : "#9CA3AF"} 
+                        />
+                    </TouchableOpacity>
+                </View>
 
             {/* Botão de localização personalizado apenas para iOS */}
             {Platform.OS === 'ios' && (
@@ -263,6 +295,7 @@ const MapaEscolherEndereco = ({ onAddressSelect, onCancel }) => {
             </View>
 
         </View>
+        </Modal>
     );
 };
 
@@ -299,28 +332,35 @@ const styles = StyleSheet.create({
         color: '#333',
     },
     cancelButton: {
-        padding: 5,
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 8,
+        gap: 6,
     },
     cancelButtonText: {
         fontSize: 16,
-        color: '#007AFF',
+        color: '#6B7280',
+        fontWeight: '600',
     },
     confirmButton: {
-        backgroundColor: '#007AFF',
-        paddingHorizontal: 15,
-        paddingVertical: 8,
-        borderRadius: 6,
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#ffcc1e',
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        borderRadius: 12,
+        gap: 8,
     },
     confirmButtonDisabled: {
-        backgroundColor: '#ccc',
+        backgroundColor: '#E5E7EB',
     },
     confirmButtonText: {
-        color: '#fff',
+        color: '#1F2937',
         fontSize: 16,
-        fontWeight: 'bold',
+        fontWeight: '700',
     },
     confirmButtonTextDisabled: {
-        color: '#999',
+        color: '#9CA3AF',
     },
     map: {
         flex: 1,

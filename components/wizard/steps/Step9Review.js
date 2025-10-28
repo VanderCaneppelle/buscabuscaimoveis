@@ -1,0 +1,409 @@
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+
+const SectionCard = ({ title, icon, iconColor, children, onEdit }) => (
+    <View style={styles.sectionCard}>
+        <View style={styles.sectionHeader}>
+            <View style={[styles.sectionIcon, { backgroundColor: iconColor + '15' }]}>
+                <Ionicons name={icon} size={20} color={iconColor} />
+            </View>
+            <Text style={styles.sectionTitle}>{title}</Text>
+            <TouchableOpacity style={styles.editButton} onPress={onEdit}>
+                <Ionicons name="create-outline" size={18} color="#3498db" />
+                <Text style={styles.editButtonText}>Editar</Text>
+            </TouchableOpacity>
+        </View>
+        <View style={styles.sectionContent}>
+            {children}
+        </View>
+    </View>
+);
+
+const InfoRow = ({ label, value, highlight }) => (
+    <View style={styles.infoRow}>
+        <Text style={styles.infoLabel}>{label}</Text>
+        <Text style={[styles.infoValue, highlight && styles.infoValueHighlight]}>{value}</Text>
+    </View>
+);
+
+export default function Step8Review({ formData, mediaFiles, onEditStep }) {
+    const imagesCount = mediaFiles.filter(f => f.type !== 'video').length;
+    const videosCount = mediaFiles.filter(f => f.type === 'video').length;
+
+    return (
+        <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+            <View style={styles.content}>
+                <Text style={styles.title}>Revise seu anúncio</Text>
+                <Text style={styles.subtitle}>
+                    Confira se está tudo certo antes de publicar
+                </Text>
+
+                {/* Tipo e Transação */}
+                <SectionCard
+                    title="Tipo de Imóvel"
+                    icon="home"
+                    iconColor="#3498db"
+                    onEdit={() => onEditStep(1)}
+                >
+                    <InfoRow label="Tipo" value={formData.propertyType} highlight />
+                    <InfoRow label="Finalidade" value={formData.transactionType} highlight />
+                </SectionCard>
+
+                {/* Título e Descrição */}
+                <SectionCard
+                    title="Informações Básicas"
+                    icon="document-text"
+                    iconColor="#9b59b6"
+                    onEdit={() => onEditStep(2)}
+                >
+                    <Text style={styles.titlePreview}>{formData.title}</Text>
+                    {formData.description && (
+                        <Text style={styles.descriptionPreview} numberOfLines={3}>
+                            {formData.description}
+                        </Text>
+                    )}
+                </SectionCard>
+
+                {/* Localização */}
+                <SectionCard
+                    title="Localização"
+                    icon="location"
+                    iconColor="#27ae60"
+                    onEdit={() => onEditStep(3)}
+                >
+                    <View style={styles.addressContainer}>
+                        <Ionicons name="pin" size={16} color="#27ae60" />
+                        <View style={styles.addressContent}>
+                            <Text style={styles.addressText}>{formData.address}</Text>
+                            {formData.neighborhood && (
+                                <Text style={styles.addressText}>{formData.neighborhood}</Text>
+                            )}
+                            <Text style={styles.addressText}>
+                                {formData.city}, {formData.state}
+                            </Text>
+                        </View>
+                    </View>
+                </SectionCard>
+
+                {/* Características */}
+                <SectionCard
+                    title="Características"
+                    icon="grid"
+                    iconColor="#f39c12"
+                    onEdit={() => onEditStep(4)}
+                >
+                    <View style={styles.characteristicsGrid}>
+                        <View style={styles.characteristicItem}>
+                            <Ionicons name="bed" size={20} color="#3498db" />
+                            <Text style={styles.characteristicValue}>{formData.bedrooms || 0}</Text>
+                            <Text style={styles.characteristicLabel}>Quartos</Text>
+                        </View>
+                        <View style={styles.characteristicItem}>
+                            <Ionicons name="water" size={20} color="#9b59b6" />
+                            <Text style={styles.characteristicValue}>{formData.bathrooms || 0}</Text>
+                            <Text style={styles.characteristicLabel}>Banheiros</Text>
+                        </View>
+                        <View style={styles.characteristicItem}>
+                            <Ionicons name="car" size={20} color="#e74c3c" />
+                            <Text style={styles.characteristicValue}>{formData.parkingSpaces || 0}</Text>
+                            <Text style={styles.characteristicLabel}>Vagas</Text>
+                        </View>
+                        {formData.area && (
+                            <View style={styles.characteristicItem}>
+                                <Ionicons name="resize" size={20} color="#f39c12" />
+                                <Text style={styles.characteristicValue}>{formData.area}</Text>
+                                <Text style={styles.characteristicLabel}>m²</Text>
+                            </View>
+                        )}
+                    </View>
+                </SectionCard>
+
+                {/* Valores */}
+                <SectionCard
+                    title="Valores"
+                    icon="cash"
+                    iconColor="#10B981"
+                    onEdit={() => onEditStep(5)}
+                >
+                    <InfoRow 
+                        label={formData.transactionType === 'Aluguel' ? 'Aluguel' : 'Preço'} 
+                        value={`R$ ${formData.price}`} 
+                        highlight 
+                    />
+                    {formData.salePrice && (
+                        <InfoRow 
+                            label="Preço Promocional" 
+                            value={`R$ ${formData.salePrice}`} 
+                            highlight 
+                        />
+                    )}
+                </SectionCard>
+
+                {/* Construtora (se houver) */}
+                {formData.developer_id && (
+                    <SectionCard
+                        title="Construtora"
+                        icon="business"
+                        iconColor="#2563EB"
+                        onEdit={() => onEditStep(6)}
+                    >
+                        <Text style={styles.developerName}>
+                            {/* Nome será carregado do service */}
+                            Construtora selecionada
+                        </Text>
+                    </SectionCard>
+                )}
+
+                {/* Mídias */}
+                <SectionCard
+                    title="Fotos e Vídeos"
+                    icon="images"
+                    iconColor="#ec4899"
+                    onEdit={() => onEditStep(7)}
+                >
+                    <View style={styles.mediaStats}>
+                        <View style={styles.mediaStat}>
+                            <Ionicons name="images" size={18} color="#3498db" />
+                            <Text style={styles.mediaStatText}>{imagesCount} foto{imagesCount !== 1 ? 's' : ''}</Text>
+                        </View>
+                        <View style={styles.mediaStat}>
+                            <Ionicons name="videocam" size={18} color="#e74c3c" />
+                            <Text style={styles.mediaStatText}>{videosCount} vídeo{videosCount !== 1 ? 's' : ''}</Text>
+                        </View>
+                    </View>
+                    {mediaFiles.length > 0 && (
+                        <View style={styles.mediaPreview}>
+                            {mediaFiles.slice(0, 4).map((media, index) => (
+                                <View key={index} style={styles.mediaThumb}>
+                                    <Image source={{ uri: media.uri }} style={styles.mediaThumbImage} />
+                                    {media.type === 'video' && (
+                                        <View style={styles.videoThumbOverlay}>
+                                            <Ionicons name="play" size={16} color="#fff" />
+                                        </View>
+                                    )}
+                                </View>
+                            ))}
+                            {mediaFiles.length > 4 && (
+                                <View style={[styles.mediaThumb, styles.mediaThumbMore]}>
+                                    <Text style={styles.mediaThumbMoreText}>+{mediaFiles.length - 4}</Text>
+                                </View>
+                            )}
+                        </View>
+                    )}
+                </SectionCard>
+
+                {/* Info Final */}
+                <View style={styles.finalInfo}>
+                    <Ionicons name="information-circle" size={20} color="#3498db" />
+                    <Text style={styles.finalInfoText}>
+                        Após publicar, seu anúncio passará por uma análise. Você será notificado assim que for aprovado.
+                    </Text>
+                </View>
+            </View>
+        </ScrollView>
+    );
+}
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#F9FAFB',
+    },
+    content: {
+        padding: 20,
+        paddingBottom: 100,
+    },
+    title: {
+        fontSize: 22,
+        fontWeight: '700',
+        color: '#1F2937',
+        marginBottom: 8,
+    },
+    subtitle: {
+        fontSize: 15,
+        color: '#6B7280',
+        marginBottom: 24,
+        lineHeight: 22,
+    },
+    sectionCard: {
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: 16,
+        marginBottom: 16,
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 3,
+        elevation: 2,
+    },
+    sectionHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 12,
+        paddingBottom: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F3F4F6',
+    },
+    sectionIcon: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 10,
+    },
+    sectionTitle: {
+        flex: 1,
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#1F2937',
+    },
+    editButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    editButtonText: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#3498db',
+        marginLeft: 4,
+    },
+    sectionContent: {
+        gap: 8,
+    },
+    infoRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 6,
+    },
+    infoLabel: {
+        fontSize: 14,
+        color: '#6B7280',
+    },
+    infoValue: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#1F2937',
+    },
+    infoValueHighlight: {
+        color: '#3498db',
+        fontWeight: '700',
+    },
+    titlePreview: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: '#1F2937',
+        marginBottom: 8,
+        lineHeight: 22,
+    },
+    descriptionPreview: {
+        fontSize: 14,
+        color: '#6B7280',
+        lineHeight: 20,
+    },
+    addressContainer: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+    },
+    addressContent: {
+        flex: 1,
+        marginLeft: 8,
+    },
+    addressText: {
+        fontSize: 14,
+        color: '#1F2937',
+        marginBottom: 2,
+    },
+    characteristicsGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 12,
+    },
+    characteristicItem: {
+        alignItems: 'center',
+        width: '22%',
+    },
+    characteristicValue: {
+        fontSize: 20,
+        fontWeight: '700',
+        color: '#1F2937',
+        marginTop: 4,
+    },
+    characteristicLabel: {
+        fontSize: 12,
+        color: '#6B7280',
+        marginTop: 2,
+    },
+    developerName: {
+        fontSize: 15,
+        fontWeight: '600',
+        color: '#1F2937',
+    },
+    mediaStats: {
+        flexDirection: 'row',
+        gap: 16,
+        marginBottom: 12,
+    },
+    mediaStat: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    mediaStatText: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#6B7280',
+        marginLeft: 6,
+    },
+    mediaPreview: {
+        flexDirection: 'row',
+        gap: 8,
+    },
+    mediaThumb: {
+        width: 60,
+        height: 60,
+        borderRadius: 8,
+        overflow: 'hidden',
+        backgroundColor: '#E5E7EB',
+    },
+    mediaThumbImage: {
+        width: '100%',
+        height: '100%',
+    },
+    videoThumbOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0,0,0,0.4)',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    mediaThumbMore: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#3498db15',
+    },
+    mediaThumbMoreText: {
+        fontSize: 14,
+        fontWeight: '700',
+        color: '#3498db',
+    },
+    finalInfo: {
+        flexDirection: 'row',
+        backgroundColor: '#EFF6FF',
+        borderRadius: 12,
+        padding: 16,
+        borderWidth: 1,
+        borderColor: '#DBEAFE',
+        marginTop: 8,
+    },
+    finalInfoText: {
+        flex: 1,
+        fontSize: 13,
+        color: '#1E40AF',
+        marginLeft: 12,
+        lineHeight: 18,
+    },
+});
+

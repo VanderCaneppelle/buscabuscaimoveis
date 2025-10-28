@@ -14,7 +14,7 @@ import AdvertiseScreen from './AdvertiseScreen';
 import AdBoostingScreen from './AdBoostingScreen';
 import AccountScreen from './AccountScreen';
 import PlansScreen from './PlansScreen';
-import CreateAdScreen from './CreateAdScreen';
+import CreateAdWizard from './CreateAdWizard';
 import PropertyDetailsScreen from './PropertyDetailsScreen';
 import PaymentDetailsScreen from './PaymentDetailsScreen';
 import PaymentConfirmationScreen from './PaymentConfirmationScreen';
@@ -410,7 +410,7 @@ export default function MainNavigator() {
             {/* CreateAd como modal - mesmo nível das outras telas */}
             <Stack.Screen
                 name="CreateAd"
-                component={CreateAdScreen}
+                component={CreateAdWizard}
                 options={{
                     title: 'Criar Anúncio',
                     headerBackTitle: 'Voltar',
