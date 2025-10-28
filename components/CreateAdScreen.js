@@ -31,6 +31,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { searchAddresses } from '../lib/geocodingService';
 import MapaEscolherEndereco from './MapaEscolherEndereco';
 import StandardHeader from './StandardHeader';
+import { DeveloperService } from '../lib/developerService';
 
 const { width } = Dimensions.get('window');
 
@@ -67,6 +68,13 @@ export default function CreateAdScreen({ navigation, route }) {
     const [showBathroomsModal, setShowBathroomsModal] = useState(false);
     const [showParkingModal, setShowParkingModal] = useState(false);
     const [showAddressModal, setShowAddressModal] = useState(false);
+    const [showDeveloperModal, setShowDeveloperModal] = useState(false);
+
+    // Estados para construtoras
+    const [developers, setDevelopers] = useState([]);
+    const [loadingDevelopers, setLoadingDevelopers] = useState(false);
+    const [developerSearchQuery, setDeveloperSearchQuery] = useState('');
+    const [selectedDeveloper, setSelectedDeveloper] = useState(null);
 
     // Estados para autocomplete de endereço
     const [addressQuery, setAddressQuery] = useState('');
@@ -88,7 +96,8 @@ export default function CreateAdScreen({ navigation, route }) {
         showBathroomsModal ||
         showParkingModal ||
         showAddressModal ||
-        showMapPicker
+        showMapPicker ||
+        showDeveloperModal
     );
 
     // Refs e utilitários para focos/scroll com teclado
@@ -131,7 +140,8 @@ export default function CreateAdScreen({ navigation, route }) {
         state: '',
         zipCode: '',
         latitude: null,
-        longitude: null
+        longitude: null,
+        developer_id: null
     });
 
     // ❌ REMOVIDO: useEffect que chamava checkUserPermissions - substituído por loadUserPlan acima
@@ -195,6 +205,24 @@ export default function CreateAdScreen({ navigation, route }) {
 
         loadUserPlan();
     }, [user?.id]);
+
+    // Carregar construtoras
+    useEffect(() => {
+        const loadDevelopers = async () => {
+            try {
+                setLoadingDevelopers(true);
+                const data = await DeveloperService.getDevelopersWithCache();
+                setDevelopers(data);
+                console.log('✅ Construtoras carregadas:', data.length);
+            } catch (error) {
+                console.error('Erro ao carregar construtoras:', error);
+            } finally {
+                setLoadingDevelopers(false);
+            }
+        };
+
+        loadDevelopers();
+    }, []);
 
     const handleInputChange = (field, value) => {
         setFormData(prev => ({
@@ -421,7 +449,31 @@ export default function CreateAdScreen({ navigation, route }) {
         setShowBathroomsModal(false);
         setShowParkingModal(false);
         setShowAddressSuggestions(false);
+        setShowDeveloperModal(false);
     };
+
+    // Função para selecionar construtora
+    const handleDeveloperSelect = (developer) => {
+        setSelectedDeveloper(developer);
+        setFormData(prev => ({
+            ...prev,
+            developer_id: developer.id
+        }));
+        setShowDeveloperModal(false);
+        setDeveloperSearchQuery('');
+        console.log('✅ Construtora selecionada:', developer.full_name);
+    };
+
+    // Filtrar construtoras com base na busca
+    const filteredDevelopers = developers.filter(dev => {
+        if (!developerSearchQuery) return true;
+        const searchLower = developerSearchQuery.toLowerCase();
+        return (
+            dev.full_name?.toLowerCase().includes(searchLower) ||
+            dev.name?.toLowerCase().includes(searchLower) ||
+            dev.city_name?.toLowerCase().includes(searchLower)
+        );
+    });
 
     // Função para selecionar valor numérico
     const selectNumericValue = (field, value) => {
@@ -1038,6 +1090,45 @@ export default function CreateAdScreen({ navigation, route }) {
                                     />
                                 </View>
 
+                                {/* Campo de Construtora (Opcional) */}
+                                <View style={styles.inputGroup}>
+                                    <Text style={styles.inputLabel}>Construtora (Opcional)</Text>
+                                    <TouchableOpacity
+                                        style={styles.dropdownButton}
+                                        onPress={() => {
+                                            closeAllDropdowns();
+                                            setShowDeveloperModal(true);
+                                        }}
+                                    >
+                                        <Text style={[
+                                            styles.dropdownButtonText,
+                                            !selectedDeveloper && styles.placeholderText
+                                        ]}>
+                                            {selectedDeveloper 
+                                                ? `${selectedDeveloper.full_name}${selectedDeveloper.city_name ? ` - ${selectedDeveloper.city_name}/${selectedDeveloper.city_uf}` : ''}`
+                                                : 'Selecione a construtora (opcional)'
+                                            }
+                                        </Text>
+                                        <Ionicons
+                                            name={showDeveloperModal ? 'chevron-up' : 'chevron-down'}
+                                            size={20}
+                                            color="#7f8c8d"
+                                        />
+                                    </TouchableOpacity>
+                                    {selectedDeveloper && (
+                                        <TouchableOpacity
+                                            style={styles.clearButton}
+                                            onPress={() => {
+                                                setSelectedDeveloper(null);
+                                                setFormData(prev => ({ ...prev, developer_id: null }));
+                                            }}
+                                        >
+                                            <Ionicons name="close-circle" size={16} color="#e74c3c" />
+                                            <Text style={styles.clearButtonText}>Limpar seleção</Text>
+                                        </TouchableOpacity>
+                                    )}
+                                </View>
+
                                 <View style={styles.row}>
                                     <View style={[styles.inputGroup, styles.halfWidth]}>
                                         <Text style={styles.inputLabel}>Preço *</Text>
@@ -1513,6 +1604,110 @@ export default function CreateAdScreen({ navigation, route }) {
                                     <TouchableOpacity
                                         style={styles.typeModalCloseButton}
                                         onPress={() => setShowParkingModal(false)}
+                                    >
+                                        <Text style={styles.typeModalCloseText}>Fechar</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </TouchableWithoutFeedback>
+                        </View>
+                    </TouchableWithoutFeedback>
+                </Modal>
+
+                {/* Modal - Seletor de Construtora */}
+                <Modal
+                    visible={showDeveloperModal}
+                    transparent
+                    animationType="fade"
+                    onRequestClose={() => {
+                        setShowDeveloperModal(false);
+                        setDeveloperSearchQuery('');
+                    }}
+                >
+                    <TouchableWithoutFeedback onPress={() => {
+                        setShowDeveloperModal(false);
+                        setDeveloperSearchQuery('');
+                    }}>
+                        <View style={styles.typeModalOverlay}>
+                            <TouchableWithoutFeedback>
+                                <View style={styles.typeModalCard}>
+                                    <View style={styles.typeModalHandleWrap}>
+                                        <View style={styles.typeModalHandle} />
+                                    </View>
+                                    <View style={styles.typeModalHeader}>
+                                        <Text style={styles.typeModalHeaderText}>Selecione a construtora</Text>
+                                    </View>
+
+                                    {/* Campo de busca */}
+                                    <View style={styles.developerSearchContainer}>
+                                        <Ionicons name="search" size={20} color="#7f8c8d" style={styles.searchIcon} />
+                                        <TextInput
+                                            style={styles.developerSearchInput}
+                                            value={developerSearchQuery}
+                                            onChangeText={setDeveloperSearchQuery}
+                                            placeholder="Buscar construtora..."
+                                            placeholderTextColor="#7f8c8d"
+                                        />
+                                        {developerSearchQuery.length > 0 && (
+                                            <TouchableOpacity onPress={() => setDeveloperSearchQuery('')}>
+                                                <Ionicons name="close-circle" size={20} color="#7f8c8d" />
+                                            </TouchableOpacity>
+                                        )}
+                                    </View>
+
+                                    {loadingDevelopers ? (
+                                        <View style={styles.loadingContainer}>
+                                            <ActivityIndicator size="large" color="#3498db" />
+                                            <Text style={styles.loadingText}>Carregando construtoras...</Text>
+                                        </View>
+                                    ) : filteredDevelopers.length === 0 ? (
+                                        <View style={styles.emptyContainer}>
+                                            <Ionicons name="business-outline" size={48} color="#bdc3c7" />
+                                            <Text style={styles.emptyText}>
+                                                {developerSearchQuery 
+                                                    ? 'Nenhuma construtora encontrada' 
+                                                    : 'Nenhuma construtora disponível'
+                                                }
+                                            </Text>
+                                        </View>
+                                    ) : (
+                                        <FlatList
+                                            data={filteredDevelopers}
+                                            keyExtractor={(item) => item.id}
+                                            renderItem={({ item }) => (
+                                                <TouchableOpacity
+                                                    style={[
+                                                        styles.typeModalItem,
+                                                        styles.developerModalItem,
+                                                        selectedDeveloper?.id === item.id && styles.selectedDeveloperItem
+                                                    ]}
+                                                    onPress={() => handleDeveloperSelect(item)}
+                                                >
+                                                    <View style={styles.developerItemContent}>
+                                                        <Text style={styles.developerItemName}>{item.full_name}</Text>
+                                                        {item.city_name && (
+                                                            <Text style={styles.developerItemLocation}>
+                                                                {item.city_name}/{item.city_uf}
+                                                            </Text>
+                                                        )}
+                                                    </View>
+                                                    {selectedDeveloper?.id === item.id && (
+                                                        <Ionicons name="checkmark-circle" size={24} color="#27ae60" />
+                                                    )}
+                                                </TouchableOpacity>
+                                            )}
+                                            showsVerticalScrollIndicator={true}
+                                            persistentScrollbar={true}
+                                            initialNumToRender={20}
+                                            style={styles.typeModalList}
+                                        />
+                                    )}
+
+                                    <TouchableOpacity
+                                        style={styles.typeModalCloseButton}
+                                        onPress={() => {
+                                            setShowDeveloperModal(false);
+                                            setDeveloperSearchQuery('');
+                                        }}
                                     >
                                         <Text style={styles.typeModalCloseText}>Fechar</Text>
                                     </TouchableOpacity>
@@ -2374,9 +2569,9 @@ const styles = StyleSheet.create({
     typeModalCard: {
         backgroundColor: '#fff',
         borderRadius: 12,
-        maxHeight: 380,
-        width: '70%',
-        maxWidth: 360,
+        maxHeight: 500,
+        width: '85%',
+        maxWidth: 450,
         overflow: 'hidden',
         elevation: 6,
         shadowColor: '#000',
@@ -2407,14 +2602,15 @@ const styles = StyleSheet.create({
         color: '#00335e',
     },
     typeModalList: {
-        maxHeight: 215,
+        maxHeight: 320,
     },
     typeModalItem: {
         shadowColor: '#000',
-        paddingVertical: 10,
-        paddingHorizontal: 14,
+        paddingVertical: 16,
+        paddingHorizontal: 16,
         borderBottomWidth: 1,
         borderBottomColor: '#f3f4f6',
+        minHeight: 56,
     },
     typeModalItemText: {
         textAlign: 'center',
@@ -2432,6 +2628,91 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         fontSize: 14,
     },
+    
+    // Estilos para seleção de construtora
+    clearButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 8,
+        paddingVertical: 6,
+        paddingHorizontal: 10,
+        alignSelf: 'flex-start',
+    },
+    clearButtonText: {
+        color: '#e74c3c',
+        fontSize: 13,
+        marginLeft: 4,
+    },
+    developerSearchContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#f8f9fa',
+        borderRadius: 8,
+        marginHorizontal: 14,
+        marginVertical: 10,
+        paddingHorizontal: 12,
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
+    },
+    searchIcon: {
+        marginRight: 8,
+    },
+    developerSearchInput: {
+        flex: 1,
+        paddingVertical: 10,
+        fontSize: 15,
+        color: '#2c3e50',
+    },
+    loadingContainer: {
+        padding: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    loadingText: {
+        marginTop: 12,
+        fontSize: 14,
+        color: '#7f8c8d',
+    },
+    emptyContainer: {
+        padding: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    emptyText: {
+        marginTop: 12,
+        fontSize: 14,
+        color: '#7f8c8d',
+        textAlign: 'center',
+    },
+    developerModalItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingVertical: 14,
+        paddingHorizontal: 16,
+        minHeight: 64,
+    },
+    selectedDeveloperItem: {
+        backgroundColor: '#e8f5e9',
+    },
+    developerItemContent: {
+        flex: 1,
+        paddingVertical: 4,
+        paddingRight: 12,
+    },
+    developerItemName: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#2c3e50',
+        marginBottom: 4,
+        lineHeight: 22,
+    },
+    developerItemLocation: {
+        fontSize: 13,
+        color: '#7f8c8d',
+        lineHeight: 18,
+    },
+    
     importingOverlay: {
         position: 'absolute',
         top: 0,

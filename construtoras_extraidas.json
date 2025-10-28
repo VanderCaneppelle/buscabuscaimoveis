@@ -1,0 +1,4376 @@
+[
+  {
+    "reDeveloperName": "A+ ",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "A10",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "A2D",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "A7N",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "ABC",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "ABCR",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "ABDO",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "ABF & Vaccaro",
+    "reDeveloperNameComposition": null,
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "AC ZANELLA",
+    "reDeveloperNameComposition": "CONSTRUTORA E INCORPORADORA",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "ACMA",
+    "reDeveloperNameComposition": "Construções",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "ACS",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Barra Velha",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "AF",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "AG Santé & Rosecon",
+    "reDeveloperNameComposition": "Empreendimentos Imobiliários",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "AGL",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "AL",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "ANG",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "APF, GM+3 & Guidalli",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "AR",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "ARD",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "ARDC ",
+    "reDeveloperNameComposition": "Empreendimentos Imobiliários",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "ARJ",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Gov. Celso Ramos",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "ART",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Braço do Norte",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "AS.Ramos",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "ATR",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Abade",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Tijucas",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Abdo e Cabral",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Navegantes",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Absoluta",
+    "reDeveloperNameComposition": null,
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Agv Selent",
+    "reDeveloperNameComposition": null,
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Aikon",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Albamares",
+    "reDeveloperNameComposition": "Incorporações",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Albatroz",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Alfacon",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "All Wert",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Allvera",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Penha",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Altma",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Alumbra",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Amadeus",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Amalfi",
+    "reDeveloperNameComposition": "Construções",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Amaral",
+    "reDeveloperNameComposition": "Construções",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Amare ",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Anel",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Apta",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Arrka",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Ars Kammer",
+    "reDeveloperNameComposition": null,
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "ArtHaus",
+    "reDeveloperNameComposition": "Incorporadora Design",
+    "cityName": "Penha",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Artcon",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Artconcept",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Arthen",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Asael",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Auclan",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Barra Velha",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Aurora",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Auten",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Avantti",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Axis",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bombinhas",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Aya",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Azevedos ",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Azza",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Barra Velha",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Ânkora",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Āvva",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "B3",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "B3L",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "B4",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "BE ",
+    "reDeveloperNameComposition": "A Moradia do Futuro",
+    "cityName": "Maringá",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "BMX",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "BOS",
+    "reDeveloperNameComposition": "Incorporações",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "BR ",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "BRCON",
+    "reDeveloperNameComposition": "Incorporadora e Construtora",
+    "cityName": "Barra Velha",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "BRX",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Foz do Iguaçu",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "BSX ",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Bach",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Baggio",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Barra Norte",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Basso Pai e Filho",
+    "reDeveloperNameComposition": "Incorporação",
+    "cityName": "Marau",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "Batestal",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Báscara ",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Bella Cyntra",
+    "reDeveloperNameComposition": null,
+    "cityName": "Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Bem Morar",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Joinville",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Benveartt",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Benx",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "São Paulo",
+    "cityUf": "SP"
+  },
+  {
+    "reDeveloperName": "Berckley ",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Canela",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "Bernz",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Betton",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Bal. Piçarras",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Bidese",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Bivver",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bal. Piçarras",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Blend",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Barra Velha",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Bless",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Bliss",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Gramado",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "Bloque",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Blue",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Bona",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Boniatti",
+    "reDeveloperNameComposition": "Incorporações",
+    "cityName": "Canela",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "Borba & Borba",
+    "reDeveloperNameComposition": null,
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Borscheid",
+    "reDeveloperNameComposition": "Construção e Incorporação",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Bossa",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Botânica",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Bottin",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Canela",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "Bouw",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Braco",
+    "reDeveloperNameComposition": "Construções e Urbanismo",
+    "cityName": "Braço do Norte",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Branco",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Brasin",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Brava Beach Group",
+    "reDeveloperNameComposition": " ",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Burka",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Blumenau",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "By Seasons",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "C A",
+    "reDeveloperNameComposition": "EMPREENDIMENTOS",
+    "cityName": "Indaial",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "C. Morgenster",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Ponta Grossa",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "C2",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "C3",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Gramado",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "CAS",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bal. Piçarras",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "CBRL",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "CECPAS",
+    "reDeveloperNameComposition": null,
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "CEG",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "CESCA",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Navegantes",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "CGL",
+    "reDeveloperNameComposition": "Construtora Incorporadora",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "CHD",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Canela",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "CK",
+    "reDeveloperNameComposition": "Construções e Empreendimentos",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "CLH",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "CLN",
+    "reDeveloperNameComposition": "Empreendimentos Imobiliários",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "CN",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "CNA",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "CP8",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bal. Piçarras",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "CSete",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Bal. Piçarras",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "CVX",
+    "reDeveloperNameComposition": "Engenharia",
+    "cityName": "Concórdia",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "CW",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "CWCI",
+    "reDeveloperNameComposition": "Construções",
+    "cityName": "Bal. Piçarras",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Cadore",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Caleone",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Campos",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Barra Velha",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Canela",
+    "reDeveloperNameComposition": "Incorporações",
+    "cityName": "Canela",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "Cannes ",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Capitali",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Carboni",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Casa Forte",
+    "reDeveloperNameComposition": "Engenharia",
+    "cityName": "Biguaçu",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Casteval",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Castro ",
+    "reDeveloperNameComposition": "Desenvolvimento Imobiliário",
+    "cityName": "João Pessoa",
+    "cityUf": "PB"
+  },
+  {
+    "reDeveloperName": "Catavento",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Cavilha",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Cechinel",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Celeiro",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Cescon",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Cgranza",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Chaves",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "João Pessoa",
+    "cityUf": "PB"
+  },
+  {
+    "reDeveloperName": "Chaves ",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Ciaplan",
+    "reDeveloperNameComposition": "Planejamento e Construções",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Cibea",
+    "reDeveloperNameComposition": null,
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Cima",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Ciplart",
+    "reDeveloperNameComposition": "Construções Civis",
+    "cityName": "Maringá",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Cipriani",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Cirino",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Città",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Città",
+    "reDeveloperNameComposition": "Emprendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Clarus",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Claudia Exclusive",
+    "reDeveloperNameComposition": "Construtora e Inc.",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Coap",
+    "reDeveloperNameComposition": "Construtora & Incorporadora",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Colline Résidences",
+    "reDeveloperNameComposition": "Miguel Pereira",
+    "cityName": "Miguel Pereira",
+    "cityUf": "RJ"
+  },
+  {
+    "reDeveloperName": "Colmeia",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Fortaleza",
+    "cityUf": "CE"
+  },
+  {
+    "reDeveloperName": "Concase",
+    "reDeveloperNameComposition": "Construtora e Incorporadora ",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Concicat",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Coned",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Confiança",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Connect",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Conrado",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Conserpa & Enger",
+    "reDeveloperNameComposition": null,
+    "cityName": "Patos",
+    "cityUf": "PB"
+  },
+  {
+    "reDeveloperName": "Construsempre",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Caxias do Sul",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "Construtora JL",
+    "reDeveloperNameComposition": null,
+    "cityName": "Cascavel ",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Construtora MM",
+    "reDeveloperNameComposition": "Paraná",
+    "cityName": "Ponta Grossa",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Construttore",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Continente",
+    "reDeveloperNameComposition": "Propriedades",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Conztelar",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Copas",
+    "reDeveloperNameComposition": null,
+    "cityName": "Navegantes",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Costa & Mar",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Bal. Piçarras",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Cotienschi",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Penha",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Cretta",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Criar ",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Cristal",
+    "reDeveloperNameComposition": "Engenharia",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Cseger",
+    "reDeveloperNameComposition": null,
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Cyrela",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "São Paulo",
+    "cityUf": "SP"
+  },
+  {
+    "reDeveloperName": "D.Borcath",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "D1",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Capão da Canoa",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "D6",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "DB",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "DG",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "DMJ",
+    "reDeveloperNameComposition": "Empreendimentos Imobiliários",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "DValle",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Dal Lago",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Canela",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "Dall",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Dallano ",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Dalmolim",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Darrigo",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Data 3",
+    "reDeveloperNameComposition": "Incorporadora e Construtora",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Daxo",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Joinville",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Dellagnelo",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Deltacon",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Design",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Maringá",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Design",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Torres",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "Detalhe",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Deval",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Di Siena",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Navegantes",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Di Trento",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Diagonal",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Caucaia",
+    "cityUf": "CE"
+  },
+  {
+    "reDeveloperName": "Diamond",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Dias de Sousa",
+    "reDeveloperNameComposition": "Construções",
+    "cityName": "Fortaleza",
+    "cityUf": "CE"
+  },
+  {
+    "reDeveloperName": "Dinamize",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Navegantes",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Dinâmica ",
+    "reDeveloperNameComposition": "Construções e Incorporações",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Du-Art",
+    "reDeveloperNameComposition": "Empreendimentos Imobiliários Ltda",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Dubran",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bombinhas",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Duomo",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bombinhas",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "EAW",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "EBS",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "ECB",
+    "reDeveloperNameComposition": "Engenharia",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "EFC",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Navegantes",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "EJM",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "ENGEED",
+    "reDeveloperNameComposition": "INCORPORADORA",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "EQ",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "João Pessoa",
+    "cityUf": "PB"
+  },
+  {
+    "reDeveloperName": "ERS",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "ETR",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Ecalthi",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Eco ",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "João Pessoa",
+    "cityUf": "PB"
+  },
+  {
+    "reDeveloperName": "Edific",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Edificare",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Edificart",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Edify ",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Elcon",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Elias Paludo",
+    "reDeveloperNameComposition": "Incorporações",
+    "cityName": "Canela",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "Elio Winter",
+    "reDeveloperNameComposition": "Incorporações",
+    "cityName": "Araucária",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Elysium",
+    "reDeveloperNameComposition": "Residence",
+    "cityName": "Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Embraco",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "João Pessoa",
+    "cityUf": "PB"
+  },
+  {
+    "reDeveloperName": "Embraed",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Embralot",
+    "reDeveloperNameComposition": "Loteamentos",
+    "cityName": "Navegantes",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Eminence",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Engemax",
+    "reDeveloperNameComposition": "Construções e Incorporações",
+    "cityName": "João Pessoa",
+    "cityUf": "PB"
+  },
+  {
+    "reDeveloperName": "Enobra",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Eraldo",
+    "reDeveloperNameComposition": "Construções",
+    "cityName": "Tubarão",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Espaço 3",
+    "reDeveloperNameComposition": "Incorporações",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Essege",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Estação Orlando",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bal. Piçarras",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Estilo",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Estrutural",
+    "reDeveloperNameComposition": "Engenharia",
+    "cityName": "João Pessoa",
+    "cityUf": "PB"
+  },
+  {
+    "reDeveloperName": "Even",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "São Paulo",
+    "cityUf": "SP"
+  },
+  {
+    "reDeveloperName": "Evense",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Maringá",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Everest",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Exatus Marine",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Excelência",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Êxito",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "F.Vieira",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "F7",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "FEJOBI",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "FG",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "FHS",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bombinhas",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "FJB",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "FJC",
+    "reDeveloperNameComposition": null,
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "FML",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "FVS",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Gramado",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "FX",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Navegantes",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Facitá ",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Fascon",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Fasolo & Simon",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Favic",
+    "reDeveloperNameComposition": "Empreendimentos Imobiliários",
+    "cityName": "Navegantes",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Feel",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Feller",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Ferrazzo & Correa",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Flor de Lis",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Fonseca Neto",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Fornarolli",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Franka",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Franzoni",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Pato Branco",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Frechal",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bal. Piçarras",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Frigotto",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Futurista",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "G&M",
+    "reDeveloperNameComposition": "Construtoras",
+    "cityName": "Navegantes",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "G-art",
+    "reDeveloperNameComposition": "Incorporações",
+    "cityName": "Barra Velha",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "GBV",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Gramado",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "GD & JR",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "GDBC",
+    "reDeveloperNameComposition": "Administradora de Bens",
+    "cityName": "Bal. Piçarras",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "GEA",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "GHB",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Tramandaí",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "GK ",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bombinhas",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "GMF",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "GPC",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "GPM",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "GPinheiro",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "GR&P",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "GRF",
+    "reDeveloperNameComposition": "Engenharia e Construtora",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "GSP",
+    "reDeveloperNameComposition": "Loteamentos",
+    "cityName": "Uberlândia",
+    "cityUf": "MG"
+  },
+  {
+    "reDeveloperName": "GT Building",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "GT Home",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "GT Home & ABC",
+    "reDeveloperNameComposition": "Empreendimentos ",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "GV ",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "GWP",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Balneário Gaivota",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Gabriel Bacelar",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Recife",
+    "cityUf": "PE"
+  },
+  {
+    "reDeveloperName": "Gadens",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Galeria PRC Aruna",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Rico",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Galli",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Galwan",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Vila Velha",
+    "cityUf": "ES"
+  },
+  {
+    "reDeveloperName": "Gandin",
+    "reDeveloperNameComposition": null,
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Gasperin Pilatti",
+    "reDeveloperNameComposition": "Empreendimentos Imobiliários",
+    "cityName": "Bento Gonçalves",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "Genoa",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Barra Velha",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Genoa & Roll",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bal. Piçarras",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Gessele",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Gessi",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "S. José dos Pinhais",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Golembas",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Gomes Júnior",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Gongra",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Goods Br",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Granada",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Penha",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Grand",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Vila Velha",
+    "cityUf": "ES"
+  },
+  {
+    "reDeveloperName": "Grandezza ",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Penha",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Green Garden",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Grupo Delta",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "João Pessoa",
+    "cityUf": "PB"
+  },
+  {
+    "reDeveloperName": "Grupo Estrutura",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Joinville",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Grupo Fast",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Grupo Fontanive",
+    "reDeveloperNameComposition": null,
+    "cityName": "Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Grupo Formiga",
+    "reDeveloperNameComposition": null,
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Grupo GC & WFA",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Navegantes",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Grupo GP",
+    "reDeveloperNameComposition": null,
+    "cityName": "João Pessoa",
+    "cityUf": "PB"
+  },
+  {
+    "reDeveloperName": "Grupo J Souza",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Penha",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Grupo JM",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Joinville",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Grupo Lumis",
+    "reDeveloperNameComposition": null,
+    "cityName": "Brusque",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Grupo R.Gubert",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Grupo Roncato",
+    "reDeveloperNameComposition": null,
+    "cityName": "Canela",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "Guerreiro",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Bombinhas",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "H Living",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "H Santos",
+    "reDeveloperNameComposition": null,
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "H. Marcato",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Joinville",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "HN",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Joinville",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "HPIO",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "HR Sul",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Blumenau",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "HRC",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Haacke",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Sorriso",
+    "cityUf": "MT"
+  },
+  {
+    "reDeveloperName": "Hacasa",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Joinville",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Haedd",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Haja",
+    "reDeveloperNameComposition": "Participações",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Halsten",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Bal. Piçarras",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Haose",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Hasam",
+    "reDeveloperNameComposition": "Incorporações",
+    "cityName": "Gramado",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "Haus",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Barra Velha",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Havana Capital",
+    "reDeveloperNameComposition": "Empreendimentos Imobiliários",
+    "cityName": "Gramado",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "Heil",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Helbor",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "São Paulo",
+    "cityUf": "SP"
+  },
+  {
+    "reDeveloperName": "Herde",
+    "reDeveloperNameComposition": "Construtora & Incorporadora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Holze",
+    "reDeveloperNameComposition": null,
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Home",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Homs",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Hope Residencial Ecoville",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Hortênsias",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Gramado",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "Hugo Peretti",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "IAD",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "ICN3",
+    "reDeveloperNameComposition": "Empreedimentos",
+    "cityName": "Penha",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "IM",
+    "reDeveloperNameComposition": "Incorporadora e Construtora",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "IM7",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Indaial",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "IMPEGNO",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "ITAH",
+    "reDeveloperNameComposition": "Empreendiementos Imobiliários",
+    "cityName": "Gramado",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "Icon",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "João Pessoa",
+    "cityUf": "PB"
+  },
+  {
+    "reDeveloperName": "Idea Quattro",
+    "reDeveloperNameComposition": "Empreendimentos Imobiliários",
+    "cityName": "Blumenau",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Ideale",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Ile",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Impactos",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Império Real",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "InBau",
+    "reDeveloperNameComposition": null,
+    "cityName": "Navegantes",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Inbase",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Maringá",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Inbrasul",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Navegantes",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Inndesa",
+    "reDeveloperNameComposition": "Construtora e Incorporadora Ltda",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Inovar",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Barra Velha",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Insisa",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Blumenau",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Inspire",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Invescon",
+    "reDeveloperNameComposition": "Investimento e Consultoria Imobiliária",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Invest",
+    "reDeveloperNameComposition": null,
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Investir",
+    "reDeveloperNameComposition": "Incorporação e Participação",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Ipex",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Isensee",
+    "reDeveloperNameComposition": "Construtora e Incorporadora ",
+    "cityName": "Navegantes",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Itaicon",
+    "reDeveloperNameComposition": null,
+    "cityName": "Bombinhas",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Itapema",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Itapui",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "J. Dadam",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "J.A. Russi",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "J.E Vargas",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Bombinhas",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "JC",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "JCD",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "JFI",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Canela",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "JKX ",
+    "reDeveloperNameComposition": "Empreendimentos e construções",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "JLC",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "JLP Piccoli",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "JMP",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "JN",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "JNC",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "JTA",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Jota.L",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Just",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Maringá",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "KMK",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "KMX",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "KRCON",
+    "reDeveloperNameComposition": null,
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Kada",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Kalani",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Kalon",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Kiamente",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Kimber",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Xanxerê",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Kirchner",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Klein da Palma",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Krauss",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "LB",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "LEspace",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "LG",
+    "reDeveloperNameComposition": "Construções",
+    "cityName": "Barra Velha",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "LG",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "LMR",
+    "reDeveloperNameComposition": "Participações",
+    "cityName": "Blumenau",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "LND",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Timbó",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "LSC",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Laggo",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Laguna",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Le Prime",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Leal",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Leão",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Leone Pavan ",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Letage",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Linha Bonita",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Gramado",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "Livens",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Penha",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Locana",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Locatelli",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Locks",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Indaial",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Lofs",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Navegantes",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Lombarda",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Lorenzzo",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bombinhas",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Lotisa",
+    "reDeveloperNameComposition": "Empreendimentos Imobiliários",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Lucasa",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Luibi",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Lumma",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Luna",
+    "reDeveloperNameComposition": "Incorporações",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "M Santos",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "M Trento",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "MAC",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "MC",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Tijucas",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "MDGP",
+    "reDeveloperNameComposition": "Incorporações",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "MDI",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Alm.Tamandaré",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "MG3",
+    "reDeveloperNameComposition": "Engenharia",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "MGB",
+    "reDeveloperNameComposition": "Incorporações",
+    "cityName": "Canela",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "MJ7",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "MLM",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Gramado",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "MM Arruda",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "MMC",
+    "reDeveloperNameComposition": null,
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "MMC Manica Marin",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Bal. Piçarras",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "MS",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "MWC",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Canela",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "MX",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Bal. Piçarras",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Mabrem Maiochi",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bal. Piçarras",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Macodesc",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Macom",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Bombinhas",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Macon",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Mactec",
+    "reDeveloperNameComposition": "Engenharia",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Maga",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Navegantes",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Mago",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Mais",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "João Pessoa",
+    "cityUf": "PB"
+  },
+  {
+    "reDeveloperName": "Maken",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Manhattan",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Fortaleza",
+    "cityUf": "CE"
+  },
+  {
+    "reDeveloperName": "Marini",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Marítima ",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Markin",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Marluc ",
+    "reDeveloperNameComposition": "Construtora ",
+    "cityName": "Maringá",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Matton",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Mattos",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Max",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Barra Velha",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Max Realiza",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "MayBelly",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Maya",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Medeli",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Navegantes",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Meia Praia",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Mendes",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Mendes Sibara",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Menegoi",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Momm",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Monarca",
+    "reDeveloperNameComposition": "Empreendimentos Imobiliários Ltda",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Mondo",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Monolux",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Maringá",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Montagnes",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Gramado",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "Montclass",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Monte Sião",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Pato Branco",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Monteplan",
+    "reDeveloperNameComposition": "Engenharia",
+    "cityName": "São Luís",
+    "cityUf": "MA"
+  },
+  {
+    "reDeveloperName": "Montes Altos",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Gramado",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "Moratti",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Mônaco",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Muller e Marquardt",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Multi",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Munhoz ",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Mussi",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "N. Nitz",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "N1",
+    "reDeveloperNameComposition": null,
+    "cityName": "Bombinhas",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "NE",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "NF",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "NF Navegantes",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Navegantes",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "NHolanda",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "NK",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Torres",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "NS",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Gramado",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "Natália",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Bombinhas",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Nativa",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Guaratuba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Naumax",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Penha",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Naveplan",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Navegantes",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Neolar",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Neoprime",
+    "reDeveloperNameComposition": "Empreendimentos e Incorporações",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Netcorp",
+    "reDeveloperNameComposition": "Incorporação",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Neuhaus",
+    "reDeveloperNameComposition": "Incorporadora ",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Neves e Mattos",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Nisate",
+    "reDeveloperNameComposition": "Incorporadora ",
+    "cityName": "Navegantes",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Niva ",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Alegre",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "Nobrecon",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Nordeste",
+    "reDeveloperNameComposition": "Incorporações",
+    "cityName": "João Pessoa",
+    "cityUf": "PB"
+  },
+  {
+    "reDeveloperName": "Nostracon",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Nova Era",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Maravilha",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "NovaDome",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Gramado",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "Novalternativa",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Gramado",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "O3",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "OG3",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Maringá",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "OMS",
+    "reDeveloperNameComposition": "Construções",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "OX",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Penha",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "OXE",
+    "reDeveloperNameComposition": null,
+    "cityName": "Bombinhas",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Oceania",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Odeza",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "One WTZ",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Joinville",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Oneda",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Bal. Piçarras",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Optima",
+    "reDeveloperNameComposition": "Empreendimentos Imobiliários",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Optus",
+    "reDeveloperNameComposition": "Incorporadora ",
+    "cityName": "Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Opus",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Bombinhas",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Orla",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Orpla",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Otto ",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bal. Piçarras",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "P&B",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "PH",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "PRG",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Gramado",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "PZ ",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Pa",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Pacific",
+    "reDeveloperNameComposition": "Incorporações",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Pado",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Pato Branco",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Paganini",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Paludo",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Gramado",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "Paranaense",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Parati",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Pinhais",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Passarelli",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "São Paulo",
+    "cityUf": "SP"
+  },
+  {
+    "reDeveloperName": "Passe",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Pastorio",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Pax",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Chapecó",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Paysage Corpal",
+    "reDeveloperNameComposition": "Incorporações",
+    "cityName": "Blumenau",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Pedra Garcia",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Pegasus ",
+    "reDeveloperNameComposition": "Empreendimentos ",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Pereira Júnior",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Indaial",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Petrasalis",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Petricon",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Petrus",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Phacz",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Piemonte",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Guaratuba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Pillar",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Pioneira",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Pirâmide",
+    "reDeveloperNameComposition": "Construtora & Incorporadora",
+    "cityName": "João Pessoa",
+    "cityUf": "PB"
+  },
+  {
+    "reDeveloperName": "Plaenge Campinas",
+    "reDeveloperNameComposition": null,
+    "cityName": "Campinas",
+    "cityUf": "SP"
+  },
+  {
+    "reDeveloperName": "Plaenge Joinville",
+    "reDeveloperNameComposition": null,
+    "cityName": "Joinville",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Plaenge Maringá",
+    "reDeveloperNameComposition": null,
+    "cityName": "Maringá",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Plaenge São Paulo",
+    "reDeveloperNameComposition": null,
+    "cityName": "São Paulo",
+    "cityUf": "SP"
+  },
+  {
+    "reDeveloperName": "Planer",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Plann",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Plano Arte",
+    "reDeveloperNameComposition": "Administradora de Bens",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Platinum",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Penha",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Pláttanos",
+    "reDeveloperNameComposition": "Empreendimentos Imobiliários",
+    "cityName": "Gramado",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "Porto Camargo",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Porto Florêncio",
+    "reDeveloperNameComposition": "Empreendimentos Imobiliários Ltda",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Porto Valente",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Porto5",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Barra Velha",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Poseidon",
+    "reDeveloperNameComposition": "Construções ",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Premier",
+    "reDeveloperNameComposition": "Propriedades",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Pro House",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Procave",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Proedi",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Profor",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Prointi & GD",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Projetec",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Concórdia",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Prosperitta",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Pura Vida",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Navegantes",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Quadra",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Quanta",
+    "reDeveloperNameComposition": "Empreendimentos ",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "R Invest",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Barra Velha",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "R.F. Barbur",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Ponta Grossa",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "R5",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "S. José dos Pinhais",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "RB",
+    "reDeveloperNameComposition": null,
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "RC",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Indaial",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "RDO",
+    "reDeveloperNameComposition": null,
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "RDimer",
+    "reDeveloperNameComposition": "Inc. & Construtora",
+    "cityName": "Torres",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "REV",
+    "reDeveloperNameComposition": "Incorporações",
+    "cityName": "Bal. Piçarras",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "RF & Bertemes",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "RG2",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "RJR",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Navegantes",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "ROLL",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Barra Velha",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "RR",
+    "reDeveloperNameComposition": "Incorporações",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "RTR",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bombinhas",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "RTeixeira",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "RV",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Racitec",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Rah",
+    "reDeveloperNameComposition": "Imóveis & Incorporadora",
+    "cityName": "Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Raldi",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Bal. Piçarras",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Ranghetti",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Navegantes",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Raymundi",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Real Sul",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Realsec",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Rio Negrinho",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Reitzfeld",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "São Paulo",
+    "cityUf": "SP"
+  },
+  {
+    "reDeveloperName": "Reserva Mariscal",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bombinhas",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Reskatrin",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Revê",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Richter",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Joinville",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Rocha Ranghetti",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Navegantes",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Rofran",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Rosada",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Rossa",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Canela",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "Rottas",
+    "reDeveloperNameComposition": null,
+    "cityName": "Barra Velha",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Royal Garden Resort Residence",
+    "reDeveloperNameComposition": null,
+    "cityName": "Porto Rico",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Rubric",
+    "reDeveloperNameComposition": "Gestão Comercial",
+    "cityName": "S.Francisco do Sul",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Russi / Russi",
+    "reDeveloperNameComposition": " Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Rzilli",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Guaratuba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "S. Cavilha",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "SBJ",
+    "reDeveloperNameComposition": null,
+    "cityName": "Penha",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "SBK17",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "SDS",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Gov. Celso Ramos",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "SK Dellagnelo",
+    "reDeveloperNameComposition": "Empreendimentos Imobiliários",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "SM",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "STV",
+    "reDeveloperNameComposition": "Construções",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Saes",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Gramado",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "Salim & Galvan",
+    "reDeveloperNameComposition": null,
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Sampaio",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Sanmar",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Santana Construtora",
+    "reDeveloperNameComposition": null,
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Santana Empreendimentos",
+    "reDeveloperNameComposition": null,
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Scelta ",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Joinville",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Schneider Martins",
+    "reDeveloperNameComposition": "Arquitetura",
+    "cityName": "Florianópolis",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Schurmann",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Bombinhas",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Sedrez",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Selcor",
+    "reDeveloperNameComposition": null,
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Selent",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Selent GV",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Seleta",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Silicon",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Silva Guerreiro",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bombinhas",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Silva Packer",
+    "reDeveloperNameComposition": null,
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Sobha Realty",
+    "reDeveloperNameComposition": null,
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Soles",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bal. Piçarras",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Sorriso",
+    "reDeveloperNameComposition": null,
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Stabilité",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Stein",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bombinhas",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Straub",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Navegantes",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Sul",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "SuldoVale",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itajaí",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Sunprime",
+    "reDeveloperNameComposition": null,
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Supercon",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Itapoá",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Swell",
+    "reDeveloperNameComposition": "Construções e Incorporações",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "TAI",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "TED",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "TEX",
+    "reDeveloperNameComposition": "Empreendimentos imobiliários",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "THC",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "TM3",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "TRB",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Maringá",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Taipas",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Toledo",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Talita",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Bombinhas",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Tauf",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bal. Piçarras",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Taureans",
+    "reDeveloperNameComposition": "Desenvolvimento Imobiliário",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Teenah",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Tempos",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Terra",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Terra Nova",
+    "reDeveloperNameComposition": "Incorporações",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Terrassa",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Terrasse",
+    "reDeveloperNameComposition": "Engenharia e Construções",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Tetto",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Blumenau",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Thal",
+    "reDeveloperNameComposition": "Engenharia",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Thozen",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Threex",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Toledo",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Top 4D",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Torresani",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Barra Velha",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Tramonto",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Triad",
+    "reDeveloperNameComposition": "Construções e Incorporações",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Trianon",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Tricon",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Campo Largo",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Triore",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Trisul",
+    "reDeveloperNameComposition": "Parcerias",
+    "cityName": "São Paulo",
+    "cityUf": "SP"
+  },
+  {
+    "reDeveloperName": "UP",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Ubex",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Laguna",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Underfour",
+    "reDeveloperNameComposition": "Emprendimentos",
+    "cityName": "Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Unità",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Urbaniza",
+    "reDeveloperNameComposition": "Construtora e Incorporadora ",
+    "cityName": "Tijucas",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Urbe",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Canindé",
+    "cityUf": "CE"
+  },
+  {
+    "reDeveloperName": "Urbinc",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Gramado",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "VH",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "VL ",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "VMT",
+    "reDeveloperNameComposition": "CONSTRUTORA",
+    "cityName": "Pato Branco",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "VPR.M7",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Vale Verde",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Valor Real",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Vancouver",
+    "reDeveloperNameComposition": "Incorporações",
+    "cityName": "Canela",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "Vanguard Joinville",
+    "reDeveloperNameComposition": null,
+    "cityName": "Joinville",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Vecchi",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bal. Piçarras",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Veja",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Joinville",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Vepax",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Verbena",
+    "reDeveloperNameComposition": "Invest",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Verdes Mares",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Veres",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Verticall",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Bombinhas",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Vici",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Barra Velha",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Victória",
+    "reDeveloperNameComposition": "Administração de bens",
+    "cityName": "Bal. Piçarras",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Viezza",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Vimonte",
+    "reDeveloperNameComposition": "Incorporações",
+    "cityName": "Gramado",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "Vinotti ",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bombinhas",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Vitahaus",
+    "reDeveloperNameComposition": "Empreendimentos Imobiliários",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Vitalle",
+    "reDeveloperNameComposition": "Construtora e Incorporadora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Vitra",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Vivere On",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": null,
+    "cityUf": null
+  },
+  {
+    "reDeveloperName": "Víncere",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Vogar",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Alagoinhas",
+    "cityUf": "BA"
+  },
+  {
+    "reDeveloperName": "Vokkan",
+    "reDeveloperNameComposition": null,
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Voltolini",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Vougan",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Gramado",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "WRS",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "WSelent",
+    "reDeveloperNameComposition": "Empreendimentos ",
+    "cityName": "Porto Belo",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Weefor",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Wegg",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Maringá",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Welt ",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Curitiba",
+    "cityUf": "PR"
+  },
+  {
+    "reDeveloperName": "Welter",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Canela",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "Werk",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Rio do Sul",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Werner Walter",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Barra Velha",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Wert Estada & Co",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Gramado",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "Werte",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "XPCON",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Barra Velha",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "ZAH",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "ZKLB",
+    "reDeveloperNameComposition": "Incorporadora",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "ZR3",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Joinville",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "ZTW",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Zagonel",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Porto Alegre",
+    "cityUf": "RS"
+  },
+  {
+    "reDeveloperName": "Zanella",
+    "reDeveloperNameComposition": null,
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Zanois",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Bal. Camboriú",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Zig",
+    "reDeveloperNameComposition": "Empreendimentos",
+    "cityName": "Tijucas",
+    "cityUf": "SC"
+  },
+  {
+    "reDeveloperName": "Zimmermann",
+    "reDeveloperNameComposition": "Construtora",
+    "cityName": "Itapema",
+    "cityUf": "SC"
+  }
+]

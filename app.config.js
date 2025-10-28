@@ -63,7 +63,7 @@ export default {
       EXPO_PUBLIC_API_BASE_URL: process.env.EXPO_PUBLIC_API_BASE_URL,
 
         // ✅ AMBIENTE (production ou qa)
-      EXPO_PUBLIC_ENVIRONMENT: process.env.EXPO_PUBLIC_ENVIRONMENT || "qa",
+      EXPO_PUBLIC_ENVIRONMENT: process.env.EXPO_PUBLIC_ENVIRONMENT,
     },
     plugins: [
       "expo-notifications",

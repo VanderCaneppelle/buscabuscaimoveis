@@ -67,7 +67,7 @@ async function handler(req, res) {
         // ✨ NOVO: Enviar push notification
         try {
             console.log('📱 Enviando push notification de aprovação...');
-            const pushResponse = await fetch(`${process.env.API_BASE_URL || 'https://buscabuscaimoveis-qa.vercel.app'}/api/notifications?action=property-approved`, {
+            const pushResponse = await fetch(`${process.env.API_BASE_URL}/api/notifications?action=property-approved`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
