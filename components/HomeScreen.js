@@ -28,7 +28,7 @@ import { supabase } from '../lib/supabase';
 import PropertyCacheService from '../lib/propertyCacheService';
 import StoriesComponent from './StoriesComponent';
 import { CardStyleInterpolators } from '@react-navigation/stack';
-import { FiltersModal } from './modals';
+import { FiltersModal, DevelopersFilterModal, RealtorsFilterModal } from './modals';
 import NotificationBell from './NotificationBell';
 
 const { width } = Dimensions.get('window');
@@ -85,6 +85,9 @@ export default function HomeScreen({ navigation }) {
         propertyType: [],
         minPrice: '',
         maxPrice: '',
+        userType: 'all',
+        developerId: null,
+        realtorId: null,
     });
     const [showFiltersModal, setShowFiltersModal] = useState(false);
     const [tempFilters, setTempFilters] = useState({
@@ -92,6 +95,9 @@ export default function HomeScreen({ navigation }) {
         propertyType: [],
         minPrice: '',
         maxPrice: '',
+        userType: 'all',
+        developerId: null,
+        realtorId: null,
     });
     // Estados para dropdown de cidades
     const [cities, setCities] = useState([]);
@@ -109,17 +115,12 @@ export default function HomeScreen({ navigation }) {
     const searchInputRef = useRef(null);
     const flatListRef = useRef(null);
     
-    // ✨ NOVO: Estado de ordenação
-    const [sortOption, setSortOption] = useState('date_desc'); // Padrão: mais recentes
-    const [showSortModal, setShowSortModal] = useState(false);
-    
-    // Opções de ordenação
-    const sortOptions = [
-        { key: 'date_desc', label: 'Mais recentes', icon: 'time-outline' },
-        { key: 'date_asc', label: 'Mais antigos', icon: 'time-outline' },
-        { key: 'price_asc', label: 'Menor preço', icon: 'trending-up-outline' },
-        { key: 'price_desc', label: 'Maior preço', icon: 'trending-down-outline' },
-    ];
+    // ✨ NOVOS: Estados para filtros rápidos (userType)
+    const [quickFilter, setQuickFilter] = useState('all'); // 'all' | 'developer' | 'realtor' | 'owner'
+    const [selectedDeveloper, setSelectedDeveloper] = useState(null);
+    const [selectedRealtor, setSelectedRealtor] = useState(null);
+    const [showDevelopersModal, setShowDevelopersModal] = useState(false);
+    const [showRealtorsModal, setShowRealtorsModal] = useState(false);
 
     // Cores dinÃ¢micas baseadas no tema do dispositivo
     const colors = {
@@ -309,7 +310,7 @@ export default function HomeScreen({ navigation }) {
         }
 
         console.log('  HomeScreen: Carregando propriedades...');
-        console.log('  HomeScreen: Parâmetros:', { customFilters, searchQuery, page, forceRefresh, isSearchOrFilterChange, sortOption });
+        console.log('  HomeScreen: Parâmetros:', { customFilters, searchQuery, page, forceRefresh, isSearchOrFilterChange });
 
         // Controlar loading baseado no tipo de operaÃ§Ã£o
         if (page === 0) {
@@ -323,14 +324,12 @@ export default function HomeScreen({ navigation }) {
         try {
             const activeFilters = customFilters || filters;
             const activeSearch = searchQuery !== null ? searchQuery : searchTerm;
-
-            console.log('🔍 HomeScreen: Passando sortOption para PropertyCacheService:', sortOption);
             
             const result = await PropertyCacheService.getProperties({
                 page,
                 filters: activeFilters,
                 searchTerm: activeSearch,
-                sortOption, // ✨ NOVO: Incluir ordenação
+                sortOption: 'date_desc', // Sempre ordenar por mais recentes
                 forceRefresh,
                 enableParallelUpdate: true // Habilitar atualização em background (SWR)
             });
@@ -425,28 +424,127 @@ export default function HomeScreen({ navigation }) {
             propertyType: [],
             minPrice: '',
             maxPrice: '',
+            userType: 'all',
+            developerId: null,
+            realtorId: null,
         };
         setFilters(clearedFilters);
         setTempFilters(clearedFilters);
         setSearchInputValue(''); // Limpar o input de busca
         setSearchTerm(''); // Limpar o termo de busca ativo
         setCurrentPage(0);
-        // ✨ NOVO: Limpar ordenação também
-        setSortOption('date_desc');
+        // ✨ NOVO: Limpar filtros rápidos também
+        setQuickFilter('all');
+        setSelectedDeveloper(null);
+        setSelectedRealtor(null);
         // Mostrar imediatamente do cache e revalidar em background
         fetchProperties(clearedFilters, '', 0, false, true);
     };
     
-    // ✨ NOVO: Função para lidar com mudança de ordenação (EXATAMENTE igual aos filtros)
-    const applySort = (newSortOption) => {
-        console.log('📊📊📊 HomeScreen: APLICANDO ORDENAÇÃO 📊📊📊');
-        setSortOption(newSortOption);
-        setSearchInputValue(''); // Limpar busca ao aplicar ordenação (igual aos filtros)
+    // ✨ NOVOS: Funções para lidar com filtros rápidos
+    const handleQuickFilter = (type) => {
+        console.log(`🔍🔍🔍 HomeScreen: FILTRO RÁPIDO: ${type} 🔍🔍🔍`);
+        
+        // Resetar filtros avançados (conforme solicitado)
+        const clearedFilters = {
+            city: '',
+            propertyType: [],
+            minPrice: '',
+            maxPrice: '',
+            userType: type,
+            developerId: null,
+            realtorId: null,
+        };
+        
+        if (type === 'all') {
+            // Limpar tudo
+            setQuickFilter('all');
+            setSelectedDeveloper(null);
+            setSelectedRealtor(null);
+            setFilters(clearedFilters);
+            setTempFilters(clearedFilters);
+            setSearchInputValue('');
+            setSearchTerm('');
+            setCurrentPage(0);
+            fetchProperties(clearedFilters, '', 0, true, true);
+        } else if (type === 'developer') {
+            // Abrir modal de construtoras
+            setShowDevelopersModal(true);
+        } else if (type === 'realtor') {
+            // Abrir modal de corretores
+            setShowRealtorsModal(true);
+        } else if (type === 'owner') {
+            // Aplicar filtro de proprietários direto
+            setQuickFilter('owner');
+            setSelectedDeveloper(null);
+            setSelectedRealtor(null);
+            setFilters(clearedFilters);
+            setTempFilters(clearedFilters);
+            setSearchInputValue('');
+            setSearchTerm('');
+            setCurrentPage(0);
+            fetchProperties(clearedFilters, '', 0, true, true);
+        }
+    };
+    
+    const handleSelectDeveloper = (developer) => {
+        if (!developer) {
+            // Limpar filtro de construtora (voltar para "Todos")
+            handleQuickFilter('all');
+            return;
+        }
+        
+        console.log(`🏗️ HomeScreen: Construtora selecionada:`, developer.full_name);
+        
+        const newFilters = {
+            city: '',
+            propertyType: [],
+            minPrice: '',
+            maxPrice: '',
+            userType: 'developer',
+            developerId: developer.id,
+            realtorId: null,
+        };
+        
+        setQuickFilter('developer');
+        setSelectedDeveloper(developer);
+        setSelectedRealtor(null);
+        setFilters(newFilters);
+        setTempFilters(newFilters);
+        setSearchInputValue('');
         setSearchTerm('');
         setCurrentPage(0);
-        setShowSortModal(false);
-        // Aplicar ordenação e buscar propriedades (EXATAMENTE igual aos filtros)
-        fetchProperties(filters, '', 0, true, true);
+        fetchProperties(newFilters, '', 0, true, true);
+    };
+    
+    const handleSelectRealtor = (realtor) => {
+        if (!realtor) {
+            // Limpar filtro de corretor (voltar para "Todos")
+            handleQuickFilter('all');
+            return;
+        }
+        
+        console.log(`🏢 HomeScreen: Corretor selecionado:`, realtor.full_name);
+        
+        const newFilters = {
+            city: '',
+            propertyType: [],
+            minPrice: '',
+            maxPrice: '',
+            userType: 'realtor',
+            developerId: null,
+            realtorId: realtor.id,
+        };
+        
+        setQuickFilter('realtor');
+        setSelectedRealtor(realtor);
+        setSelectedDeveloper(null);
+        setFilters(newFilters);
+        setTempFilters(newFilters);
+        setSearchInputValue('');
+        setSearchTerm('');
+        setCurrentPage(0);
+        fetchProperties(newFilters, '', 0, true, true);
     };
 
     const openFiltersModal = () => {
@@ -819,19 +917,94 @@ export default function HomeScreen({ navigation }) {
                         </View>
                     </View>
 
-                    {/* Segunda linha: Filtros + Ordenar + Ver Mapa + Limpar */}
+                    {/* ✨ NOVO: Segunda linha: Filtros Rápidos (userType) */}
+                    <View style={styles.quickFiltersRow}>
+                        <TouchableOpacity 
+                            style={[
+                                styles.quickFilterButton,
+                                quickFilter === 'all' && styles.quickFilterButtonActive
+                            ]}
+                            onPress={() => handleQuickFilter('all')}
+                            activeOpacity={0.7}
+                        >
+                            <Text style={[
+                                styles.quickFilterText,
+                                quickFilter === 'all' && styles.quickFilterTextActive
+                            ]}>
+                                Todos
+                            </Text>
+                        </TouchableOpacity>
+                        
+                        <TouchableOpacity 
+                            style={[
+                                styles.quickFilterButton,
+                                quickFilter === 'developer' && styles.quickFilterButtonActive
+                            ]}
+                            onPress={() => handleQuickFilter('developer')}
+                            activeOpacity={0.7}
+                        >
+                            <Ionicons 
+                                name="business" 
+                                size={14} 
+                                color={quickFilter === 'developer' ? '#fff' : '#00335e'} 
+                            />
+                            <Text style={[
+                                styles.quickFilterText,
+                                quickFilter === 'developer' && styles.quickFilterTextActive
+                            ]}>
+                                Construtoras
+                            </Text>
+                        </TouchableOpacity>
+                        
+                        <TouchableOpacity 
+                            style={[
+                                styles.quickFilterButton,
+                                quickFilter === 'realtor' && styles.quickFilterButtonActive
+                            ]}
+                            onPress={() => handleQuickFilter('realtor')}
+                            activeOpacity={0.7}
+                        >
+                            <Ionicons 
+                                name="people" 
+                                size={14} 
+                                color={quickFilter === 'realtor' ? '#fff' : '#00335e'} 
+                            />
+                            <Text style={[
+                                styles.quickFilterText,
+                                quickFilter === 'realtor' && styles.quickFilterTextActive
+                            ]}>
+                                Corretores
+                            </Text>
+                        </TouchableOpacity>
+                        
+                        <TouchableOpacity 
+                            style={[
+                                styles.quickFilterButton,
+                                quickFilter === 'owner' && styles.quickFilterButtonActive
+                            ]}
+                            onPress={() => handleQuickFilter('owner')}
+                            activeOpacity={0.7}
+                        >
+                            <Ionicons 
+                                name="home" 
+                                size={14} 
+                                color={quickFilter === 'owner' ? '#fff' : '#00335e'} 
+                            />
+                            <Text style={[
+                                styles.quickFilterText,
+                                quickFilter === 'owner' && styles.quickFilterTextActive
+                            ]}>
+                                Proprietários
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* Terceira linha: Filtros Avançados + Ver Mapa + Limpar */}
                     <View style={styles.headerBottom}>
                         <View style={styles.leftButtons}>
                             <TouchableOpacity onPress={openFiltersModal} style={styles.filtersButton}>
                                 <Ionicons name="options-outline" size={16} color="#00335e" />
                                 <Text style={styles.filtersText}>Filtros</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity 
-                                style={styles.filtersButton}
-                                onPress={() => setShowSortModal(true)}
-                            >
-                                <Ionicons name="swap-vertical" size={16} color="#00335e" />
-                                <Text style={styles.filtersText}>Ordenar</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={styles.filtersButton}
@@ -925,55 +1098,20 @@ export default function HomeScreen({ navigation }) {
                     cities={cities}
                 />
                 
-                {/* ✨ NOVO: Modal de Ordenação */}
-                <Modal
-                    visible={showSortModal}
-                    transparent={true}
-                    animationType="slide"
-                    onRequestClose={() => setShowSortModal(false)}
-                >
-                    <View style={styles.sortModalOverlay}>
-                        <View style={styles.sortModalContent}>
-                            <View style={styles.sortModalHeader}>
-                                <Text style={styles.sortModalTitle}>Ordenar por</Text>
-                                <TouchableOpacity 
-                                    onPress={() => setShowSortModal(false)}
-                                    style={styles.sortModalCloseButton}
-                                >
-                                    <Ionicons name="close" size={24} color="#666" />
-                                </TouchableOpacity>
-                            </View>
-                            
-                            <View style={styles.sortOptionsContainer}>
-                                {sortOptions.map((option) => (
-                                    <TouchableOpacity
-                                        key={option.key}
-                                        style={[
-                                            styles.sortOption,
-                                            sortOption === option.key && styles.sortOptionSelected
-                                        ]}
-                                        onPress={() => applySort(option.key)}
-                                    >
-                                        <Ionicons 
-                                            name={option.icon} 
-                                            size={20} 
-                                            color={sortOption === option.key ? '#00335e' : '#666'} 
-                                        />
-                                        <Text style={[
-                                            styles.sortOptionText,
-                                            sortOption === option.key && styles.sortOptionTextSelected
-                                        ]}>
-                                            {option.label}
-                                        </Text>
-                                        {sortOption === option.key && (
-                                            <Ionicons name="checkmark" size={20} color="#00335e" />
-                                        )}
-                                    </TouchableOpacity>
-                                ))}
-                            </View>
-                        </View>
-                    </View>
-                </Modal>
+                {/* ✨ NOVOS: Modais de Filtros Rápidos */}
+                <DevelopersFilterModal
+                    visible={showDevelopersModal}
+                    onClose={() => setShowDevelopersModal(false)}
+                    onSelectDeveloper={handleSelectDeveloper}
+                    selectedDeveloperId={selectedDeveloper?.id}
+                />
+                
+                <RealtorsFilterModal
+                    visible={showRealtorsModal}
+                    onClose={() => setShowRealtorsModal(false)}
+                    onSelectRealtor={handleSelectRealtor}
+                    selectedRealtorId={selectedRealtor?.id}
+                />
             </View>
         </View>
     );
@@ -1496,6 +1634,43 @@ const styles = StyleSheet.create({
         color: '#00335e',
     },
 
+    // ✨ NOVOS: Quick Filters Styles
+    quickFiltersRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginTop: 12,
+        marginBottom: 8,
+        gap: 10,
+    },
+    quickFilterButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 10,
+        paddingHorizontal: 8,
+        backgroundColor: '#f8f9fa',
+        borderRadius: 8,
+        borderWidth: 1.5,
+        borderColor: 'transparent',
+        gap: 4,
+        flex: 1,
+        minHeight: 42,
+    },
+    quickFilterButtonActive: {
+        backgroundColor: '#00335e',
+        borderColor: '#00335e',
+    },
+    quickFilterText: {
+        fontSize: 12,
+        fontWeight: '600',
+        color: '#00335e',
+        textAlign: 'center',
+    },
+    quickFilterTextActive: {
+        color: '#fff',
+    },
+
     // Story Modal Styles
     storyModalOverlay: {
         flex: 1,
@@ -1603,61 +1778,4 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontWeight: '500', // Deixar um pouco mais bold para melhor visibilidade
     },
-    
-    // ✨ NOVO: Estilos do Modal de Ordenação
-    sortModalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        justifyContent: 'flex-end',
-    },
-    sortModalContent: {
-        backgroundColor: '#fff',
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
-        paddingBottom: 40,
-    },
-    sortModalHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: 20,
-        borderBottomWidth: 1,
-        borderBottomColor: '#e2e8f0',
-    },
-    sortModalTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#00335e',
-    },
-    sortModalCloseButton: {
-        padding: 5,
-    },
-    sortOptionsContainer: {
-        padding: 20,
-    },
-    sortOption: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: 15,
-        paddingHorizontal: 20,
-        borderRadius: 12,
-        marginBottom: 8,
-        backgroundColor: '#f8f9fa',
-    },
-    sortOptionSelected: {
-        backgroundColor: '#e3f2fd',
-        borderWidth: 1,
-        borderColor: '#00335e',
-    },
-    sortOptionText: {
-        fontSize: 16,
-        color: '#666',
-        marginLeft: 15,
-        flex: 1,
-    },
-    sortOptionTextSelected: {
-        color: '#00335e',
-        fontWeight: '600',
-    },
-
 }); 
