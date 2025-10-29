@@ -34,7 +34,7 @@ const FavoriteButton = React.memo(({ propertyId, disabled }) => {
                 }}
             >
                 <Ionicons
-                    name={isFavorited ? 'bookmark' : 'bookmark-outline'}
+                    name={isFavorited ? 'cart' : 'cart-outline'}
                     size={20}
                     color={isFavorited ? '#00335e' : '#666'}
                 />
@@ -49,7 +49,7 @@ const FavoriteButton = React.memo(({ propertyId, disabled }) => {
                 paddingVertical: 1,
                 borderRadius: 3,
             }}>
-                Salvar
+                Selecionar
             </Text>
         </View>
     );

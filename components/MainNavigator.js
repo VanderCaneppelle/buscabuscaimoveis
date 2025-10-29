@@ -266,7 +266,7 @@ function TabNavigator() {
                     } else if (route.name === 'Destaques') {
                         iconName = focused ? 'star' : 'star-outline';
                     } else if (route.name === 'Favoritos') {
-                        iconName = focused ? 'bookmark' : 'bookmark-outline';
+                        iconName = focused ? 'cart' : 'cart-outline';
                     } else if (route.name === 'Anuncie') {
                         iconName = focused ? 'add-circle' : 'add-circle-outline';
                     } else if (route.name === 'Conta') {
@@ -312,7 +312,7 @@ function TabNavigator() {
                 name="Favoritos"
                 component={FavoritesStack}
                 options={{
-                    tabBarLabel: 'Itens Salvos',
+                    tabBarLabel: 'Selecionados',
                     tabBarBadge: favCount > 0 ? (favCount > 99 ? '99+' : favCount) : undefined,
                     tabBarBadgeStyle: {
                         backgroundColor: '#00335e',
