@@ -1,10 +1,10 @@
 import React, { useCallback } from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import { TouchableOpacity, View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFavoritesStore } from '../stores/favoritesStore';
 
 /**
- * FavoriteButton - Botão de favoritar usando Zustand
+ * FavoriteButton - Botão de selecionar usando Zustand
  * ✨ Se inscreve DIRETAMENTE na store - atualiza quando Realtime dispara
  * React.memo SEM comparação customizada - deixa Zustand notificar mudanças
  */
@@ -20,23 +20,37 @@ const FavoriteButton = React.memo(({ propertyId, disabled }) => {
     }, [disabled, inFlight, toggleFavorite, propertyId]);
 
     return (
-        <View>
+        <View style={{ alignItems: 'center' }}>
             <TouchableOpacity
                 onPress={handlePress}
                 disabled={disabled || inFlight}
                 activeOpacity={0.8}
                 style={{
-                    backgroundColor: 'rgba(0,0,0,0.5)',
-                    borderRadius: 20,
-                    padding: 8,
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    borderRadius: 8,
+                    padding: 6,
+                    alignItems: 'center',
+                    justifyContent: 'center',
                 }}
             >
                 <Ionicons
-                    name={isFavorited ? 'heart' : 'heart-outline'}
-                    size={30}
-                    color={isFavorited ? '#e74c3c' : '#ffffff'}
+                    name={isFavorited ? 'bookmark' : 'bookmark-outline'}
+                    size={20}
+                    color={isFavorited ? '#00335e' : '#666'}
                 />
             </TouchableOpacity>
+            <Text style={{
+                fontSize: 9,
+                color: '#fff',
+                marginTop: 2,
+                fontWeight: '500',
+                backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                paddingHorizontal: 4,
+                paddingVertical: 1,
+                borderRadius: 3,
+            }}>
+                Salvar
+            </Text>
         </View>
     );
 }); // ✨ Removida comparação customizada - deixa Zustand notificar

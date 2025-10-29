@@ -260,23 +260,13 @@ function TabNavigator() {
         <Tab.Navigator
             screenOptions={({ route }) => ({
                 tabBarIcon: ({ focused, color, size }) => {
-                    if (route.name === 'Favoritos') {
-                        return (
-                            <Animated.View style={{ transform: [{ scale: favIconScale }] }}>
-                                <Image
-                                    source={require('../assets/logo_bb.jpg')}
-                                    style={{ width: size, height: size, opacity: focused ? 1 : 0.7 }}
-                                    contentFit="contain"
-                                />
-                            </Animated.View>
-                        );
-                    }
-
                     let iconName;
                     if (route.name === 'Busca') {
                         iconName = focused ? 'search' : 'search-outline';
                     } else if (route.name === 'Destaques') {
                         iconName = focused ? 'star' : 'star-outline';
+                    } else if (route.name === 'Favoritos') {
+                        iconName = focused ? 'bookmark' : 'bookmark-outline';
                     } else if (route.name === 'Anuncie') {
                         iconName = focused ? 'add-circle' : 'add-circle-outline';
                     } else if (route.name === 'Conta') {
@@ -322,10 +312,10 @@ function TabNavigator() {
                 name="Favoritos"
                 component={FavoritesStack}
                 options={{
-                    tabBarLabel: 'Favoritos',
+                    tabBarLabel: 'Itens Salvos',
                     tabBarBadge: favCount > 0 ? (favCount > 99 ? '99+' : favCount) : undefined,
                     tabBarBadgeStyle: {
-                        backgroundColor: '#e74c3c',
+                        backgroundColor: '#00335e',
                         color: '#fff',
                         fontSize: 10,
                         minWidth: 16,

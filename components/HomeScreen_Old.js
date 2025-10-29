@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+﻿import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
     View,
     Text,
@@ -18,7 +18,7 @@ import { Image } from 'expo-image';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
-import FavoriteButton from './FavoriteButton';
+import PropertyCard from './PropertyCard';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext';
 import { useFavoritesStore } from '../stores/favoritesStore';
@@ -638,46 +638,55 @@ export default function HomeScreen({ navigation }) {
     // Componente simplificado para renderizar propriedades
     const PropertyItem = React.memo(({ item, index, navigation }) => {
         const mediaFiles = item.images || [];
+        const [currentIndex, setCurrentIndex] = useState(0);
         // ✅ Usar Zustand para verificar boost (O(1))
         const isPropertyBoosted = isBoosted(item.id);
 
-        // Memoizar o onPress para evitar re-renderizações
+        // Memoizar o onPress para evitar re-renderizaÃ§Ãµes
         const handlePress = useCallback(() => {
             navigation.navigate('PropertyDetails', { property: item });
         }, [navigation, item]);
 
-        // Separar imagens e vídeos (simplificado)
+        // Separar imagens e vÃ­deos (simplificado)
         const imageFiles = mediaFiles.filter(file =>
             !file.includes('.mp4') && !file.includes('.mov') && !file.includes('.avi') &&
             !file.includes('.mkv') && !file.includes('.webm')
         );
 
-        // Fallback para quando não há imagens
+        const videoFiles = mediaFiles.filter(file =>
+            file.includes('.mp4') || file.includes('.mov') || file.includes('.avi') ||
+            file.includes('.mkv') || file.includes('.webm')
+        );
+
+        const hasMultipleMedia = imageFiles.length > 1;
+        const hasVideos = videoFiles.length > 0;
+
+        // Fallback para quando nÃ£o hÃ¡ imagens
         const defaultImage = 'https://via.placeholder.com/300x200?text=Sem+Imagem';
-        const displayImage = imageFiles.length > 0 ? imageFiles[0] : defaultImage;
+        const displayMediaFiles = imageFiles.length > 0 ? imageFiles : [defaultImage];
+
+        // NavegaÃ§Ã£o com setas
+        const handlePreviousImage = useCallback((event) => {
+            event.stopPropagation();
+            setCurrentIndex(prev => prev > 0 ? prev - 1 : displayMediaFiles.length - 1);
+        }, [displayMediaFiles.length]);
+
+        const handleNextImage = useCallback((event) => {
+            event.stopPropagation();
+            setCurrentIndex(prev => prev < displayMediaFiles.length - 1 ? prev + 1 : 0);
+        }, [displayMediaFiles.length]);
 
         return (
             <TouchableOpacity
-                style={[
-                    styles.propertyCard,
-                    isPropertyBoosted && styles.boostedCard
-                ]}
+                style={styles.propertyCard}
                 onPress={handlePress}
                 activeOpacity={0.8}
             >
-                {/* Badge de Destaque - Metade dentro, metade fora */}
-                {isPropertyBoosted && (
-                    <View style={styles.boostBadgeTop}>
-                        <Ionicons name="star" size={10} color="#fff" />
-                        <Text style={styles.boostBadgeText}>Destaque</Text>
-                    </View>
-                )}
 
-                {/* Foto Lateral */}
                 <View style={styles.mediaSection}>
-                    {/* Imagem única */}
+                    {/* Imagem atual */}
                     <Image
-                        source={{ uri: displayImage }}
+                        source={{ uri: displayMediaFiles[currentIndex] }}
                         style={styles.mediaItem}
                         contentFit="cover"
                         cachePolicy="disk"
@@ -686,14 +695,54 @@ export default function HomeScreen({ navigation }) {
                         priority="normal"
                     />
 
+                    {/* NavegaÃ§Ã£o integrada com contador (apenas se hÃ¡ mÃºltiplas imagens) */}
+                    {hasMultipleMedia && (
+                        <View style={styles.imageNavigationCompact}>
+                            <TouchableOpacity
+                                style={styles.navButtonCompact}
+                                onPress={handlePreviousImage}
+                                activeOpacity={0.7}
+                            >
+                                <Ionicons name="chevron-back" size={24} color="#fff" />
+                            </TouchableOpacity>
+
+                            <Text style={styles.imageCounterCompact}>
+                                {currentIndex + 1}/{displayMediaFiles.length}
+                            </Text>
+
+                            <TouchableOpacity
+                                style={styles.navButtonCompact}
+                                onPress={handleNextImage}
+                                activeOpacity={0.7}
+                            >
+                                <Ionicons name="chevron-forward" size={24} color="#fff" />
+                            </TouchableOpacity>
+                        </View>
+                    )}
 
                     {/* Ãcones de tipo de mÃ­dia */}
+                    {(imageFiles.length > 0 || videoFiles.length > 0) && (
+                        <View style={styles.mediaTypeBadge}>
+                            {imageFiles.length > 0 && (
+                                <View style={styles.mediaTypeItem}>
+                                    <Ionicons name="image" size={14} color="#fff" />
+                                    <Text style={styles.mediaTypeText}>{imageFiles.length}</Text>
+                                </View>
+                            )}
+                            {videoFiles.length > 0 && (
+                                <View style={styles.mediaTypeItem}>
+                                    <Ionicons name="videocam" size={14} color="#fff" />
+                                    <Text style={styles.mediaTypeText}>{videoFiles.length}</Text>
+                                </View>
+                            )}
+                        </View>
+                    )}
 
-                </View>
+                    {/* BotÃ£o de Favoritos (componente isolado e memoizado) */}
+                    <View style={styles.favoriteButton}>
+                        <FavoriteButton disabled={false} propertyId={item.id} />
+                    </View>
 
-                {/* Botão de Salvar - Canto superior direito do card */}
-                <View style={styles.saveButton}>
-                    <FavoriteButton disabled={false} propertyId={item.id} />
                 </View>
 
                 <View style={styles.propertyInfo}>
@@ -701,46 +750,12 @@ export default function HomeScreen({ navigation }) {
                         {item.title ?? 'Título indisponível'}
                     </Text>
 
-                    {/* Endereço com ícone */}
-                    <View style={styles.addressContainer}>
-                        <Ionicons name="location-outline" size={14} color="#666" />
-                        <Text style={styles.propertyLocation}>
-                            {item.neighborhood ?? item.address}, {item.city ?? item.state}
-                        </Text>
-                    </View>
-
-                    {/* Características com ícones */}
-                    <View style={styles.featuresContainer}>
-                        <View style={styles.feature}>
-                            <Ionicons name="bed-outline" size={16} color="#666" />
-                            <Text style={styles.featureText}>
-                                {item.bedrooms || 'N/A'}
-                            </Text>
-                        </View>
-                        <View style={styles.feature}>
-                            <Ionicons name="water-outline" size={16} color="#666" />
-                            <Text style={styles.featureText}>
-                                {item.bathrooms || 'N/A'}
-                            </Text>
-                        </View>
-                        <View style={styles.feature}>
-                            <Ionicons name="car-outline" size={16} color="#666" />
-                            <Text style={styles.featureText}>
-                                {item.parking_spaces || 'N/A'}
-                            </Text>
-                        </View>
-                        <View style={styles.feature}>
-                            <Ionicons name="resize-outline" size={16} color="#666" />
-                            <Text style={styles.featureText}>
-                                {item.area ? `${item.area} m²` : 'N/A'}
-                            </Text>
-                        </View>
-                    </View>
-
-                    {/* Preço */}
-                    <View style={styles.priceContainer}>
+                    <Text style={styles.propertyLocation}>
+                        {item.neighborhood ?? item.address}, {item.city ?? item.state}
+                    </Text>
+                    <View style={styles.propertyDetails}>
                         {((item.sale_price ?? item.salePrice) && parseFloat(item.sale_price ?? item.salePrice) > 0) ? (
-                            <View>
+                            <View style={styles.priceContainer}>
                                 <Text style={styles.originalPriceRed}>
                                     De: R$ {item.price?.toLocaleString('pt-BR') ?? 'Preço indisponível'}
                                 </Text>
@@ -753,7 +768,44 @@ export default function HomeScreen({ navigation }) {
                                 R$ {item.price?.toLocaleString('pt-BR') ?? 'Preço indisponível'}
                             </Text>
                         )}
+                        <View style={styles.propertyFeatures}>
+                            {item.bedrooms != null && (
+                                <Text style={styles.propertyFeature}>
+                                    {`${item.bedrooms} quartos`}
+                                </Text>
+                            )}
+                            {item.bathrooms != null && (
+                                <Text style={styles.propertyFeature}>
+                                    {`${item.bathrooms} banheiros`}
+                                </Text>
+                            )}
+                            {item.area != null && (
+                                <Text style={styles.propertyFeature}>
+                                    {`${item.area}m²`}
+                                </Text>
+                            )}
+                        </View>
                     </View>
+                    <Text style={styles.propertyType}>
+                        {(item.property_type ?? '') + ' a ' + (item.transaction_type ?? '')}
+                    </Text>
+
+                    {/* Badge de Destaque - Canto inferior direito */}
+                    {isPropertyBoosted && (
+                        <View style={styles.boostBadge}>
+                            <Ionicons name="rocket" size={12} color="#fff" />
+                            <Text style={styles.boostBadgeText}>Destaque</Text>
+                        </View>
+                    )}
+                    {/* Botão "Ver detalhes" para indicar que o card é clicável */}
+                    {/* <TouchableOpacity
+                        style={styles.verDetalhesButton}
+                        activeOpacity={0.8}
+                        onPress={handlePress}
+                        activeOpacity={0.8}
+                    >
+                        <Text style={styles.verDetalhesText}>Ver detalhes</Text>
+                    </TouchableOpacity> */}
                 </View>
 
             </TouchableOpacity>
@@ -1242,105 +1294,13 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 3.84,
         elevation: 5,
-        flexDirection: 'row', // Layout horizontal
-        height: 160, // Altura fixa menor
-        borderWidth: 2,
-        borderColor: '#e0e0e0',
-    },
-    boostedCard: {
-        borderColor: '#ffcc1e',
-        borderWidth: 3,
-        shadowColor: '#ffcc1e',
-        shadowOpacity: 0.3,
-    },
-    boostBadgeTop: {
-        position: 'absolute',
-        top: -12, // Metade fora do card
-        left: 16, // Lado esquerdo, em cima da imagem
-        backgroundColor: '#f39c12',
-        paddingHorizontal: 12,
-        paddingVertical: 4,
-        borderRadius: 12,
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-        elevation: 5,
-        zIndex: 10,
-    },
-    boostBadgeText: {
-        color: '#fff',
-        fontSize: 10,
-        fontWeight: 'bold',
-    },
-    // Novos estilos para o modelo da imagem
-    logoContainer: {
-        position: 'absolute',
-        top: 12,
-        left: 12,
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-        borderRadius: 8,
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-    },
-    logoText: {
-        color: '#fff',
-        fontSize: 12,
-        fontWeight: 'bold',
-    },
-    updateContainer: {
-        position: 'absolute',
-        bottom: 12,
-        left: 12,
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-        borderRadius: 6,
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-    },
-    updateText: {
-        color: '#fff',
-        fontSize: 11,
-        fontWeight: '500',
-    },
-    addressContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 8,
-    },
-    featuresContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 8,
-        gap: 4,
-    },
-    feature: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: 'transparent',
-        paddingHorizontal: 0,
-        paddingVertical: 0,
-        minWidth: 35,
-        justifyContent: 'flex-start',
-    },
-    featureText: {
-        fontSize: 11,
-        color: '#666',
-        marginLeft: 3,
-        fontWeight: '400',
     },
     // Media Gallery Styles
     mediaSection: {
         position: 'relative',
-        width: 150, // Largura fixa para foto lateral
-        height: '100%', // Altura total do card
+        height: 200,
         borderTopLeftRadius: 12,
-        borderBottomLeftRadius: 12,
+        borderTopRightRadius: 12,
         overflow: 'hidden',
         backgroundColor: '#f8f9fa',
     },
@@ -1349,8 +1309,8 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     mediaItem: {
-        width: '100%', // Largura total do container
-        height: '100%', // Altura total do container
+        width: width - 40, // 40 Ã© o padding horizontal
+        height: 200,
         backgroundColor: '#e9ecef',
     },
 
@@ -1410,10 +1370,13 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         color: '#fff',
     },
-    saveButton: {
+    favoriteButton: {
         position: 'absolute',
-        top: 8,
-        right: 8,
+        top: 5,
+        left: 5,
+        backgroundColor: 'rgba(255, 255, 255, 0)',
+        borderRadius: 15,
+        padding: 8,
         zIndex: 10,
     },
     favoriteIcon: {
@@ -1444,12 +1407,10 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     propertyInfo: {
-        flex: 1, // Ocupa o espaço restante
-        padding: 12,
+        padding: 15,
         backgroundColor: '#fff',
-        borderTopRightRadius: 12,
+        borderBottomLeftRadius: 12,
         borderBottomRightRadius: 12,
-        justifyContent: 'space-between', // Espaça os elementos
     },
     verDetalhesButton: {
         alignItems: 'center',
@@ -1476,15 +1437,15 @@ const styles = StyleSheet.create({
     },
 
     propertyTitle: {
-        fontSize: 14,
+        fontSize: 16,
         fontWeight: 'bold',
         color: '#00335e',
-        marginBottom: 6,
+        marginBottom: 5,
     },
     propertyLocation: {
-        fontSize: 12,
+        fontSize: 14,
         color: '#64748b',
-        flex: 1,
+        marginBottom: 10,
     },
     propertyDetails: {
         flexDirection: 'row',
@@ -1493,9 +1454,9 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     propertyPrice: {
-        fontSize: 16,
+        fontSize: 18,
         fontWeight: 'bold',
-        color: '#00335e',
+        color: '#059669',
     },
     priceContainer: {
         flexDirection: 'column',
