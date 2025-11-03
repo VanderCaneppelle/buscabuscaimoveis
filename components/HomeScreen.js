@@ -844,6 +844,9 @@ export default function HomeScreen({ navigation }) {
                                         <Ionicons name="close-circle" size={20} color="#7f8c8d" />
                                     </TouchableOpacity>
                                 )}
+                                <TouchableOpacity onPress={openFiltersModal} style={styles.searchFilterButton} activeOpacity={0.7}>
+                                    <Ionicons name="options-outline" size={20} color="#00335e" />
+                                </TouchableOpacity>
                             </View>
 
                             {/* BotÃ£o de Busca Discreto */}
@@ -947,28 +950,7 @@ export default function HomeScreen({ navigation }) {
                         </TouchableOpacity>
                     </View>
 
-                    {/* Terceira linha: Filtros Avançados + Ver Mapa + Limpar */}
-                    <View style={styles.headerBottom}>
-                        <View style={styles.leftButtons}>
-                            <TouchableOpacity onPress={openFiltersModal} style={styles.filtersButton}>
-                                <Ionicons name="options-outline" size={16} color="#00335e" />
-                                <Text style={styles.filtersText}>Filtros</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={styles.filtersButton}
-                                onPress={() => navigation.navigate('MapaImoveis', { filters: filters })}
-                            >
-                                <Ionicons name="map" size={16} color="#00335e" />
-                                <Text style={styles.filtersText}>Ver Mapa</Text>
-                            </TouchableOpacity>
-                        </View>
-
-                        <View style={styles.rightButtons}>
-                            <TouchableOpacity onPress={clearFilters} style={styles.clearFiltersButton}>
-                                <Text style={styles.clearFiltersText}>Limpar</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
+                    
                 </View>
 
                 {/* Content */}
@@ -1036,6 +1018,15 @@ export default function HomeScreen({ navigation }) {
                         </>
                     }
                 />
+
+                <TouchableOpacity
+                    style={styles.floatingMapButton}
+                    onPress={() => navigation.navigate('MapaImoveis', { filters: filters })}
+                    activeOpacity={0.85}
+                >
+                    <Ionicons name="location" size={18} color="#fff" />
+                    <Text style={styles.floatingMapText}>Ver no mapa</Text>
+                </TouchableOpacity>
 
                 {/* Modal de Filtros */}
                 <FiltersModal
@@ -1623,6 +1614,11 @@ const styles = StyleSheet.create({
     searchButtonActive: {
         backgroundColor: '#00335e',
     },
+    searchFilterButton: {
+        padding: 5,
+        marginLeft: 6,
+        borderRadius: 12,
+    },
 
     appTitle: {
         fontSize: 16,
@@ -1671,6 +1667,31 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '500',
         color: '#00335e',
+    },
+
+    // Botão flutuante "Ver mapa"
+    floatingMapButton: {
+        position: 'absolute',
+        right: 16,
+        bottom: 24,
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#00335e',
+        paddingHorizontal: 14,
+        paddingVertical: 12,
+        borderRadius: 24,
+        gap: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 6,
+        zIndex: 100,
+    },
+    floatingMapText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: '600',
     },
 
     // ✨ NOVOS: Quick Filters Styles
