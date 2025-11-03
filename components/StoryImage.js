@@ -12,7 +12,7 @@ export default function StoryImage({ imageUrl, optimizedUrl }) {
             <Image
                 source={{ uri: imageSource }}
                 style={styles.media}
-                resizeMode="cover"
+                resizeMode="contain"
             />
             {/* <View style={styles.mediaTypeIndicator}>
                 <Ionicons name="image" size={20} color="#fff" />
@@ -26,10 +26,13 @@ const styles = StyleSheet.create({
         position: "relative",
         width,
         height,
+        backgroundColor: 'black',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     media: {
-        width,
-        height,
+        width: width,
+        height: height,
     },
     mediaTypeIndicator: {
         position: "absolute",
