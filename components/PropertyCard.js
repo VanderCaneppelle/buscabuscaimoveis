@@ -66,22 +66,30 @@ export default function PropertyCard({ property, navigation, onPress }) {
                 </View>
 
                 <View style={styles.featuresContainer}>
-                    <View style={styles.feature}>
-                        <Ionicons name="bed-outline" size={16} color="#666" />
-                        <Text style={styles.featureText}>{property.bedrooms || 'N/A'}</Text>
-                    </View>
-                    <View style={styles.feature}>
-                        <Ionicons name="water-outline" size={16} color="#666" />
-                        <Text style={styles.featureText}>{property.bathrooms || 'N/A'}</Text>
-                    </View>
-                    <View style={styles.feature}>
-                        <Ionicons name="car-outline" size={16} color="#666" />
-                        <Text style={styles.featureText}>{property.parking_spaces || 'N/A'}</Text>
-                    </View>
-                    <View style={styles.feature}>
-                        <Ionicons name="resize-outline" size={16} color="#666" />
-                        <Text style={styles.featureText}>{property.area ? `${property.area} m²` : 'N/A'}</Text>
-                    </View>
+                    {property.bedrooms != null && (
+                        <View style={styles.feature}>
+                            <Ionicons name="bed-outline" size={16} color="#666" />
+                            <Text style={styles.featureText}>{property.bedrooms}</Text>
+                        </View>
+                    )}
+                    {property.bathrooms != null && (
+                        <View style={styles.feature}>
+                            <Ionicons name="water-outline" size={16} color="#666" />
+                            <Text style={styles.featureText}>{property.bathrooms}</Text>
+                        </View>
+                    )}
+                    {property.parking_spaces != null && (
+                        <View style={styles.feature}>
+                            <Ionicons name="car-outline" size={16} color="#666" />
+                            <Text style={styles.featureText}>{property.parking_spaces}</Text>
+                        </View>
+                    )}
+                    {property.area != null && (
+                        <View style={styles.feature}>
+                            <Ionicons name="resize-outline" size={16} color="#666" />
+                            <Text style={styles.featureText}>{`${property.area} m²`}</Text>
+                        </View>
+                    )}
                 </View>
 
                 <View style={styles.priceContainer}>
@@ -100,6 +108,14 @@ export default function PropertyCard({ property, navigation, onPress }) {
                         </Text>
                     )}
                 </View>
+
+                {(property.property_type || property.transaction_type) && (
+                    <Text style={styles.propertyType} numberOfLines={1}>
+                        {(property.property_type ?? '').toString().trim()}
+                        {(property.property_type && property.transaction_type) ? ' - ' : ''}
+                        {property.transaction_type === 'rent' ? 'Aluguel' : property.transaction_type === 'sale' ? 'Venda' : property.transaction_type === 'season' ? 'Temporada' : (property.transaction_type ?? '')}
+                    </Text>
+                )}
             </View>
         </TouchableOpacity>
     );
@@ -108,7 +124,7 @@ export default function PropertyCard({ property, navigation, onPress }) {
 const styles = StyleSheet.create({
     propertyCard: {
         backgroundColor: '#fff',
-        marginHorizontal: 20,
+        marginHorizontal: 12,
         marginBottom: 15,
         borderRadius: 12,
         shadowColor: '#000',
@@ -183,11 +199,14 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#00335e',
         marginBottom: 6,
+        paddingRight: 60,
+        lineHeight: 18,
     },
     addressContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: 8,
+        paddingRight: 60,
     },
     propertyLocation: {
         fontSize: 12,
@@ -235,6 +254,12 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
         color: '#059669',
+    },
+    propertyType: {
+        fontSize: 12,
+        color: '#7f8c8d',
+        textTransform: 'capitalize',
+        marginBottom: 4,
     },
 });
 

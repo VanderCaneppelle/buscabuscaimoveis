@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function Step2TitleDescription({ formData, updateFormData }) {
@@ -16,8 +16,19 @@ export default function Step2TitleDescription({ formData, updateFormData }) {
     const descriptionLength = formData.description?.length || 0;
 
     return (
-        <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-            <View style={styles.content}>
+        <KeyboardAvoidingView 
+            style={styles.container}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+        >
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <ScrollView 
+                    style={styles.scrollView}
+                    contentContainerStyle={styles.scrollContent}
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                >
+                    <View style={styles.content}>
                 {/* Título */}
                 <View style={styles.section}>
                     <View style={styles.labelContainer}>
@@ -121,8 +132,10 @@ export default function Step2TitleDescription({ formData, updateFormData }) {
                         </View>
                     )}
                 </View>
-            </View>
-        </ScrollView>
+                    </View>
+                </ScrollView>
+            </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
     );
 }
 
@@ -131,9 +144,16 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#F9FAFB',
     },
+    scrollView: {
+        flex: 1,
+    },
+    scrollContent: {
+        flexGrow: 1,
+        paddingBottom: 120,
+    },
     content: {
         padding: 20,
-        paddingBottom: 100,
+        paddingBottom: 0,
     },
     section: {
         marginBottom: 32,

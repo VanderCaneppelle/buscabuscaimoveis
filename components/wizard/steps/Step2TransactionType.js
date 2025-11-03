@@ -79,7 +79,7 @@ export default function Step2TransactionType({ formData, updateFormData }) {
                     <View style={styles.infoCard}>
                         <Ionicons name="information-circle" size={20} color="#3498db" />
                         <Text style={styles.infoText}>
-                            Perfeito! Seu <Text style={styles.infoBold}>{formData.propertyType}</Text> será 
+                            Perfeito! Seu imóvel <Text style={styles.infoBold}>{formData.propertyType}</Text> será 
                             anunciado para <Text style={styles.infoBold}>{formData.transactionType}</Text>.
                         </Text>
                     </View>

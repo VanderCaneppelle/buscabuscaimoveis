@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 const CounterButton = ({ label, value, onChange, icon, color, unit }) => {
@@ -69,8 +69,19 @@ const CounterButton = ({ label, value, onChange, icon, color, unit }) => {
 
 export default function Step4Characteristics({ formData, updateFormData }) {
     return (
-        <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-            <View style={styles.content}>
+        <KeyboardAvoidingView 
+            style={styles.container}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+        >
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <ScrollView 
+                    style={styles.scrollView}
+                    contentContainerStyle={styles.scrollContent}
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                >
+                    <View style={styles.content}>
                 <Text style={styles.title}>Características do imóvel</Text>
                 <Text style={styles.subtitle}>
                     Informe os detalhes que tornam seu imóvel único
@@ -127,6 +138,8 @@ export default function Step4Characteristics({ formData, updateFormData }) {
                             placeholder="0"
                             placeholderTextColor="#9CA3AF"
                             keyboardType="decimal-pad"
+                            returnKeyType="done"
+                            onSubmitEditing={Keyboard.dismiss}
                         />
                         <View style={styles.areaUnitContainer}>
                             <Text style={styles.areaUnit}>m²</Text>
@@ -141,8 +154,10 @@ export default function Step4Characteristics({ formData, updateFormData }) {
                         Preencha todos os campos com precisão. Isso ajuda os interessados a encontrarem exatamente o que procuram.
                     </Text>
                 </View>
-            </View>
-        </ScrollView>
+                    </View>
+                </ScrollView>
+            </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
     );
 }
 
@@ -151,9 +166,16 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#F9FAFB',
     },
+    scrollView: {
+        flex: 1,
+    },
+    scrollContent: {
+        flexGrow: 1,
+        paddingBottom: 120,
+    },
     content: {
         padding: 20,
-        paddingBottom: 100,
+        paddingBottom: 0,
     },
     title: {
         fontSize: 22,

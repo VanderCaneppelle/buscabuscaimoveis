@@ -714,30 +714,30 @@ export default function HomeScreen({ navigation }) {
 
                     {/* Características com ícones */}
                     <View style={styles.featuresContainer}>
-                        <View style={styles.feature}>
-                            <Ionicons name="bed-outline" size={16} color="#666" />
-                            <Text style={styles.featureText}>
-                                {item.bedrooms || 'N/A'}
-                            </Text>
-                        </View>
-                        <View style={styles.feature}>
-                            <Ionicons name="water-outline" size={16} color="#666" />
-                            <Text style={styles.featureText}>
-                                {item.bathrooms || 'N/A'}
-                            </Text>
-                        </View>
-                        <View style={styles.feature}>
-                            <Ionicons name="car-outline" size={16} color="#666" />
-                            <Text style={styles.featureText}>
-                                {item.parking_spaces || 'N/A'}
-                            </Text>
-                        </View>
-                        <View style={styles.feature}>
-                            <Ionicons name="resize-outline" size={16} color="#666" />
-                            <Text style={styles.featureText}>
-                                {item.area ? `${item.area} m²` : 'N/A'}
-                            </Text>
-                        </View>
+                        {item.bedrooms != null && (
+                            <View style={styles.feature}>
+                                <Ionicons name="bed-outline" size={16} color="#666" />
+                                <Text style={styles.featureText}>{item.bedrooms}</Text>
+                            </View>
+                        )}
+                        {item.bathrooms != null && (
+                            <View style={styles.feature}>
+                                <Ionicons name="water-outline" size={16} color="#666" />
+                                <Text style={styles.featureText}>{item.bathrooms}</Text>
+                            </View>
+                        )}
+                        {item.parking_spaces != null && (
+                            <View style={styles.feature}>
+                                <Ionicons name="car-outline" size={16} color="#666" />
+                                <Text style={styles.featureText}>{item.parking_spaces}</Text>
+                            </View>
+                        )}
+                        {item.area != null && (
+                            <View style={styles.feature}>
+                                <Ionicons name="resize-outline" size={16} color="#666" />
+                                <Text style={styles.featureText}>{`${item.area} m²`}</Text>
+                            </View>
+                        )}
                     </View>
 
                     {/* Preço */}
@@ -757,6 +757,14 @@ export default function HomeScreen({ navigation }) {
                             </Text>
                         )}
                     </View>
+
+                    {(item.property_type || item.transaction_type) && (
+                        <Text style={styles.propertyType} numberOfLines={1}>
+                            {(item.property_type ?? '').toString().trim()}
+                            {(item.property_type && item.transaction_type) ? ' - ' : ''}
+                            {item.transaction_type === 'rent' ? 'Aluguel' : item.transaction_type === 'sale' ? 'Venda' : item.transaction_type === 'season' ? 'Temporada' : (item.transaction_type ?? '')}
+                        </Text>
+                    )}
                 </View>
 
             </TouchableOpacity>
@@ -1301,7 +1309,7 @@ const styles = StyleSheet.create({
     },
     propertyCard: {
         backgroundColor: '#fff',
-        marginHorizontal: 20,
+        marginHorizontal: 12,
         marginBottom: 15,
         borderRadius: 12,
         shadowColor: '#000',
@@ -1382,6 +1390,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: 8,
+        paddingRight: 60, // espaço para o botão "Selecionar"
     },
     featuresContainer: {
         flexDirection: 'row',
@@ -1550,6 +1559,8 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#00335e',
         marginBottom: 6,
+        paddingRight: 60,
+        lineHeight: 18,
     },
     propertyLocation: {
         fontSize: 12,
@@ -1609,6 +1620,7 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: '#7f8c8d',
         textTransform: 'capitalize',
+        marginBottom: 4,
     },
     emptyContainer: {
         alignItems: 'center',

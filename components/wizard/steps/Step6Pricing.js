@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TextInput, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TextInput, ScrollView, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 const formatCurrency = (value) => {
@@ -40,8 +40,19 @@ export default function Step5Pricing({ formData, updateFormData }) {
         : 0;
 
     return (
-        <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-            <View style={styles.content}>
+        <KeyboardAvoidingView 
+            style={styles.container}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+        >
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <ScrollView 
+                    style={styles.scrollView}
+                    contentContainerStyle={styles.scrollContent}
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                >
+                    <View style={styles.content}>
                 <Text style={styles.title}>Qual o valor do imóvel?</Text>
                 <Text style={styles.subtitle}>
                     {formData.transactionType === 'Aluguel' 
@@ -72,6 +83,8 @@ export default function Step5Pricing({ formData, updateFormData }) {
                             placeholder="0,00"
                             placeholderTextColor="#D1D5DB"
                             keyboardType="numeric"
+                            returnKeyType="done"
+                            onSubmitEditing={Keyboard.dismiss}
                         />
                     </View>
                     <Text style={styles.hint}>
@@ -102,6 +115,8 @@ export default function Step5Pricing({ formData, updateFormData }) {
                             placeholder="0,00"
                             placeholderTextColor="#D1D5DB"
                             keyboardType="numeric"
+                            returnKeyType="done"
+                            onSubmitEditing={Keyboard.dismiss}
                         />
                     </View>
                     
@@ -154,8 +169,10 @@ export default function Step5Pricing({ formData, updateFormData }) {
                         </Text>
                     </View>
                 </View>
-            </View>
-        </ScrollView>
+                    </View>
+                </ScrollView>
+            </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
     );
 }
 
@@ -164,9 +181,16 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#F9FAFB',
     },
+    scrollView: {
+        flex: 1,
+    },
+    scrollContent: {
+        flexGrow: 1,
+        paddingBottom: 120,
+    },
     content: {
         padding: 20,
-        paddingBottom: 100,
+        paddingBottom: 0,
     },
     title: {
         fontSize: 22,

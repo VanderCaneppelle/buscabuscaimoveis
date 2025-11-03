@@ -10,6 +10,7 @@ import {
     Platform,
     Modal,
     ActivityIndicator,
+    KeyboardAvoidingView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -375,13 +376,19 @@ export default function CreateAdWizard({ navigation }) {
             {/* Progress Indicator */}
             <ProgressIndicator currentStep={currentStep} totalSteps={TOTAL_STEPS} />
 
-            {/* Step Content */}
-            <View style={styles.content}>
-                {renderStep()}
-            </View>
+            {/* Step Content and Footer with Keyboard Avoidance */}
+            <KeyboardAvoidingView 
+                style={styles.keyboardAvoidingView}
+                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+            >
+                {/* Step Content */}
+                <View style={styles.content}>
+                    {renderStep()}
+                </View>
 
-            {/* Navigation Buttons */}
-            <View style={styles.footer}>
+                {/* Navigation Buttons */}
+                <View style={styles.footer}>
                 {currentStep > 1 && (
                     <TouchableOpacity
                         style={styles.secondaryButton}
@@ -405,7 +412,8 @@ export default function CreateAdWizard({ navigation }) {
                         <Ionicons name="chevron-forward" size={20} color="#fff" />
                     )}
                 </TouchableOpacity>
-            </View>
+                </View>
+            </KeyboardAvoidingView>
 
             {/* Plan Modal */}
             <Modal visible={showPlanModal} transparent animationType="fade">
@@ -471,6 +479,9 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: '700',
         color: '#1F2937',
+    },
+    keyboardAvoidingView: {
+        flex: 1,
     },
     content: {
         flex: 1,
