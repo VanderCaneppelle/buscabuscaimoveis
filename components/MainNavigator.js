@@ -31,7 +31,7 @@ import HelpSupportScreen from './HelpSupportScreen';
 import EditProfileScreen from './EditProfileScreen';
 import BoostOptionsScreen from './BoostOptionsScreen';
 import BoostPaymentScreen from './BoostPaymentScreen';
-import NotificationsScreen from './NotificationsScreen'; // ✨ NOVO
+import NotificationsScreen from './NotificationsScreen'; //  NOVO
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -201,21 +201,6 @@ function FavoritesStack() {
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="FavoritesMain" component={FavoritesScreen} />
-            <Stack.Screen
-                name="PropertyDetails"
-                component={PropertyDetailsScreen}
-                options={{
-                    headerShown: true,
-                    title: 'Detalhes do Imóvel',
-                    headerStyle: {
-                        backgroundColor: '#00335e',
-                    },
-                    headerTintColor: '#fff',
-                    headerTitleStyle: {
-                        fontWeight: 'bold',
-                    },
-                }}
-            />
         </Stack.Navigator>
     );
 }
@@ -263,8 +248,8 @@ function TabNavigator() {
                     let iconName;
                     if (route.name === 'Busca') {
                         iconName = focused ? 'search' : 'search-outline';
-                    } else if (route.name === 'Destaques') {
-                        iconName = focused ? 'star' : 'star-outline';
+                    } else if (route.name === 'Oportunidades') {
+                        iconName = 'logo-usd';
                     } else if (route.name === 'Favoritos') {
                         iconName = focused ? 'cart' : 'cart-outline';
                     } else if (route.name === 'Anuncie') {
@@ -273,7 +258,9 @@ function TabNavigator() {
                         iconName = focused ? 'person' : 'person-outline';
                     }
 
-                    return <Ionicons name={iconName} size={size} color={color} />;
+                    // Ícones um pouco menores para dar mais espaço ao texto
+                    const iconSize = Math.max(16, size - 6);
+                    return <Ionicons name={iconName} size={iconSize} color={color} />;
                 },
                 tabBarActiveTintColor: '#00335e',
                 tabBarInactiveTintColor: '#64748b',
@@ -281,15 +268,19 @@ function TabNavigator() {
                     backgroundColor: '#fff',
                     borderTopWidth: 1,
                     borderTopColor: '#e2e8f0',
-                    paddingTop: 2,
-                    paddingBottom: insets.bottom + 5,
-                    height: 60 + insets.bottom,
+                    paddingTop: 0,
+                    paddingBottom: insets.bottom + 3,
+                    height: 56 + insets.bottom,
                     // Removido: shadowColor, shadowOffset, shadowOpacity, shadowRadius, elevation
                 },
                 tabBarLabelStyle: {
-                    fontSize: 12,
+                    fontSize: 10,
                     fontWeight: '500',
-                    marginTop: 2,
+                    marginTop: 0,
+                    letterSpacing: -0.2,
+                },
+                tabBarItemStyle: {
+                    paddingHorizontal: 0,
                 },
                 headerShown: false,
             })}
@@ -302,10 +293,10 @@ function TabNavigator() {
                 }}
             />
             <Tab.Screen
-                name="Destaques"
+                name="Oportunidades"
                 component={DiscoverStack}
                 options={{
-                    tabBarLabel: 'Destaques'
+                    tabBarLabel: 'Oportunidades'
                 }}
             />
             <Tab.Screen

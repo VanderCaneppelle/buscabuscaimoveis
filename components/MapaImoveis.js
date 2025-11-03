@@ -19,7 +19,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import MapView, { Marker, PROVIDER_GOOGLE, PROVIDER_DEFAULT } from 'react-native-maps';
+import MapView, { Marker, Callout, PROVIDER_GOOGLE, PROVIDER_DEFAULT } from 'react-native-maps';
+import ClusteredMapView from 'react-native-map-clustering';
 import * as Location from 'expo-location';
 
 import { PropertyService } from '../lib/propertyService';
@@ -59,10 +60,8 @@ export default function MapaImoveis({ navigation, route }) {
         setSelectedProperty(null);
     };
 
-    // Função para obter cor do marker baseada no tipo de transação
-    const getMarkerColor = (property) => {
-        return property.transaction_type === 'rent' ? 'green' : 'red';
-    };
+    // Cor única para markers individuais (igual ao cluster)
+    const getMarkerColor = () => '#00335e';
 
     // Função para validar região e evitar crashes
     const isValidRegion = (region) => {
@@ -143,11 +142,36 @@ export default function MapaImoveis({ navigation, route }) {
                         key={`marker-${property.id}`}
                         coordinate={{ latitude: lat, longitude: lng }}
                         pinColor={getMarkerColor(property)}
-                        onPress={() => openPropertySheet(property)}
                         tracksViewChanges={false}
                         flat={Platform.OS === 'ios'}
                         stopPropagation={true}
-                    />
+                    >
+                        <Callout tooltip={true} onPress={() => navigation.navigate('PropertyDetails', { property })}>
+                            <View style={styles.calloutContainer}>
+                                <View style={styles.calloutRow}>
+                                    <Image
+                                        source={{ uri: (property.images && property.images[0]) ? property.images[0] : 'https://via.placeholder.com/120x90?text=Foto' }}
+                                        style={styles.calloutImage}
+                                        resizeMode="cover"
+                                    />
+                                    <View style={styles.calloutTextContainer}>
+                                        <View>
+                                            <Text style={styles.calloutTitle} numberOfLines={1}>{property.title ?? 'Imóvel'}</Text>
+                                            <Text style={styles.calloutSubtitle} numberOfLines={1}>{(property.neighborhood ?? property.address) + ', ' + (property.city ?? property.state)}</Text>
+                                            <Text style={styles.calloutPrice}>
+                                                {(property.sale_price && parseFloat(property.sale_price) > 0)
+                                                    ? `R$ ${property.sale_price.toLocaleString('pt-BR')}`
+                                                    : `R$ ${property.price?.toLocaleString('pt-BR') ?? '—'}`}
+                                            </Text>
+                                        </View>
+                                        <View style={styles.calloutButton}>
+                                            <Text style={styles.calloutButtonText}>Ver mais</Text>
+                                        </View>
+                                    </View>
+                                </View>
+                            </View>
+                        </Callout>
+                    </Marker>
                 );
             } catch (error) {
                 console.error('❌ Erro ao criar marker:', error, property.title);
@@ -365,7 +389,7 @@ export default function MapaImoveis({ navigation, route }) {
 
             {/* Mapa Real */}
             <View style={styles.mapContainer}>
-                <MapView
+                <ClusteredMapView
                     style={styles.map}
                     provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : PROVIDER_DEFAULT}
                     initialRegion={{
@@ -375,7 +399,7 @@ export default function MapaImoveis({ navigation, route }) {
                         longitudeDelta: 0.35,
                     }}
                     //region={mapRegion}
-                    showsUserLocation={true}
+                    showsUserLocation={false}
                     showsMyLocationButton={true}
                     showsCompass={true}
                     loadingEnabled={false}
@@ -390,10 +414,27 @@ export default function MapaImoveis({ navigation, route }) {
                     }}
                     onRegionChangeComplete={handleRegionChangeComplete}
                     mapType="standard"
+                    animationEnabled={true}
+                    spiralEnabled={true}
+                    clusterColor="#00335e"
+                    clusterTextColor="#fff"
+                    renderCluster={({ id, geometry, onPress, properties }) => {
+                        const count = properties.point_count;
+                        const [longitude, latitude] = geometry.coordinates;
+                        return (
+                            <Marker key={`cluster-${id}`} coordinate={{ latitude, longitude }} onPress={onPress}>
+                                <View style={styles.clusterContainer}>
+                                    <View style={styles.clusterBubble}>
+                                        <Text style={styles.clusterText}>{count}</Text>
+                                    </View>
+                                </View>
+                            </Marker>
+                        );
+                    }}
                 >
                     {/* Markers memoizados para máxima performance */}
                     {markersToRender}
-                </MapView>
+                </ClusteredMapView>
                 {applyingFilters && (
                     <View style={styles.mapLoadingOverlay}>
                         <ActivityIndicator size="small" color="#00335e" />
@@ -572,6 +613,90 @@ const styles = StyleSheet.create({
     },
     map: {
         flex: 1,
+    },
+    // Callout styles (compatível com Home)
+    calloutContainer: {
+        minWidth: 220,
+        maxWidth: 260,
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 6,
+        borderWidth: 1,
+        borderColor: '#e5e7eb',
+    },
+    calloutTitle: {
+        fontSize: 14,
+        fontWeight: '700',
+        color: '#00335e',
+        marginBottom: 2,
+    },
+    calloutSubtitle: {
+        fontSize: 12,
+        color: '#64748b',
+        marginBottom: 6,
+    },
+    calloutPrice: {
+        fontSize: 14,
+        fontWeight: '700',
+        color: '#059669',
+        marginBottom: 8,
+    },
+    calloutButton: {
+        alignSelf: 'flex-end',
+        backgroundColor: '#00335e',
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        borderRadius: 8,
+    },
+    calloutButtonText: {
+        color: '#fff',
+        fontWeight: '600',
+        fontSize: 12,
+    },
+    calloutRow: {
+        flexDirection: 'row',
+        alignItems: 'stretch',
+    },
+    calloutImage: {
+        width: 90,
+        height: '100%',
+        borderRadius: 8,
+        backgroundColor: '#e5e7eb',
+        marginRight: 10,
+    },
+    calloutTextContainer: {
+        flex: 1,
+        justifyContent: 'space-between',
+    },
+    // Cluster styles (idênticos aos da Home para consistência)
+    clusterContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    clusterBubble: {
+        minWidth: 36,
+        height: 36,
+        paddingHorizontal: 6,
+        borderRadius: 18,
+        backgroundColor: '#00335e',
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
+    },
+    clusterText: {
+        color: '#fff',
+        fontWeight: '700',
+        fontSize: 13,
+        paddingHorizontal: 4,
     },
     // Estilos para bottom sheet
     bottomSheet: {

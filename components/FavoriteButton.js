@@ -49,7 +49,7 @@ const FavoriteButton = React.memo(({ propertyId, disabled }) => {
                 paddingVertical: 1,
                 borderRadius: 3,
             }}>
-                Selecionar
+                {isFavorited ? 'Selecionado' : 'Selecionar'}
             </Text>
         </View>
     );

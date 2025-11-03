@@ -18,7 +18,8 @@ import { Image } from 'expo-image';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
-import MapView, { Marker, PROVIDER_GOOGLE, PROVIDER_DEFAULT } from 'react-native-maps';
+import MapView, { Marker, Callout, PROVIDER_GOOGLE, PROVIDER_DEFAULT } from 'react-native-maps';
+import ClusteredMapView from 'react-native-map-clustering';
 import FavoriteButton from './FavoriteButton';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext';
@@ -958,7 +959,7 @@ export default function HomeScreen({ navigation }) {
                 {/* Content: alterna entre lista e mapa embutido */}
                 {showMap ? (
                     <View style={styles.mapContainer}>
-                        <MapView
+                        <ClusteredMapView
                             style={styles.map}
                             provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : PROVIDER_DEFAULT}
                             initialRegion={{
@@ -967,8 +968,25 @@ export default function HomeScreen({ navigation }) {
                                 latitudeDelta: 0.35,
                                 longitudeDelta: 0.35,
                             }}
-                            showsUserLocation={true}
+                            showsUserLocation={false}
                             showsCompass={true}
+                            animationEnabled={true}
+                            spiralEnabled={true}
+                            clusterColor="#00335e"
+                            clusterTextColor="#fff"
+                            renderCluster={({ id, geometry, onPress, properties }) => {
+                                const count = properties.point_count;
+                                const [longitude, latitude] = geometry.coordinates;
+                                return (
+                                    <Marker key={`cluster-${id}`} coordinate={{ latitude, longitude }} onPress={onPress}>
+                                        <View style={styles.clusterContainer}>
+                                            <View style={styles.clusterBubble}>
+                                                <Text style={styles.clusterText}>{count}</Text>
+                                            </View>
+                                        </View>
+                                    </Marker>
+                                );
+                            }}
                         >
                             {properties.map(p => {
                                 const lat = parseFloat(p.latitude);
@@ -978,11 +996,37 @@ export default function HomeScreen({ navigation }) {
                                     <Marker
                                         key={`map-prop-${p.id}`}
                                         coordinate={{ latitude: lat, longitude: lng }}
-                                        onPress={() => navigation.navigate('PropertyDetails', { property: p })}
-                                    />
+                                        pinColor="#00335e"
+                                    >
+                                        <Callout tooltip={true} onPress={() => navigation.navigate('PropertyDetails', { property: p })}>
+                                            <View style={styles.calloutContainer}>
+                                                <View style={styles.calloutRow}>
+                                                    <Image
+                                                        source={{ uri: (p.images && p.images[0]) ? p.images[0] : 'https://via.placeholder.com/120x90?text=Foto' }}
+                                                        style={styles.calloutImage}
+                                                        contentFit="cover"
+                                                    />
+                                                    <View style={styles.calloutTextContainer}>
+                                                        <View>
+                                                            <Text style={styles.calloutTitle} numberOfLines={1}>{p.title ?? 'Imóvel'}</Text>
+                                                            <Text style={styles.calloutSubtitle} numberOfLines={1}>{(p.neighborhood ?? p.address) + ', ' + (p.city ?? p.state)}</Text>
+                                                            <Text style={styles.calloutPrice}>
+                                                                {((p.sale_price ?? p.salePrice) && parseFloat(p.sale_price ?? p.salePrice) > 0)
+                                                                    ? `R$ ${(p.sale_price ?? p.salePrice)?.toLocaleString('pt-BR')}`
+                                                                    : `R$ ${p.price?.toLocaleString('pt-BR') ?? '—'}`}
+                                                            </Text>
+                                                        </View>
+                                                        <View style={styles.calloutButton}>
+                                                            <Text style={styles.calloutButtonText}>Ver mais</Text>
+                                                        </View>
+                                                    </View>
+                                                </View>
+                                            </View>
+                                        </Callout>
+                                    </Marker>
                                 );
                             })}
-                        </MapView>
+                        </ClusteredMapView>
                         {(listLoading || isSearching || refreshing) && (
                             <View style={styles.mapLoadingOverlay}>
                                 <Text style={styles.mapLoadingText}>Aplicando filtros...</Text>
@@ -1845,6 +1889,91 @@ const styles = StyleSheet.create({
     mapLoadingText: {
         color: '#00335e',
         fontWeight: '600',
+    },
+    // Cluster styles
+    clusterContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    clusterBubble: {
+        minWidth: 36,
+        height: 36,
+        paddingHorizontal: 6,
+        borderRadius: 18,
+        backgroundColor: '#00335e',
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
+    },
+    clusterText: {
+        color: '#fff',
+        fontWeight: '700',
+        fontSize: 13,
+        paddingHorizontal: 4,
+    },
+    // Callout styles
+    calloutContainer: {
+        minWidth: 220,
+        maxWidth: 260,
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 6,
+        borderWidth: 1,
+        borderColor: '#e5e7eb',
+    },
+    calloutRow: {
+        flexDirection: 'row',
+        alignItems: 'stretch',
+    },
+    calloutImage: {
+        width: 90,
+        height: '100%',
+        borderRadius: 8,
+        backgroundColor: '#e5e7eb',
+        marginRight: 10,
+    },
+    calloutTextContainer: {
+        flex: 1,
+        justifyContent: 'space-between',
+    },
+    calloutTitle: {
+        fontSize: 14,
+        fontWeight: '700',
+        color: '#00335e',
+        marginBottom: 2,
+    },
+    calloutSubtitle: {
+        fontSize: 12,
+        color: '#64748b',
+        marginBottom: 6,
+    },
+    calloutPrice: {
+        fontSize: 14,
+        fontWeight: '700',
+        color: '#059669',
+        marginBottom: 8,
+    },
+    calloutButton: {
+        alignSelf: 'flex-start',
+        backgroundColor: '#00335e',
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        borderRadius: 8,
+        marginTop: 6,
+    },
+    calloutButtonText: {
+        color: '#fff',
+        fontWeight: '600',
+        fontSize: 12,
     },
     sectionHeader: {
         flexDirection: 'row',
