@@ -18,6 +18,7 @@ import { Image } from 'expo-image';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
+import MapView, { Marker, PROVIDER_GOOGLE, PROVIDER_DEFAULT } from 'react-native-maps';
 import FavoriteButton from './FavoriteButton';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext';
@@ -121,6 +122,7 @@ export default function HomeScreen({ navigation }) {
     const [selectedRealtor, setSelectedRealtor] = useState(null);
     const [showDevelopersModal, setShowDevelopersModal] = useState(false);
     const [showRealtorsModal, setShowRealtorsModal] = useState(false);
+    const [showMap, setShowMap] = useState(false);
 
     // Cores dinÃ¢micas baseadas no tema do dispositivo
     const colors = {
@@ -953,79 +955,112 @@ export default function HomeScreen({ navigation }) {
                     
                 </View>
 
-                {/* Content */}
-                <FlatList
-                    data={properties}
-                    renderItem={renderProperty}
-                    keyExtractor={(item) => `property-${item.id}`}
-                    // extraData removido para evitar re-render global
-                    refreshControl={
-                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                    }
-                    ListHeaderComponent={
-                        <View style={styles.propertiesSection}>
-                            <View style={styles.sectionHeader}>
-                                <Text style={styles.sectionTitle}>
-                                    {`Anúncios (${totalCount})`}
-                                    {searchTerm && (
-                                        <Text style={styles.searchResultInfo}>
-                                            {` - Busca: "${searchTerm}"`}
-                                        </Text>
-                                    )}
-                                </Text>
-                                {isSearching && (
-                                    <Text style={styles.searchingText}>Buscando...</Text>
-                                )}
+                {/* Content: alterna entre lista e mapa embutido */}
+                {showMap ? (
+                    <View style={styles.mapContainer}>
+                        <MapView
+                            style={styles.map}
+                            provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : PROVIDER_DEFAULT}
+                            initialRegion={{
+                                latitude: -27.03,
+                                longitude: -48.62,
+                                latitudeDelta: 0.35,
+                                longitudeDelta: 0.35,
+                            }}
+                            showsUserLocation={true}
+                            showsCompass={true}
+                        >
+                            {properties.map(p => {
+                                const lat = parseFloat(p.latitude);
+                                const lng = parseFloat(p.longitude);
+                                if (isNaN(lat) || isNaN(lng)) return null;
+                                return (
+                                    <Marker
+                                        key={`map-prop-${p.id}`}
+                                        coordinate={{ latitude: lat, longitude: lng }}
+                                        onPress={() => navigation.navigate('PropertyDetails', { property: p })}
+                                    />
+                                );
+                            })}
+                        </MapView>
+                        {(listLoading || isSearching || refreshing) && (
+                            <View style={styles.mapLoadingOverlay}>
+                                <Text style={styles.mapLoadingText}>Aplicando filtros...</Text>
                             </View>
-                        </View>
-                    }
-                    ListEmptyComponent={
-                        <View style={styles.emptyContainer}>
-                            <Ionicons name="home-outline" size={64} color="#bdc3c7" />
-                            <Text style={styles.emptyText}>
-                                {searchTerm ? 'Nenhum imóvel encontrado para esta busca' : 'Nenhum anúncio encontrado'}
-                            </Text>
-                            <Text style={styles.emptySubtext}>
-                                {searchTerm ? 'Tente ajustar os termos de busca' : 'Tente ajustar os filtros ou volte mais tarde'}
-                            </Text>
-                        </View>
-                    }
-                    contentContainerStyle={styles.listContainer}
-                    // Otimizações de performance para scroll aninhado
-                    removeClippedSubviews={false}
-                    maxToRenderPerBatch={2}
-                    windowSize={5}
-                    initialNumToRender={2}
-                    updateCellsBatchingPeriod={150}
-                    scrollEventThrottle={32}
-                    showsVerticalScrollIndicator={false}
-                    bounces={true}
-                    decelerationRate="normal"
-                    scrollEnabled={true}
-                    nestedScrollEnabled={false}
-                    directionalLockEnabled={true}
-                    alwaysBounceVertical={false}
-                    onEndReached={loadMoreProperties}
-                    onEndReachedThreshold={0.3}
-                    ListFooterComponent={
-                        <>
-                            {renderFooter()}
-                            {listLoading && (
-                                <View style={styles.loadingMoreContainer}>
-                                    <Text style={styles.loadingMoreText}>Atualizando lista...</Text>
+                        )}
+                    </View>
+                ) : (
+                    <FlatList
+                        data={properties}
+                        renderItem={renderProperty}
+                        keyExtractor={(item) => `property-${item.id}`}
+                        refreshControl={
+                            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                        }
+                        ListHeaderComponent={
+                            <View style={styles.propertiesSection}>
+                                <View style={styles.sectionHeader}>
+                                    <Text style={styles.sectionTitle}>
+                                        {`Anúncios (${totalCount})`}
+                                        {searchTerm && (
+                                            <Text style={styles.searchResultInfo}>
+                                                {` - Busca: "${searchTerm}"`}
+                                            </Text>
+                                        )}
+                                    </Text>
+                                    {isSearching && (
+                                        <Text style={styles.searchingText}>Buscando...</Text>
+                                    )}
                                 </View>
-                            )}
-                        </>
-                    }
-                />
+                            </View>
+                        }
+                        ListEmptyComponent={
+                            <View style={styles.emptyContainer}>
+                                <Ionicons name="home-outline" size={64} color="#bdc3c7" />
+                                <Text style={styles.emptyText}>
+                                    {searchTerm ? 'Nenhum imóvel encontrado para esta busca' : 'Nenhum anúncio encontrado'}
+                                </Text>
+                                <Text style={styles.emptySubtext}>
+                                    {searchTerm ? 'Tente ajustar os termos de busca' : 'Tente ajustar os filtros ou volte mais tarde'}
+                                </Text>
+                            </View>
+                        }
+                        contentContainerStyle={styles.listContainer}
+                        removeClippedSubviews={false}
+                        maxToRenderPerBatch={2}
+                        windowSize={5}
+                        initialNumToRender={2}
+                        updateCellsBatchingPeriod={150}
+                        scrollEventThrottle={32}
+                        showsVerticalScrollIndicator={false}
+                        bounces={true}
+                        decelerationRate="normal"
+                        scrollEnabled={true}
+                        nestedScrollEnabled={false}
+                        directionalLockEnabled={true}
+                        alwaysBounceVertical={false}
+                        onEndReached={loadMoreProperties}
+                        onEndReachedThreshold={0.3}
+                        ListFooterComponent={
+                            <>
+                                {renderFooter()}
+                                {listLoading && (
+                                    <View style={styles.loadingMoreContainer}>
+                                        <Text style={styles.loadingMoreText}>Atualizando lista...</Text>
+                                    </View>
+                                )}
+                            </>
+                        }
+                    />
+                )}
 
                 <TouchableOpacity
                     style={styles.floatingMapButton}
-                    onPress={() => navigation.navigate('MapaImoveis', { filters: filters })}
+                    onPress={() => setShowMap(prev => !prev)}
                     activeOpacity={0.85}
                 >
-                    <Ionicons name="location" size={18} color="#fff" />
-                    <Text style={styles.floatingMapText}>Ver no mapa</Text>
+                    <Ionicons name={showMap ? 'list' : 'location'} size={18} color="#fff" />
+                    <Text style={styles.floatingMapText}>{showMap ? 'Ver em lista' : 'Ver no mapa'}</Text>
                 </TouchableOpacity>
 
                 {/* Modal de Filtros */}
@@ -1784,6 +1819,32 @@ const styles = StyleSheet.create({
     loadingMoreText: {
         fontSize: 14,
         color: '#7f8c8d',
+    },
+    // Map embedded
+    mapContainer: {
+        flex: 1,
+        backgroundColor: '#fff',
+    },
+    map: {
+        flex: 1,
+    },
+    mapLoadingOverlay: {
+        position: 'absolute',
+        top: 12,
+        alignSelf: 'center',
+        backgroundColor: 'rgba(255,255,255,0.95)',
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 18,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.15,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    mapLoadingText: {
+        color: '#00335e',
+        fontWeight: '600',
     },
     sectionHeader: {
         flexDirection: 'row',

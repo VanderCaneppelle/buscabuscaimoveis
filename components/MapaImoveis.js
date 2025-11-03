@@ -3,7 +3,7 @@
  * Versão simplificada para evitar problemas de dependências
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { debounce } from 'lodash';
 import {
     View,
@@ -15,6 +15,7 @@ import {
     Platform,
     ScrollView,
     Image,
+    TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -22,6 +23,7 @@ import MapView, { Marker, PROVIDER_GOOGLE, PROVIDER_DEFAULT } from 'react-native
 import * as Location from 'expo-location';
 
 import { PropertyService } from '../lib/propertyService';
+import { FiltersModal } from './modals';
 
 
 // Cache estático para propriedades do mapa
@@ -32,13 +34,19 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
 export default function MapaImoveis({ navigation, route }) {
     const [properties, setProperties] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [applyingFilters, setApplyingFilters] = useState(false);
     const [mapReady, setMapReady] = useState(false);
     const [mapRegion, setMapRegion] = useState(null); // Começar sem região definida
     const [selectedProperty, setSelectedProperty] = useState(null);
     const [visibleRegion, setVisibleRegion] = useState(null);
+    const searchInputRef = useRef(null);
 
     // Receber filtros da HomeScreen (se houver)
-    const filters = route?.params?.filters || {};
+    const [filters, setFilters] = useState(route?.params?.filters || {});
+    const [showFiltersModal, setShowFiltersModal] = useState(false);
+    const [tempFilters, setTempFilters] = useState(route?.params?.filters || {});
+    const [searchTerm, setSearchTerm] = useState('');
+    const [searchInputValue, setSearchInputValue] = useState('');
 
     // Função para abrir bottom sheet com detalhes da propriedade
     const openPropertySheet = (property) => {
@@ -163,10 +171,10 @@ export default function MapaImoveis({ navigation, route }) {
         // Definir região padrão imediatamente para abrir o mapa rápido
         if (!mapRegion) {
             setMapRegion({
-                latitude: -27.096666, // Itajaí como padrão
-                longitude: -48.616408,
-                latitudeDelta: 0.1,
-                longitudeDelta: 0.1,
+                latitude: -27.03, // centro aproximado entre Itajaí, BC, Itapema e Porto Belo
+                longitude: -48.62,
+                latitudeDelta: 0.35,
+                longitudeDelta: 0.35,
             });
             console.log('🗺️ Região padrão definida - mapa abre instantaneamente');
         }
@@ -193,10 +201,10 @@ export default function MapaImoveis({ navigation, route }) {
     useEffect(() => {
         if (properties.length > 0 && mapReady && !visibleRegion) {
             const initialRegion = mapRegion || {
-                latitude: -27.096666,
-                longitude: -48.616408,
-                latitudeDelta: 0.1,
-                longitudeDelta: 0.1,
+                latitude: -27.03,
+                longitude: -48.62,
+                latitudeDelta: 0.35,
+                longitudeDelta: 0.35,
             };
             setVisibleRegion(initialRegion);
         }
@@ -253,7 +261,7 @@ export default function MapaImoveis({ navigation, route }) {
     /**
      * Carregar propriedades do Supabase com cache otimizado
      */
-    const loadProperties = async () => {
+    const loadProperties = async (customFilters = filters, customSearch = searchTerm) => {
         try {
             // Verificar se o cache ainda é válido
             const now = Date.now();
@@ -269,7 +277,7 @@ export default function MapaImoveis({ navigation, route }) {
             console.log('🗺️ Buscando propriedades para o mapa...');
 
             // Buscar do servidor
-            const data = await PropertyService.getPropertiesForMap(filters);
+            const data = await PropertyService.getPropertiesForMap({ ...customFilters, searchTerm: customSearch });
             console.log(`✅ ${data.length} propriedades carregadas do servidor`);
 
             // Atualizar cache
@@ -291,6 +299,26 @@ export default function MapaImoveis({ navigation, route }) {
         }
     };
 
+    const openFilters = () => {
+        setTempFilters(filters);
+        setShowFiltersModal(true);
+    };
+
+    const applyFilters = async (newFilters = tempFilters) => {
+        setShowFiltersModal(false);
+        setApplyingFilters(true);
+        setFilters(newFilters);
+        await loadProperties(newFilters, searchTerm);
+        setApplyingFilters(false);
+    };
+
+    const executeSearch = async () => {
+        setApplyingFilters(true);
+        setSearchTerm(searchInputValue);
+        await loadProperties(filters, searchInputValue);
+        setApplyingFilters(false);
+    };
+
     if (loading) {
         return (
             <View style={styles.loadingContainer}>
@@ -302,34 +330,36 @@ export default function MapaImoveis({ navigation, route }) {
 
     return (
         <SafeAreaView style={styles.container}>
-            {/* Header */}
-            <View style={styles.header}>
+            {/* Header compacto com busca e filtros (mantém a mesma linguagem visual da Home) */}
+            <View style={styles.headerSearch}>
+                <View style={styles.searchBar}>
+                    <Ionicons name="search" size={20} color="#7f8c8d" style={styles.searchIcon} />
+                    <TextInput
+                        ref={searchInputRef}
+                        style={styles.searchInput}
+                        placeholder="Buscar imóveis..."
+                        placeholderTextColor="#7f8c8d"
+                        value={searchInputValue}
+                        onChangeText={setSearchInputValue}
+                        returnKeyType="search"
+                        onSubmitEditing={executeSearch}
+                    />
+                    {searchInputValue.length > 0 && (
+                        <TouchableOpacity onPress={() => { setSearchInputValue(''); setSearchTerm(''); executeSearch(); }} style={styles.clearSearchButton}>
+                            <Ionicons name="close-circle" size={20} color="#7f8c8d" />
+                        </TouchableOpacity>
+                    )}
+                    <TouchableOpacity onPress={openFilters} style={styles.searchFilterButton} activeOpacity={0.7}>
+                        <Ionicons name="options-outline" size={20} color="#00335e" />
+                    </TouchableOpacity>
+                </View>
                 <TouchableOpacity
-                    style={styles.backButton}
-                    onPress={() => navigation.goBack()}
+                    style={[styles.searchButton, searchInputValue.trim() && styles.searchButtonActive]}
+                    onPress={executeSearch}
+                    activeOpacity={0.8}
+                    disabled={!searchInputValue.trim()}
                 >
-                    <Ionicons name="arrow-back" size={24} color="#00335e" />
-                </TouchableOpacity>
-
-                <Text style={styles.headerTitle}>
-                    Mapa de Imóveis ({properties.length})
-                </Text>
-
-                <TouchableOpacity
-                    style={styles.styleButton}
-                    onPress={() => {
-                        // Centralizar em todas as propriedades
-                        if (properties.length > 0) {
-                            setMapRegion({
-                                latitude: -27.147157,
-                                longitude: -48.5866543,
-                                latitudeDelta: 0.05,
-                                longitudeDelta: 0.05,
-                            });
-                        }
-                    }}
-                >
-                    <Ionicons name="locate" size={24} color="#00335e" />
+                    <Ionicons name="search" size={18} color={searchInputValue.trim() ? '#fff' : '#7f8c8d'} />
                 </TouchableOpacity>
             </View>
 
@@ -339,10 +369,10 @@ export default function MapaImoveis({ navigation, route }) {
                     style={styles.map}
                     provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : PROVIDER_DEFAULT}
                     initialRegion={{
-                        latitude: -26.91884, // Itajaí como região inicial padrão
-                        longitude: -48.673108,
-                        latitudeDelta: 0.1,
-                        longitudeDelta: 0.1,
+                        latitude: -27.03,
+                        longitude: -48.62,
+                        latitudeDelta: 0.35,
+                        longitudeDelta: 0.35,
                     }}
                     //region={mapRegion}
                     showsUserLocation={true}
@@ -364,7 +394,12 @@ export default function MapaImoveis({ navigation, route }) {
                     {/* Markers memoizados para máxima performance */}
                     {markersToRender}
                 </MapView>
-
+                {applyingFilters && (
+                    <View style={styles.mapLoadingOverlay}>
+                        <ActivityIndicator size="small" color="#00335e" />
+                        <Text style={styles.mapLoadingText}>Aplicando filtros...</Text>
+                    </View>
+                )}
             </View>
 
             {/* Bottom Sheet com preview da propriedade */}
@@ -479,6 +514,14 @@ export default function MapaImoveis({ navigation, route }) {
                     </TouchableOpacity>
                 </View>
             )}
+            {/* Modal de Filtros para o mapa */}
+            <FiltersModal
+                visible={showFiltersModal}
+                onClose={() => setShowFiltersModal(false)}
+                filters={tempFilters}
+                onApplyFilters={applyFilters}
+                cities={undefined}
+            />
         </SafeAreaView>
     );
 }

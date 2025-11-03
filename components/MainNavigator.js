@@ -554,11 +554,9 @@ export default function MainNavigator() {
                 options={{
                     title: 'Mapa de Imóveis',
                     headerBackTitle: 'Voltar',
-                    presentation: 'fullScreenModal',
                     headerShown: false,
                     cardStyle: { backgroundColor: 'white' },
                     animation: 'none',
-                    tabBarStyle: { display: 'none' },
                 }}
             />
 
