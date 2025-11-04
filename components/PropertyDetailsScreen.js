@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import { Image } from 'expo-image';
 import { Video } from 'expo-av';
+import YoutubePlayer from 'react-native-youtube-iframe';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import FavoriteButton from './FavoriteButton';
 import { useAuth } from '../contexts/AuthContext';
@@ -23,6 +24,7 @@ import { useAdmin } from '../contexts/AdminContext';
 import { useFavoritesStore } from '../stores/favoritesStore';
 import { supabase } from '../lib/supabase';
 import { PlanService } from '../lib/planService';
+import { extractYouTubeVideoId } from '../lib/youtubeUtils';
 
 const { width, height } = Dimensions.get('window');
 
@@ -37,6 +39,7 @@ export default function PropertyDetailsScreen({ route, navigation }) {
     const [showFullscreenModal, setShowFullscreenModal] = useState(false);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [isOwnerOnFreePlan, setIsOwnerOnFreePlan] = useState(false);
+    const [mediaViewMode, setMediaViewMode] = useState('photos'); // 'photos' ou 'videos'
     // Verificar plano do dono do anúncio antecipadamente (evita múltiplas RPCs nos handlers)
     useEffect(() => {
         let mounted = true;
@@ -55,27 +58,26 @@ export default function PropertyDetailsScreen({ route, navigation }) {
         return () => { mounted = false; };
     }, [property.user_id]);
 
-    // Separar imagens e vídeos usando useMemo para evitar re-cálculos
-    // Função para verificar se é vídeo
-    const isVideoFile = useCallback((url) => {
-        return url.includes('.mp4') ||
-            url.includes('.mov') ||
-            url.includes('.avi') ||
-            url.includes('.mkv') ||
-            url.includes('.webm');
-    }, []);
+    // Separar imagens e vídeos do YouTube
+    const imageFiles = useMemo(() => {
+        return property.images || [];
+    }, [property.images]);
 
-    const { imageFiles, videoFiles, finalDisplayMedia } = useMemo(() => {
-        const mediaFiles = property.images || [];
-        const imageFiles = mediaFiles.filter(file => !isVideoFile(file));
-        const videoFiles = mediaFiles.filter(file => isVideoFile(file));
+    const videoUrls = useMemo(() => {
+        return property.video_urls || [];
+    }, [property.video_urls]);
 
-        // Combinar imagens e vídeos para exibição
-        const displayMedia = [...imageFiles, ...videoFiles];
-        const finalDisplayMedia = displayMedia.length > 0 ? displayMedia : ['https://via.placeholder.com/400x300?text=Sem+Imagem'];
+    // Determinar o que exibir baseado no modo selecionado
+    const displayMedia = useMemo(() => {
+        if (mediaViewMode === 'photos') {
+            return imageFiles.length > 0 ? imageFiles : ['https://via.placeholder.com/400x300?text=Sem+Imagem'];
+        } else {
+            return videoUrls;
+        }
+    }, [mediaViewMode, imageFiles, videoUrls]);
 
-        return { imageFiles, videoFiles, finalDisplayMedia };
-    }, [property.images, isVideoFile]);
+    const hasPhotos = imageFiles.length > 0;
+    const hasVideos = videoUrls.length > 0;
 
 
 
@@ -121,16 +123,18 @@ export default function PropertyDetailsScreen({ route, navigation }) {
 
     // Navegação no modal fullscreen
     const handlePreviousFullscreen = useCallback(() => {
-        setSelectedImageIndex(prev =>
-            prev > 0 ? prev - 1 : finalDisplayMedia.length - 1
-        );
-    }, [finalDisplayMedia.length]);
+        setSelectedImageIndex(prev => {
+            const maxLength = mediaViewMode === 'photos' ? imageFiles.length : videoUrls.length;
+            return prev > 0 ? prev - 1 : maxLength - 1;
+        });
+    }, [mediaViewMode, imageFiles.length, videoUrls.length]);
 
     const handleNextFullscreen = useCallback(() => {
-        setSelectedImageIndex(prev =>
-            prev < finalDisplayMedia.length - 1 ? prev + 1 : 0
-        );
-    }, [finalDisplayMedia.length]);
+        setSelectedImageIndex(prev => {
+            const maxLength = mediaViewMode === 'photos' ? imageFiles.length : videoUrls.length;
+            return prev < maxLength - 1 ? prev + 1 : 0;
+        });
+    }, [mediaViewMode, imageFiles.length, videoUrls.length]);
 
     // Função para detectar scroll no modal fullscreen
     const handleFullscreenScroll = useCallback((event) => {
@@ -139,40 +143,160 @@ export default function PropertyDetailsScreen({ route, navigation }) {
         setSelectedImageIndex(imageIndex);
     }, []);
 
-    // Renderizar mídia no modal fullscreen
-    const renderFullscreenMedia = useCallback(({ item, index }) => {
-        const isVideo = isVideoFile(item);
+    // Renderizar vídeo do YouTube
+    const renderYouTubeVideo = useCallback((url, index) => {
+        const videoId = extractYouTubeVideoId(url);
+        if (!videoId) return null;
+
+        const videoWidth = width - 40; // Largura da tela menos padding
+        const videoHeight = videoWidth * (9 / 16); // Aspect ratio 16:9
 
         return (
-            <View style={styles.fullscreenMediaItem}>
-                {isVideo ? (
-                    <Video
-                        source={{ uri: item }}
-                        style={styles.fullscreenVideo}
-                        useNativeControls={true}
-                        resizeMode="contain"
-                        shouldPlay={false}
-                        isLooping={false}
-                    />
-                ) : (
-                    <Image
-                        source={{ uri: item }}
-                        style={styles.fullscreenImage}
-                        contentFit="contain"
-                        cachePolicy="memory-disk"
-                    />
-                )}
+            <View style={styles.youtubeContainer}>
+                <YoutubePlayer
+                    height={videoHeight}
+                    width={videoWidth}
+                    videoId={videoId}
+                    play={false}
+                    webViewStyle={{ backgroundColor: '#000' }}
+                />
             </View>
         );
-    }, [isVideoFile]);
+    }, []);
+
+    // Componente para renderizar vídeo do YouTube no modal fullscreen
+    const YouTubeVideoPlayer = ({ videoUrl }) => {
+        const [isReady, setIsReady] = useState(false);
+        const [hasError, setHasError] = useState(false);
+        
+        console.log('🎥 Renderizando vídeo do YouTube:', videoUrl);
+        const videoId = extractYouTubeVideoId(videoUrl);
+        console.log('🔗 Video ID extraído:', videoId);
+        
+        if (!videoId) {
+            console.error('❌ Erro: Não foi possível extrair Video ID');
+            return (
+                <View style={styles.fullscreenVideoItem}>
+                    <View style={styles.errorContainer}>
+                        <Ionicons name="alert-circle" size={48} color="#e74c3c" />
+                        <Text style={styles.errorText}>Erro ao carregar vídeo</Text>
+                        <TouchableOpacity
+                            style={styles.openExternalButton}
+                            onPress={() => Linking.openURL(videoUrl)}
+                        >
+                            <Text style={styles.openExternalText}>Abrir no YouTube</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            );
+        }
+
+        const videoHeight = Math.min(height - 150, width * (9 / 16)); // Aspect ratio 16:9
+
+        return (
+            <View style={styles.fullscreenVideoItem}>
+                {!isReady && !hasError && (
+                    <View style={styles.loadingContainer}>
+                        <Text style={styles.loadingText}>Carregando vídeo...</Text>
+                    </View>
+                )}
+                <View style={{ width: width, height: videoHeight, backgroundColor: '#000' }}>
+                    <YoutubePlayer
+                        height={videoHeight}
+                        width={width}
+                        videoId={videoId}
+                        play={false}
+                        webViewStyle={{ backgroundColor: '#000', opacity: isReady ? 1 : 0 }}
+                        onReady={() => {
+                            console.log('✅ YoutubePlayer pronto!');
+                            setIsReady(true);
+                        }}
+                        onError={(error) => {
+                            console.error('❌ YoutubePlayer error:', error);
+                            setHasError(true);
+                            Alert.alert(
+                                'Erro ao carregar vídeo',
+                                'Não foi possível carregar o vídeo. Pode estar privado ou ter restrições. Deseja abrir no YouTube?',
+                                [
+                                    { text: 'Cancelar', style: 'cancel' },
+                                    { 
+                                        text: 'Abrir no YouTube', 
+                                        onPress: () => Linking.openURL(videoUrl)
+                                    }
+                                ]
+                            );
+                        }}
+                        onChangeState={(state) => {
+                            console.log('📊 Estado do player:', state);
+                        }}
+                    />
+                </View>
+            </View>
+        );
+    };
+
+    // Renderizar vídeo do YouTube no modal fullscreen
+    const renderFullscreenYouTubeVideo = useCallback(({ item, index }) => {
+        return <YouTubeVideoPlayer videoUrl={item} />;
+    }, []);
+
+    // Renderizar mídia no modal fullscreen (apenas fotos)
+    const renderFullscreenMedia = useCallback(({ item, index }) => {
+        return (
+            <View style={styles.fullscreenMediaItem}>
+                <Image
+                    source={{ uri: item }}
+                    style={styles.fullscreenImage}
+                    contentFit="contain"
+                    cachePolicy="memory-disk"
+                />
+            </View>
+        );
+    }, []);
 
     const renderThumbnail = useCallback(({ item, index }) => {
-        const isVideo = isVideoFile(item);
-        const totalImages = finalDisplayMedia.length;
+        const totalItems = displayMedia.length;
         const isLastTile = index === 5; // Último tile visível (6º)
-        const hasMoreImages = totalImages > 6;
-        const remainingCount = totalImages - 6;
+        const hasMoreItems = totalItems > 6;
+        const remainingCount = totalItems - 6;
 
+        if (mediaViewMode === 'videos') {
+            // Renderizar thumbnail do YouTube
+            const videoId = extractYouTubeVideoId(item);
+            if (!videoId) return null;
+            const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+
+            return (
+                <TouchableOpacity
+                    style={styles.thumbnail}
+                    onPress={() => openFullscreenImage(index)}
+                    activeOpacity={0.8}
+                >
+                    <Image
+                        source={{ uri: thumbnailUrl }}
+                        style={styles.thumbnailImage}
+                        contentFit="cover"
+                        cachePolicy="memory-disk"
+                    />
+
+                    {/* Overlay "+X" para o último tile se há mais vídeos */}
+                    {isLastTile && hasMoreItems && (
+                        <View style={styles.moreImagesOverlay}>
+                            <Text style={styles.moreImagesText}>+{remainingCount}</Text>
+                        </View>
+                    )}
+
+                    {/* Ícone do YouTube se não for o tile "+X" */}
+                    {!(isLastTile && hasMoreItems) && (
+                        <View style={styles.videoOverlay}>
+                            <Ionicons name="logo-youtube" size={32} color="#fff" />
+                        </View>
+                    )}
+                </TouchableOpacity>
+            );
+        }
+
+        // Renderizar foto
         return (
             <TouchableOpacity
                 style={styles.thumbnail}
@@ -188,22 +312,14 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                 />
 
                 {/* Overlay "+X" para o último tile se há mais imagens */}
-                {isLastTile && hasMoreImages && (
+                {isLastTile && hasMoreItems && (
                     <View style={styles.moreImagesOverlay}>
                         <Text style={styles.moreImagesText}>+{remainingCount}</Text>
                     </View>
                 )}
-
-                {/* Ícone de vídeo se for vídeo (apenas se não for o tile "+X") */}
-                {isVideo && !(isLastTile && hasMoreImages) && (
-                    <View style={styles.videoOverlay}>
-                        <Ionicons name="play-circle" size={32} color="#fff" />
-                    </View>
-                )}
-
             </TouchableOpacity>
         );
-    }, [isVideoFile, openFullscreenImage, finalDisplayMedia.length]);
+    }, [mediaViewMode, displayMedia.length, openFullscreenImage]);
 
     const formatPrice = (price) => {
         return new Intl.NumberFormat('pt-BR', {
@@ -484,54 +600,90 @@ export default function PropertyDetailsScreen({ route, navigation }) {
     return (
         <SafeAreaView style={styles.container}>
 
-            {/* Galeria de Mídia - Condicional baseada na quantidade */}
-            {finalDisplayMedia.length === 1 ? (
-                // Uma única imagem - mostrar maior
-                <View style={styles.singleImageContainer}>
-                    <TouchableOpacity
-                        style={styles.singleImageWrapper}
-                        onPress={() => openFullscreenImage(0)}
-                        activeOpacity={0.9}
-                    >
-                        {isVideoFile(finalDisplayMedia[0]) ? (
-                            <Video
-                                source={{ uri: finalDisplayMedia[0] }}
-                                style={styles.singleVideo}
-                                useNativeControls={true}
-                                resizeMode="cover"
-                                shouldPlay={false}
-                                isLooping={false}
-                            />
-                        ) : (
-                            <Image
-                                source={{ uri: finalDisplayMedia[0] }}
-                                style={styles.singleImage}
-                                contentFit="cover"
-                                cachePolicy="memory-disk"
-                                placeholder={require('../assets/placeholder-image.png')}
-                            />
-                        )}
+            {/* Galeria de Mídia */}
+            <View style={styles.mediaSection}>
+                {/* Botões de alternância Fotos/Vídeos */}
+                {(hasPhotos && hasVideos) && (
+                    <View style={styles.mediaToggleContainer}>
+                        <TouchableOpacity
+                            style={[styles.mediaToggleButton, mediaViewMode === 'photos' && styles.mediaToggleButtonActive]}
+                            onPress={() => setMediaViewMode('photos')}
+                            activeOpacity={0.7}
+                        >
+                            <Ionicons name="images" size={20} color={mediaViewMode === 'photos' ? '#fff' : '#6B7280'} />
+                            <Text style={[styles.mediaToggleText, mediaViewMode === 'photos' && styles.mediaToggleTextActive]}>
+                                Fotos ({imageFiles.length})
+                            </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[styles.mediaToggleButton, mediaViewMode === 'videos' && styles.mediaToggleButtonActive]}
+                            onPress={() => setMediaViewMode('videos')}
+                            activeOpacity={0.7}
+                        >
+                            <Ionicons name="videocam" size={20} color={mediaViewMode === 'videos' ? '#fff' : '#6B7280'} />
+                            <Text style={[styles.mediaToggleText, mediaViewMode === 'videos' && styles.mediaToggleTextActive]}>
+                                Vídeos ({videoUrls.length})
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
 
-                        {/* Ícone de expansão para indicar que é clicável */}
-                        <View style={styles.expandIcon}>
-                            <Ionicons name="expand" size={24} color="#fff" />
+                {/* Conteúdo baseado no modo */}
+                {mediaViewMode === 'videos' && videoUrls.length > 0 ? (
+                    // Modo vídeos - mostrar grid de thumbnails ou vídeo único
+                    displayMedia.length === 1 ? (
+                        <View style={styles.singleVideoContainer}>
+                            {renderYouTubeVideo(displayMedia[0], 0)}
                         </View>
-                    </TouchableOpacity>
-                </View>
-            ) : (
-                // Múltiplas imagens - mostrar grid
-                <View style={styles.galleryContainer}>
-                    <FlatList
-                        data={finalDisplayMedia.slice(0, 6)} // Mostrar apenas 6 tiles
-                        renderItem={renderThumbnail}
-                        keyExtractor={(item, index) => `thumbnail-${index}-${item.substring(0, 20)}`}
-                        numColumns={3}
-                        scrollEnabled={false}
-                        style={styles.thumbnailGrid}
-                        contentContainerStyle={styles.thumbnailGridContent}
-                    />
-                </View>
-            )}
+                    ) : (
+                        <View style={styles.galleryContainer}>
+                            <FlatList
+                                data={displayMedia.slice(0, 6)}
+                                renderItem={renderThumbnail}
+                                keyExtractor={(item, index) => `video-thumb-${index}-${item.substring(0, 20)}`}
+                                numColumns={3}
+                                scrollEnabled={false}
+                                style={styles.thumbnailGrid}
+                                contentContainerStyle={styles.thumbnailGridContent}
+                            />
+                        </View>
+                    )
+                ) : (
+                    // Modo fotos
+                    displayMedia.length === 1 ? (
+                        <View style={styles.singleImageContainer}>
+                            <TouchableOpacity
+                                style={styles.singleImageWrapper}
+                                onPress={() => openFullscreenImage(0)}
+                                activeOpacity={0.9}
+                            >
+                                <Image
+                                    source={{ uri: displayMedia[0] }}
+                                    style={styles.singleImage}
+                                    contentFit="cover"
+                                    cachePolicy="memory-disk"
+                                    placeholder={require('../assets/placeholder-image.png')}
+                                />
+                                <View style={styles.expandIcon}>
+                                    <Ionicons name="expand" size={24} color="#fff" />
+                                </View>
+                            </TouchableOpacity>
+                        </View>
+                    ) : (
+                        <View style={styles.galleryContainer}>
+                            <FlatList
+                                data={displayMedia.slice(0, 6)}
+                                renderItem={renderThumbnail}
+                                keyExtractor={(item, index) => `photo-thumb-${index}-${item.substring(0, 20)}`}
+                                numColumns={3}
+                                scrollEnabled={false}
+                                style={styles.thumbnailGrid}
+                                contentContainerStyle={styles.thumbnailGridContent}
+                            />
+                        </View>
+                    )
+                )}
+            </View>
 
             <ScrollView
                 style={styles.content}
@@ -695,7 +847,10 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                     {/* Header com contador e botão fechar */}
                     <View style={styles.fullscreenHeader}>
                         <Text style={styles.fullscreenCounter}>
-                            {selectedImageIndex + 1} de {finalDisplayMedia.length}
+                            {mediaViewMode === 'photos' 
+                                ? `${selectedImageIndex + 1} de ${imageFiles.length}`
+                                : `${selectedImageIndex + 1} de ${videoUrls.length}`
+                            }
                         </Text>
                         <TouchableOpacity
                             style={styles.closeButton}
@@ -707,25 +862,47 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                     </View>
 
                     {/* Galeria com swipe para navegação */}
-                    <FlatList
-                        data={finalDisplayMedia}
-                        renderItem={renderFullscreenMedia}
-                        keyExtractor={(item, index) => `fullscreen-${index}-${item.substring(0, 20)}`}
-                        horizontal
-                        pagingEnabled
-                        showsHorizontalScrollIndicator={false}
-                        onScroll={handleFullscreenScroll}
-                        scrollEventThrottle={16}
-                        initialScrollIndex={selectedImageIndex}
-                        getItemLayout={(data, index) => ({
-                            length: width,
-                            offset: width * index,
-                            index,
-                        })}
-                        style={styles.fullscreenGallery}
-                        bounces={false}
-                        decelerationRate="fast"
-                    />
+                    {mediaViewMode === 'photos' ? (
+                        <FlatList
+                            data={imageFiles}
+                            renderItem={renderFullscreenMedia}
+                            keyExtractor={(item, index) => `fullscreen-photo-${index}-${item.substring(0, 20)}`}
+                            horizontal
+                            pagingEnabled
+                            showsHorizontalScrollIndicator={false}
+                            onScroll={handleFullscreenScroll}
+                            scrollEventThrottle={16}
+                            initialScrollIndex={selectedImageIndex}
+                            getItemLayout={(data, index) => ({
+                                length: width,
+                                offset: width * index,
+                                index,
+                            })}
+                            style={styles.fullscreenGallery}
+                            bounces={false}
+                            decelerationRate="fast"
+                        />
+                    ) : (
+                        <FlatList
+                            data={videoUrls}
+                            renderItem={renderFullscreenYouTubeVideo}
+                            keyExtractor={(item, index) => `fullscreen-video-${index}-${item.substring(0, 20)}`}
+                            horizontal
+                            pagingEnabled
+                            showsHorizontalScrollIndicator={false}
+                            onScroll={handleFullscreenScroll}
+                            scrollEventThrottle={16}
+                            initialScrollIndex={selectedImageIndex}
+                            getItemLayout={(data, index) => ({
+                                length: width,
+                                offset: width * index,
+                                index,
+                            })}
+                            style={styles.fullscreenGallery}
+                            bounces={false}
+                            decelerationRate="fast"
+                        />
+                    )}
                 </View>
             </Modal>
         </SafeAreaView>
@@ -754,9 +931,94 @@ const styles = StyleSheet.create({
         width: '100%',
         height: 250, // Altura maior para imagem única
     },
-    singleVideo: {
+    youtubeContainer: {
         width: '100%',
-        height: 250, // Altura maior para vídeo único
+        backgroundColor: '#000',
+        borderRadius: 12,
+        overflow: 'hidden',
+        marginVertical: 15,
+        marginHorizontal: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    singleVideoContainer: {
+        backgroundColor: '#f8f9fa',
+        paddingVertical: 15,
+        paddingHorizontal: 20,
+    },
+    mediaSection: {
+        backgroundColor: '#f8f9fa',
+    },
+    mediaToggleContainer: {
+        flexDirection: 'row',
+        paddingHorizontal: 20,
+        paddingTop: 15,
+        gap: 12,
+    },
+    mediaToggleButton: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        borderRadius: 8,
+        backgroundColor: '#fff',
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+        gap: 8,
+    },
+    mediaToggleButtonActive: {
+        backgroundColor: '#3498db',
+        borderColor: '#3498db',
+    },
+    mediaToggleText: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#6B7280',
+    },
+    mediaToggleTextActive: {
+        color: '#fff',
+    },
+    errorContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+        backgroundColor: '#000',
+    },
+    errorText: {
+        color: '#fff',
+        fontSize: 16,
+        marginTop: 16,
+        marginBottom: 24,
+        textAlign: 'center',
+    },
+    openExternalButton: {
+        backgroundColor: '#e74c3c',
+        paddingVertical: 12,
+        paddingHorizontal: 24,
+        borderRadius: 8,
+    },
+    openExternalText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    loadingContainer: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#000',
+        zIndex: 1,
+    },
+    loadingText: {
+        color: '#fff',
+        fontSize: 16,
     },
     expandIcon: {
         position: 'absolute',
@@ -869,11 +1131,12 @@ const styles = StyleSheet.create({
         maxWidth: width - 40,
         maxHeight: height - 200,
     },
-    fullscreenVideo: {
-        width: width - 40,
-        height: height - 200,
-        maxWidth: width - 40,
-        maxHeight: height - 200,
+    fullscreenVideoItem: {
+        width: width,
+        height: height,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#000',
     },
     content: {
         flex: 1,
