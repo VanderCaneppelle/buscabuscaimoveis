@@ -64,11 +64,22 @@ export default function BoostPaymentScreen({ navigation, route }) {
             }
 
             // Abrir Mercado Pago dentro do app (WebView)
+            // Priorizar init_point (produção) e só usar sandbox se não existir init_point
             const paymentUrl = result?.preference?.init_point || result?.preference?.sandbox_init_point;
+            console.log('🔗 URLs disponíveis:', {
+                init_point: result?.preference?.init_point ? '✅ Presente' : '❌ Ausente',
+                sandbox_init_point: result?.preference?.sandbox_init_point ? '✅ Presente' : '❌ Ausente',
+                url_usada: paymentUrl
+            });
             console.log('🔗 Abrindo URL no WebView:', paymentUrl);
 
             if (!paymentUrl) {
                 throw new Error('URL de checkout não encontrada na preferência');
+            }
+
+            // Validar que a URL é válida antes de abrir
+            if (!paymentUrl.startsWith('http://') && !paymentUrl.startsWith('https://')) {
+                throw new Error('URL de checkout inválida');
             }
 
             setCheckoutUrl(paymentUrl);
@@ -326,6 +337,9 @@ export default function BoostPaymentScreen({ navigation, route }) {
                                     <ActivityIndicator size="large" color="#3498db" />
                                 </View>
                             )}
+                            javaScriptEnabled={true}
+                            domStorageEnabled={true}
+                            sharedCookiesEnabled={true}
                         />
                     ) : null}
                 </SafeAreaView>
@@ -404,7 +418,6 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 15,
         borderBottomWidth: 2,
         borderBottomColor: '#e9ecef',
-        borderStyle: 'dashed',
     },
     stampContainer: {
         width: 40,
@@ -580,7 +593,6 @@ const styles = StyleSheet.create({
         height: 1,
         borderTopWidth: 1,
         borderTopColor: '#dee2e6',
-        borderStyle: 'dashed',
     },
     solidDivider: {
         height: 1,

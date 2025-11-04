@@ -1321,7 +1321,7 @@ const styles = StyleSheet.create({
         shadowRadius: 3.84,
         elevation: 5,
         flexDirection: 'row', // Layout horizontal
-        height: 160, // Altura fixa menor
+        height: 180, // Altura aumentada para caber todo conteúdo
         borderWidth: 2,
         borderColor: '#e0e0e0',
     },
