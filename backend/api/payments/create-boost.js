@@ -116,8 +116,7 @@ async function createBoostMercadoPagoPreference(property, boostPlan, user) {
     const preference = {
         items: [
             {
-                title: `Impulsionamento - ${property.title}`,
-                description: `Destaque por ${boostPlan.duration_days} ${boostPlan.duration_days === 1 ? 'dia' : 'dias'}`,
+                title: `Impulsionamento - ${boostPlan.duration_days} ${boostPlan.duration_days === 1 ? 'dia' : 'dias'}`,
                 unit_price: boostPlan.price,
                 quantity: 1,
                 currency_id: 'BRL'
