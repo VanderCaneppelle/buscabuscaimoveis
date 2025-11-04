@@ -12,8 +12,8 @@ const fs = require('fs');
 const path = require('path');
 
 // Configuração do Supabase - SUBSTITUA PELOS VALORES CORRETOS
-const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://ftglfnmyxtnygrmkxwos.supabase.co';
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0Z2xmbm15eHRueWdybWt4d29zIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MTI0MTQwMiwiZXhwIjoyMDc2ODE3NDAyfQ.1pqhs6OF7NVHashivSciSsePW05mHqqa9imJasfZs8I';
+const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://rxozhlxmfbioqgqomkrz.supabase.co';
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4b3pobHhtZmJpb3FncW9ta3J6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1Mzk5ODQwMiwiZXhwIjoyMDY5NTc0NDAyfQ.wDlQIv41iRLFWSgEzHSbr3B5qEyZ4Yy1tlCP2CxG_GQ';
 
 // Verificar se as credenciais estão configuradas
 if (SUPABASE_URL === 'SUA_URL_AQUI' || SUPABASE_SERVICE_KEY === 'SUA_SERVICE_KEY_AQUI') {
