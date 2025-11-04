@@ -19,20 +19,41 @@ import { Video } from 'expo-av';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import FavoriteButton from './FavoriteButton';
 import { useAuth } from '../contexts/AuthContext';
+import { useAdmin } from '../contexts/AdminContext';
 import { useFavoritesStore } from '../stores/favoritesStore';
 import { supabase } from '../lib/supabase';
+import { PlanService } from '../lib/planService';
 
 const { width, height } = Dimensions.get('window');
 
 export default function PropertyDetailsScreen({ route, navigation }) {
     const { property } = route.params;
     const { user } = useAuth();
+    const { isAdmin } = useAdmin();
     // Zustand
     const isFavorited = useFavoritesStore(state => state.isFavorite(property.id));
     const toggleFavorite = useFavoritesStore(state => state.toggleFavorite);
     const [loading, setLoading] = useState(false);
     const [showFullscreenModal, setShowFullscreenModal] = useState(false);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+    const [isOwnerOnFreePlan, setIsOwnerOnFreePlan] = useState(false);
+    // Verificar plano do dono do anúncio antecipadamente (evita múltiplas RPCs nos handlers)
+    useEffect(() => {
+        let mounted = true;
+        (async () => {
+            try {
+                const ownerPlan = await PlanService.getUserActivePlan(property.user_id);
+                const ownerPlanName = ownerPlan?.name || ownerPlan?.plan?.name;
+                // Se não houver assinatura/plano retornado, considerar como plano gratuito
+                const computedIsFree = !ownerPlan || ownerPlanName === 'free';
+                if (mounted) setIsOwnerOnFreePlan(computedIsFree);
+            } catch (e) {
+                console.warn('⚠️ Não foi possível obter plano do dono do anúncio (init).', e);
+                if (mounted) setIsOwnerOnFreePlan(false);
+            }
+        })();
+        return () => { mounted = false; };
+    }, [property.user_id]);
 
     // Separar imagens e vídeos usando useMemo para evitar re-cálculos
     // Função para verificar se é vídeo
@@ -214,14 +235,9 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                 return;
             }
 
-            if (!userProfile || !userProfile.phone) {
-                Alert.alert(
-                    'Contato não disponível',
-                    'O anunciante não possui telefone cadastrado.',
-                    [{ text: 'OK', style: 'default' }]
-                );
-                return;
-            }
+            // Se o dono estiver no plano gratuito, redirecionar para o WhatsApp do admin
+            // Número fornecido: 47992414450 → formato E.164 com DDI Brasil (55)
+            const adminWhatsAppE164 = '5547992414450';
 
             // ✨ NOVO: Buscar perfil do usuário ATUAL (quem está clicando)
             let currentUserName = 'Alguém';
@@ -294,12 +310,28 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                 // Não interrompe o fluxo - continua abrindo o WhatsApp
             }
 
-            const phoneNumber = userProfile.phone;
-            const userName = userProfile.full_name || 'Anunciante';
-            const message = `Olá ${userName}! Vi seu anúncio "${property.title}" no Busca Busca Imóveis e gostaria de mais informações.`;
+            // Definir destino e mensagem conforme plano do dono
+            let destinationPhone = '';
+            let message = '';
+            if (isOwnerOnFreePlan) {
+                destinationPhone = adminWhatsAppE164;
+                message = `Olá! Vi o anúncio "${property.title}" no Busca Busca Imóveis e gostaria de mais informações. Poderiam me encaminhar o contato do anunciante?`;
+            } else {
+                if (!userProfile || !userProfile.phone) {
+                    Alert.alert(
+                        'Contato não disponível',
+                        'O anunciante não possui telefone cadastrado.',
+                        [{ text: 'OK', style: 'default' }]
+                    );
+                    return;
+                }
+                const userName = userProfile.full_name || 'Anunciante';
+                destinationPhone = userProfile.phone;
+                message = `Olá ${userName}! Vi seu anúncio "${property.title}" no Busca Busca Imóveis e gostaria de mais informações.`;
+            }
 
             // Formatar número de telefone (remover caracteres especiais)
-            const cleanPhone = phoneNumber.replace(/\D/g, '');
+            const cleanPhone = (destinationPhone || '').replace(/\D/g, '');
 
             // Tentar diferentes URLs do WhatsApp
             const whatsappUrls = [
@@ -357,6 +389,52 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                     }
                 ]
             );
+        }
+    };
+
+    // Handler específico para contato direto com o proprietário (usado por admins)
+    const handleWhatsAppContactOwner = async () => {
+        try {
+            const { data: userProfile, error } = await supabase
+                .from('profiles')
+                .select('full_name, phone')
+                .eq('id', property.user_id)
+                .single();
+
+            if (error || !userProfile?.phone) {
+                Alert.alert(
+                    'Contato não disponível',
+                    'O anunciante não possui telefone cadastrado.',
+                    [{ text: 'OK', style: 'default' }]
+                );
+                return;
+            }
+
+            const userName = userProfile.full_name || 'Anunciante';
+            const destinationPhone = userProfile.phone;
+            const message = `Olá ${userName}! Vi seu anúncio "${property.title}" no Busca Busca Imóveis e gostaria de mais informações.`;
+
+            const cleanPhone = (destinationPhone || '').replace(/\D/g, '');
+            const whatsappUrls = [
+                `whatsapp://send?phone=${cleanPhone}&text=${encodeURIComponent(message)}`,
+                `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`,
+            ];
+
+            for (const url of whatsappUrls) {
+                try {
+                    const canOpen = await Linking.canOpenURL(url);
+                    if (canOpen) {
+                        await Linking.openURL(url);
+                        return;
+                    }
+                } catch {}
+            }
+
+            const webWhatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+            await Linking.openURL(webWhatsappUrl);
+        } catch (error) {
+            console.error('❌ Erro ao abrir WhatsApp (proprietário):', error);
+            Alert.alert('Erro', 'Não foi possível abrir o WhatsApp para o proprietário.');
         }
     };
 
@@ -566,21 +644,43 @@ export default function PropertyDetailsScreen({ route, navigation }) {
 
             {/* Botões de Contato Fixos no Bottom */}
             <View style={styles.fixedBottomButtons}>
-                <TouchableOpacity
-                    style={[styles.contactButton, styles.whatsappButton]}
-                    onPress={handleWhatsAppContact}
-                >
-                    <Ionicons name="logo-whatsapp" size={24} color="#fff" />
-                    <Text style={styles.contactButtonText}>WhatsApp</Text>
-                </TouchableOpacity>
+                {isAdmin ? (
+                    <>
+                        <TouchableOpacity
+                            style={[styles.contactButton, styles.whatsappButton]}
+                            onPress={handleWhatsAppContactOwner}
+                        >
+                            <Ionicons name="logo-whatsapp" size={24} color="#fff" />
+                            <Text style={styles.contactButtonText}>WhatsApp</Text>
+                        </TouchableOpacity>
 
-                <TouchableOpacity
-                    style={[styles.contactButton, styles.phoneButton]}
-                    onPress={handlePhoneContact}
-                >
-                    <Ionicons name="call" size={24} color="#fff" />
-                    <Text style={styles.contactButtonText}>Ligar</Text>
-                </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[styles.contactButton, styles.phoneButton]}
+                            onPress={handlePhoneContact}
+                        >
+                            <Ionicons name="call" size={24} color="#fff" />
+                            <Text style={styles.contactButtonText}>Ligar</Text>
+                        </TouchableOpacity>
+                    </>
+                ) : (
+                    <>
+                        <TouchableOpacity
+                            style={[styles.contactButton, styles.whatsappButton]}
+                            onPress={handleWhatsAppContact}
+                        >
+                            <Ionicons name="logo-whatsapp" size={24} color="#fff" />
+                            <Text style={styles.contactButtonText}>WhatsApp</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={[styles.contactButton, styles.phoneButton]}
+                            onPress={handlePhoneContact}
+                        >
+                            <Ionicons name="call" size={24} color="#fff" />
+                            <Text style={styles.contactButtonText}>Ligar</Text>
+                        </TouchableOpacity>
+                    </>
+                )}
             </View>
 
             {/* Modal Fullscreen para Galeria */}
