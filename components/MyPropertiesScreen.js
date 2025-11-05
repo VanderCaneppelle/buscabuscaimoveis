@@ -18,6 +18,7 @@ import { validateMediaLimitsByPlan } from '../lib/validation/mediaLimits';
 import { supabase } from '../lib/supabase';
 import { MediaServiceOptimized } from '../lib/mediaServiceOptimized';
 import * as ImagePicker from 'expo-image-picker';
+import { validateYouTubeUrl, extractYouTubeVideoId } from '../lib/youtubeUtils';
 
 const { width } = Dimensions.get('window');
 
@@ -49,10 +50,14 @@ export default function MyPropertiesScreen({ navigation }) {
     const [editForm, setEditForm] = useState({
         title: '', description: '', price: '', salePrice: '', propertyType: '', transactionType: '',
         bedrooms: '', bathrooms: '', parkingSpaces: '', area: '', address: '',
-        neighborhood: '', city: '', state: '', zipCode: ''
+        neighborhood: '', city: '', state: '', zipCode: '', latitude: null, longitude: null
     });
     const [editImages, setEditImages] = useState([]);
     const [removedImages, setRemovedImages] = useState([]);
+    const [editVideoUrls, setEditVideoUrls] = useState([]);
+    const [originalVideoUrls, setOriginalVideoUrls] = useState([]); // Rastrear vídeos originais
+    const [removedVideoUrls, setRemovedVideoUrls] = useState([]);
+    const [youtubeUrlInput, setYoutubeUrlInput] = useState('');
     const [editLoading, setEditLoading] = useState(false);
     const [deleteLoading, setDeleteLoading] = useState(false);
 
@@ -304,10 +309,16 @@ export default function MyPropertiesScreen({ navigation }) {
             neighborhood: property.neighborhood || '',
             city: property.city || '',
             state: property.state || '',
-            zipCode: property.zip_code || ''
+            zipCode: property.zip_code || '',
+            latitude: property.latitude,
+            longitude: property.longitude
         });
         setEditImages(property.images || []);
+        setEditVideoUrls(property.video_urls || []);
+        setOriginalVideoUrls(property.video_urls || []); // Salvar vídeos originais
         setRemovedImages([]);
+        setRemovedVideoUrls([]);
+        setYoutubeUrlInput('');
         setEditModalVisible(true);
     };
 
@@ -340,8 +351,8 @@ export default function MyPropertiesScreen({ navigation }) {
 
         // Validação de limites de mídias por plano (util compartilhado)
         const withinLimits = await validateMediaLimitsByPlan({
-            imagesCount: (editImages || []).filter(uri => !isVideoFile(uri)).length,
-            videosCount: (editImages || []).filter(uri => isVideoFile(uri)).length,
+            imagesCount: (editImages || []).length, // Apenas imagens
+            videosCount: (editVideoUrls || []).length, // Apenas vídeos do YouTube
             userPlan,
         });
         if (!withinLimits) {
@@ -372,10 +383,32 @@ export default function MyPropertiesScreen({ navigation }) {
                 ...editForm,
                 price: getNumericPrice(editForm.price).toString(), // Converter preço formatado para número
                 salePrice: editForm.salePrice ? getNumericPrice(editForm.salePrice).toString() : null,
-                status: 'pending' // Voltar para pendente após edição
+                status: 'pending', // Voltar para pendente após edição
+                ad_status: 'inactive', // Desativar anúncio enquanto aguarda aprovação
+                latitude: editForm.latitude,
+                longitude: editForm.longitude
             };
 
-            await PropertyService.updateProperty(editingProperty.id, updateData, newMediaFiles, removedImages);
+            // Calcular apenas os vídeos NOVOS (que não estavam na lista original)
+            const newVideoUrls = editVideoUrls.filter(url => !originalVideoUrls.includes(url));
+            
+            console.log('📤 Enviando para updateProperty:', {
+                propertyId: editingProperty.id,
+                originalVideoUrls,
+                editVideoUrls,
+                newVideoUrls,
+                removedVideoUrls,
+                updateData
+            });
+
+            await PropertyService.updateProperty(
+                editingProperty.id, 
+                updateData, 
+                newMediaFiles, 
+                removedImages,
+                newVideoUrls,  // Apenas URLs NOVAS do YouTube
+                removedVideoUrls // URLs removidas
+            );
             Alert.alert(
                 'Sucesso!',
                 'Anúncio atualizado com sucesso! Como houve alterações, ele voltou para o status "Pendente" e aguarda nova aprovação do administrador.',
@@ -435,26 +468,47 @@ export default function MyPropertiesScreen({ navigation }) {
             }
 
             const result = await ImagePicker.launchImageLibraryAsync({
-                mediaTypes: ImagePicker.MediaTypeOptions.All, // Permite imagens e vídeos
+                mediaTypes: ImagePicker.MediaTypeOptions.Images, // Apenas imagens
                 allowsMultipleSelection: true,
                 quality: 0.8,
                 aspect: [4, 3],
-                videoMaxDuration: 30, // Limite de 30 segundos para vídeos
             });
 
             if (!result.canceled && result.assets) {
                 const newMedia = result.assets.map(asset => asset.uri);
                 setEditImages(prev => [...prev, ...newMedia]);
-
-                const imageCount = result.assets.filter(asset => asset.type === 'image').length;
-                const videoCount = result.assets.filter(asset => asset.type === 'video').length;
-
-                console.log(`✅ ${imageCount} imagem(ns) e ${videoCount} vídeo(s) adicionado(s) com sucesso`);
+                console.log(`✅ ${result.assets.length} imagem(ns) adicionada(s) com sucesso`);
             }
         } catch (error) {
-            console.error('Erro ao selecionar mídias:', error);
-            Alert.alert('Erro', 'Não foi possível selecionar as mídias');
+            console.error('Erro ao selecionar imagens:', error);
+            Alert.alert('Erro', 'Não foi possível selecionar as imagens');
         }
+    };
+
+    // Função para adicionar URL do YouTube
+    const handleAddYouTubeUrl = () => {
+        if (!youtubeUrlInput.trim()) {
+            Alert.alert('Erro', 'Por favor, insira uma URL do YouTube');
+            return;
+        }
+
+        const validation = validateYouTubeUrl(youtubeUrlInput.trim());
+        if (!validation.isValid) {
+            Alert.alert('URL inválida', validation.error || 'Por favor, insira uma URL válida do YouTube');
+            return;
+        }
+
+        // Adicionar a URL normalizada
+        setEditVideoUrls(prev => [...prev, validation.normalizedUrl]);
+        setYoutubeUrlInput('');
+        console.log('✅ URL do YouTube adicionada:', validation.normalizedUrl);
+    };
+
+    // Função para remover URL do YouTube
+    const removeVideoUrl = (index) => {
+        const videoToRemove = editVideoUrls[index];
+        setEditVideoUrls(prev => prev.filter((_, i) => i !== index));
+        setRemovedVideoUrls(prev => [...prev, videoToRemove]);
     };
 
     /** ------------------ RENDER ITEM ------------------ **/
@@ -1402,16 +1456,16 @@ export default function MyPropertiesScreen({ navigation }) {
                                         </View>
                                     </View>
 
-                                    {/* Seção de Gerenciamento de Mídias */}
+                                    {/* Seção de Gerenciamento de Imagens */}
                                     <View style={styles.formGroup}>
                                         <View style={styles.mediaSectionHeader}>
-                                            <Text style={styles.formLabel}>Mídias (Imagens e Vídeos)</Text>
+                                            <Text style={styles.formLabel}>Fotos</Text>
                                             <TouchableOpacity
                                                 style={styles.addMediaButton}
                                                 onPress={addMedia}
                                             >
                                                 <Ionicons name="add" size={16} color="#fff" />
-                                                <Text style={styles.addMediaButtonText}>Adicionar Mídia</Text>
+                                                <Text style={styles.addMediaButtonText}>Adicionar Fotos</Text>
                                             </TouchableOpacity>
                                         </View>
 
@@ -1426,13 +1480,8 @@ export default function MyPropertiesScreen({ navigation }) {
                                                         >
                                                             <Ionicons name="close-circle" size={26} color="#ef4444" />
                                                         </TouchableOpacity>
-                                                        {/* Ícone indicativo de tipo de mídia */}
                                                         <View style={styles.editMediaTypeIcon}>
-                                                            <Ionicons
-                                                                name={isVideoFile(image) ? "videocam" : "image"}
-                                                                size={10}
-                                                                color="#fff"
-                                                            />
+                                                            <Ionicons name="image" size={10} color="#fff" />
                                                         </View>
                                                     </View>
                                                 ))}
@@ -1440,9 +1489,67 @@ export default function MyPropertiesScreen({ navigation }) {
                                         ) : (
                                             <View style={styles.noMediaContainer}>
                                                 <Ionicons name="images-outline" size={48} color="#bdc3c7" />
-                                                <Text style={styles.noMediaText}>Nenhuma mídia adicionada</Text>
+                                                <Text style={styles.noMediaText}>Nenhuma foto adicionada</Text>
                                                 <Text style={styles.noMediaSubtext}>
-                                                    Toque em "Adicionar" para incluir imagens ou vídeos
+                                                    Toque em "Adicionar Fotos" para incluir imagens
+                                                </Text>
+                                            </View>
+                                        )}
+                                    </View>
+
+                                    {/* Seção de Gerenciamento de Vídeos do YouTube */}
+                                    <View style={styles.formGroup}>
+                                        <Text style={styles.formLabel}>Vídeos do YouTube</Text>
+                                        <View style={styles.youtubeInputContainer}>
+                                            <TextInput
+                                                style={styles.youtubeInput}
+                                                value={youtubeUrlInput}
+                                                onChangeText={setYoutubeUrlInput}
+                                                placeholder="Cole o link do YouTube aqui"
+                                                placeholderTextColor="#7f8c8d"
+                                                autoCapitalize="none"
+                                                autoCorrect={false}
+                                            />
+                                            <TouchableOpacity
+                                                style={styles.addYoutubeButton}
+                                                onPress={handleAddYouTubeUrl}
+                                            >
+                                                <Text style={styles.addYoutubeButtonText}>Adicionar</Text>
+                                            </TouchableOpacity>
+                                        </View>
+
+                                        {editVideoUrls.length > 0 ? (
+                                            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                                                {editVideoUrls.map((videoUrl, index) => {
+                                                    const videoId = extractYouTubeVideoId(videoUrl);
+                                                    const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+                                                    
+                                                    return (
+                                                        <View key={index} style={styles.editMediaItem}>
+                                                            <Image
+                                                                source={{ uri: thumbnailUrl }}
+                                                                style={styles.editMediaItemContent}
+                                                                contentFit="cover"
+                                                            />
+                                                            <TouchableOpacity
+                                                                style={styles.removeMediaButton}
+                                                                onPress={() => removeVideoUrl(index)}
+                                                            >
+                                                                <Ionicons name="close-circle" size={26} color="#ef4444" />
+                                                            </TouchableOpacity>
+                                                            <View style={styles.editMediaTypeIcon}>
+                                                                <Ionicons name="logo-youtube" size={10} color="#fff" />
+                                                            </View>
+                                                        </View>
+                                                    );
+                                                })}
+                                            </ScrollView>
+                                        ) : (
+                                            <View style={styles.noMediaContainer}>
+                                                <Ionicons name="logo-youtube" size={48} color="#bdc3c7" />
+                                                <Text style={styles.noMediaText}>Nenhum vídeo adicionado</Text>
+                                                <Text style={styles.noMediaSubtext}>
+                                                    Cole uma URL do YouTube acima e toque em "+"
                                                 </Text>
                                             </View>
                                         )}
@@ -1868,6 +1975,37 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 5,
         lineHeight: 16,
+    },
+    youtubeInputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+        marginBottom: 15,
+    },
+    youtubeInput: {
+        flex: 1,
+        borderWidth: 1,
+        borderColor: '#e0e0e0',
+        borderRadius: 8,
+        paddingHorizontal: 15,
+        paddingVertical: 12,
+        fontSize: 14,
+        color: '#2c3e50',
+        backgroundColor: '#fff',
+    },
+    addYoutubeButton: {
+        backgroundColor: '#c4302b',
+        borderRadius: 8,
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        justifyContent: 'center',
+        alignItems: 'center',
+        minWidth: 100,
+    },
+    addYoutubeButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '600',
     },
     expandedActions: {
         marginTop: 15,
