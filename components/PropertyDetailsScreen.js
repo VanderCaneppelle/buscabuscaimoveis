@@ -936,8 +936,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#000',
         borderRadius: 12,
         overflow: 'hidden',
-        marginVertical: 15,
-        marginHorizontal: 20,
         alignItems: 'center',
         justifyContent: 'center',
     },
