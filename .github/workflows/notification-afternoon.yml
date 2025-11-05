@@ -1,9 +1,9 @@
 name: Notificação da Tarde
 
 on:
-  schedule:
-    # 4:40 PM (horário de Brasília) = 19:40 UTC
-    - cron: '40 19 * * *'
+  # schedule:
+  #   # 4:40 PM (horário de Brasília) = 19:40 UTC
+  #   - cron: '40 19 * * *'
   
   # Permitir execução manual
   workflow_dispatch:
