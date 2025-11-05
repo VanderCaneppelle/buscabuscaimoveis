@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function Step2TitleDescription({ formData, updateFormData }) {
     const titleInputRef = useRef(null);
+    const descriptionInputRef = useRef(null);
 
     useEffect(() => {
         // Auto-focus no título quando entrar na tela
@@ -19,7 +20,7 @@ export default function Step2TitleDescription({ formData, updateFormData }) {
         <KeyboardAvoidingView 
             style={styles.container}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 180 : 20}
         >
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                 <ScrollView 
@@ -48,6 +49,10 @@ export default function Step2TitleDescription({ formData, updateFormData }) {
                             placeholderTextColor="#9CA3AF"
                             maxLength={100}
                             multiline
+                            returnKeyType="next"
+                            onSubmitEditing={() => descriptionInputRef.current?.focus()}
+                            blurOnSubmit={false}
+                            submitBehavior="submit"
                         />
                         <View style={styles.characterCount}>
                             <Text style={[
@@ -90,6 +95,7 @@ export default function Step2TitleDescription({ formData, updateFormData }) {
                     </Text>
                     <View style={styles.inputContainer}>
                         <TextInput
+                            ref={descriptionInputRef}
                             style={styles.descriptionInput}
                             value={formData.description}
                             onChangeText={(value) => updateFormData('description', value)}
@@ -98,6 +104,9 @@ export default function Step2TitleDescription({ formData, updateFormData }) {
                             maxLength={1000}
                             multiline
                             textAlignVertical="top"
+                            returnKeyType="done"
+                            blurOnSubmit={true}
+                            submitBehavior="blurAndSubmit"
                         />
                         <View style={styles.characterCount}>
                             <Text style={[

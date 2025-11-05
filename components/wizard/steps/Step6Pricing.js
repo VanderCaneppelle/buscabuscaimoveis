@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { View, Text, StyleSheet, TextInput, ScrollView, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -22,6 +22,9 @@ const parseCurrency = (formattedValue) => {
 };
 
 export default function Step5Pricing({ formData, updateFormData }) {
+    const priceInputRef = useRef(null);
+    const salePriceInputRef = useRef(null);
+
     const handlePriceChange = (value) => {
         const formatted = formatCurrency(value);
         updateFormData('price', formatted);
@@ -43,7 +46,7 @@ export default function Step5Pricing({ formData, updateFormData }) {
         <KeyboardAvoidingView 
             style={styles.container}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 180 : 20}
         >
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                 <ScrollView 
@@ -77,14 +80,16 @@ export default function Step5Pricing({ formData, updateFormData }) {
                     <View style={styles.priceInputContainer}>
                         <Text style={styles.currencySymbol}>R$</Text>
                         <TextInput
+                            ref={priceInputRef}
                             style={styles.priceInput}
                             value={formData.price}
                             onChangeText={handlePriceChange}
                             placeholder="0,00"
                             placeholderTextColor="#D1D5DB"
                             keyboardType="numeric"
-                            returnKeyType="done"
-                            onSubmitEditing={Keyboard.dismiss}
+                            returnKeyType="next"
+                            onSubmitEditing={() => salePriceInputRef.current?.focus()}
+                            blurOnSubmit={false}
                         />
                     </View>
                     <Text style={styles.hint}>
@@ -109,6 +114,7 @@ export default function Step5Pricing({ formData, updateFormData }) {
                     ]}>
                         <Text style={styles.currencySymbol}>R$</Text>
                         <TextInput
+                            ref={salePriceInputRef}
                             style={styles.priceInput}
                             value={formData.salePrice}
                             onChangeText={handleSalePriceChange}
@@ -117,6 +123,7 @@ export default function Step5Pricing({ formData, updateFormData }) {
                             keyboardType="numeric"
                             returnKeyType="done"
                             onSubmitEditing={Keyboard.dismiss}
+                            blurOnSubmit={true}
                         />
                     </View>
                     
