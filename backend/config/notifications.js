@@ -1,16 +1,16 @@
 // Configurações centralizadas das notificações diárias
 export const DAILY_NOTIFICATIONS = {
     morning: {
-        time: '09:40',
-        title: 'BOM DIA!! Que Deus Abençoe seu dia!!!',
-        body: 'Não esqueça de dar uma olhadinha no Busca Busca!!!!!'
+        time: '08:50',
+        title: 'BOM DIA!!',
+        body: 'Que Deus abençoe seu dia, que não faltem motivos para agradecer e nem coragem para SONHAR!!'
         ,
         data: { type: 'daily_reminder', time: 'morning' }
     },
     lunch: {
-        time: '12:40',
+        time: '12:55',
         title: 'BOA TARDE!!',
-        body: 'Não permita que o medo de errar seja maior do que acertar!!! Busca Busca!!!!',
+        body: 'Quanto a gente menos espera, coisas maravilhosas acontecem, que seu dia continue INCRÍVEL 🙏',
         data: { type: 'daily_reminder', time: 'lunch' }
     },
     afternoon: {

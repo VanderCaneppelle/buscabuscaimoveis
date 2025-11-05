@@ -24,7 +24,8 @@ export default function ViewerScreen({ navigation, route }) {
 
 
     useEffect(() => {
-        fetchStories();
+        const forceReload = !!route.params?.forceReload;
+        fetchStories(forceReload);
     }, []);
 
     useEffect(() => {
@@ -32,6 +33,17 @@ export default function ViewerScreen({ navigation, route }) {
             setCurrentIndex(route.params.initialStoryIndex);
         }
     }, [route.params?.initialStoryIndex]);
+
+    // Quando stories forem carregados e vier initialStoryId, focar nele
+    useEffect(() => {
+        const targetId = route.params?.initialStoryId;
+        if (targetId && stories.length > 0) {
+            const idx = stories.findIndex(s => s.id === targetId);
+            if (idx >= 0) {
+                setCurrentIndex(idx);
+            }
+        }
+    }, [stories, route.params?.initialStoryId]);
 
     useEffect(() => {
         // Reset progress quando muda de story
@@ -49,7 +61,7 @@ export default function ViewerScreen({ navigation, route }) {
         };
     }, []);
 
-    const fetchStories = async () => {
+    const fetchStories = async (forceReload = false) => {
         const cutoffDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
         const { data, error } = await supabase
             .from("stories")
