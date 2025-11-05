@@ -2,26 +2,27 @@
 export const DAILY_NOTIFICATIONS = {
     morning: {
         time: '09:40',
-        title: 'BOM DIA!!',
-        body: 'BOM DIA !! Que Deus Abençoe seu dia !!!',
+        title: 'BOM DIA!! Que Deus Abençoe seu dia!!!',
+        body: 'Não esqueça de dar uma olhadinha no Busca Busca!!!!!'
+        ,
         data: { type: 'daily_reminder', time: 'morning' }
     },
     lunch: {
         time: '12:40',
-        title: 'Lembrete',
-        body: 'Não esqueça de dar uma olhadinha Busca Busca !!!!!!',
+        title: 'BOA TARDE!!',
+        body: 'Não permita que o medo de errar seja maior do que acertar!!! Busca Busca!!!!',
         data: { type: 'daily_reminder', time: 'lunch' }
     },
     afternoon: {
         time: '16:40',
-        title: 'BOA TARDE!!',
-        body: 'BOA TARDE!! Não permita que o medo de errar seja maior do que acertar!!! Busca Busca !!!!',
+        title: 'OIEEE!!!',
+        body: 'SÓ PARA LEMBRAR QUE OS METROS QUADRADOS MAIS BARATOS É NO BUSCA BUSCA!!!!',
         data: { type: 'daily_reminder', time: 'afternoon' }
     },
     evening: {
         time: '20:15',
         title: 'BOA NOITE!!',
-        body: 'BOA NOITE!!! Durma com idéias e acorde com atitudes!!! Não esqueça de conferir as novidades Busca Busca!!!!',
+        body: 'Durma com idéias e acorde com atitudes!!! Não esqueça de conferir as novidades Busca Busca!!!!',
         data: { type: 'daily_reminder', time: 'evening' }
     }
 };
