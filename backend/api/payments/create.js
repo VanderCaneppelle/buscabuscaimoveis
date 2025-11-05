@@ -137,10 +137,13 @@ async function createMercadoPagoPreference(plan, user) {
 // Função específica para criar preferência de planos anuais com parcelamento
 async function createAnnualMercadoPagoPreference(plan, user) {
     const MERCADO_PAGO_ACCESS_TOKEN = process.env.EXPO_PUBLIC_MERCADO_PAGO_ACCESS_TOKEN;
+    const BASE_URL = process.env.API_BASE_URL;
 
     if (!MERCADO_PAGO_ACCESS_TOKEN) {
         throw new Error('Token do Mercado Pago não configurado');
     }
+
+    console.log('BASE_URL - createAnnualMercadoPagoPreference:', BASE_URL);
 
     const userEmail = user.email || `${user.id}@buscabusca.com`;
     const userName = user.name || userEmail.split('@')[0];
@@ -174,10 +177,6 @@ async function createAnnualMercadoPagoPreference(plan, user) {
             excluded_payment_types: [],
             installments: 12, // Máximo de 12 parcelas
             default_installments: 1 // Padrão à vista
-        },
-        // Habilitar parcelamento com juros
-        differential_pricing: {
-            id: 1 // ID do diferencial de preço (configurado no painel do Mercado Pago)
         }
     };
 
