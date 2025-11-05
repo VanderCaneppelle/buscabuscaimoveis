@@ -213,8 +213,8 @@ const styles = StyleSheet.create({
     },
     priceSection: {
         backgroundColor: '#fff',
-        borderRadius: 16,
-        padding: 24,
+        borderRadius: 12,
+        padding: 16,
         marginBottom: 20,
         borderWidth: 2,
         borderColor: '#E5E7EB',
@@ -226,8 +226,8 @@ const styles = StyleSheet.create({
     },
     salePriceSection: {
         backgroundColor: '#fff',
-        borderRadius: 16,
-        padding: 24,
+        borderRadius: 12,
+        padding: 16,
         marginBottom: 20,
         borderWidth: 2,
         borderColor: '#E5E7EB',
@@ -240,16 +240,16 @@ const styles = StyleSheet.create({
     priceLabelContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 16,
+        marginBottom: 12,
     },
     priceIconContainer: {
-        width: 48,
-        height: 48,
-        borderRadius: 24,
+        width: 40,
+        height: 40,
+        borderRadius: 20,
         backgroundColor: '#10B98115',
         alignItems: 'center',
         justifyContent: 'center',
-        marginRight: 12,
+        marginRight: 10,
     },
     saleIconContainer: {
         backgroundColor: '#F59E0B15',
@@ -260,12 +260,12 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     priceLabel: {
-        fontSize: 17,
+        fontSize: 16,
         fontWeight: '600',
         color: '#1F2937',
     },
     required: {
-        fontSize: 17,
+        fontSize: 16,
         fontWeight: '700',
         color: '#EF4444',
         marginLeft: 4,
@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         borderWidth: 2,
         borderColor: '#E5E7EB',
-        paddingHorizontal: 20,
+        paddingHorizontal: 16,
         marginBottom: 12,
     },
     priceInputContainerPromo: {
@@ -291,17 +291,17 @@ const styles = StyleSheet.create({
         backgroundColor: '#FFFBEB',
     },
     currencySymbol: {
-        fontSize: 28,
+        fontSize: 24,
         fontWeight: '700',
         color: '#6B7280',
         marginRight: 8,
     },
     priceInput: {
         flex: 1,
-        fontSize: 36,
+        fontSize: 32,
         fontWeight: '700',
         color: '#1F2937',
-        paddingVertical: 20,
+        paddingVertical: 16,
     },
     hint: {
         fontSize: 13,
