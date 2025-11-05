@@ -17,7 +17,8 @@ export default function MediaUploadModal({
     mediaFiles, 
     setMediaFiles,
     maxImages = 10,
-    maxVideos = 0 
+    maxVideos = 0,
+    imagesOnly = false
 }) {
     const [uploading, setUploading] = useState(false);
 
@@ -151,9 +152,12 @@ export default function MediaUploadModal({
                 <View style={styles.modal}>
                     <View style={styles.handle} />
                     
-                    <Text style={styles.title}>Adicionar Mídia</Text>
+                    <Text style={styles.title}>Adicionar Fotos</Text>
                     <Text style={styles.subtitle}>
-                        Escolha como deseja adicionar fotos ou vídeos
+                        {imagesOnly 
+                            ? 'Escolha como deseja adicionar fotos'
+                            : 'Escolha como deseja adicionar fotos ou vídeos'
+                        }
                     </Text>
 
                     {/* Limits Info */}
@@ -164,12 +168,14 @@ export default function MediaUploadModal({
                                 {imagesCount}/{maxImages} fotos
                             </Text>
                         </View>
-                        <View style={styles.limitItem}>
-                            <Ionicons name="videocam" size={16} color="#e74c3c" />
-                            <Text style={styles.limitText}>
-                                {videosCount}/{maxVideos} vídeos
-                            </Text>
-                        </View>
+                        {!imagesOnly && (
+                            <View style={styles.limitItem}>
+                                <Ionicons name="videocam" size={16} color="#e74c3c" />
+                                <Text style={styles.limitText}>
+                                    {videosCount}/{maxVideos} vídeos
+                                </Text>
+                            </View>
+                        )}
                     </View>
 
                     {/* Options */}
@@ -198,22 +204,24 @@ export default function MediaUploadModal({
                             <Text style={styles.optionDescription}>Selecione fotos</Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity
-                            style={[styles.option, !canAddVideos && styles.optionDisabled]}
-                            onPress={pickVideo}
-                            disabled={!canAddVideos || uploading}
-                        >
-                            <View style={[styles.optionIcon, { backgroundColor: '#e74c3c15' }]}>
-                                <Ionicons name="videocam" size={28} color="#e74c3c" />
-                            </View>
-                            <Text style={styles.optionTitle}>Vídeo</Text>
-                            <Text style={styles.optionDescription}>Selecione vídeo</Text>
-                            {!canAddVideos && (
-                                <View style={styles.disabledBadge}>
-                                    <Text style={styles.disabledBadgeText}>Limite</Text>
+                        {!imagesOnly && (
+                            <TouchableOpacity
+                                style={[styles.option, !canAddVideos && styles.optionDisabled]}
+                                onPress={pickVideo}
+                                disabled={!canAddVideos || uploading}
+                            >
+                                <View style={[styles.optionIcon, { backgroundColor: '#e74c3c15' }]}>
+                                    <Ionicons name="videocam" size={28} color="#e74c3c" />
                                 </View>
-                            )}
-                        </TouchableOpacity>
+                                <Text style={styles.optionTitle}>Vídeo</Text>
+                                <Text style={styles.optionDescription}>Selecione vídeo</Text>
+                                {!canAddVideos && (
+                                    <View style={styles.disabledBadge}>
+                                        <Text style={styles.disabledBadgeText}>Limite</Text>
+                                    </View>
+                                )}
+                            </TouchableOpacity>
+                        )}
                     </View>
 
                     {/* Cancel Button */}

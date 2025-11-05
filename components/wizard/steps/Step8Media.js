@@ -7,16 +7,19 @@ import {
     TouchableOpacity, 
     Image,
     FlatList,
-    Alert 
+    Alert,
+    TextInput 
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import MediaUploadModal from '../modals/MediaUploadModal';
+import { validateYouTubeUrl, normalizeYouTubeUrl, extractYouTubeVideoId } from '../../../lib/youtubeUtils';
 
-export default function Step7Media({ formData, mediaFiles, setMediaFiles, plan }) {
+export default function Step8Media({ formData, mediaFiles, setMediaFiles, videoUrls = [], setVideoUrls, plan }) {
     const [showUploadModal, setShowUploadModal] = useState(false);
+    const [youtubeUrlInput, setYoutubeUrlInput] = useState('');
 
-    const imagesCount = mediaFiles.filter(f => f.type !== 'video').length;
-    const videosCount = mediaFiles.filter(f => f.type === 'video').length;
+    const imagesCount = mediaFiles.length;
+    const videosCount = videoUrls.length;
     const maxImages = plan?.max_images || 10;
     const maxVideos = plan?.max_videos || 0;
 
@@ -39,14 +42,57 @@ export default function Step7Media({ formData, mediaFiles, setMediaFiles, plan }
         );
     };
 
+    const handleRemoveVideo = (index) => {
+        Alert.alert(
+            'Remover vídeo',
+            'Deseja realmente remover este vídeo?',
+            [
+                { text: 'Cancelar', style: 'cancel' },
+                {
+                    text: 'Remover',
+                    style: 'destructive',
+                    onPress: () => {
+                        const newVideoUrls = [...videoUrls];
+                        newVideoUrls.splice(index, 1);
+                        setVideoUrls(newVideoUrls);
+                    }
+                }
+            ]
+        );
+    };
+
+    const handleAddYouTubeUrl = () => {
+        if (!youtubeUrlInput.trim()) {
+            Alert.alert('URL vazia', 'Por favor, insira uma URL do YouTube.');
+            return;
+        }
+
+        if (videosCount >= maxVideos) {
+            Alert.alert('Limite atingido', `Você já adicionou o máximo de ${maxVideos} vídeo(s) permitido pelo seu plano.`);
+            return;
+        }
+
+        const validation = validateYouTubeUrl(youtubeUrlInput.trim());
+        if (!validation.valid) {
+            Alert.alert('URL inválida', validation.error);
+            return;
+        }
+
+        const normalizedUrl = normalizeYouTubeUrl(youtubeUrlInput.trim());
+        
+        // Verificar se já não existe
+        if (videoUrls.includes(normalizedUrl)) {
+            Alert.alert('Vídeo duplicado', 'Este vídeo já foi adicionado.');
+            return;
+        }
+
+        setVideoUrls([...videoUrls, normalizedUrl]);
+        setYoutubeUrlInput('');
+    };
+
     const renderMediaItem = ({ item, index }) => (
         <View style={styles.mediaCard}>
             <Image source={{ uri: item.uri }} style={styles.mediaImage} />
-            {item.type === 'video' && (
-                <View style={styles.videoOverlay}>
-                    <Ionicons name="play-circle" size={32} color="#fff" />
-                </View>
-            )}
             <TouchableOpacity
                 style={styles.removeButton}
                 onPress={() => handleRemoveMedia(index)}
@@ -54,16 +100,38 @@ export default function Step7Media({ formData, mediaFiles, setMediaFiles, plan }
                 <Ionicons name="close-circle" size={24} color="#EF4444" />
             </TouchableOpacity>
             <View style={styles.mediaTypeTag}>
-                <Text style={styles.mediaTypeText}>
-                    {item.type === 'video' ? '🎥 Vídeo' : '📷 Foto'}
-                </Text>
+                <Text style={styles.mediaTypeText}>📷 Foto</Text>
             </View>
         </View>
     );
 
+    const renderVideoItem = ({ item, index }) => {
+        const videoId = extractYouTubeVideoId(item);
+        if (!videoId) return null;
+        const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+        
+        return (
+            <View style={styles.videoCard}>
+                <Image source={{ uri: thumbnailUrl }} style={styles.videoThumbnail} />
+                <View style={styles.videoOverlay}>
+                    <Ionicons name="play-circle" size={32} color="#fff" />
+                </View>
+                <TouchableOpacity
+                    style={styles.removeButton}
+                    onPress={() => handleRemoveVideo(index)}
+                >
+                    <Ionicons name="close-circle" size={24} color="#EF4444" />
+                </TouchableOpacity>
+                <View style={styles.videoTypeTag}>
+                    <Ionicons name="logo-youtube" size={16} color="#fff" />
+                    <Text style={styles.videoTypeText}>YouTube</Text>
+                </View>
+            </View>
+        );
+    };
+
     const canAddImages = imagesCount < maxImages;
     const canAddVideos = videosCount < maxVideos;
-    const hasMedia = mediaFiles.length > 0;
 
     return (
         <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -89,34 +157,87 @@ export default function Step7Media({ formData, mediaFiles, setMediaFiles, plan }
                     </View>
                 </View>
 
-                {/* Media Grid */}
-                {hasMedia && (
-                    <FlatList
-                        data={mediaFiles}
-                        renderItem={renderMediaItem}
-                        keyExtractor={(item, index) => index.toString()}
-                        numColumns={2}
-                        columnWrapperStyle={styles.mediaRow}
-                        scrollEnabled={false}
-                        style={styles.mediaGrid}
-                    />
-                )}
+                {/* Fotos Section */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>📷 Fotos</Text>
+                    {mediaFiles.length > 0 && (
+                        <FlatList
+                            data={mediaFiles}
+                            renderItem={renderMediaItem}
+                            keyExtractor={(item, index) => `photo-${index}`}
+                            numColumns={2}
+                            columnWrapperStyle={styles.mediaRow}
+                            scrollEnabled={false}
+                            style={styles.mediaGrid}
+                        />
+                    )}
+                    {canAddImages && (
+                        <TouchableOpacity
+                            style={styles.addButton}
+                            onPress={() => setShowUploadModal(true)}
+                            activeOpacity={0.7}
+                        >
+                            <View style={styles.addButtonIcon}>
+                                <Ionicons name="add" size={32} color="#3498db" />
+                            </View>
+                            <Text style={styles.addButtonText}>
+                                {mediaFiles.length > 0 ? 'Adicionar mais fotos' : 'Adicionar fotos'}
+                            </Text>
+                        </TouchableOpacity>
+                    )}
+                </View>
 
-                {/* Add Media Button */}
-                {(canAddImages || canAddVideos) && (
-                    <TouchableOpacity
-                        style={styles.addButton}
-                        onPress={() => setShowUploadModal(true)}
-                        activeOpacity={0.7}
-                    >
-                        <View style={styles.addButtonIcon}>
-                            <Ionicons name="add" size={32} color="#3498db" />
+                {/* Vídeos YouTube Section */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>🎥 Vídeos do YouTube</Text>
+                    <Text style={styles.sectionSubtitle}>
+                        Cole o link do vídeo do YouTube (não pode ser YouTube Shorts)
+                    </Text>
+
+                    {/* YouTube URL Input */}
+                    {canAddVideos && (
+                        <View style={styles.youtubeInputContainer}>
+                            <TextInput
+                                style={styles.youtubeInput}
+                                placeholder="https://www.youtube.com/watch?v=..."
+                                value={youtubeUrlInput}
+                                onChangeText={setYoutubeUrlInput}
+                                autoCapitalize="none"
+                                autoCorrect={false}
+                                keyboardType="url"
+                            />
+                            <TouchableOpacity
+                                style={styles.addYouTubeButton}
+                                onPress={handleAddYouTubeUrl}
+                                activeOpacity={0.7}
+                            >
+                                <Ionicons name="add" size={24} color="#fff" />
+                            </TouchableOpacity>
                         </View>
-                        <Text style={styles.addButtonText}>
-                            {hasMedia ? 'Adicionar mais mídias' : 'Adicionar fotos e vídeos'}
-                        </Text>
-                    </TouchableOpacity>
-                )}
+                    )}
+
+                    {/* Videos Grid */}
+                    {videoUrls.length > 0 && (
+                        <FlatList
+                            data={videoUrls}
+                            renderItem={renderVideoItem}
+                            keyExtractor={(item, index) => `video-${index}`}
+                            numColumns={2}
+                            columnWrapperStyle={styles.mediaRow}
+                            scrollEnabled={false}
+                            style={styles.mediaGrid}
+                        />
+                    )}
+
+                    {!canAddVideos && videoUrls.length === 0 && (
+                        <View style={styles.limitReachedCard}>
+                            <Ionicons name="information-circle" size={20} color="#F59E0B" />
+                            <Text style={styles.limitReachedText}>
+                                Seu plano não permite adicionar vídeos do YouTube
+                            </Text>
+                        </View>
+                    )}
+                </View>
 
                 {/* Tips */}
                 <View style={styles.tipsCard}>
@@ -140,14 +261,15 @@ export default function Step7Media({ formData, mediaFiles, setMediaFiles, plan }
                 </View>
             </View>
 
-            {/* Upload Modal */}
+            {/* Upload Modal - Apenas para fotos */}
             <MediaUploadModal
                 visible={showUploadModal}
                 onClose={() => setShowUploadModal(false)}
                 mediaFiles={mediaFiles}
                 setMediaFiles={setMediaFiles}
                 maxImages={maxImages}
-                maxVideos={maxVideos}
+                maxVideos={0}
+                imagesOnly={true}
             />
         </ScrollView>
     );
@@ -288,6 +410,87 @@ const styles = StyleSheet.create({
         fontSize: 13,
         color: '#92400E',
         marginLeft: 8,
+        flex: 1,
+    },
+    section: {
+        marginBottom: 30,
+    },
+    sectionTitle: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: '#1F2937',
+        marginBottom: 8,
+    },
+    sectionSubtitle: {
+        fontSize: 13,
+        color: '#6B7280',
+        marginBottom: 16,
+    },
+    youtubeInputContainer: {
+        flexDirection: 'row',
+        marginBottom: 16,
+        gap: 8,
+    },
+    youtubeInput: {
+        flex: 1,
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: 14,
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+        fontSize: 14,
+        color: '#1F2937',
+    },
+    addYouTubeButton: {
+        backgroundColor: '#e74c3c',
+        borderRadius: 12,
+        width: 50,
+        height: 50,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    videoCard: {
+        width: '48%',
+        aspectRatio: 16/9,
+        borderRadius: 12,
+        overflow: 'hidden',
+        backgroundColor: '#E5E7EB',
+        position: 'relative',
+    },
+    videoThumbnail: {
+        width: '100%',
+        height: '100%',
+    },
+    videoTypeTag: {
+        position: 'absolute',
+        bottom: 8,
+        left: 8,
+        backgroundColor: 'rgba(0,0,0,0.7)',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 6,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+    },
+    videoTypeText: {
+        fontSize: 11,
+        color: '#fff',
+        fontWeight: '600',
+    },
+    limitReachedCard: {
+        backgroundColor: '#FFFBEB',
+        borderRadius: 12,
+        padding: 16,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        borderWidth: 1,
+        borderColor: '#FDE68A',
+    },
+    limitReachedText: {
+        fontSize: 14,
+        color: '#92400E',
         flex: 1,
     },
 });

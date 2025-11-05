@@ -72,6 +72,7 @@ export default function CreateAdWizard({ navigation }) {
     });
 
     const [mediaFiles, setMediaFiles] = useState([]);
+    const [videoUrls, setVideoUrls] = useState([]);
 
     // Animation
     const slideAnim = useRef(new Animated.Value(1)).current;
@@ -243,8 +244,8 @@ export default function CreateAdWizard({ navigation }) {
             isExpired: false
         };
 
-        const imagesCount = mediaFiles.filter(f => f.type !== 'video').length;
-        const videosCount = mediaFiles.filter(f => f.type === 'video').length;
+        const imagesCount = mediaFiles.length;
+        const videosCount = videoUrls.length;
 
         const withinLimits = await validateMediaLimitsByPlan({
             imagesCount,
@@ -278,7 +279,7 @@ export default function CreateAdWizard({ navigation }) {
                 setUploadProgress(progress);
             };
 
-            const newProperty = await PropertyService.createProperty(propertyData, mediaFiles, onUploadProgress);
+            const newProperty = await PropertyService.createProperty(propertyData, mediaFiles, onUploadProgress, videoUrls);
 
             incrementAdCount();
             setShowProgressModal(false);
@@ -338,6 +339,8 @@ export default function CreateAdWizard({ navigation }) {
                         formData={formData}
                         mediaFiles={mediaFiles}
                         setMediaFiles={setMediaFiles}
+                        videoUrls={videoUrls}
+                        setVideoUrls={setVideoUrls}
                         plan={plan}
                     />
                 )}
@@ -345,6 +348,7 @@ export default function CreateAdWizard({ navigation }) {
                     <Step9Review 
                         formData={formData}
                         mediaFiles={mediaFiles}
+                        videoUrls={videoUrls}
                         onEditStep={handleEditStep}
                     />
                 )}

@@ -1,15 +1,15 @@
-name: Notificação da Noite
+name: Notificação do Almoço
 
 on:
   schedule:
-    # 8:15 PM (horário de Brasília) = 23:15 UTC
-    - cron: '15 23 * * *'
+    # 12:40 PM (horário de Brasília) = 15:40 UTC
+    - cron: '40 15 * * *'
   
   # Permitir execução manual
   workflow_dispatch:
 
 jobs:
-  send-evening-notification:
+  send-lunch-notification:
     runs-on: ubuntu-latest
     
     steps:
@@ -35,16 +35,16 @@ jobs:
           echo "EXPO_PUBLIC_SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> $GITHUB_ENV
           echo "SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" >> $GITHUB_ENV
       
-      - name: Enviar notificação da noite
+      - name: Enviar notificação do almoço
         run: |
           cd backend
-          node scripts/send-notification.js evening
+          node scripts/send-notification.js lunch
       
       - name: Notificar resultado
         if: always()
         run: |
           if [ ${{ job.status }} == 'success' ]; then
-            echo "✅ Notificação da noite enviada com sucesso"
+            echo "✅ Notificação do almoço enviada com sucesso"
           else
-            echo "❌ Falha ao enviar notificação da noite"
+            echo "❌ Falha ao enviar notificação do almoço"
           fi

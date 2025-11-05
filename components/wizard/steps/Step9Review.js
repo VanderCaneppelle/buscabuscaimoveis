@@ -27,9 +27,9 @@ const InfoRow = ({ label, value, highlight }) => (
     </View>
 );
 
-export default function Step8Review({ formData, mediaFiles, onEditStep }) {
-    const imagesCount = mediaFiles.filter(f => f.type !== 'video').length;
-    const videosCount = mediaFiles.filter(f => f.type === 'video').length;
+export default function Step9Review({ formData, mediaFiles, videoUrls = [], onEditStep }) {
+    const imagesCount = mediaFiles.length;
+    const videosCount = videoUrls.length;
 
     return (
         <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -172,21 +172,32 @@ export default function Step8Review({ formData, mediaFiles, onEditStep }) {
                             <Text style={styles.mediaStatText}>{videosCount} vídeo{videosCount !== 1 ? 's' : ''}</Text>
                         </View>
                     </View>
-                    {mediaFiles.length > 0 && (
+                    {(mediaFiles.length > 0 || videoUrls.length > 0) && (
                         <View style={styles.mediaPreview}>
+                            {/* Fotos */}
                             {mediaFiles.slice(0, 4).map((media, index) => (
-                                <View key={index} style={styles.mediaThumb}>
+                                <View key={`photo-${index}`} style={styles.mediaThumb}>
                                     <Image source={{ uri: media.uri }} style={styles.mediaThumbImage} />
-                                    {media.type === 'video' && (
-                                        <View style={styles.videoThumbOverlay}>
-                                            <Ionicons name="play" size={16} color="#fff" />
-                                        </View>
-                                    )}
                                 </View>
                             ))}
-                            {mediaFiles.length > 4 && (
+                            {/* Vídeos do YouTube */}
+                            {videoUrls.slice(0, Math.max(0, 4 - mediaFiles.length)).map((url, index) => {
+                                // Extrair videoId da URL
+                                const videoId = url.match(/[?&]v=([^&]+)/)?.[1] || url.split('/').pop();
+                                if (!videoId) return null;
+                                const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+                                return (
+                                    <View key={`video-${index}`} style={styles.mediaThumb}>
+                                        <Image source={{ uri: thumbnailUrl }} style={styles.mediaThumbImage} />
+                                        <View style={styles.videoThumbOverlay}>
+                                            <Ionicons name="logo-youtube" size={16} color="#fff" />
+                                        </View>
+                                    </View>
+                                );
+                            })}
+                            {(mediaFiles.length + videoUrls.length) > 4 && (
                                 <View style={[styles.mediaThumb, styles.mediaThumbMore]}>
-                                    <Text style={styles.mediaThumbMoreText}>+{mediaFiles.length - 4}</Text>
+                                    <Text style={styles.mediaThumbMoreText}>+{(mediaFiles.length + videoUrls.length) - 4}</Text>
                                 </View>
                             )}
                         </View>
