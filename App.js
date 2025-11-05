@@ -122,12 +122,18 @@ function AppContent() {
 
             case 'daily_reminder':
               console.log('🔄 Navegando para home...');
-              navigationRef.current.navigate('Home', params);
+              navigationRef.current.navigate('MainTabs', {
+                screen: 'Busca',
+                params: { screen: 'HomeMain' }
+              });
               break;
 
             default:
               console.log('🔄 Navegando para home (padrão)...');
-              navigationRef.current.navigate('Home', params);
+              navigationRef.current.navigate('MainTabs', {
+                screen: 'Busca',
+                params: { screen: 'HomeMain' }
+              });
               break;
           }
         }

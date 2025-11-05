@@ -106,13 +106,13 @@ export default function StoriesComponent({ navigation }) {
             const cutoffDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
             console.log('📅 Cutoff date:', cutoffDate);
 
-            // Buscar stories do Supabase primeiro
+            // Buscar stories do Supabase primeiro (mais recentes primeiro)
             const { data: supabaseStories, error } = await supabase
                 .from('stories')
                 .select('*')
                 .eq('status', 'active')
                 .gte('created_at', cutoffDate)
-                .order('order_index', { ascending: true })
+                .order('created_at', { ascending: false })
                 .limit(10);
 
             if (error) {

@@ -68,7 +68,7 @@ export default function ViewerScreen({ navigation, route }) {
             .select("*")
             .eq("status", "active")
             .gte("created_at", cutoffDate)
-            .order("order_index", { ascending: true });
+            .order("created_at", { ascending: false });
 
         if (!error && data) {
             setStories(data);
