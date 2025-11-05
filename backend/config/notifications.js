@@ -1,21 +1,27 @@
 // Configurações centralizadas das notificações diárias
 export const DAILY_NOTIFICATIONS = {
     morning: {
-        time: '09:00',
-        title: '🌅 Bom dia!',
-        body: 'Que tal conferir as novidades no Busca Busca Imóveis?',
+        time: '09:40',
+        title: 'BOM DIA!!',
+        body: 'BOM DIA !! Que Deus Abençoe seu dia !!!',
         data: { type: 'daily_reminder', time: 'morning' }
     },
+    lunch: {
+        time: '12:40',
+        title: 'Lembrete',
+        body: 'Não esqueça de dar uma olhadinha Busca Busca !!!!!!',
+        data: { type: 'daily_reminder', time: 'lunch' }
+    },
     afternoon: {
-        time: '15:00',
-        title: '☀️ Boa tarde!',
-        body: 'Novos imóveis podem ter chegado! Dê uma olhada no app.',
+        time: '16:40',
+        title: 'BOA TARDE!!',
+        body: 'BOA TARDE!! Não permita que o medo de errar seja maior do que acertar!!! Busca Busca !!!!',
         data: { type: 'daily_reminder', time: 'afternoon' }
     },
     evening: {
-        time: '21:00',
-        title: '🌙 Boa noite!',
-        body: 'Não esqueça de conferir o Busca Busca Imóveis antes de dormir!',
+        time: '20:15',
+        title: 'BOA NOITE!!',
+        body: 'BOA NOITE!!! Durma com idéias e acorde com atitudes!!! Não esqueça de conferir as novidades Busca Busca!!!!',
         data: { type: 'daily_reminder', time: 'evening' }
     }
 };
