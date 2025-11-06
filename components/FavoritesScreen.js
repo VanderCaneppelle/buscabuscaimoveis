@@ -130,7 +130,7 @@ export default function FavoritesScreen({ navigation }) {
                 `)
                 .eq('user_id', user.id)
                 .eq('properties.status', 'approved')
-                .eq('properties.ad_status', 'active') // ✨ NOVO - Filtrar apenas ativos
+                .eq('properties.ad_status', 'active')
                 .order('created_at', { ascending: false });
 
             if (error) {

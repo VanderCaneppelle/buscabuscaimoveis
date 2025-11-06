@@ -34,6 +34,7 @@ import { FiltersModal, DevelopersFilterModal, RealtorsFilterModal } from './moda
 import NotificationBell from './NotificationBell';
 
 const { width } = Dimensions.get('window');
+const isSmallScreen = width < 420; // Detectar telas menores (S22 e similares)
 
 // FunÃ§Ã£o debounce para otimizar performance
 const debounce = (func, wait) => {
@@ -914,11 +915,13 @@ export default function HomeScreen({ navigation }) {
                             onPress={() => handleQuickFilter('developer')}
                             activeOpacity={0.7}
                         >
-                            <Ionicons 
-                                name="business" 
-                                size={14} 
-                                color={quickFilter === 'developer' ? '#fff' : '#00335e'} 
-                            />
+                            {!isSmallScreen && (
+                                <Ionicons 
+                                    name="business" 
+                                    size={14} 
+                                    color={quickFilter === 'developer' ? '#fff' : '#00335e'} 
+                                />
+                            )}
                             <Text style={[
                                 styles.quickFilterText,
                                 quickFilter === 'developer' && styles.quickFilterTextActive
@@ -935,11 +938,13 @@ export default function HomeScreen({ navigation }) {
                             onPress={() => handleQuickFilter('realtor')}
                             activeOpacity={0.7}
                         >
-                            <Ionicons 
-                                name="people" 
-                                size={14} 
-                                color={quickFilter === 'realtor' ? '#fff' : '#00335e'} 
-                            />
+                            {!isSmallScreen && (
+                                <Ionicons 
+                                    name="people" 
+                                    size={14} 
+                                    color={quickFilter === 'realtor' ? '#fff' : '#00335e'} 
+                                />
+                            )}
                             <Text style={[
                                 styles.quickFilterText,
                                 quickFilter === 'realtor' && styles.quickFilterTextActive
@@ -956,11 +961,13 @@ export default function HomeScreen({ navigation }) {
                             onPress={() => handleQuickFilter('owner')}
                             activeOpacity={0.7}
                         >
-                            <Ionicons 
-                                name="home" 
-                                size={14} 
-                                color={quickFilter === 'owner' ? '#fff' : '#00335e'} 
-                            />
+                            {!isSmallScreen && (
+                                <Ionicons 
+                                    name="home" 
+                                    size={14} 
+                                    color={quickFilter === 'owner' ? '#fff' : '#00335e'} 
+                                />
+                            )}
                             <Text style={[
                                 styles.quickFilterText,
                                 quickFilter === 'owner' && styles.quickFilterTextActive
@@ -1826,14 +1833,14 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         marginTop: 12,
         marginBottom: 8,
-        gap: 10,
+        gap: isSmallScreen ? 6 : 10, // Gap menor em telas pequenas
     },
     quickFilterButton: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: 10,
-        paddingHorizontal: 8,
+        paddingVertical: isSmallScreen ? 8 : 10,
+        paddingHorizontal: isSmallScreen ? 6 : 8, // Padding menor em telas pequenas
         backgroundColor: '#f8f9fa',
         borderRadius: 8,
         borderWidth: 1.5,
@@ -1847,8 +1854,8 @@ const styles = StyleSheet.create({
         borderColor: '#00335e',
     },
     quickFilterText: {
-        fontSize: 12,
-        fontWeight: '600',
+        fontSize: isSmallScreen ? 10 : 12, // Fonte menor em telas pequenas
+        fontWeight: isSmallScreen ? '500' : '600', // Peso menor em telas pequenas
         color: '#00335e',
         textAlign: 'center',
     },

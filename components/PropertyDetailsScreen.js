@@ -40,19 +40,19 @@ export default function PropertyDetailsScreen({ route, navigation }) {
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [isOwnerOnFreePlan, setIsOwnerOnFreePlan] = useState(false);
     const [mediaViewMode, setMediaViewMode] = useState('photos'); // 'photos' ou 'videos'
-    // Verificar plano do dono do anúncio antecipadamente (evita múltiplas RPCs nos handlers)
+    
+    // Verificar plano do dono do anúncio (usando RPC com fallback)
     useEffect(() => {
         let mounted = true;
         (async () => {
             try {
                 const ownerPlan = await PlanService.getUserActivePlan(property.user_id);
                 const ownerPlanName = ownerPlan?.name || ownerPlan?.plan?.name;
-                // Se não houver assinatura/plano retornado, considerar como plano gratuito
                 const computedIsFree = !ownerPlan || ownerPlanName === 'free';
                 if (mounted) setIsOwnerOnFreePlan(computedIsFree);
             } catch (e) {
-                console.warn('⚠️ Não foi possível obter plano do dono do anúncio (init).', e);
-                if (mounted) setIsOwnerOnFreePlan(false);
+                console.warn('⚠️ Não foi possível obter plano do dono, considerando FREE:', e.message);
+                if (mounted) setIsOwnerOnFreePlan(true); // Fallback para free em caso de erro
             }
         })();
         return () => { mounted = false; };

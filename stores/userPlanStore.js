@@ -80,10 +80,11 @@ export const useUserPlanStore = create((set, get) => ({
 
         try {
             // Buscar dados em paralelo (mais rápido)
-            const [eligibility, manageInfo, snapshot] = await Promise.all([
+            const [eligibility, manageInfo, snapshot, adCounts] = await Promise.all([
                 PlanService.getUserEligibility(userId),
                 PlanService.userCanManageAds(userId),
-                PlanService.getUserPlanSnapshot(userId) // ✅ Buscar snapshot para ter plano completo
+                PlanService.getUserPlanSnapshot(userId), // ✅ Buscar snapshot para ter plano completo
+                PlanService.getUserAdCounts(userId) // ✅ Buscar contagens detalhadas
             ]);
 
             // Calcular availableAds
@@ -93,7 +94,7 @@ export const useUserPlanStore = create((set, get) => ({
                 planName: eligibility.planName,
                 planDisplayName: eligibility.planDisplayName,
                 snapshotPlan: snapshot.plan,
-                 maxImages: snapshot.plan?.max_images,
+                maxImages: snapshot.plan?.max_images,
                 maxVideos: snapshot.plan?.max_videos,
                 currentAds: eligibility.currentAds,
                 maxAds: eligibility.maxAds,
@@ -102,20 +103,31 @@ export const useUserPlanStore = create((set, get) => ({
                 isExpired: eligibility.isExpired,
                 status: eligibility.status,
                 canCreate: eligibility.canCreate,
-                canManage: manageInfo.canManageAds
+                canManage: manageInfo.canManageAds,
+                approvedActive: adCounts.approvedActive
             });
 
-            // Calcular permissão de boost (usuário com plano pago pode impulsionar)
-            const canBoostAd = !eligibility.isFreePlan && !eligibility.isExpired;
-            const boostAdReason = eligibility.isFreePlan
-                ? 'Você precisa de um plano pago para impulsionar anúncios'
-                : eligibility.isExpired
-                    ? 'Seu plano está vencido. Renove para impulsionar anúncios'
-                    : '';
+            // ✨ Calcular permissão de boost:
+            // 1. Plano pago (não free)
+            // 2. Plano não vencido
+            // 3. Tem pelo menos 1 anúncio aprovado E ativo
+            const hasApprovedActiveAds = adCounts.approvedActive > 0;
+            const canBoostAd = !eligibility.isFreePlan && !eligibility.isExpired && hasApprovedActiveAds;
+            
+            let boostAdReason = '';
+            if (eligibility.isFreePlan) {
+                boostAdReason = 'Você precisa de um plano pago para impulsionar anúncios';
+            } else if (eligibility.isExpired) {
+                boostAdReason = 'Seu plano está vencido. Renove para impulsionar anúncios';
+            } else if (!hasApprovedActiveAds) {
+                boostAdReason = 'Você precisa ter pelo menos 1 anúncio aprovado e ativo para impulsionar';
+            }
 
             console.log('[UserPlanStore] 🎯 Cálculo de boost:', {
                 isFreePlan: eligibility.isFreePlan,
                 isExpired: eligibility.isExpired,
+                hasApprovedActiveAds,
+                approvedActiveCount: adCounts.approvedActive,
                 canBoostAd,
                 boostAdReason
             });
@@ -224,7 +236,8 @@ export const useUserPlanStore = create((set, get) => ({
             isPlanExpired: newPlanData.isExpired ?? get().isPlanExpired,
             maxAds: newPlanData.maxAds || get().maxAds,
             availableAds: newPlanData.maxAds ? newPlanData.maxAds - get().currentAds : get().availableAds,
-            canBoostAd: !newPlanData.isFreePlan && !newPlanData.isExpired,
+            // ⚠️ Não atualizar canBoostAd aqui - precisa de adCounts.approvedActive
+            // A próxima busca (cache invalidado) vai recalcular corretamente
             lastFetch: null // Invalidar cache para próxima busca
         });
     },
