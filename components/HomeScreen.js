@@ -18,7 +18,7 @@ import { Image } from 'expo-image';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
-import MapView, { Marker, Callout, PROVIDER_GOOGLE, PROVIDER_DEFAULT } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE, PROVIDER_DEFAULT } from 'react-native-maps';
 import ClusteredMapView from 'react-native-map-clustering';
 import FavoriteButton from './FavoriteButton';
 import { useFocusEffect } from '@react-navigation/native';
@@ -124,6 +124,7 @@ export default function HomeScreen({ navigation }) {
     const [showDevelopersModal, setShowDevelopersModal] = useState(false);
     const [showRealtorsModal, setShowRealtorsModal] = useState(false);
     const [showMap, setShowMap] = useState(false);
+    const [selectedProperty, setSelectedProperty] = useState(null); // Propriedade selecionada no mapa
 
     // Cores dinÃ¢micas baseadas no tema do dispositivo
     const colors = {
@@ -708,7 +709,15 @@ export default function HomeScreen({ navigation }) {
                     <View style={styles.addressContainer}>
                         <Ionicons name="location-outline" size={14} color="#666" />
                         <Text style={styles.propertyLocation}>
-                            {item.neighborhood ?? item.address}, {item.city ?? item.state}
+                            {(() => {
+                                // Padrão: Bairro, Cidade. Se não tiver bairro: Endereço, Cidade
+                                const neighborhood = item.neighborhood?.trim();
+                                const address = item.address?.trim();
+                                const city = item.city?.trim() || item.state?.trim();
+                                
+                                const firstPart = neighborhood || address || '';
+                                return [firstPart, city].filter(Boolean).join(', ');
+                            })()}
                         </Text>
                     </View>
 
@@ -1004,40 +1013,65 @@ export default function HomeScreen({ navigation }) {
                                     <Marker
                                         key={`map-prop-${p.id}`}
                                         coordinate={{ latitude: lat, longitude: lng }}
-                                        pinColor="#00335e"
-                                    >
-                                        <Callout tooltip={true} onPress={() => navigation.navigate('PropertyDetails', { property: p })}>
-                                            <View style={styles.calloutContainer}>
-                                                <View style={styles.calloutRow}>
-                                                    <Image
-                                                        source={{ uri: (p.images && p.images[0]) ? p.images[0] : 'https://via.placeholder.com/120x90?text=Foto' }}
-                                                        style={styles.calloutImage}
-                                                        contentFit="cover"
-                                                    />
-                                                    <View style={styles.calloutTextContainer}>
-                                                        <View>
-                                                            <Text style={styles.calloutTitle} numberOfLines={1}>{p.title ?? 'Imóvel'}</Text>
-                                                            <Text style={styles.calloutSubtitle} numberOfLines={1}>{(p.neighborhood ?? p.address) + ', ' + (p.city ?? p.state)}</Text>
-                                                            <Text style={styles.calloutPrice}>
-                                                                {((p.sale_price ?? p.salePrice) && parseFloat(p.sale_price ?? p.salePrice) > 0)
-                                                                    ? `R$ ${(p.sale_price ?? p.salePrice)?.toLocaleString('pt-BR')}`
-                                                                    : `R$ ${p.price?.toLocaleString('pt-BR') ?? '—'}`}
-                                                            </Text>
-                                                        </View>
-                                                        <View style={styles.calloutButton}>
-                                                            <Text style={styles.calloutButtonText}>Ver mais</Text>
-                                                        </View>
-                                                    </View>
-                                                </View>
-                                            </View>
-                                        </Callout>
-                                    </Marker>
+                                        pinColor={selectedProperty?.id === p.id ? "#e74c3c" : "#00335e"}
+                                        tracksViewChanges={false}
+                                        onPress={() => setSelectedProperty(p)}
+                                    />
                                 );
                             })}
                         </ClusteredMapView>
                         {(listLoading || isSearching || refreshing) && (
                             <View style={styles.mapLoadingOverlay}>
                                 <Text style={styles.mapLoadingText}>Aplicando filtros...</Text>
+                            </View>
+                        )}
+                        
+                        {/* Card inferior com propriedade selecionada */}
+                        {selectedProperty && (
+                            <View style={styles.mapPropertyCard}>
+                                <TouchableOpacity
+                                    style={styles.mapPropertyCardContent}
+                                    onPress={() => navigation.navigate('PropertyDetails', { property: selectedProperty })}
+                                    activeOpacity={0.9}
+                                >
+                                    <Image
+                                        source={{ uri: (selectedProperty.images && selectedProperty.images[0]) ? selectedProperty.images[0] : 'https://via.placeholder.com/120x90?text=Foto' }}
+                                        style={styles.mapPropertyImage}
+                                        contentFit="cover"
+                                    />
+                                    <View style={styles.mapPropertyInfo}>
+                                        <Text style={styles.mapPropertyTitle} numberOfLines={2}>
+                                            {selectedProperty.title ?? 'Imóvel'}
+                                        </Text>
+                                        <Text style={styles.mapPropertyLocation} numberOfLines={1}>
+                                            <Ionicons name="location-outline" size={14} color="#64748b" />
+                                            {' '}
+                                            {(() => {
+                                                const neighborhood = selectedProperty.neighborhood?.trim();
+                                                const address = selectedProperty.address?.trim();
+                                                const city = selectedProperty.city?.trim() || selectedProperty.state?.trim();
+                                                const firstPart = neighborhood || address || '';
+                                                return [firstPart, city].filter(Boolean).join(', ');
+                                            })()}
+                                        </Text>
+                                        <Text style={styles.mapPropertyPrice}>
+                                            {((selectedProperty.sale_price ?? selectedProperty.salePrice) && parseFloat(selectedProperty.sale_price ?? selectedProperty.salePrice) > 0)
+                                                ? `R$ ${(selectedProperty.sale_price ?? selectedProperty.salePrice)?.toLocaleString('pt-BR')}`
+                                                : `R$ ${selectedProperty.price?.toLocaleString('pt-BR') ?? '—'}`}
+                                        </Text>
+                                        <View style={styles.mapPropertyButton}>
+                                            <Text style={styles.mapPropertyButtonText}>Ver detalhes</Text>
+                                            <Ionicons name="arrow-forward" size={16} color="#fff" />
+                                        </View>
+                                    </View>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={styles.mapPropertyCloseButton}
+                                    onPress={() => setSelectedProperty(null)}
+                                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                                >
+                                    <Ionicons name="close" size={24} color="#64748b" />
+                                </TouchableOpacity>
                             </View>
                         )}
                     </View>
@@ -1764,7 +1798,7 @@ const styles = StyleSheet.create({
     floatingMapButton: {
         position: 'absolute',
         right: 16,
-        bottom: 24,
+        bottom: 10,
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: '#00335e',
@@ -1927,65 +1961,74 @@ const styles = StyleSheet.create({
         fontSize: 13,
         paddingHorizontal: 4,
     },
-    // Callout styles
-    calloutContainer: {
-        minWidth: 220,
-        maxWidth: 260,
+    // Map property card (card inferior no mapa)
+    mapPropertyCard: {
+        position: 'absolute',
+        bottom: 60,
+        left: 15,
+        right: 15,
         backgroundColor: '#fff',
-        borderRadius: 12,
-        padding: 10,
+        borderRadius: 16,
+        padding: 12,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-        elevation: 6,
-        borderWidth: 1,
-        borderColor: '#e5e7eb',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 10,
     },
-    calloutRow: {
+    mapPropertyCardContent: {
         flexDirection: 'row',
-        alignItems: 'stretch',
     },
-    calloutImage: {
-        width: 90,
-        height: '100%',
-        borderRadius: 8,
+    mapPropertyImage: {
+        width: 100,
+        height: 100,
+        borderRadius: 12,
         backgroundColor: '#e5e7eb',
-        marginRight: 10,
     },
-    calloutTextContainer: {
+    mapPropertyInfo: {
         flex: 1,
+        marginLeft: 12,
         justifyContent: 'space-between',
     },
-    calloutTitle: {
-        fontSize: 14,
+    mapPropertyTitle: {
+        fontSize: 16,
         fontWeight: '700',
         color: '#00335e',
-        marginBottom: 2,
+        marginBottom: 4,
     },
-    calloutSubtitle: {
-        fontSize: 12,
+    mapPropertyLocation: {
+        fontSize: 13,
         color: '#64748b',
-        marginBottom: 6,
+        marginBottom: 4,
     },
-    calloutPrice: {
-        fontSize: 14,
+    mapPropertyPrice: {
+        fontSize: 18,
         fontWeight: '700',
         color: '#059669',
         marginBottom: 8,
     },
-    calloutButton: {
-        alignSelf: 'flex-start',
+    mapPropertyButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
         backgroundColor: '#00335e',
-        paddingHorizontal: 10,
-        paddingVertical: 6,
+        paddingVertical: 8,
+        paddingHorizontal: 12,
         borderRadius: 8,
-        marginTop: 6,
+        gap: 6,
     },
-    calloutButtonText: {
+    mapPropertyButtonText: {
         color: '#fff',
         fontWeight: '600',
-        fontSize: 12,
+        fontSize: 14,
+    },
+    mapPropertyCloseButton: {
+        position: 'absolute',
+        top: 8,
+        right: 8,
+        padding: 4,
+        backgroundColor: '#f3f4f6',
+        borderRadius: 20,
     },
     sectionHeader: {
         flexDirection: 'row',

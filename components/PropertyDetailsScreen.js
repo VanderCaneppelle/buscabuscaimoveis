@@ -713,7 +713,15 @@ export default function PropertyDetailsScreen({ route, navigation }) {
 
                     <Text style={styles.location}>
                         <Ionicons name="location" size={16} color="#64748b" />
-                        {' '}{property.neighborhood}, {property.city}
+                        {' '}{(() => {
+                            // Mostrar: Endereço, Bairro, Cidade (apenas os que existirem)
+                            const parts = [
+                                property.address?.trim(),
+                                property.neighborhood?.trim(),
+                                property.city?.trim()
+                            ].filter(Boolean);
+                            return parts.join(', ') || 'Localização não informada';
+                        })()}
                     </Text>
                     <Text style={styles.price}>{formatPrice(property.price)}</Text>
                     <Text style={styles.type}>
