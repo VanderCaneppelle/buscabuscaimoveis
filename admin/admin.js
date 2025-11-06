@@ -91,7 +91,7 @@ function logoutAdmin() {
 let properties = [];
 let filteredProperties = [];
 let totalCount = 0;
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 10;
 let currentPage = 1; // 1-based
 let listenersBound = false;
 let currentFilters = {
@@ -349,14 +349,14 @@ function renderProperties() {
         return `
         <div class="property-card" data-id="${property.id}">
             <div class="row">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="property-images">
                         ${renderPropertyImages(property.images)}
                         ${getImageCount(property.images) > 1 ?
             `<div class="image-counter">1/${getImageCount(property.images)}</div>` : ''}
                     </div>
                 </div>
-                <div class="col-md-8">
+                <div class="col-md-9">
                     <div class="property-info">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <h5 class="mb-0">${property.title}</h5>

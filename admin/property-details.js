@@ -539,8 +539,12 @@ function setupPropertyImages(images) {
         return;
     }
 
-    // Mostrar botão e configurar click handler
-    viewImagesBtn.style.display = 'inline-block';
+    // Mostrar botão com contador de imagens e configurar click handler
+    viewImagesBtn.style.display = 'inline-flex';
+    viewImagesBtn.innerHTML = `
+        <i class="fas fa-images"></i>
+        Ver Todas as Fotos (${imageFiles.length})
+    `;
     viewImagesBtn.onclick = () => {
         lightbox.open(imageFiles, 0);
     };
