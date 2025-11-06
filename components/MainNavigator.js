@@ -185,9 +185,9 @@ function DiscoverStack() {
                     headerShown: true,
                     title: 'Detalhes do Imóvel',
                     headerStyle: {
-                        backgroundColor: '#00335e',
+                        backgroundColor: '#ffcc1e',
                     },
-                    headerTintColor: '#fff',
+                    headerTintColor: '#00335e',
                     headerTitleStyle: {
                         fontWeight: 'bold',
                     },
@@ -375,10 +375,10 @@ export default function MainNavigator() {
                     headerShown: true, // ✅ Header personalizado para iOS e Android
                     cardStyle: { backgroundColor: 'white' },
                     headerStyle: {
-                        backgroundColor: '#00335e',
+                        backgroundColor: '#ffcc1e',
                         height: Platform.OS === 'ios' ? 125 : 60, // ✅ Altura maior para iOS com safe area
                     },
-                    headerTintColor: '#fff',
+                    headerTintColor: '#00335e',
                     headerTitleStyle: {
                         fontWeight: 'bold',
                     },
