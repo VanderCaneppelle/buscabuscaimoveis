@@ -216,6 +216,9 @@ async function fetchPropertiesServer() {
         filteredProperties = properties;
         totalCount = result.pagination?.total || 0;
 
+        console.log('📦 Propriedades recebidas da API:', properties);
+        console.log('📦 Primeira propriedade (exemplo):', properties[0]);
+
         renderProperties();
         updatePaginationUI();
     } catch (error) {
@@ -334,14 +337,23 @@ function renderProperties() {
         return;
     }
 
-    propertiesContainer.innerHTML = filteredProperties.map(property => `
+    propertiesContainer.innerHTML = filteredProperties.map(property => {
+        console.log('📍 Renderizando propriedade:', {
+            id: property.id,
+            title: property.title,
+            address: property.address,
+            neighborhood: property.neighborhood,
+            city: property.city
+        });
+        
+        return `
         <div class="property-card" data-id="${property.id}">
             <div class="row">
                 <div class="col-md-4">
                     <div class="property-images">
                         ${renderPropertyImages(property.images)}
-                        ${property.images && Array.isArray(property.images) && property.images.length > 1 ?
-            `<div class="image-counter">1/${property.images.length}</div>` : ''}
+                        ${getImageCount(property.images) > 1 ?
+            `<div class="image-counter">1/${getImageCount(property.images)}</div>` : ''}
                     </div>
                 </div>
                 <div class="col-md-8">
@@ -355,7 +367,7 @@ function renderProperties() {
                         
                         <p class="text-muted mb-2">
                             <i class="fas fa-map-marker-alt me-1"></i>
-                            ${property.neighborhood}, ${property.city}
+                            ${property.address || property.neighborhood || 'Endereço não informado'}${property.city ? ', ' + property.city : ''}
                         </p>
                         
                         <div class="row mb-2">
@@ -405,7 +417,8 @@ function renderProperties() {
                 </div>
             </div>
         </div>
-    `).join('');
+        `;
+    }).join('');
 
     // Tornar card inteiro clicável para abrir detalhes
     Array.from(propertiesContainer.querySelectorAll('.property-card')).forEach(card => {
@@ -469,28 +482,82 @@ function bindStatsCardClicks() {
     if (rejectedCard) rejectedCard.onclick = () => { statusFilter.value = 'rejected'; applyFilters(); };
 }
 
-// Renderizar imagens da propriedade
-function renderPropertyImages(images) {
-    if (!images || images.length === 0) {
-        return '<img src="https://via.placeholder.com/400x200?text=Sem+Imagem" alt="Sem imagem">';
-    }
-
-    // Filtrar apenas imagens (excluir vídeos) e garantir que img não seja null/undefined
-    const imageFiles = images.filter(img => {
-        // Verificar se img existe e é uma string
-        if (!img || typeof img !== 'string') {
-            return false;
+// Contar imagens (helper para contador)
+function getImageCount(images) {
+    if (!images) return 0;
+    
+    let imageArray = images;
+    if (typeof images === 'string') {
+        try {
+            imageArray = JSON.parse(images);
+        } catch (e) {
+            return images.startsWith('http') ? 1 : 0;
         }
-
-        // Verificar se não é vídeo
+    }
+    
+    if (!Array.isArray(imageArray)) return 0;
+    
+    // Filtrar apenas imagens (excluir vídeos e URLs do YouTube)
+    return imageArray.filter(img => {
+        if (!img || typeof img !== 'string') return false;
         return !img.includes('.mp4') &&
             !img.includes('.mov') &&
             !img.includes('.avi') &&
             !img.includes('.mkv') &&
-            !img.includes('.webm');
+            !img.includes('.webm') &&
+            !img.includes('youtube.com') &&
+            !img.includes('youtu.be');
+    }).length;
+}
+
+// Renderizar imagens da propriedade
+function renderPropertyImages(images) {
+    console.log('🖼️ Renderizando imagens:', images);
+    
+    // Verificar se images existe e não está vazio
+    if (!images) {
+        console.log('⚠️ Nenhuma imagem fornecida');
+        return '<img src="https://via.placeholder.com/400x200?text=Sem+Imagem" alt="Sem imagem">';
+    }
+
+    // Se for string, tentar parsear como JSON (pode vir como string do banco)
+    let imageArray = images;
+    if (typeof images === 'string') {
+        try {
+            imageArray = JSON.parse(images);
+        } catch (e) {
+            console.warn('⚠️ Não foi possível parsear images como JSON:', images);
+            // Se for uma única URL como string
+            if (images.startsWith('http')) {
+                return `<img src="${images}" alt="Imagem do imóvel" onerror="this.src='https://via.placeholder.com/400x200?text=Erro+ao+Carregar'">`;
+            }
+            return '<img src="https://via.placeholder.com/400x200?text=Sem+Imagem" alt="Sem imagem">';
+        }
+    }
+
+    // Garantir que é array
+    if (!Array.isArray(imageArray) || imageArray.length === 0) {
+        console.log('⚠️ Array de imagens vazio');
+        return '<img src="https://via.placeholder.com/400x200?text=Sem+Imagem" alt="Sem imagem">';
+    }
+
+    // Filtrar apenas imagens (excluir vídeos e nulls)
+    const imageFiles = imageArray.filter(img => {
+        if (!img || typeof img !== 'string') return false;
+        // Verificar se não é vídeo e não é URL do YouTube
+        return !img.includes('.mp4') &&
+            !img.includes('.mov') &&
+            !img.includes('.avi') &&
+            !img.includes('.mkv') &&
+            !img.includes('.webm') &&
+            !img.includes('youtube.com') &&
+            !img.includes('youtu.be');
     });
 
+    console.log('✅ Imagens filtradas:', imageFiles);
+
     if (imageFiles.length === 0) {
+        console.log('⚠️ Nenhuma imagem válida após filtro');
         return '<img src="https://via.placeholder.com/400x200?text=Sem+Imagem" alt="Sem imagem">';
     }
 
@@ -591,8 +658,8 @@ async function rejectProperty(propertyId) {
 
 // Ver detalhes da propriedade
 function viewPropertyDetails(propertyId) {
-    // Redirecionar para a página de detalhes
-    window.open(`property-details.html?id=${propertyId}`, '_blank');
+    // Redirecionar para a página de detalhes na mesma aba
+    window.location.href = `property-details.html?id=${propertyId}`;
 }
 
 // Atualizar estatísticas
