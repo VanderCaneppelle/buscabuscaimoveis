@@ -3,7 +3,7 @@
  * Versão simplificada para evitar problemas de dependências
  */
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { debounce } from 'lodash';
 import {
     View,
@@ -16,6 +16,7 @@ import {
     ScrollView,
     Image,
     TextInput,
+    Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -39,6 +40,8 @@ export default function MapaImoveis({ navigation, route }) {
     const [mapReady, setMapReady] = useState(false);
     const [mapRegion, setMapRegion] = useState(null); // Começar sem região definida
     const [selectedProperty, setSelectedProperty] = useState(null);
+    const [multiplePropertiesModal, setMultiplePropertiesModal] = useState(false); // Modal de múltiplos imóveis
+    const [propertiesAtLocation, setPropertiesAtLocation] = useState([]); // Imóveis na mesma localização
     const [visibleRegion, setVisibleRegion] = useState(null);
     const searchInputRef = useRef(null);
 
@@ -52,6 +55,33 @@ export default function MapaImoveis({ navigation, route }) {
 
     // Cor única para markers individuais (igual ao cluster)
     const getMarkerColor = () => '#00335e';
+
+    // 🗺️ Função para agrupar propriedades por coordenadas idênticas
+    const groupedMarkers = useMemo(() => {
+        const groups = new Map();
+        
+        properties.forEach(property => {
+            const lat = parseFloat(property.latitude);
+            const lng = parseFloat(property.longitude);
+            
+            if (isNaN(lat) || isNaN(lng)) return;
+            
+            // Criar chave única para coordenadas (arredonda para 6 casas decimais)
+            const coordKey = `${lat.toFixed(6)},${lng.toFixed(6)}`;
+            
+            if (!groups.has(coordKey)) {
+                groups.set(coordKey, {
+                    latitude: lat,
+                    longitude: lng,
+                    properties: []
+                });
+            }
+            
+            groups.get(coordKey).properties.push(property);
+        });
+        
+        return Array.from(groups.values());
+    }, [properties]);
 
     // Função para validar região e evitar crashes
     const isValidRegion = (region) => {
@@ -107,41 +137,101 @@ export default function MapaImoveis({ navigation, route }) {
         debouncedRegionChange(region);
     };
 
+    // Handler para clique no marker (mesmo da HomeScreen)
+    const handleMarkerPress = useCallback((group) => {
+        if (group.properties.length === 1) {
+            // Apenas 1 imóvel: mostra card direto
+            setSelectedProperty(group.properties[0]);
+        } else {
+            // Múltiplos imóveis: abre modal de lista
+            setPropertiesAtLocation(group.properties);
+            setMultiplePropertiesModal(true);
+        }
+    }, []);
+
+    // Handler para selecionar imóvel da lista
+    const handleSelectPropertyFromList = useCallback((property) => {
+        setMultiplePropertiesModal(false);
+        setSelectedProperty(property);
+    }, []);
+
     // Memoizar markers para evitar re-renderizações desnecessárias
     const markersToRender = useMemo(() => {
         if (!visibleRegion) return [];
 
         const filtered = filterPropertiesInViewport(properties, visibleRegion);
-
-        return filtered.map((property, index) => {
+        
+        // Agrupar por coordenadas idênticas
+        const groups = new Map();
+        filtered.forEach(property => {
             const lat = parseFloat(property.latitude);
             const lng = parseFloat(property.longitude);
-
-            // Validação robusta de coordenadas para evitar crashes no iOS
-            if (isNaN(lat) || isNaN(lng) ||
-                lat < -90 || lat > 90 ||
-                lng < -180 || lng > 180) {
-                console.log(`⚠️ Coordenadas inválidas ignoradas: ${property.title} (${lat}, ${lng})`);
-                console.log(`🔍 DEBUG - Raw coordinates: lat=${property.latitude}, lng=${property.longitude}`);
-                return null;
+            
+            if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+                return;
             }
+            
+            const coordKey = `${lat.toFixed(6)},${lng.toFixed(6)}`;
+            if (!groups.has(coordKey)) {
+                groups.set(coordKey, { latitude: lat, longitude: lng, properties: [] });
+            }
+            groups.get(coordKey).properties.push(property);
+        });
+
+        return Array.from(groups.values()).map((group, index) => {
+            const isSelected = selectedProperty && group.properties.some(p => p.id === selectedProperty.id);
+            const hasMultiple = group.properties.length > 1;
 
             try {
-                return (
-                    <Marker
-                        key={`marker-${property.id}`}
-                        coordinate={{ latitude: lat, longitude: lng }}
-                        pinColor={selectedProperty?.id === property.id ? "#e74c3c" : getMarkerColor(property)}
-                        tracksViewChanges={false}
-                        onPress={() => setSelectedProperty(property)}
-                    />
-                );
+                if (hasMultiple) {
+                    // Marker customizado para múltiplos imóveis
+                    return (
+                        <Marker
+                            key={`marker-group-${index}-${group.latitude}-${group.longitude}`}
+                            coordinate={{ latitude: group.latitude, longitude: group.longitude }}
+                            onPress={() => handleMarkerPress(group)}
+                        >
+                            <View style={styles.markerWrapper}>
+                                <View style={[
+                                    styles.customMarker,
+                                    isSelected && styles.customMarkerSelected
+                                ]}>
+                                    {Platform.OS === 'ios' && (
+                                        <Ionicons 
+                                            name="business" 
+                                            size={18} 
+                                            color="#fff" 
+                                        />
+                                    )}
+                                    {Platform.OS === 'ios' ? (
+                                        <View style={styles.markerBadge}>
+                                            <Text style={styles.markerBadgeText}>{group.properties.length}</Text>
+                                        </View>
+                                    ) : (
+                                        <Text style={styles.markerBadgeText}>{group.properties.length}</Text>
+                                    )}
+                                </View>
+                            </View>
+                        </Marker>
+                    );
+                } else {
+                    // Marker padrão para imóvel único
+                    return (
+                        <Marker
+                            key={`marker-group-${index}-${group.latitude}-${group.longitude}`}
+                            coordinate={{ latitude: group.latitude, longitude: group.longitude }}
+                            pinColor={isSelected ? "#e74c3c" : "#00335e"}
+                            tracksViewChanges={false}
+                            onPress={() => handleMarkerPress(group)}
+                        />
+                    );
+                }
             } catch (error) {
-                console.error('❌ Erro ao criar marker:', error, property.title);
+                console.error('❌ Erro ao criar marker:', error);
                 return null;
             }
         }).filter(Boolean);
-    }, [properties, visibleRegion, selectedProperty]);
+    }, [properties, visibleRegion, selectedProperty, handleMarkerPress]);
 
 
 
@@ -454,6 +544,83 @@ export default function MapaImoveis({ navigation, route }) {
                     </TouchableOpacity>
                 </View>
             )}
+
+            {/* Modal de múltiplos imóveis na mesma localização */}
+            <Modal
+                visible={multiplePropertiesModal}
+                transparent={true}
+                animationType="slide"
+                onRequestClose={() => setMultiplePropertiesModal(false)}
+            >
+                <View style={styles.multiPropertiesModalOverlay}>
+                    <View style={styles.multiPropertiesModalContent}>
+                        <View style={styles.multiPropertiesHeader}>
+                            <View>
+                                <Text style={styles.multiPropertiesTitle}>
+                                    Imóveis nesta localização
+                                </Text>
+                                <Text style={styles.multiPropertiesSubtitle}>
+                                    {propertiesAtLocation.length} imóveis disponíveis
+                                </Text>
+                            </View>
+                            <TouchableOpacity
+                                onPress={() => setMultiplePropertiesModal(false)}
+                                style={styles.multiPropertiesCloseButton}
+                            >
+                                <Ionicons name="close-circle" size={32} color="#64748b" />
+                            </TouchableOpacity>
+                        </View>
+
+                        <ScrollView style={styles.multiPropertiesList}>
+                            {propertiesAtLocation.map((property, index) => (
+                                <TouchableOpacity
+                                    key={`multi-prop-${property.id}`}
+                                    style={[
+                                        styles.multiPropertyItem,
+                                        index === propertiesAtLocation.length - 1 && styles.multiPropertyItemLast
+                                    ]}
+                                    onPress={() => handleSelectPropertyFromList(property)}
+                                    activeOpacity={0.7}
+                                >
+                                    <Image
+                                        source={{ uri: (property.images && property.images[0]) ? property.images[0] : 'https://via.placeholder.com/80?text=Foto' }}
+                                        style={styles.multiPropertyImage}
+                                    />
+                                    <View style={styles.multiPropertyInfo}>
+                                        <Text style={styles.multiPropertyTitle} numberOfLines={2}>
+                                            {property.title}
+                                        </Text>
+                                        <Text style={styles.multiPropertyPrice}>
+                                            {((property.sale_price ?? property.salePrice) && parseFloat(property.sale_price ?? property.salePrice) > 0)
+                                                ? `R$ ${(property.sale_price ?? property.salePrice)?.toLocaleString('pt-BR')}`
+                                                : `R$ ${property.price?.toLocaleString('pt-BR') ?? '—'}`}
+                                        </Text>
+                                        <View style={styles.multiPropertyFeatures}>
+                                            {property.bedrooms && (
+                                                <Text style={styles.multiPropertyFeature}>
+                                                    <Ionicons name="bed-outline" size={14} /> {property.bedrooms}
+                                                </Text>
+                                            )}
+                                            {property.bathrooms && (
+                                                <Text style={styles.multiPropertyFeature}>
+                                                    <Ionicons name="water-outline" size={14} /> {property.bathrooms}
+                                                </Text>
+                                            )}
+                                            {property.area && (
+                                                <Text style={styles.multiPropertyFeature}>
+                                                    <Ionicons name="resize-outline" size={14} /> {property.area}m²
+                                                </Text>
+                                            )}
+                                        </View>
+                                    </View>
+                                    <Ionicons name="chevron-forward" size={24} color="#64748b" />
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
+                    </View>
+                </View>
+            </Modal>
+
             {/* Modal de Filtros para o mapa */}
             <FiltersModal
                 visible={showFiltersModal}
@@ -606,5 +773,151 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         fontSize: 13,
         paddingHorizontal: 4,
+    },
+    // Wrapper
+    markerWrapper: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'visible',
+    },
+    // Marker customizado - ESTILOS DIFERENTES POR PLATAFORMA
+    customMarker: Platform.select({
+        ios: {
+            // iOS - Design retangular horizontal
+            backgroundColor: '#00335e',
+            borderRadius: 20,
+            paddingVertical: 8,
+            paddingHorizontal: 12,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 6,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.3,
+            shadowRadius: 4,
+        },
+        android: {
+            // Android - Círculo amarelo simples (diferente dos clusters azuis)
+            width: 36,
+            height: 36,
+            borderRadius: 18,
+            backgroundColor: '#ffcc1e',
+            alignItems: 'center',
+            justifyContent: 'center',
+            elevation: 6,
+            borderWidth: 2,
+            borderColor: '#fff',
+        },
+    }),
+    customMarkerSelected: {
+        backgroundColor: '#e74c3c',
+    },
+    // Badge - ESTILOS DIFERENTES POR PLATAFORMA
+    markerBadge: Platform.select({
+        ios: {
+            // iOS - Badge inline
+            backgroundColor: '#ffcc1e',
+            borderRadius: 10,
+            minWidth: 22,
+            height: 22,
+            paddingHorizontal: 6,
+            alignItems: 'center',
+            justifyContent: 'center',
+        },
+        android: {
+            // Android - Não usa badge separado (número vai direto no círculo)
+            display: 'none',
+        },
+    }),
+    markerBadgeText: Platform.select({
+        ios: {
+            fontSize: 11,
+            color: '#00335e',
+            fontWeight: 'bold',
+        },
+        android: {
+            // Android - Número direto no círculo amarelo
+            fontSize: 16,
+            color: '#00335e',
+            fontWeight: 'bold',
+        },
+    }),
+    // Modal de múltiplos imóveis
+    multiPropertiesModalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'flex-end',
+    },
+    multiPropertiesModalContent: {
+        backgroundColor: '#fff',
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
+        maxHeight: '80%',
+        paddingBottom: 20,
+    },
+    multiPropertiesHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        padding: 20,
+        borderBottomWidth: 1,
+        borderBottomColor: '#e5e7eb',
+    },
+    multiPropertiesTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#00335e',
+        marginBottom: 4,
+    },
+    multiPropertiesSubtitle: {
+        fontSize: 14,
+        color: '#64748b',
+    },
+    multiPropertiesCloseButton: {
+        padding: 4,
+    },
+    multiPropertiesList: {
+        paddingHorizontal: 20,
+    },
+    multiPropertyItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#e5e7eb',
+        gap: 12,
+    },
+    multiPropertyItemLast: {
+        borderBottomWidth: 0,
+    },
+    multiPropertyImage: {
+        width: 80,
+        height: 80,
+        borderRadius: 8,
+        backgroundColor: '#f3f4f6',
+    },
+    multiPropertyInfo: {
+        flex: 1,
+        gap: 4,
+    },
+    multiPropertyTitle: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#1f2937',
+    },
+    multiPropertyPrice: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#059669',
+    },
+    multiPropertyFeatures: {
+        flexDirection: 'row',
+        gap: 12,
+    },
+    multiPropertyFeature: {
+        fontSize: 13,
+        color: '#64748b',
+        flexDirection: 'row',
+        alignItems: 'center',
     },
 });
