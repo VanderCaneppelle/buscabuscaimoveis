@@ -14,6 +14,7 @@ import {
     Image,
     ActivityIndicator,
 } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { Video } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
@@ -117,6 +118,10 @@ export default function LoginScreen() {
 
     return (
         <>
+            <StatusBar
+                backgroundColor="#ffcc1e"
+                style="dark"
+            />
             {isLoading && (
                 <View style={{
                     position: 'absolute',
