@@ -1587,13 +1587,13 @@ const styles = StyleSheet.create({
     addressContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 8,
+        marginBottom: 6,
         paddingRight: 60, // espaço para o botão "Selecionar"
     },
     featuresContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 8,
+        marginBottom: 6,
         gap: 4,
     },
     feature: {
@@ -1722,7 +1722,7 @@ const styles = StyleSheet.create({
     },
     propertyInfo: {
         flex: 1, // Ocupa o espaço restante
-        padding: 12,
+        padding: 10,
         backgroundColor: '#fff',
         borderTopRightRadius: 12,
         borderBottomRightRadius: 12,
@@ -1756,7 +1756,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: 'bold',
         color: '#00335e',
-        marginBottom: 6,
+        marginBottom: 4,
         paddingRight: 60,
         lineHeight: 18,
     },
@@ -1779,6 +1779,7 @@ const styles = StyleSheet.create({
     priceContainer: {
         flexDirection: 'column',
         alignItems: 'flex-start',
+        marginBottom: 4,
     },
     originalPrice: {
         fontSize: 14,
@@ -1795,7 +1796,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#dc2626',
         textDecorationLine: 'line-through',
-        marginBottom: 2,
+        marginBottom: 1,
     },
     salePriceGreen: {
         fontSize: 18,
@@ -1818,7 +1819,7 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: '#7f8c8d',
         textTransform: 'capitalize',
-        marginBottom: 4,
+        marginBottom: 0,
     },
     emptyContainer: {
         alignItems: 'center',
