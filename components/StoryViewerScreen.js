@@ -82,7 +82,10 @@ export default function ViewerScreen({ navigation, route }) {
                 .filter(story => story.image_url)
                 .map(async story => {
                     const type = story.media_type === 'video' ? 'video' : 'image';
-                    const optimizedUrl = await getOptimizedUrl(story.image_url, type);
+                    const sourceUrl = story.media_type === 'video'
+                        ? (story.video_mp4_url || story.image_url)
+                        : story.image_url;
+                    const optimizedUrl = await getOptimizedUrl(sourceUrl, type);
                     return [story.id, optimizedUrl];
                 });
 

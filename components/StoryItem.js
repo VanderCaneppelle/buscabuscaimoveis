@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, StyleSheet, Animated } from 'react-native';
+import { View, StyleSheet, Animated, ActivityIndicator } from 'react-native';
 import StoryImage from './StoryImage';
 import StoryVideo from './StoryVideo';
 
@@ -15,11 +15,13 @@ export default function StoryItem({
     const videoRef = useRef(null);
     const progressAnim = useRef(new Animated.Value(0)).current;
     const [isVideoLoaded, setIsVideoLoaded] = useState(false);
+    const [isVideoBuffering, setIsVideoBuffering] = useState(true);
 
     // Reset progress quando o story se torna ativo
     useEffect(() => {
         if (isActive) {
             setIsVideoLoaded(false);
+            setIsVideoBuffering(true);
             progressAnim.setValue(0);
 
             if (story.media_type === 'image') {
@@ -60,6 +62,7 @@ export default function StoryItem({
 
     const handleVideoLoad = (data) => {
         setIsVideoLoaded(true);
+        setIsVideoBuffering(false);
 
         // Iniciar animação de progresso para vídeo
         if (data.durationMillis > 0) {
@@ -85,6 +88,11 @@ export default function StoryItem({
     };
 
     const handleVideoProgress = (status) => {
+        // Atualizar status de buffering
+        if (status.isBuffering !== undefined) {
+            setIsVideoBuffering(status.isBuffering);
+        }
+
         // Apenas verificar se o vídeo terminou
         if (status.didJustFinish) {
             onComplete();
@@ -102,6 +110,10 @@ export default function StoryItem({
         return null;
     }
 
+    const videoSourceUrl = story.media_type === 'video'
+        ? (story.video_mp4_url || story.image_url)
+        : story.image_url;
+
     return (
         <View style={styles.container}>
             {story.media_type === "image" ? (
@@ -110,14 +122,21 @@ export default function StoryItem({
                     optimizedUrl={optimizedUrl}
                 />
             ) : (
-                <StoryVideo
-                    videoUrl={story.image_url}
-                    optimizedUrl={optimizedUrl}
-                    videoRef={videoRef}
-                    onLoad={handleVideoLoad}
-                    onPlaybackStatusUpdate={handleVideoProgress}
-                    onError={handleVideoError}
-                />
+                <>
+                    <StoryVideo
+                        videoUrl={videoSourceUrl}
+                        optimizedUrl={optimizedUrl || videoSourceUrl}
+                        videoRef={videoRef}
+                        onLoad={handleVideoLoad}
+                        onPlaybackStatusUpdate={handleVideoProgress}
+                        onError={handleVideoError}
+                    />
+                    {(isVideoBuffering || !isVideoLoaded) && (
+                        <View style={styles.loadingOverlay}>
+                            <ActivityIndicator size="large" color="#ffffff" />
+                        </View>
+                    )}
+                </>
             )}
         </View>
     );
@@ -127,5 +146,15 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         position: 'relative',
+    },
+    loadingOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.25)',
     },
 });

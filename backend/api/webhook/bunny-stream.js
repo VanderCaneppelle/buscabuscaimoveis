@@ -3,8 +3,11 @@ import fetch from 'node-fetch';
 import { supabase } from '../../lib/supabase.js';
 
 const BUNNY_WEBHOOK_KEY = process.env.BUNNY_STREAM_WEBHOOK_KEY;
+const BUNNY_STREAM_LIBRARY_ID = process.env.BUNNY_STREAM_LIBRARY_ID || process.env.EXPO_PUBLIC_BUNNY_LIBRARY_ID;
+const BUNNY_STREAM_API_KEY = process.env.BUNNY_STREAM_API_KEY || process.env.EXPO_PUBLIC_BUNNY_API_KEY;
+const BUNNY_STREAM_HOST = process.env.BUNNY_STREAM_HOST || process.env.EXPO_PUBLIC_BUNNY_STREAM_HOST;
 
-async function updateStoryStatus(videoId, statusPayload) {
+async function updateStoryStatus(videoId, statusPayload, extraFields = {}) {
     const { data, error } = await supabase
         .from('stories')
         .select('id')
@@ -29,6 +32,14 @@ async function updateStoryStatus(videoId, statusPayload) {
         updated_at: new Date().toISOString(),
         encoding_metadata: statusPayload || null
     };
+
+    if (extraFields && typeof extraFields === 'object') {
+        Object.entries(extraFields).forEach(([key, value]) => {
+            if (value !== undefined) {
+                updatePayload[key] = value;
+            }
+        });
+    }
 
     const { error: updateError } = await supabase
         .from('stories')
@@ -100,6 +111,55 @@ function mapStatusCodeToLabel(statusCode) {
     return map[statusCode] ?? `status_${statusCode}`;
 }
 
+async function fetchBunnyMp4Url(videoId) {
+    try {
+        if (!BUNNY_STREAM_LIBRARY_ID || !BUNNY_STREAM_API_KEY || !BUNNY_STREAM_HOST) {
+            console.warn('⚠️ [BunnyWebhook] Variáveis da Bunny para MP4 não configuradas.');
+            return null;
+        }
+
+        const response = await fetch(`https://video.bunnycdn.com/library/${BUNNY_STREAM_LIBRARY_ID}/videos/${videoId}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'AccessKey': BUNNY_STREAM_API_KEY
+            }
+        });
+
+        if (!response.ok) {
+            console.warn('⚠️ [BunnyWebhook] Falha ao buscar detalhes do vídeo Bunny:', response.status, await response.text());
+            return null;
+        }
+
+        const details = await response.json();
+        const resolutionsRaw = details?.availableResolutions || details?.available_resolutions || '';
+        const resolutionList = Array.isArray(resolutionsRaw)
+            ? resolutionsRaw
+            : typeof resolutionsRaw === 'string'
+                ? resolutionsRaw.split(',')
+                : [];
+
+        const normalizedResolutions = resolutionList
+            .map(res => parseInt(String(res).replace(/[^0-9]/g, ''), 10))
+            .filter(num => !Number.isNaN(num))
+            .sort((a, b) => b - a);
+
+        const chosenResolution = normalizedResolutions.length > 0 ? normalizedResolutions[0] : null;
+
+        if (!chosenResolution) {
+            console.warn('⚠️ [BunnyWebhook] Nenhuma resolução disponível para gerar MP4.');
+            return null;
+        }
+
+        const mp4Url = `https://${BUNNY_STREAM_HOST}/${videoId}/play_${chosenResolution}p.mp4`;
+        console.log(`🎬 [BunnyWebhook] MP4 selecionado (${chosenResolution}p):`, mp4Url);
+        return mp4Url;
+    } catch (error) {
+        console.error('❌ [BunnyWebhook] Erro ao buscar MP4 da Bunny:', error);
+        return null;
+    }
+}
+
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
@@ -143,10 +203,13 @@ export default async function handler(req, res) {
 
         if (statusCode === 3) {
             console.log('✅ [BunnyWebhook] Status 3 (finished) recebido. Atualizando story.');
-            const updateResult = await updateStoryStatus(videoId, payload);
+            await updateStoryStatus(videoId, payload);
         } else if (statusCode === 4) {
             console.log('✅ [BunnyWebhook] Status 4 (resolution finished) recebido. Atualizando story e enviando notificação.');
-            const updateResult = await updateStoryStatus(videoId, payload);
+            const mp4Url = await fetchBunnyMp4Url(videoId);
+            const updateResult = await updateStoryStatus(videoId, payload, {
+                video_mp4_url: mp4Url || undefined,
+            });
             if (updateResult?.storyId) {
                 await sendNotification({ videoId, storyId: updateResult.storyId });
             }
