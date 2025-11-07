@@ -141,14 +141,15 @@ export default async function handler(req, res) {
             return res.status(400).json({ success: false, message: 'videoId is required' });
         }
 
-        const finalStatuses = new Set(['completed', 'ready', 'encoded', 'finished', 'resolution_finished']);
-        const finalStatusCodes = new Set([3, 4]);
-
-        if (finalStatuses.has(statusLabel) || finalStatusCodes.has(statusCode)) {
+        if (statusCode === 3) {
+            console.log('✅ [BunnyWebhook] Status 3 (finished) recebido. Atualizando story e enviando notificação.');
             const updateResult = await updateStoryStatus(videoId, payload);
             if (updateResult?.storyId) {
                 await sendNotification({ videoId, storyId: updateResult.storyId });
             }
+        } else if (statusCode === 4) {
+            console.log('✅ [BunnyWebhook] Status 4 (resolution finished) recebido. Atualizando story (sem notificação extra).');
+            await updateStoryStatus(videoId, payload);
         } else if (statusLabel === 'failed' || statusCode === 5) {
             console.error(`❌ [BunnyWebhook] Encoding falhou para ${videoId}`, payload);
         } else {
