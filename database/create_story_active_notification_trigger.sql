@@ -6,12 +6,17 @@ CREATE OR REPLACE FUNCTION public.notify_story_active()
 RETURNS trigger AS $$
 DECLARE
     notif_url TEXT;
-    secret TEXT;
+    notif_secret TEXT;
     headers JSONB;
     title TEXT;
     body TEXT;
 BEGIN
-    notif_url := current_setting('app.notifications_url', true);
+    SELECT url, secret
+    INTO notif_url, notif_secret
+    FROM public.app_notifications_config
+    WHERE id = TRUE
+    LIMIT 1;
+
     IF notif_url IS NULL OR notif_url = '' THEN
         RETURN NEW;
     END IF;
@@ -20,17 +25,16 @@ BEGIN
         OR (TG_OP = 'UPDATE' AND NEW.status = 'active' AND COALESCE(OLD.status, '') <> 'active')
     THEN
         headers := jsonb_build_object('Content-Type', 'application/json');
-        secret := current_setting('app.notifications_secret', true);
-        IF secret IS NOT NULL AND secret <> '' THEN
-            headers := headers || jsonb_build_object('X-Notifications-Secret', secret);
+        IF notif_secret IS NOT NULL AND notif_secret <> '' THEN
+            headers := headers || jsonb_build_object('X-Notifications-Secret', notif_secret);
         END IF;
 
         title := COALESCE(NEW.title, '🆕 Novo Story publicado');
-        body := 'Confira agora mesmo!';
+        body := '💰URGENTE 🚨 Vai lá no Busca Busca agora que saiu uma oportunidade!!!!';
 
         PERFORM net.http_post(
             url := notif_url,
-            headers := headers::text,
+            headers := headers,
             body := jsonb_build_object(
                 'title', title,
                 'body', body,
@@ -44,7 +48,7 @@ BEGIN
                     )
                 ),
                 'sendToAll', true
-            )::text
+            )
         );
     END IF;
 
@@ -57,4 +61,16 @@ DROP TRIGGER IF EXISTS trg_notify_story_active ON stories;
 CREATE TRIGGER trg_notify_story_active
 AFTER INSERT OR UPDATE ON public.stories
 FOR EACH ROW EXECUTE FUNCTION public.notify_story_active();
+
+-- Tabela de configuração (caso não exista)
+CREATE TABLE IF NOT EXISTS public.app_notifications_config (
+    id BOOLEAN PRIMARY KEY DEFAULT TRUE,
+    url TEXT NOT NULL,
+    secret TEXT
+);
+
+-- Inserir linha padrão se não existir
+INSERT INTO public.app_notifications_config (id, url, secret)
+VALUES (TRUE, '', NULL)
+ON CONFLICT (id) DO NOTHING;
 
