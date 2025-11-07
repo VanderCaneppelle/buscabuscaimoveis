@@ -43,8 +43,6 @@ export default function StoriesComponent({ navigation }) {
 
     // ✨ Auto-renovação: Verifica cache expirado a cada 1 minuto
     useEffect(() => {
-        console.log('✅ [StoriesComponent] Iniciando auto-renovação (intervalo: 1 min)');
-        
         const checkCacheExpiration = async () => {
             try {
                 const cached = await AsyncStorage.getItem(CACHE_KEY);
@@ -52,16 +50,10 @@ export default function StoriesComponent({ navigation }) {
                     const cacheData = JSON.parse(cached);
                     const cacheTimestamp = cacheData.timestamp || 0;
                     const cacheAge = Date.now() - cacheTimestamp;
-                    const cacheMinutes = Math.floor(cacheAge / 60000);
-
-                    console.log(`🔍 [Auto-Renovação] Verificando... Cache: ${cacheMinutes} min (limite: 10 min)`);
 
                     // Se cache expirou (>10 min), recarregar automaticamente
                     if (cacheAge > CACHE_DURATION) {
-                        console.log('⏰ [Auto-Renovação] Cache expirou, atualizando stories...');
                         await loadStories(false);
-                    } else {
-                        console.log(`✅ [Auto-Renovação] Cache ainda válido (faltam ${10 - cacheMinutes} min)`);
                     }
                 }
             } catch (error) {
@@ -73,10 +65,7 @@ export default function StoriesComponent({ navigation }) {
         const interval = setInterval(checkCacheExpiration, 60 * 1000);
 
         // Cleanup: Limpar interval ao desmontar componente
-        return () => {
-            console.log('🧹 Limpando interval de verificação de cache');
-            clearInterval(interval);
-        };
+        return () => clearInterval(interval);
     }, []); // Só cria o interval uma vez
 
     // Recarregar stories quando voltar para a tela (otimizado para iOS)
@@ -100,11 +89,9 @@ export default function StoriesComponent({ navigation }) {
     const loadStories = async (forceReload = false) => {
         try {
             setLoading(true);
-            console.log('🚀 Iniciando loadStories, forceReload:', forceReload);
 
             // Sempre verificar se há novos stories, mesmo com cache
             const cutoffDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-            console.log('📅 Cutoff date:', cutoffDate);
 
             // Buscar stories do Supabase primeiro (mais recentes primeiro)
             const { data: supabaseStories, error } = await supabase
@@ -121,8 +108,6 @@ export default function StoriesComponent({ navigation }) {
             }
 
             const currentStories = supabaseStories || [];
-            console.log('✅ Stories atuais do Supabase:', currentStories.length);
-            console.log('✅ Supabase stories:', currentStories.map(s => ({ id: s.id, title: s.title, created_at: s.created_at, status: s.status })));
 
             // Se não for forceReload, verificar se o cache está atualizado
             if (!forceReload) {
@@ -133,17 +118,10 @@ export default function StoriesComponent({ navigation }) {
                     const cacheTimestamp = cacheData.timestamp || 0;
                     const cacheAge = Date.now() - cacheTimestamp;
                     
-                    console.log('📦 Stories do cache:', cachedStories.length);
-                    console.log('⏰ Cache age:', Math.floor(cacheAge / 1000), 'segundos', `(${Math.floor(cacheAge / 60000)} min)`);
-
                     // ✨ Verificar se cache expirou (10 minutos)
                     const isCacheExpired = cacheAge > CACHE_DURATION;
 
-                    if (isCacheExpired) {
-                        console.log('⏰ Cache expirado (>' + (CACHE_DURATION / 60000) + ' min), buscando do Supabase...');
-                    } else {
-                        console.log('✅ Cache ainda válido (<' + (CACHE_DURATION / 60000) + ' min)');
-                        
+                    if (!isCacheExpired) {
                         // Verificar se o cache está sincronizado com o Supabase
                         const cachedIds = cachedStories.map(s => s.id).sort();
                         const currentIds = currentStories.map(s => s.id).sort();
@@ -151,16 +129,11 @@ export default function StoriesComponent({ navigation }) {
                         const isCacheValid = JSON.stringify(cachedIds) === JSON.stringify(currentIds);
 
                         if (isCacheValid && cachedStories.length === currentStories.length) {
-                            console.log('✅ Cache válido e sincronizado, usando cache');
                             setStories(cachedStories);
                             setLoading(false);
                             return;
-                        } else {
-                            console.log('🔄 Cache desatualizado (IDs diferentes), atualizando...');
                         }
                     }
-                } else {
-                    console.log('📦 Nenhum cache encontrado');
                 }
             }
 
@@ -176,8 +149,6 @@ export default function StoriesComponent({ navigation }) {
                 timestamp: Date.now()
             };
             await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
-            console.log('💾 Stories salvos no cache:', currentStories.length, '(expires in 10 min)');
-            console.log('💾 Cache content:', currentStories.map(s => ({ id: s.id, title: s.title })));
 
         } catch (error) {
             console.error('❌ Erro ao carregar stories:', error);
@@ -189,8 +160,6 @@ export default function StoriesComponent({ navigation }) {
     // Pré-carregar imagens das bolhas de stories
     const preloadStoryImages = async (stories) => {
         try {
-            console.log('🖼️ Iniciando pré-carregamento de imagens das bolhas...');
-
             // Limpar cache antigo em background
             cleanupOldCache();
 
@@ -210,8 +179,6 @@ export default function StoriesComponent({ navigation }) {
             });
 
             await Promise.allSettled(preloadPromises);
-            console.log('✅ Pré-carregamento de imagens concluído');
-
         } catch (error) {
             console.error('❌ Erro no pré-carregamento de imagens:', error);
         }
