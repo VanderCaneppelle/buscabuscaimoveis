@@ -4,6 +4,9 @@
         "api/env.js": {
             "maxDuration": 10
         },
+        "api/webhook/bunny-stream.js": {
+            "maxDuration": 30
+        },
         "api/webhook/mercadopago.js": {
             "maxDuration": 30
         },
