@@ -144,11 +144,25 @@ async function fetchBunnyMp4Url(videoId) {
             .filter(num => !Number.isNaN(num))
             .sort((a, b) => b - a);
 
-        const chosenResolution = normalizedResolutions.length > 0 ? normalizedResolutions[0] : null;
+        const preferredResolution = 720;
+        let chosenResolution = null;
 
-        if (!chosenResolution) {
+        if (normalizedResolutions.length === 0) {
             console.warn('⚠️ [BunnyWebhook] Nenhuma resolução disponível para gerar MP4.');
             return null;
+        }
+
+        if (normalizedResolutions.includes(preferredResolution)) {
+            chosenResolution = preferredResolution;
+        } else {
+            chosenResolution = normalizedResolutions.reduce((closest, current) => {
+                if (closest === null) return current;
+                const diffCurrent = Math.abs(current - preferredResolution);
+                const diffClosest = Math.abs(closest - preferredResolution);
+                if (diffCurrent < diffClosest) return current;
+                if (diffCurrent === diffClosest) return current > closest ? current : closest;
+                return closest;
+            }, null);
         }
 
         const mp4Url = `https://${BUNNY_STREAM_HOST}/${videoId}/play_${chosenResolution}p.mp4`;
