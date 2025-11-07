@@ -14,12 +14,12 @@ async function updateStoryStatus(videoId, statusPayload) {
 
     if (error) {
         console.error('❌ [BunnyWebhook] Erro ao buscar story:', videoId, error);
-        return;
+        return null;
     }
 
     if (!data) {
         console.warn('⚠️ [BunnyWebhook] Nenhum story encontrado para videoId:', videoId);
-        return;
+        return null;
     }
 
     const storyId = data.id;
@@ -37,12 +37,14 @@ async function updateStoryStatus(videoId, statusPayload) {
 
     if (updateError) {
         console.error('❌ [BunnyWebhook] Erro ao atualizar story:', storyId, updateError);
-    } else {
-        console.log('✅ [BunnyWebhook] Story ativado:', storyId);
+        return null;
     }
+
+    console.log('✅ [BunnyWebhook] Story ativado:', storyId);
+    return { storyId, status: updatePayload.status };
 }
 
-async function sendNotification(videoId) {
+async function sendNotification({ videoId, storyId }) {
     try {
         const apiUrl = process.env.API_BASE_URL || process.env.EXPO_PUBLIC_API_URL || process.env.EXPO_PUBLIC_API_BASE_URL;
 
@@ -62,7 +64,8 @@ async function sendNotification(videoId) {
                     screen: 'StoryViewer',
                     params: {
                         forceReload: true,
-                        bunnyVideoId: videoId
+                        bunnyVideoId: videoId,
+                        initialStoryId: storyId
                     }
                 },
                 sendToAll: true
@@ -111,11 +114,19 @@ export default async function handler(req, res) {
     }
 
     try {
-        const signature = req.headers['x-bunny-signature'];
+        const headerSignature = req.headers['x-bunny-signature'];
+        const querySignature = req.query?.token || req.query?.signature || req.query?.secret;
+        const signature = headerSignature || querySignature;
         console.log('🔐 [BunnyWebhook] Signature recebida:', signature);
 
-        if (BUNNY_WEBHOOK_KEY && signature !== BUNNY_WEBHOOK_KEY) {
-            return res.status(401).json({ success: false, message: 'Invalid signature' });
+        if (BUNNY_WEBHOOK_KEY) {
+            if (!signature) {
+                console.warn('⚠️ [BunnyWebhook] Nenhuma assinatura recebida, mas BUNNY_STREAM_WEBHOOK_KEY está configurado.');
+                return res.status(401).json({ success: false, message: 'Missing signature' });
+            }
+            if (signature !== BUNNY_WEBHOOK_KEY) {
+                return res.status(401).json({ success: false, message: 'Invalid signature' });
+            }
         }
 
         const payload = req.body ?? {};
@@ -134,8 +145,10 @@ export default async function handler(req, res) {
         const finalStatusCodes = new Set([3, 4]);
 
         if (finalStatuses.has(statusLabel) || finalStatusCodes.has(statusCode)) {
-            await updateStoryStatus(videoId, payload);
-            await sendNotification(videoId);
+            const updateResult = await updateStoryStatus(videoId, payload);
+            if (updateResult?.storyId) {
+                await sendNotification({ videoId, storyId: updateResult.storyId });
+            }
         } else if (statusLabel === 'failed' || statusCode === 5) {
             console.error(`❌ [BunnyWebhook] Encoding falhou para ${videoId}`, payload);
         } else {
