@@ -58,7 +58,7 @@ async function sendNotification({ videoId, storyId }) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 title: '🆕 Novo Story publicado',
-                body: 'Confira agora mesmo!',
+                body: '💰URGENTE 🚨 Vai lá no Busca Busca agora que saiu uma oportunidade!!!!!!',
                 data: {
                     type: 'new_story',
                     screen: 'StoryViewer',
@@ -142,14 +142,14 @@ export default async function handler(req, res) {
         }
 
         if (statusCode === 3) {
-            console.log('✅ [BunnyWebhook] Status 3 (finished) recebido. Atualizando story e enviando notificação.');
+            console.log('✅ [BunnyWebhook] Status 3 (finished) recebido. Atualizando story.');
+            const updateResult = await updateStoryStatus(videoId, payload);
+        } else if (statusCode === 4) {
+            console.log('✅ [BunnyWebhook] Status 4 (resolution finished) recebido. Atualizando story e enviando notificação.');
             const updateResult = await updateStoryStatus(videoId, payload);
             if (updateResult?.storyId) {
                 await sendNotification({ videoId, storyId: updateResult.storyId });
             }
-        } else if (statusCode === 4) {
-            console.log('✅ [BunnyWebhook] Status 4 (resolution finished) recebido. Atualizando story (sem notificação extra).');
-            await updateStoryStatus(videoId, payload);
         } else if (statusLabel === 'failed' || statusCode === 5) {
             console.error(`❌ [BunnyWebhook] Encoding falhou para ${videoId}`, payload);
         } else {
