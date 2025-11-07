@@ -6,6 +6,9 @@ console.log('API_BASE_URL - admin.js:', API_BASE_URL);
 let currentUser = null;
 let authToken = null;
 
+// Propriedade atual (para uso no mapa e outras funções)
+let currentProperty = null;
+
 // ✨ NOVO: Carregar token do localStorage
 function loadAuthData() {
     try {
@@ -237,6 +240,19 @@ async function populateOwnerData(property) {
 
 // Preencher dados da propriedade
 function populatePropertyData(property) {
+    console.log('📋 Preenchendo dados da propriedade:', {
+        id: property.id,
+        title: property.title,
+        address: property.address,
+        neighborhood: property.neighborhood,
+        city: property.city,
+        bedrooms: property.bedrooms,
+        bathrooms: property.bathrooms,
+        parking_spaces: property.parking_spaces,
+        area: property.area,
+        images: property.images
+    });
+    
     // Armazenar dados da propriedade globalmente para uso no mapa
     currentProperty = property;
 
