@@ -55,44 +55,6 @@ async function updateStoryStatus(videoId, statusPayload, extraFields = {}) {
     return { storyId, status: updatePayload.status };
 }
 
-async function sendNotification({ videoId, storyId }) {
-    try {
-        const apiUrl = process.env.API_BASE_URL || process.env.EXPO_PUBLIC_API_URL || process.env.EXPO_PUBLIC_API_BASE_URL;
-
-        if (!apiUrl) {
-            console.warn('⚠️ [BunnyWebhook] API_BASE_URL não configurada, notificações desabilitadas.');
-            return;
-        }
-
-        const response = await fetch(`${apiUrl}/api/notifications?action=send`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                title: '🆕 Novo Story publicado',
-                body: '💰URGENTE 🚨 Vai lá no Busca Busca agora que saiu uma oportunidade!!!!!!',
-                data: {
-                    type: 'new_story',
-                    screen: 'StoryViewer',
-                    params: {
-                        forceReload: true,
-                        bunnyVideoId: videoId,
-                        initialStoryId: storyId
-                    }
-                },
-                sendToAll: true
-            })
-        });
-
-        if (!response.ok) {
-            console.error('❌ [BunnyWebhook] Falha ao enviar notificação:', response.status, await response.text());
-        } else {
-            console.log('✅ [BunnyWebhook] Notificação disparada para videoId:', videoId);
-        }
-    } catch (error) {
-        console.error('❌ [BunnyWebhook] Erro ao enviar notificação:', error);
-    }
-}
-
 function mapStatusCodeToLabel(statusCode) {
     const map = {
         0: 'queued',
@@ -221,12 +183,9 @@ export default async function handler(req, res) {
         } else if (statusCode === 4) {
             console.log('✅ [BunnyWebhook] Status 4 (resolution finished) recebido. Atualizando story e enviando notificação.');
             const mp4Url = await fetchBunnyMp4Url(videoId);
-            const updateResult = await updateStoryStatus(videoId, payload, {
+            await updateStoryStatus(videoId, payload, {
                 video_mp4_url: mp4Url || undefined,
             });
-            if (updateResult?.storyId) {
-                await sendNotification({ videoId, storyId: updateResult.storyId });
-            }
         } else if (statusLabel === 'failed' || statusCode === 5) {
             console.error(`❌ [BunnyWebhook] Encoding falhou para ${videoId}`, payload);
         } else {

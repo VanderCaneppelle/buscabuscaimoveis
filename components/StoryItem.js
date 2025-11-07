@@ -110,9 +110,20 @@ export default function StoryItem({
         return null;
     }
 
-    const videoSourceUrl = story.media_type === 'video'
-        ? (story.video_mp4_url || story.image_url)
-        : story.image_url;
+    const [currentVideoUrl, setCurrentVideoUrl] = useState(() => {
+        if (story.media_type === 'video') {
+            return story.video_mp4_url || story.image_url;
+        }
+        return story.image_url;
+    });
+
+    useEffect(() => {
+        if (story.media_type === 'video') {
+            setCurrentVideoUrl(story.video_mp4_url || story.image_url);
+        } else {
+            setCurrentVideoUrl(story.image_url);
+        }
+    }, [story.id, story.media_type, story.video_mp4_url, story.image_url]);
 
     return (
         <View style={styles.container}>
@@ -124,12 +135,21 @@ export default function StoryItem({
             ) : (
                 <>
                     <StoryVideo
-                        videoUrl={videoSourceUrl}
-                        optimizedUrl={optimizedUrl || videoSourceUrl}
+                        videoUrl={currentVideoUrl}
+                        optimizedUrl={optimizedUrl || currentVideoUrl}
                         videoRef={videoRef}
                         onLoad={handleVideoLoad}
                         onPlaybackStatusUpdate={handleVideoProgress}
-                        onError={handleVideoError}
+                        onError={() => {
+                            console.warn('⚠️ Falha ao carregar vídeo, tentando fallback HLS...', currentVideoUrl);
+                            if (story.media_type === 'video' && currentVideoUrl !== story.image_url) {
+                                setCurrentVideoUrl(story.image_url);
+                                setIsVideoLoaded(false);
+                                setIsVideoBuffering(true);
+                            } else {
+                                handleVideoError();
+                            }
+                        }}
                     />
                     {(isVideoBuffering || !isVideoLoaded) && (
                         <View style={styles.loadingOverlay}>
