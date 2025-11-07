@@ -6,6 +6,9 @@ console.log('API_BASE_URL - admin.js:', API_BASE_URL);
 let currentUser = null;
 let authToken = null;
 
+// Propriedade atual (para uso no mapa e outras funções)
+let currentProperty = null;
+
 // ✨ NOVO: Carregar token do localStorage
 function loadAuthData() {
     try {
@@ -237,6 +240,19 @@ async function populateOwnerData(property) {
 
 // Preencher dados da propriedade
 function populatePropertyData(property) {
+    console.log('📋 Preenchendo dados da propriedade:', {
+        id: property.id,
+        title: property.title,
+        address: property.address,
+        neighborhood: property.neighborhood,
+        city: property.city,
+        bedrooms: property.bedrooms,
+        bathrooms: property.bathrooms,
+        parking_spaces: property.parking_spaces,
+        area: property.area,
+        images: property.images
+    });
+    
     // Armazenar dados da propriedade globalmente para uso no mapa
     currentProperty = property;
 
@@ -516,32 +532,77 @@ function updateModerationButtonsVisibility(status) {
 
 // Configurar imagens da propriedade
 function setupPropertyImages(images) {
+    console.log('🖼️ setupPropertyImages - Imagens recebidas:', images, typeof images);
+    
     const viewImagesBtn = document.getElementById('view-images-btn');
+    if (!viewImagesBtn) {
+        console.error('❌ Botão view-images-btn não encontrado!');
+        return;
+    }
+    
     const lightbox = initLightbox();
 
-    if (!images || images.length === 0) {
+    // Verificar se images existe
+    if (!images) {
+        console.log('⚠️ Nenhuma imagem fornecida');
         viewImagesBtn.style.display = 'none';
         return;
     }
 
-    // Filtrar apenas imagens (excluir vídeos)
-    const imageFiles = images.filter(img =>
-        typeof img === 'string' &&
-        !img.includes('.mp4') &&
-        !img.includes('.mov') &&
-        !img.includes('.avi') &&
-        !img.includes('.mkv') &&
-        !img.includes('.webm')
-    );
+    // Se for string, tentar parsear como JSON (pode vir como string do banco)
+    let imageArray = images;
+    if (typeof images === 'string') {
+        try {
+            imageArray = JSON.parse(images);
+            console.log('✅ Imagens parseadas com sucesso:', imageArray);
+        } catch (e) {
+            console.warn('⚠️ Não foi possível parsear images como JSON:', images);
+            // Se for uma única URL como string
+            if (images.startsWith('http')) {
+                imageArray = [images];
+            } else {
+                viewImagesBtn.style.display = 'none';
+                return;
+            }
+        }
+    }
+
+    // Garantir que é array
+    if (!Array.isArray(imageArray) || imageArray.length === 0) {
+        console.log('⚠️ Array de imagens vazio');
+        viewImagesBtn.style.display = 'none';
+        return;
+    }
+
+    // Filtrar apenas imagens (excluir vídeos e URLs do YouTube)
+    const imageFiles = imageArray.filter(img => {
+        if (!img || typeof img !== 'string') return false;
+        return !img.includes('.mp4') &&
+            !img.includes('.mov') &&
+            !img.includes('.avi') &&
+            !img.includes('.mkv') &&
+            !img.includes('.webm') &&
+            !img.includes('youtube.com') &&
+            !img.includes('youtu.be');
+    });
+
+    console.log('✅ Imagens filtradas:', imageFiles.length, imageFiles);
 
     if (imageFiles.length === 0) {
+        console.log('⚠️ Nenhuma imagem válida após filtro');
         viewImagesBtn.style.display = 'none';
         return;
     }
 
-    // Mostrar botão e configurar click handler
-    viewImagesBtn.style.display = 'inline-block';
+    // Mostrar botão com contador de imagens e configurar click handler
+    console.log('✅ Mostrando botão com', imageFiles.length, 'fotos');
+    viewImagesBtn.style.display = 'inline-flex';
+    viewImagesBtn.innerHTML = `
+        <i class="fas fa-images"></i>
+        Ver Todas as Fotos (${imageFiles.length})
+    `;
     viewImagesBtn.onclick = () => {
+        console.log('🖼️ Abrindo lightbox com imagens:', imageFiles);
         lightbox.open(imageFiles, 0);
     };
 }

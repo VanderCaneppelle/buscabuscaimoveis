@@ -40,19 +40,19 @@ export default function PropertyDetailsScreen({ route, navigation }) {
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [isOwnerOnFreePlan, setIsOwnerOnFreePlan] = useState(false);
     const [mediaViewMode, setMediaViewMode] = useState('photos'); // 'photos' ou 'videos'
-    // Verificar plano do dono do anúncio antecipadamente (evita múltiplas RPCs nos handlers)
+    
+    // Verificar plano do dono do anúncio (usando RPC com fallback)
     useEffect(() => {
         let mounted = true;
         (async () => {
             try {
                 const ownerPlan = await PlanService.getUserActivePlan(property.user_id);
                 const ownerPlanName = ownerPlan?.name || ownerPlan?.plan?.name;
-                // Se não houver assinatura/plano retornado, considerar como plano gratuito
                 const computedIsFree = !ownerPlan || ownerPlanName === 'free';
                 if (mounted) setIsOwnerOnFreePlan(computedIsFree);
             } catch (e) {
-                console.warn('⚠️ Não foi possível obter plano do dono do anúncio (init).', e);
-                if (mounted) setIsOwnerOnFreePlan(false);
+                console.warn('⚠️ Não foi possível obter plano do dono, considerando FREE:', e.message);
+                if (mounted) setIsOwnerOnFreePlan(true); // Fallback para free em caso de erro
             }
         })();
         return () => { mounted = false; };
@@ -692,30 +692,32 @@ export default function PropertyDetailsScreen({ route, navigation }) {
             >
                 {/* Informações Principais */}
                 <View style={styles.mainInfo}>
-                    <View style={styles.titleRow}>
-                        <Text style={[styles.title, styles.titleWithButton]}>{property.title}</Text>
-
-                        {/* Botão Ver Mapa - estilo discreto cinza, como na Home */}
-                        <TouchableOpacity
-                            style={styles.mapIconButton}
-                            onPress={() => {
-                                navigation.navigate('MapaImovelUnico', {
-                                    property: property
-                                });
-                            }}
-                            activeOpacity={0.8}
-                        >
-                            <Ionicons name="location" size={16} color="#00335e" />
-                            <Text style={styles.mapIconText}>Ver no Mapa</Text>
-                        </TouchableOpacity>
-                    </View>
+                    <Text style={styles.title}>{property.title}</Text>
 
 
                     <Text style={styles.location}>
                         <Ionicons name="location" size={16} color="#64748b" />
-                        {' '}{property.neighborhood}, {property.city}
+                        {' '}{(() => {
+                            // Mostrar: Endereço, Bairro, Cidade (apenas os que existirem)
+                            const parts = [
+                                property.address?.trim(),
+                                property.neighborhood?.trim(),
+                                property.city?.trim()
+                            ].filter(Boolean);
+                            return parts.join(', ') || 'Localização não informada';
+                        })()}
                     </Text>
-                    <Text style={styles.price}>{formatPrice(property.price)}</Text>
+                    
+                    {/* Preços: mostrar preço normal + promocional se houver */}
+                    {property.sale_price && parseFloat(property.sale_price) > 0 ? (
+                        <View style={styles.priceContainer}>
+                            <Text style={styles.originalPrice}>{formatPrice(property.price)}</Text>
+                            <Text style={styles.salePrice}>{formatPrice(property.sale_price)}</Text>
+                        </View>
+                    ) : (
+                        <Text style={styles.price}>{formatPrice(property.price)}</Text>
+                    )}
+                    
                     <Text style={styles.type}>
                         {property.property_type} • {property.transaction_type}
                     </Text>
@@ -793,6 +795,20 @@ export default function PropertyDetailsScreen({ route, navigation }) {
 
 
             </ScrollView>
+
+            {/* Botão flutuante "Ver no mapa" */}
+            <TouchableOpacity
+                style={styles.floatingMapButton}
+                onPress={() => {
+                    navigation.navigate('MapaImovelUnico', {
+                        property: property
+                    });
+                }}
+                activeOpacity={0.85}
+            >
+                <Ionicons name="location" size={18} color="#fff" />
+                <Text style={styles.floatingMapText}>Ver no mapa</Text>
+            </TouchableOpacity>
 
             {/* Botões de Contato Fixos no Bottom */}
             <View style={styles.fixedBottomButtons}>
@@ -936,8 +952,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#000',
         borderRadius: 12,
         overflow: 'hidden',
-        marginVertical: 15,
-        marginHorizontal: 20,
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -1148,34 +1162,11 @@ const styles = StyleSheet.create({
     mainInfo: {
         marginBottom: 25,
     },
-    titleRow: {
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        justifyContent: 'space-between',
-        marginBottom: 8,
-    },
     title: {
         fontSize: 24,
         fontWeight: 'bold',
         color: '#00335e',
-    },
-    titleWithButton: {
-        flex: 1,
-        marginRight: 12, // Espaço para o botão
-    },
-    mapIconButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: 8,
-        paddingHorizontal: 12,
-        backgroundColor: '#f8f9fa',
-        borderRadius: 6,
-        gap: 4,
-    },
-    mapIconText: {
-        fontSize: 14,
-        fontWeight: '500',
-        color: '#00335e',
+        marginBottom: 12,
     },
     location: {
         fontSize: 16,
@@ -1189,6 +1180,21 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#059669',
         marginBottom: 8,
+    },
+    priceContainer: {
+        marginBottom: 8,
+    },
+    originalPrice: {
+        fontSize: 20,
+        fontWeight: '600',
+        color: '#94a3b8',
+        textDecorationLine: 'line-through',
+        marginBottom: 4,
+    },
+    salePrice: {
+        fontSize: 28,
+        fontWeight: 'bold',
+        color: '#059669',
     },
     type: {
         fontSize: 16,
@@ -1302,6 +1308,31 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 4,
         elevation: 8,
+    },
+
+    // Botão flutuante "Ver no mapa" (mesmo estilo da HomeScreen)
+    floatingMapButton: {
+        position: 'absolute',
+        right: 16,
+        bottom: 100, // Acima dos botões de contato
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#00335e',
+        paddingHorizontal: 14,
+        paddingVertical: 12,
+        borderRadius: 24,
+        gap: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 6,
+        zIndex: 100,
+    },
+    floatingMapText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: '600',
     },
 
 }); 

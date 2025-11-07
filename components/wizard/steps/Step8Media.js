@@ -73,12 +73,12 @@ export default function Step8Media({ formData, mediaFiles, setMediaFiles, videoU
         }
 
         const validation = validateYouTubeUrl(youtubeUrlInput.trim());
-        if (!validation.valid) {
+        if (!validation.isValid) {
             Alert.alert('URL inválida', validation.error);
             return;
         }
 
-        const normalizedUrl = normalizeYouTubeUrl(youtubeUrlInput.trim());
+        const normalizedUrl = validation.normalizedUrl;
         
         // Verificar se já não existe
         if (videoUrls.includes(normalizedUrl)) {
@@ -211,7 +211,7 @@ export default function Step8Media({ formData, mediaFiles, setMediaFiles, videoU
                                 onPress={handleAddYouTubeUrl}
                                 activeOpacity={0.7}
                             >
-                                <Ionicons name="add" size={24} color="#fff" />
+                                <Text style={styles.addYouTubeButtonText}>Adicionar</Text>
                             </TouchableOpacity>
                         </View>
                     )}
@@ -444,10 +444,16 @@ const styles = StyleSheet.create({
     addYouTubeButton: {
         backgroundColor: '#e74c3c',
         borderRadius: 12,
-        width: 50,
-        height: 50,
+        paddingHorizontal: 20,
+        paddingVertical: 14,
         alignItems: 'center',
         justifyContent: 'center',
+        minWidth: 100,
+    },
+    addYouTubeButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '600',
     },
     videoCard: {
         width: '48%',

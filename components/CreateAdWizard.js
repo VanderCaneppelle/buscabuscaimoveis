@@ -380,44 +380,37 @@ export default function CreateAdWizard({ navigation }) {
             {/* Progress Indicator */}
             <ProgressIndicator currentStep={currentStep} totalSteps={TOTAL_STEPS} />
 
-            {/* Step Content and Footer with Keyboard Avoidance */}
-            <KeyboardAvoidingView 
-                style={styles.keyboardAvoidingView}
-                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-                keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
-            >
-                {/* Step Content */}
-                <View style={styles.content}>
-                    {renderStep()}
-                </View>
+            {/* Step Content */}
+            <View style={styles.content}>
+                {renderStep()}
+            </View>
 
-                {/* Navigation Buttons */}
-                <View style={styles.footer}>
-                {currentStep > 1 && (
-                    <TouchableOpacity
-                        style={styles.secondaryButton}
-                        onPress={handleBack}
-                    >
-                        <Ionicons name="chevron-back" size={20} color="#6B7280" />
-                        <Text style={styles.secondaryButtonText}>Voltar</Text>
-                    </TouchableOpacity>
-                )}
+            {/* Navigation Buttons - Fixed Footer */}
+            <View style={styles.footer}>
+            {currentStep > 1 && (
                 <TouchableOpacity
-                    style={[
-                        styles.primaryButton,
-                        currentStep === 1 && styles.primaryButtonFull,
-                        submitting && styles.primaryButtonDisabled
-                    ]}
-                    onPress={handleNext}
-                    disabled={submitting}
+                    style={styles.secondaryButton}
+                    onPress={handleBack}
                 >
-                    <Text style={styles.primaryButtonText}>{getButtonText()}</Text>
-                    {currentStep < TOTAL_STEPS && (
-                        <Ionicons name="chevron-forward" size={20} color="#fff" />
-                    )}
+                    <Ionicons name="chevron-back" size={20} color="#6B7280" />
+                    <Text style={styles.secondaryButtonText}>Voltar</Text>
                 </TouchableOpacity>
-                </View>
-            </KeyboardAvoidingView>
+            )}
+            <TouchableOpacity
+                style={[
+                    styles.primaryButton,
+                    currentStep === 1 && styles.primaryButtonFull,
+                    submitting && styles.primaryButtonDisabled
+                ]}
+                onPress={handleNext}
+                disabled={submitting}
+            >
+                <Text style={styles.primaryButtonText}>{getButtonText()}</Text>
+                {currentStep < TOTAL_STEPS && (
+                    <Ionicons name="chevron-forward" size={20} color="#fff" />
+                )}
+            </TouchableOpacity>
+            </View>
 
             {/* Plan Modal */}
             <Modal visible={showPlanModal} transparent animationType="fade">

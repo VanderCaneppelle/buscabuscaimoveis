@@ -30,16 +30,32 @@ async function handler(req, res) {
                 title,
                 description,
                 price,
+                sale_price,
                 property_type,
+                transaction_type,
+                bedrooms,
+                bathrooms,
+                parking_spaces,
+                area,
+                address,
+                neighborhood,
                 city,
+                state,
+                zip_code,
+                latitude,
+                longitude,
+                images,
+                video_urls,
                 status,
                 ad_status,
                 created_at,
                 updated_at,
+                approved_at,
+                rejected_at,
+                rejection_reason,
                 user_id,
-                latitude,
-                longitude,
-                address,
+                developer_id,
+                ad_id,
                 admin_notes
             `)
             .eq('id', id)
@@ -61,6 +77,17 @@ async function handler(req, res) {
         }
 
         console.log('✅ PROPERTY-DETAILS - Propriedade encontrada:', property.id);
+        console.log('📦 PROPERTY-DETAILS - Dados retornados:', {
+            id: property.id,
+            title: property.title,
+            address: property.address,
+            neighborhood: property.neighborhood,
+            city: property.city,
+            bedrooms: property.bedrooms,
+            bathrooms: property.bathrooms,
+            images: property.images ? 'SIM' : 'NÃO',
+            video_urls: property.video_urls ? 'SIM' : 'NÃO'
+        });
 
         return res.status(200).json({
             success: true,

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { View, Text, StyleSheet, TextInput, ScrollView, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -22,6 +22,9 @@ const parseCurrency = (formattedValue) => {
 };
 
 export default function Step5Pricing({ formData, updateFormData }) {
+    const priceInputRef = useRef(null);
+    const salePriceInputRef = useRef(null);
+
     const handlePriceChange = (value) => {
         const formatted = formatCurrency(value);
         updateFormData('price', formatted);
@@ -43,7 +46,7 @@ export default function Step5Pricing({ formData, updateFormData }) {
         <KeyboardAvoidingView 
             style={styles.container}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 180 : 20}
         >
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                 <ScrollView 
@@ -77,14 +80,16 @@ export default function Step5Pricing({ formData, updateFormData }) {
                     <View style={styles.priceInputContainer}>
                         <Text style={styles.currencySymbol}>R$</Text>
                         <TextInput
+                            ref={priceInputRef}
                             style={styles.priceInput}
                             value={formData.price}
                             onChangeText={handlePriceChange}
                             placeholder="0,00"
                             placeholderTextColor="#D1D5DB"
                             keyboardType="numeric"
-                            returnKeyType="done"
-                            onSubmitEditing={Keyboard.dismiss}
+                            returnKeyType="next"
+                            onSubmitEditing={() => salePriceInputRef.current?.focus()}
+                            blurOnSubmit={false}
                         />
                     </View>
                     <Text style={styles.hint}>
@@ -109,6 +114,7 @@ export default function Step5Pricing({ formData, updateFormData }) {
                     ]}>
                         <Text style={styles.currencySymbol}>R$</Text>
                         <TextInput
+                            ref={salePriceInputRef}
                             style={styles.priceInput}
                             value={formData.salePrice}
                             onChangeText={handleSalePriceChange}
@@ -117,6 +123,7 @@ export default function Step5Pricing({ formData, updateFormData }) {
                             keyboardType="numeric"
                             returnKeyType="done"
                             onSubmitEditing={Keyboard.dismiss}
+                            blurOnSubmit={true}
                         />
                     </View>
                     
@@ -206,8 +213,8 @@ const styles = StyleSheet.create({
     },
     priceSection: {
         backgroundColor: '#fff',
-        borderRadius: 16,
-        padding: 24,
+        borderRadius: 12,
+        padding: 16,
         marginBottom: 20,
         borderWidth: 2,
         borderColor: '#E5E7EB',
@@ -219,8 +226,8 @@ const styles = StyleSheet.create({
     },
     salePriceSection: {
         backgroundColor: '#fff',
-        borderRadius: 16,
-        padding: 24,
+        borderRadius: 12,
+        padding: 16,
         marginBottom: 20,
         borderWidth: 2,
         borderColor: '#E5E7EB',
@@ -233,16 +240,16 @@ const styles = StyleSheet.create({
     priceLabelContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 16,
+        marginBottom: 12,
     },
     priceIconContainer: {
-        width: 48,
-        height: 48,
-        borderRadius: 24,
+        width: 40,
+        height: 40,
+        borderRadius: 20,
         backgroundColor: '#10B98115',
         alignItems: 'center',
         justifyContent: 'center',
-        marginRight: 12,
+        marginRight: 10,
     },
     saleIconContainer: {
         backgroundColor: '#F59E0B15',
@@ -253,12 +260,12 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     priceLabel: {
-        fontSize: 17,
+        fontSize: 16,
         fontWeight: '600',
         color: '#1F2937',
     },
     required: {
-        fontSize: 17,
+        fontSize: 16,
         fontWeight: '700',
         color: '#EF4444',
         marginLeft: 4,
@@ -276,7 +283,7 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         borderWidth: 2,
         borderColor: '#E5E7EB',
-        paddingHorizontal: 20,
+        paddingHorizontal: 16,
         marginBottom: 12,
     },
     priceInputContainerPromo: {
@@ -284,17 +291,17 @@ const styles = StyleSheet.create({
         backgroundColor: '#FFFBEB',
     },
     currencySymbol: {
-        fontSize: 28,
+        fontSize: 24,
         fontWeight: '700',
         color: '#6B7280',
         marginRight: 8,
     },
     priceInput: {
         flex: 1,
-        fontSize: 36,
+        fontSize: 32,
         fontWeight: '700',
         color: '#1F2937',
-        paddingVertical: 20,
+        paddingVertical: 16,
     },
     hint: {
         fontSize: 13,

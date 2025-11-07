@@ -18,7 +18,7 @@ import { Image } from 'expo-image';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
-import MapView, { Marker, Callout, PROVIDER_GOOGLE, PROVIDER_DEFAULT } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE, PROVIDER_DEFAULT } from 'react-native-maps';
 import ClusteredMapView from 'react-native-map-clustering';
 import FavoriteButton from './FavoriteButton';
 import { useFocusEffect } from '@react-navigation/native';
@@ -34,6 +34,7 @@ import { FiltersModal, DevelopersFilterModal, RealtorsFilterModal } from './moda
 import NotificationBell from './NotificationBell';
 
 const { width } = Dimensions.get('window');
+const isSmallScreen = width < 420; // Detectar telas menores (S22 e similares)
 
 // FunÃ§Ã£o debounce para otimizar performance
 const debounce = (func, wait) => {
@@ -124,6 +125,9 @@ export default function HomeScreen({ navigation }) {
     const [showDevelopersModal, setShowDevelopersModal] = useState(false);
     const [showRealtorsModal, setShowRealtorsModal] = useState(false);
     const [showMap, setShowMap] = useState(false);
+    const [selectedProperty, setSelectedProperty] = useState(null); // Propriedade selecionada no mapa
+    const [multiplePropertiesModal, setMultiplePropertiesModal] = useState(false); // Modal de múltiplos imóveis
+    const [propertiesAtLocation, setPropertiesAtLocation] = useState([]); // Imóveis na mesma localização
 
     // Cores dinÃ¢micas baseadas no tema do dispositivo
     const colors = {
@@ -134,6 +138,51 @@ export default function HomeScreen({ navigation }) {
         buttonBg: '#00335e',
         buttonText: '#ffffff',
     };
+
+    // 🗺️ Função para agrupar propriedades por coordenadas idênticas
+    const groupedMarkers = useMemo(() => {
+        const groups = new Map();
+        
+        properties.forEach(property => {
+            const lat = parseFloat(property.latitude);
+            const lng = parseFloat(property.longitude);
+            
+            if (isNaN(lat) || isNaN(lng)) return;
+            
+            // Criar chave única para coordenadas (arredonda para 6 casas decimais)
+            const coordKey = `${lat.toFixed(6)},${lng.toFixed(6)}`;
+            
+            if (!groups.has(coordKey)) {
+                groups.set(coordKey, {
+                    latitude: lat,
+                    longitude: lng,
+                    properties: []
+                });
+            }
+            
+            groups.get(coordKey).properties.push(property);
+        });
+        
+        return Array.from(groups.values());
+    }, [properties]);
+
+    // 🔍 Handler para clique em marker (único ou múltiplo)
+    const handleMarkerPress = useCallback((group) => {
+        if (group.properties.length === 1) {
+            // Apenas 1 imóvel: mostra card direto
+            setSelectedProperty(group.properties[0]);
+        } else {
+            // Múltiplos imóveis: abre modal de lista
+            setPropertiesAtLocation(group.properties);
+            setMultiplePropertiesModal(true);
+        }
+    }, []);
+
+    // 🏠 Handler para selecionar imóvel da lista
+    const handleSelectPropertyFromList = useCallback((property) => {
+        setMultiplePropertiesModal(false);
+        setSelectedProperty(property);
+    }, []);
 
     useEffect(() => {
         console.log('  HomeScreen: useEffect dados - user?.id:', !!user?.id, 'hasInitialData:', hasInitialData);
@@ -708,7 +757,15 @@ export default function HomeScreen({ navigation }) {
                     <View style={styles.addressContainer}>
                         <Ionicons name="location-outline" size={14} color="#666" />
                         <Text style={styles.propertyLocation}>
-                            {item.neighborhood ?? item.address}, {item.city ?? item.state}
+                            {(() => {
+                                // Padrão: Bairro, Cidade. Se não tiver bairro: Endereço, Cidade
+                                const neighborhood = item.neighborhood?.trim();
+                                const address = item.address?.trim();
+                                const city = item.city?.trim() || item.state?.trim();
+                                
+                                const firstPart = neighborhood || address || '';
+                                return [firstPart, city].filter(Boolean).join(', ');
+                            })()}
                         </Text>
                     </View>
 
@@ -905,11 +962,13 @@ export default function HomeScreen({ navigation }) {
                             onPress={() => handleQuickFilter('developer')}
                             activeOpacity={0.7}
                         >
-                            <Ionicons 
-                                name="business" 
-                                size={14} 
-                                color={quickFilter === 'developer' ? '#fff' : '#00335e'} 
-                            />
+                            {!isSmallScreen && (
+                                <Ionicons 
+                                    name="business" 
+                                    size={14} 
+                                    color={quickFilter === 'developer' ? '#fff' : '#00335e'} 
+                                />
+                            )}
                             <Text style={[
                                 styles.quickFilterText,
                                 quickFilter === 'developer' && styles.quickFilterTextActive
@@ -926,11 +985,13 @@ export default function HomeScreen({ navigation }) {
                             onPress={() => handleQuickFilter('realtor')}
                             activeOpacity={0.7}
                         >
-                            <Ionicons 
-                                name="people" 
-                                size={14} 
-                                color={quickFilter === 'realtor' ? '#fff' : '#00335e'} 
-                            />
+                            {!isSmallScreen && (
+                                <Ionicons 
+                                    name="people" 
+                                    size={14} 
+                                    color={quickFilter === 'realtor' ? '#fff' : '#00335e'} 
+                                />
+                            )}
                             <Text style={[
                                 styles.quickFilterText,
                                 quickFilter === 'realtor' && styles.quickFilterTextActive
@@ -947,11 +1008,13 @@ export default function HomeScreen({ navigation }) {
                             onPress={() => handleQuickFilter('owner')}
                             activeOpacity={0.7}
                         >
-                            <Ionicons 
-                                name="home" 
-                                size={14} 
-                                color={quickFilter === 'owner' ? '#fff' : '#00335e'} 
-                            />
+                            {!isSmallScreen && (
+                                <Ionicons 
+                                    name="home" 
+                                    size={14} 
+                                    color={quickFilter === 'owner' ? '#fff' : '#00335e'} 
+                                />
+                            )}
                             <Text style={[
                                 styles.quickFilterText,
                                 quickFilter === 'owner' && styles.quickFilterTextActive
@@ -996,43 +1059,52 @@ export default function HomeScreen({ navigation }) {
                                 );
                             }}
                         >
-                            {properties.map(p => {
-                                const lat = parseFloat(p.latitude);
-                                const lng = parseFloat(p.longitude);
-                                if (isNaN(lat) || isNaN(lng)) return null;
-                                return (
-                                    <Marker
-                                        key={`map-prop-${p.id}`}
-                                        coordinate={{ latitude: lat, longitude: lng }}
-                                        pinColor="#00335e"
-                                    >
-                                        <Callout tooltip={true} onPress={() => navigation.navigate('PropertyDetails', { property: p })}>
-                                            <View style={styles.calloutContainer}>
-                                                <View style={styles.calloutRow}>
-                                                    <Image
-                                                        source={{ uri: (p.images && p.images[0]) ? p.images[0] : 'https://via.placeholder.com/120x90?text=Foto' }}
-                                                        style={styles.calloutImage}
-                                                        contentFit="cover"
-                                                    />
-                                                    <View style={styles.calloutTextContainer}>
-                                                        <View>
-                                                            <Text style={styles.calloutTitle} numberOfLines={1}>{p.title ?? 'Imóvel'}</Text>
-                                                            <Text style={styles.calloutSubtitle} numberOfLines={1}>{(p.neighborhood ?? p.address) + ', ' + (p.city ?? p.state)}</Text>
-                                                            <Text style={styles.calloutPrice}>
-                                                                {((p.sale_price ?? p.salePrice) && parseFloat(p.sale_price ?? p.salePrice) > 0)
-                                                                    ? `R$ ${(p.sale_price ?? p.salePrice)?.toLocaleString('pt-BR')}`
-                                                                    : `R$ ${p.price?.toLocaleString('pt-BR') ?? '—'}`}
-                                                            </Text>
+                            {groupedMarkers.map((group, index) => {
+                                const isSelected = selectedProperty && group.properties.some(p => p.id === selectedProperty.id);
+                                const hasMultiple = group.properties.length > 1;
+                                
+                                if (hasMultiple) {
+                                    // Marker customizado para múltiplos imóveis
+                                    return (
+                                        <Marker
+                                            key={`map-group-${index}-${group.latitude}-${group.longitude}`}
+                                            coordinate={{ latitude: group.latitude, longitude: group.longitude }}
+                                            onPress={() => handleMarkerPress(group)}
+                                        >
+                                            <View style={styles.markerWrapper}>
+                                                <View style={[
+                                                    styles.customMarker,
+                                                    isSelected && styles.customMarkerSelected
+                                                ]}>
+                                                    {Platform.OS === 'ios' && (
+                                                        <Ionicons 
+                                                            name="business" 
+                                                            size={18} 
+                                                            color="#fff" 
+                                                        />
+                                                    )}
+                                                    {Platform.OS === 'ios' ? (
+                                                        <View style={styles.markerBadge}>
+                                                            <Text style={styles.markerBadgeText}>{group.properties.length}</Text>
                                                         </View>
-                                                        <View style={styles.calloutButton}>
-                                                            <Text style={styles.calloutButtonText}>Ver mais</Text>
-                                                        </View>
-                                                    </View>
+                                                    ) : (
+                                                        <Text style={styles.markerBadgeText}>{group.properties.length}</Text>
+                                                    )}
                                                 </View>
                                             </View>
-                                        </Callout>
-                                    </Marker>
-                                );
+                                        </Marker>
+                                    );
+                                } else {
+                                    // Marker padrão para imóvel único
+                                    return (
+                                        <Marker
+                                            key={`map-group-${index}-${group.latitude}-${group.longitude}`}
+                                            coordinate={{ latitude: group.latitude, longitude: group.longitude }}
+                                            pinColor={isSelected ? "#e74c3c" : "#00335e"}
+                                            onPress={() => handleMarkerPress(group)}
+                                        />
+                                    );
+                                }
                             })}
                         </ClusteredMapView>
                         {(listLoading || isSearching || refreshing) && (
@@ -1040,6 +1112,132 @@ export default function HomeScreen({ navigation }) {
                                 <Text style={styles.mapLoadingText}>Aplicando filtros...</Text>
                             </View>
                         )}
+                        
+                        {/* Card inferior com propriedade selecionada */}
+                        {selectedProperty && !multiplePropertiesModal && (
+                            <View style={styles.mapPropertyCard}>
+                                <TouchableOpacity
+                                    style={styles.mapPropertyCardContent}
+                                    onPress={() => navigation.navigate('PropertyDetails', { property: selectedProperty })}
+                                    activeOpacity={0.9}
+                                >
+                                    <Image
+                                        source={{ uri: (selectedProperty.images && selectedProperty.images[0]) ? selectedProperty.images[0] : 'https://via.placeholder.com/120x90?text=Foto' }}
+                                        style={styles.mapPropertyImage}
+                                        contentFit="cover"
+                                    />
+                                    <View style={styles.mapPropertyInfo}>
+                                        <Text style={styles.mapPropertyTitle} numberOfLines={2}>
+                                            {selectedProperty.title ?? 'Imóvel'}
+                                        </Text>
+                                        <Text style={styles.mapPropertyLocation} numberOfLines={1}>
+                                            <Ionicons name="location-outline" size={14} color="#64748b" />
+                                            {' '}
+                                            {(() => {
+                                                const neighborhood = selectedProperty.neighborhood?.trim();
+                                                const address = selectedProperty.address?.trim();
+                                                const city = selectedProperty.city?.trim() || selectedProperty.state?.trim();
+                                                const firstPart = neighborhood || address || '';
+                                                return [firstPart, city].filter(Boolean).join(', ');
+                                            })()}
+                                        </Text>
+                                        <Text style={styles.mapPropertyPrice}>
+                                            {((selectedProperty.sale_price ?? selectedProperty.salePrice) && parseFloat(selectedProperty.sale_price ?? selectedProperty.salePrice) > 0)
+                                                ? `R$ ${(selectedProperty.sale_price ?? selectedProperty.salePrice)?.toLocaleString('pt-BR')}`
+                                                : `R$ ${selectedProperty.price?.toLocaleString('pt-BR') ?? '—'}`}
+                                        </Text>
+                                        <View style={styles.mapPropertyButton}>
+                                            <Text style={styles.mapPropertyButtonText}>Ver detalhes</Text>
+                                            <Ionicons name="arrow-forward" size={16} color="#fff" />
+                                        </View>
+                                    </View>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={styles.mapPropertyCloseButton}
+                                    onPress={() => setSelectedProperty(null)}
+                                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                                >
+                                    <Ionicons name="close" size={24} color="#64748b" />
+                                </TouchableOpacity>
+                            </View>
+                        )}
+
+                        {/* Modal de múltiplos imóveis na mesma localização */}
+                        <Modal
+                            visible={multiplePropertiesModal}
+                            transparent={true}
+                            animationType="slide"
+                            onRequestClose={() => setMultiplePropertiesModal(false)}
+                        >
+                            <View style={styles.multiPropertiesModalOverlay}>
+                                <View style={styles.multiPropertiesModalContent}>
+                                    <View style={styles.multiPropertiesHeader}>
+                                        <View>
+                                            <Text style={styles.multiPropertiesTitle}>
+                                                Imóveis nesta localização
+                                            </Text>
+                                            <Text style={styles.multiPropertiesSubtitle}>
+                                                {propertiesAtLocation.length} imóveis disponíveis
+                                            </Text>
+                                        </View>
+                                        <TouchableOpacity
+                                            onPress={() => setMultiplePropertiesModal(false)}
+                                            style={styles.multiPropertiesCloseButton}
+                                        >
+                                            <Ionicons name="close-circle" size={32} color="#64748b" />
+                                        </TouchableOpacity>
+                                    </View>
+
+                                    <ScrollView style={styles.multiPropertiesList}>
+                                        {propertiesAtLocation.map((property, index) => (
+                                            <TouchableOpacity
+                                                key={`multi-prop-${property.id}`}
+                                                style={[
+                                                    styles.multiPropertyItem,
+                                                    index === propertiesAtLocation.length - 1 && styles.multiPropertyItemLast
+                                                ]}
+                                                onPress={() => handleSelectPropertyFromList(property)}
+                                                activeOpacity={0.7}
+                                            >
+                                                <Image
+                                                    source={{ uri: (property.images && property.images[0]) ? property.images[0] : 'https://via.placeholder.com/80?text=Foto' }}
+                                                    style={styles.multiPropertyImage}
+                                                    contentFit="cover"
+                                                />
+                                                <View style={styles.multiPropertyInfo}>
+                                                    <Text style={styles.multiPropertyTitle} numberOfLines={2}>
+                                                        {property.title}
+                                                    </Text>
+                                                    <Text style={styles.multiPropertyPrice}>
+                                                        {((property.sale_price ?? property.salePrice) && parseFloat(property.sale_price ?? property.salePrice) > 0)
+                                                            ? `R$ ${(property.sale_price ?? property.salePrice)?.toLocaleString('pt-BR')}`
+                                                            : `R$ ${property.price?.toLocaleString('pt-BR') ?? '—'}`}
+                                                    </Text>
+                                                    <View style={styles.multiPropertyFeatures}>
+                                                        {property.bedrooms && (
+                                                            <Text style={styles.multiPropertyFeature}>
+                                                                <Ionicons name="bed-outline" size={14} /> {property.bedrooms}
+                                                            </Text>
+                                                        )}
+                                                        {property.bathrooms && (
+                                                            <Text style={styles.multiPropertyFeature}>
+                                                                <Ionicons name="water-outline" size={14} /> {property.bathrooms}
+                                                            </Text>
+                                                        )}
+                                                        {property.area && (
+                                                            <Text style={styles.multiPropertyFeature}>
+                                                                <Ionicons name="resize-outline" size={14} /> {property.area}m²
+                                                            </Text>
+                                                        )}
+                                                    </View>
+                                                </View>
+                                                <Ionicons name="chevron-forward" size={24} color="#64748b" />
+                                            </TouchableOpacity>
+                                        ))}
+                                    </ScrollView>
+                                </View>
+                            </View>
+                        </Modal>
                     </View>
                 ) : (
                     <FlatList
@@ -1389,13 +1587,13 @@ const styles = StyleSheet.create({
     addressContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 8,
+        marginBottom: 6,
         paddingRight: 60, // espaço para o botão "Selecionar"
     },
     featuresContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 8,
+        marginBottom: 6,
         gap: 4,
     },
     feature: {
@@ -1524,7 +1722,7 @@ const styles = StyleSheet.create({
     },
     propertyInfo: {
         flex: 1, // Ocupa o espaço restante
-        padding: 12,
+        padding: 10,
         backgroundColor: '#fff',
         borderTopRightRadius: 12,
         borderBottomRightRadius: 12,
@@ -1558,7 +1756,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: 'bold',
         color: '#00335e',
-        marginBottom: 6,
+        marginBottom: 4,
         paddingRight: 60,
         lineHeight: 18,
     },
@@ -1581,6 +1779,7 @@ const styles = StyleSheet.create({
     priceContainer: {
         flexDirection: 'column',
         alignItems: 'flex-start',
+        marginBottom: 4,
     },
     originalPrice: {
         fontSize: 14,
@@ -1597,7 +1796,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#dc2626',
         textDecorationLine: 'line-through',
-        marginBottom: 2,
+        marginBottom: 1,
     },
     salePriceGreen: {
         fontSize: 18,
@@ -1620,7 +1819,7 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: '#7f8c8d',
         textTransform: 'capitalize',
-        marginBottom: 4,
+        marginBottom: 0,
     },
     emptyContainer: {
         alignItems: 'center',
@@ -1764,7 +1963,7 @@ const styles = StyleSheet.create({
     floatingMapButton: {
         position: 'absolute',
         right: 16,
-        bottom: 24,
+        bottom: 10,
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: '#00335e',
@@ -1792,14 +1991,14 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         marginTop: 12,
         marginBottom: 8,
-        gap: 10,
+        gap: isSmallScreen ? 6 : 10, // Gap menor em telas pequenas
     },
     quickFilterButton: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: 10,
-        paddingHorizontal: 8,
+        paddingVertical: isSmallScreen ? 8 : 10,
+        paddingHorizontal: isSmallScreen ? 6 : 8, // Padding menor em telas pequenas
         backgroundColor: '#f8f9fa',
         borderRadius: 8,
         borderWidth: 1.5,
@@ -1813,8 +2012,8 @@ const styles = StyleSheet.create({
         borderColor: '#00335e',
     },
     quickFilterText: {
-        fontSize: 12,
-        fontWeight: '600',
+        fontSize: isSmallScreen ? 10 : 12, // Fonte menor em telas pequenas
+        fontWeight: isSmallScreen ? '500' : '600', // Peso menor em telas pequenas
         color: '#00335e',
         textAlign: 'center',
     },
@@ -1927,66 +2126,224 @@ const styles = StyleSheet.create({
         fontSize: 13,
         paddingHorizontal: 4,
     },
-    // Callout styles
-    calloutContainer: {
-        minWidth: 220,
-        maxWidth: 260,
+    // Map property card (card inferior no mapa)
+    mapPropertyCard: {
+        position: 'absolute',
+        bottom: 60,
+        left: 15,
+        right: 15,
         backgroundColor: '#fff',
-        borderRadius: 12,
-        padding: 10,
+        borderRadius: 16,
+        padding: 12,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-        elevation: 6,
-        borderWidth: 1,
-        borderColor: '#e5e7eb',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 10,
     },
-    calloutRow: {
+    mapPropertyCardContent: {
         flexDirection: 'row',
-        alignItems: 'stretch',
     },
-    calloutImage: {
-        width: 90,
-        height: '100%',
-        borderRadius: 8,
+    mapPropertyImage: {
+        width: 100,
+        height: 100,
+        borderRadius: 12,
         backgroundColor: '#e5e7eb',
-        marginRight: 10,
     },
-    calloutTextContainer: {
+    mapPropertyInfo: {
         flex: 1,
+        marginLeft: 12,
         justifyContent: 'space-between',
     },
-    calloutTitle: {
-        fontSize: 14,
+    mapPropertyTitle: {
+        fontSize: 16,
         fontWeight: '700',
         color: '#00335e',
-        marginBottom: 2,
+        marginBottom: 4,
     },
-    calloutSubtitle: {
-        fontSize: 12,
+    mapPropertyLocation: {
+        fontSize: 13,
         color: '#64748b',
-        marginBottom: 6,
+        marginBottom: 4,
     },
-    calloutPrice: {
-        fontSize: 14,
+    mapPropertyPrice: {
+        fontSize: 18,
         fontWeight: '700',
         color: '#059669',
         marginBottom: 8,
     },
-    calloutButton: {
-        alignSelf: 'flex-start',
+    mapPropertyButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
         backgroundColor: '#00335e',
-        paddingHorizontal: 10,
-        paddingVertical: 6,
+        paddingVertical: 8,
+        paddingHorizontal: 12,
         borderRadius: 8,
-        marginTop: 6,
+        gap: 6,
     },
-    calloutButtonText: {
+    mapPropertyButtonText: {
         color: '#fff',
         fontWeight: '600',
-        fontSize: 12,
+        fontSize: 14,
     },
+    mapPropertyCloseButton: {
+        position: 'absolute',
+        top: 8,
+        right: 8,
+        padding: 4,
+        backgroundColor: '#f3f4f6',
+        borderRadius: 20,
+    },
+    
+    // Wrapper para Android (overflow visible é crítico)
+    markerWrapper: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'visible',
+    },
+    // Marker customizado - ESTILOS DIFERENTES POR PLATAFORMA
+    customMarker: Platform.select({
+        ios: {
+            // iOS - Design retangular horizontal (como estava funcionando bem)
+            backgroundColor: '#00335e',
+            borderRadius: 20,
+            paddingVertical: 8,
+            paddingHorizontal: 12,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 6,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.3,
+            shadowRadius: 4,
+        },
+        android: {
+            // Android - Círculo amarelo simples (diferente dos clusters azuis)
+            width: 36,
+            height: 36,
+            borderRadius: 18,
+            backgroundColor: '#ffcc1e',
+            alignItems: 'center',
+            justifyContent: 'center',
+            elevation: 6,
+            borderWidth: 2,
+            borderColor: '#fff',
+        },
+    }),
+    customMarkerSelected: {
+        backgroundColor: '#e74c3c',
+    },
+    // Badge - ESTILOS DIFERENTES POR PLATAFORMA
+    markerBadge: Platform.select({
+        ios: {
+            // iOS - Badge inline (dentro do retângulo)
+            backgroundColor: '#ffcc1e',
+            borderRadius: 10,
+            minWidth: 22,
+            height: 22,
+            paddingHorizontal: 6,
+            alignItems: 'center',
+            justifyContent: 'center',
+        },
+        android: {
+            // Android - Não usa badge separado (número vai direto no círculo)
+            display: 'none',
+        },
+    }),
+    markerBadgeText: Platform.select({
+        ios: {
+            fontSize: 11,
+            color: '#00335e',
+            fontWeight: 'bold',
+        },
+        android: {
+            // Android - Número direto no círculo amarelo
+            fontSize: 16,
+            color: '#00335e',
+            fontWeight: 'bold',
+        },
+    }),
+    
+    // Modal de múltiplos imóveis
+    multiPropertiesModalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'flex-end',
+    },
+    multiPropertiesModalContent: {
+        backgroundColor: '#fff',
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
+        maxHeight: '80%',
+        paddingBottom: 20,
+    },
+    multiPropertiesHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        padding: 20,
+        borderBottomWidth: 1,
+        borderBottomColor: '#e5e7eb',
+    },
+    multiPropertiesTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#00335e',
+        marginBottom: 4,
+    },
+    multiPropertiesSubtitle: {
+        fontSize: 14,
+        color: '#64748b',
+    },
+    multiPropertiesCloseButton: {
+        padding: 4,
+    },
+    multiPropertiesList: {
+        paddingHorizontal: 20,
+    },
+    multiPropertyItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#e5e7eb',
+        gap: 12,
+    },
+    multiPropertyItemLast: {
+        borderBottomWidth: 0,
+    },
+    multiPropertyImage: {
+        width: 80,
+        height: 80,
+        borderRadius: 8,
+        backgroundColor: '#f3f4f6',
+    },
+    multiPropertyInfo: {
+        flex: 1,
+        gap: 4,
+    },
+    multiPropertyTitle: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#1f2937',
+    },
+    multiPropertyPrice: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#059669',
+    },
+    multiPropertyFeatures: {
+        flexDirection: 'row',
+        gap: 12,
+    },
+    multiPropertyFeature: {
+        fontSize: 13,
+        color: '#64748b',
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    
     sectionHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',

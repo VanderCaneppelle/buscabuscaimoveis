@@ -13,6 +13,7 @@ import {
     TouchableWithoutFeedback,
     Keyboard,
 } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
 import { CONFIRM_EMAIL_URL } from '../lib/config';
@@ -147,6 +148,10 @@ export default function SignUpForm({ onBack }) {
 
     return (
         <View style={styles.container}>
+            <StatusBar
+                backgroundColor="#f5f5f5"
+                style="dark"
+            />
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                 <KeyboardAvoidingView
                     style={styles.container}
