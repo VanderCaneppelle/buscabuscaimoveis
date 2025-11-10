@@ -201,9 +201,7 @@ export default function HomeScreen({ navigation }) {
     // Garantir que os dados sejam carregados quando a tela ganhar foco
     useFocusEffect(
         useCallback(() => {
-            console.log('  HomeScreen: TELA GANHOU FOCO');
             if (!hasInitialData) {
-                console.log(' HomeScreen: CARREGANDO DADOS NO FOCUS (primeira vez)');
                 if (user?.id) {
                     fetchProfile();
                 }
@@ -225,22 +223,15 @@ export default function HomeScreen({ navigation }) {
 
     // ✨ Auto-renovação: Verifica cache expirado a cada 1 minuto (igual Stories)
     useEffect(() => {
-        console.log('✅ [HomeScreen] Iniciando auto-renovação de cache (intervalo: 1 min)');
-        
         const checkCacheExpiration = async () => {
             try {
                 // Usar a mesma lógica do PropertyCacheService
                 const result = await PropertyCacheService.needsRevalidation(filters, searchTerm, 'date_desc', 0);
                 
                 if (result) {
-                    console.log(`🔍 [Auto-Renovação HomePage] Resultado:`, result.reason);
-                    
                     // Se precisa atualizar, refazer busca
                     if (result.needsUpdate) {
-                        console.log('⏰ [Auto-Renovação HomePage] Cache expirou e detectou mudanças, atualizando...');
                         await fetchProperties(null, null, 0, true, false);
-                    } else if (result.renewed) {
-                        console.log('✅ [Auto-Renovação HomePage] Cache renovado (sem mudanças no servidor)');
                     }
                 }
             } catch (error) {
@@ -252,16 +243,11 @@ export default function HomeScreen({ navigation }) {
         const interval = setInterval(checkCacheExpiration, 60 * 1000);
 
         // Cleanup: Limpar interval ao desmontar componente
-        return () => {
-            console.log('🧹 Limpando interval de verificação de cache (HomePage)');
-            clearInterval(interval);
-        };
+        return () => clearInterval(interval);
     }, [filters, searchTerm]); // Dependências: se filtros mudarem, recriar interval
 
     // ✨ NOVO: Conectar/Desconectar Realtime quando HomeScreen monta/desmonta
     useEffect(() => {
-        console.log('  HomeScreen: COMPONENTE MONTADO');
-        
         // Callback para atualizar lista local quando Realtime disparar
         const handleRealtimeUpdate = ({ type, data }) => {
             console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');

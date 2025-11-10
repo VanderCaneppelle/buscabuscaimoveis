@@ -85,7 +85,6 @@ export default function PropertyDetailsScreen({ route, navigation }) {
     useEffect(() => {
         return () => {
             // Cleanup básico
-            console.log('🧹 PropertyDetailsScreen: Limpeza ao desmontar');
         };
     }, []);
 

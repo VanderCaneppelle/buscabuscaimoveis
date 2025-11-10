@@ -73,7 +73,7 @@ BEGIN
     ORDER BY us.created_at DESC
     LIMIT 1;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- 6. Função para contar anúncios ativos do usuário
 CREATE OR REPLACE FUNCTION count_user_active_ads(user_uuid UUID)
@@ -88,7 +88,7 @@ BEGIN
     
     RETURN COALESCE(active_count, 0);
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- 7. Função para verificar se usuário pode criar anúncio
 CREATE OR REPLACE FUNCTION can_user_create_ad(user_uuid UUID)
@@ -138,7 +138,7 @@ BEGIN
             user_plan.display_name as plan_name;
     END IF;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- 8. Função para associar usuário ao plano gratuito
 CREATE OR REPLACE FUNCTION assign_free_plan_to_user(user_uuid UUID)
@@ -163,7 +163,7 @@ BEGIN
     
     RETURN true;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- 9. Função para contratar/alterar plano
 CREATE OR REPLACE FUNCTION subscribe_user_to_plan(
@@ -197,7 +197,7 @@ BEGIN
     
     RETURN true;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- 10. RLS Policies para user_subscriptions
 ALTER TABLE user_subscriptions ENABLE ROW LEVEL SECURITY;

@@ -272,13 +272,13 @@ export default function CreateStoryScreen({ navigation }) {
             console.log('🔍 DEBUG - Antes do upload, storyTitle:', storyTitle);
             console.log('🔍 DEBUG - storyTitle || null:', storyTitle || null);
 
-            // Usar o MediaServiceOptimized para upload
-            const result = await MediaService.uploadStory(
+            // 🐰 TESTE: Usar Bunny.net com fallback para Cloudinary
+            const result = await MediaService.uploadStoryWithBunny(
                 capturedMedia.uri,
                 storyTitle || null, // Permitir título vazio
                 capturedMedia.type,
                 (progress) => {
-                    console.log(`📤 Progresso do upload handleUploadStory: ${progress}%`);
+                    console.log(`📤 Progresso do upload: ${progress}%`);
                     setUploadProgress(progress);
                 },
                 linkData,
