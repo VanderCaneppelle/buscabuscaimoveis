@@ -27,6 +27,11 @@ body {
     background: white;
 }
 
+body.simple-body {
+    background: linear-gradient(140deg, rgba(30, 64, 175, 0.08), rgba(59, 130, 246, 0.12));
+    min-height: 100vh;
+}
+
 img {
     max-width: 100%;
     display: block;
@@ -405,6 +410,66 @@ a {
     text-align: center;
     margin: 0;
     max-width: 320px;
+}
+
+.simple-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem 1.5rem;
+}
+
+.confirmation-card {
+    background: white;
+    border-radius: 28px;
+    padding: 3rem 2.5rem;
+    max-width: 560px;
+    width: 100%;
+    text-align: center;
+    box-shadow: var(--shadow-card);
+    display: grid;
+    gap: 1.5rem;
+}
+
+.confirmation-card__icon {
+    font-size: 3rem;
+}
+
+.confirmation-card p {
+    color: var(--color-muted);
+    margin: 0;
+    line-height: 1.7;
+}
+
+.confirmation-card__actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.confirmation-card__support {
+    display: grid;
+    gap: 0.5rem;
+    color: var(--color-muted);
+    font-size: 0.95rem;
+}
+
+.confirmation-card__support a {
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+.confirmation-card__stores {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+}
+
+.confirmation-card__stores a {
+    color: var(--color-secondary);
 }
 
 .split {

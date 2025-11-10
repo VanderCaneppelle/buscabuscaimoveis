@@ -8,8 +8,14 @@ const ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
 const supabaseAdmin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 const supabasePublic = createClient(SUPABASE_URL, ANON_KEY);
 
+const CONFIRM_EMAIL_REDIRECT =
+    Deno.env.get('CONFIRM_EMAIL_REDIRECT_URL') ??
+    'https://buscabuscaimoveis.com.br/confirmacao.html';
+
 const ALLOWED_ORIGINS = [
     'https://buscabusca.vercel.app',
+    'https://buscabuscaimoveis.com.br',
+    'https://buscabuscaimoveis.com.br/confirmacao.html',
     'buscabuscaimoveis://confirm-email',
     'exp://127.0.0.1:8081'
 ];
@@ -159,7 +165,7 @@ Deno.serve(async (req) => {
             email,
             password,
             options: {
-                emailRedirectTo: 'buscabuscaimoveis://confirm-email',
+                emailRedirectTo: CONFIRM_EMAIL_REDIRECT,
                 data: {
                     full_name: full_name,
                     phone: phone,
