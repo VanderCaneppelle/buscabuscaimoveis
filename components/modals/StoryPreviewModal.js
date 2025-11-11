@@ -378,6 +378,7 @@ export default function StoryPreviewModal({
     storyLink,
     linkText,
     linkType,
+    notificationTitle,
     titleCoordinates,
     linkCoordinates,
     titleScale,
@@ -388,6 +389,7 @@ export default function StoryPreviewModal({
     onClose,
     onUpload,
     onTitleChange,
+    onNotificationTitleChange,
     onLinkChange,
     onLinkTextChange,
     onLinkTypeChange,
@@ -401,6 +403,7 @@ export default function StoryPreviewModal({
 }) {
     const [showTitleModal, setShowTitleModal] = useState(false);
     const [showLinkModal, setShowLinkModal] = useState(false);
+    const [showNotificationModal, setShowNotificationModal] = useState(false);
 
     // Função helper para placeholders dos links
     const getLinkPlaceholder = (type) => {
@@ -443,6 +446,13 @@ export default function StoryPreviewModal({
                             onPress={() => setShowTitleModal(true)}
                         >
                             <Ionicons name="text" size={24} color="#fff" />
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={styles.headerActionButton}
+                            onPress={() => setShowNotificationModal(true)}
+                        >
+                            <Ionicons name="notifications" size={24} color="#fff" />
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -510,6 +520,16 @@ export default function StoryPreviewModal({
                     >
                         <Ionicons name="link" size={24} color="#fff" />
                         <Text style={styles.floatingButtonText}>Link</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={styles.floatingButton}
+                        onPress={() => setShowNotificationModal(true)}
+                    >
+                        <Ionicons name="notifications" size={24} color="#fff" />
+                        <Text style={styles.floatingButtonText}>
+                            {notificationTitle?.trim() ? 'Notificação (custom)' : 'Notificação'}
+                        </Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -667,6 +687,67 @@ export default function StoryPreviewModal({
                         </View>
                     </View>
                 </Modal>
+
+                {/* Modal para texto da notificação */}
+                <Modal visible={showNotificationModal} transparent animationType="fade">
+                    <View style={styles.modalOverlay}>
+                        <View style={styles.modalContent}>
+                            <View style={styles.modalHeader}>
+                                <Text style={styles.modalTitle}>Texto da Notificação</Text>
+                                <TouchableOpacity onPress={() => setShowNotificationModal(false)}>
+                                    <Ionicons name="close" size={24} color="#333" />
+                                </TouchableOpacity>
+                            </View>
+
+                            <Text style={styles.modalDescription}>
+                                Personalize a mensagem enviada no push quando o story ficar ativo. Deixe vazio para usar o texto padrão.
+                            </Text>
+
+                            <TextInput
+                                style={[styles.modalInput, styles.modalTextarea]}
+                                placeholder="Ex: Oferta especial disponível por tempo limitado!"
+                                placeholderTextColor="#666"
+                                value={notificationTitle}
+                                onChangeText={onNotificationTitleChange}
+                                maxLength={140}
+                                multiline
+                                numberOfLines={3}
+                            />
+
+                            <Text style={styles.charCounter}>
+                                {(notificationTitle?.length ?? 0)}/140
+                            </Text>
+
+                            <View style={styles.modalActions}>
+                                {notificationTitle?.trim() ? (
+                                    <TouchableOpacity
+                                        style={[styles.modalButton, styles.modalButtonDanger]}
+                                        onPress={() => {
+                                            onNotificationTitleChange('');
+                                            setShowNotificationModal(false);
+                                        }}
+                                    >
+                                        <Ionicons name="trash-outline" size={18} color="#fff" />
+                                    </TouchableOpacity>
+                                ) : null}
+                                <TouchableOpacity
+                                    style={[styles.modalButton, { flex: 1 }]}
+                                    onPress={() => setShowNotificationModal(false)}
+                                >
+                                    <Text style={styles.modalButtonText}>Cancelar</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={[styles.modalButton, styles.modalButtonPrimary, { flex: 1 }]}
+                                    onPress={() => setShowNotificationModal(false)}
+                                >
+                                    <Text style={[styles.modalButtonText, styles.modalButtonTextPrimary]}>
+                                        Salvar
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </View>
+                </Modal>
             </SafeAreaView>
         </Modal>
     );
@@ -778,6 +859,12 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#333',
     },
+    modalDescription: {
+        fontSize: 14,
+        color: '#4b5563',
+        lineHeight: 20,
+        marginBottom: 12,
+    },
     modalInput: {
         borderWidth: 1,
         borderColor: '#e2e8f0',
@@ -786,6 +873,17 @@ const styles = StyleSheet.create({
         fontSize: 16,
         marginBottom: 15,
         backgroundColor: '#fff',
+    },
+    modalTextarea: {
+        minHeight: 110,
+        textAlignVertical: 'top',
+    },
+    charCounter: {
+        alignSelf: 'flex-end',
+        fontSize: 12,
+        color: '#6b7280',
+        marginTop: -5,
+        marginBottom: 10,
     },
     modalLabel: {
         fontSize: 16,

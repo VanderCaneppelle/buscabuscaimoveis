@@ -30,7 +30,7 @@ BEGIN
         END IF;
 
         title := COALESCE(NEW.title, '🆕 Novo Story publicado');
-        body := '💰URGENTE 🚨 Vai lá no Busca Busca agora que saiu uma oportunidade!!!!';
+        body := COALESCE(NULLIF(TRIM(COALESCE(NEW.notification_title, '')), ''), '💰URGENTE 🚨 Vai lá no Busca Busca agora que saiu uma oportunidade!!!!');
 
         PERFORM net.http_post(
             url := notif_url,

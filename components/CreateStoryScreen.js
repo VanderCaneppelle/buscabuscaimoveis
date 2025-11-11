@@ -40,6 +40,7 @@ export default function CreateStoryScreen({ navigation }) {
     const [storyTitle, setStoryTitle] = useState('');
     const [storyLink, setStoryLink] = useState('');
     const [linkText, setLinkText] = useState('Fale conosco');
+    const [notificationTitle, setNotificationTitle] = useState('');
     const [linkType, setLinkType] = useState('whatsapp');
 
     const initialPositions = getInitialPositions();
@@ -287,7 +288,10 @@ export default function CreateStoryScreen({ navigation }) {
                 titleLayout,
                 titleScale,
                 linkScale,
-                user?.id // Passar o ID do usuário
+                user?.id, // Passar o ID do usuário
+                {
+                    notificationTitle: notificationTitle || null,
+                }
             );
 
             console.log('✅ Upload concluído:', result);
@@ -309,6 +313,7 @@ export default function CreateStoryScreen({ navigation }) {
                                 onPress: () => {
                                     setCapturedMedia(null);
                                     setStoryTitle('');
+                                    setNotificationTitle('');
                                     navigation.goBack();
                                 }
                             }
@@ -416,6 +421,8 @@ export default function CreateStoryScreen({ navigation }) {
                 onClose={() => setShowPreview(false)}
                 onUpload={handleUploadStory}
                 onTitleChange={setStoryTitle}
+                notificationTitle={notificationTitle}
+                onNotificationTitleChange={setNotificationTitle}
                 onLinkChange={setStoryLink}
                 onLinkTextChange={setLinkText}
                 onLinkTypeChange={setLinkType}
