@@ -9,6 +9,10 @@ ALTER TABLE stories ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public can view active stories" ON stories
     FOR SELECT USING (status = 'active');
 
+-- Política para permitir que o criador veja seus próprios stories (qualquer status)
+CREATE POLICY "Users can view their stories" ON stories
+    FOR SELECT USING (auth.uid() = user_id);
+
 -- Política para inserção (apenas usuários autenticados podem criar)
 CREATE POLICY "Authenticated users can create stories" ON stories
     FOR INSERT WITH CHECK (auth.uid() = user_id);
