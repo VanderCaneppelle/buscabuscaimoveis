@@ -177,12 +177,16 @@ export default async function handler(req, res) {
             return res.status(400).json({ success: false, message: 'videoId is required' });
         }
 
-        if (statusCode === 3) {
-            console.log('✅ [BunnyWebhook] Status 3 (finished) recebido. Atualizando story.');
-            await updateStoryStatus(videoId, payload);
-        } else if (statusCode === 4) {
-            console.log('✅ [BunnyWebhook] Status 4 (resolution finished) recebido. Atualizando story e enviando notificação.');
-            const mp4Url = await fetchBunnyMp4Url(videoId);
+        if (statusCode === 3 || statusCode === 4) {
+            console.log(`✅ [BunnyWebhook] Status ${statusCode} (${statusLabel}) recebido. Atualizando story e garantindo MP4.`);
+            let mp4Url = null;
+
+            try {
+                mp4Url = await fetchBunnyMp4Url(videoId);
+            } catch (err) {
+                console.error('❌ [BunnyWebhook] Erro ao garantir MP4:', err);
+            }
+
             await updateStoryStatus(videoId, payload, {
                 video_mp4_url: mp4Url || undefined,
             });
