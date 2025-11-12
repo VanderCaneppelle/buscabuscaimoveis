@@ -421,6 +421,115 @@ export class InAppNotificationService {
     }
 
     /**
+     * Notificar admins sobre solicitação de nova construtora
+     * @param {Object} params
+     * @param {string} params.requesterId - ID do usuário que solicitou
+     * @param {string} params.requesterName - Nome do usuário (opcional)
+     * @param {string} params.developerName - Nome da construtora sugerida
+     * @param {string} params.propertyTitle - Título do imóvel (opcional)
+     * @param {string} params.city - Cidade do imóvel (opcional)
+     * @param {string} params.state - Estado do imóvel (opcional)
+     * @param {string} params.notes - Observações adicionais (opcional)
+     * @returns {Object}
+     */
+    async notifyAdminsDeveloperRequest({
+        requesterId,
+        requesterName = null,
+        developerName,
+        propertyTitle = null,
+        city = null,
+        state = null,
+        notes = null
+    }) {
+        try {
+            console.log(`🏗️ Nova solicitação de construtora: ${developerName}`);
+
+            const { data: admins, error } = await supabase
+                .from('profiles')
+                .select('id')
+                .eq('is_admin', true);
+
+            if (error) {
+                console.error('❌ Erro ao buscar admins:', error);
+                throw error;
+            }
+
+            if (!admins || admins.length === 0) {
+                console.log('⚠️ Nenhum admin encontrado para receber solicitação de construtora');
+                return { success: false, error: 'Nenhum admin encontrado' };
+            }
+
+            const requesterLabel = requesterName || 'Um usuário';
+            const location = [city, state].filter(Boolean).join('/');
+
+            const details = [
+                propertyTitle ? `Imóvel: "${propertyTitle}"` : null,
+                location ? `Localização: ${location}` : null,
+                notes ? `Observações: ${notes}` : null
+            ].filter(Boolean).join(' • ');
+
+            const baseMessage = `${requesterLabel} solicitou o cadastro da construtora "${developerName}".`;
+            const finalMessage = details ? `${baseMessage} ${details}` : baseMessage;
+
+            const dataPayload = {
+                requested_by_user_id: requesterId,
+                developer_name: developerName,
+                property_title: propertyTitle,
+                property_city: city,
+                property_state: state,
+                notes,
+                action: 'review_developer_request',
+                is_admin_notification: true
+            };
+
+            const notifications = await Promise.all(
+                admins.map(admin =>
+                    this.createNotification({
+                        userId: admin.id,
+                        type: 'developer_request',
+                        title: '🏗️ Solicitação de nova construtora',
+                        message: finalMessage,
+                        data: dataPayload
+                    })
+                )
+            );
+
+            const successCount = notifications.filter(n => n.success).length;
+            console.log(`✅ ${successCount}/${admins.length} admins notificados sobre a construtora "${developerName}"`);
+
+            // Opcional: registrar confirmação para o usuário solicitante
+            if (requesterId) {
+                await this.createNotification({
+                    userId: requesterId,
+                    type: 'developer_request',
+                    title: '✅ Solicitação enviada',
+                    message: `Recebemos a sua sugestão da construtora "${developerName}". Nosso time vai analisar e cadastrar para você em breve.`,
+                    data: {
+                        developer_name: developerName,
+                        property_title: propertyTitle,
+                        property_city: city,
+                        property_state: state,
+                        notes,
+                        status: 'received',
+                        is_admin_notification: false
+                    }
+                });
+            }
+
+            return {
+                success: true,
+                notifications,
+                sent: successCount,
+                total: admins.length
+            };
+
+        } catch (error) {
+            console.error('❌ Erro ao enviar solicitação de construtora:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    /**
      * Limpar notificações antigas (lidas com mais de 30 dias)
      * @returns {Object} - Resultado da operação
      */

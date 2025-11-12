@@ -54,6 +54,9 @@ export default async function handler(req, res) {
             case 'notify-admins':
                 return await handleNotifyAdmins(req, res, service);
             
+            case 'request-developer':
+                return await handleRequestDeveloper(req, res, service);
+
             case 'cleanup':
                 return await handleCleanup(req, res, service);
             
@@ -109,7 +112,7 @@ async function handleCreate(req, res, service) {
     }
 
     // Validar tipo
-    const validTypes = ['property_approved', 'property_rejected', 'plan_expiring', 'whatsapp_contact'];
+    const validTypes = ['property_approved', 'property_rejected', 'plan_expiring', 'whatsapp_contact', 'developer_request'];
     if (!validTypes.includes(type)) {
         return res.status(400).json({
             success: false,
@@ -393,6 +396,59 @@ async function handleNotifyAdmins(req, res, service) {
         return res.status(500).json({
             success: false,
             error: 'Erro ao notificar admins',
+            details: result.error
+        });
+    }
+}
+
+/**
+ * Solicitar cadastro de nova construtora (notificar admins)
+ * POST /api/in-app-notifications?action=request-developer
+ * Body: { userId, userName, developerName, propertyTitle, city, state, notes }
+ */
+async function handleRequestDeveloper(req, res, service) {
+    if (req.method !== 'POST') {
+        return res.status(405).json({ success: false, error: 'Método não permitido' });
+    }
+
+    const {
+        userId,
+        userName,
+        developerName,
+        propertyTitle,
+        city,
+        state,
+        notes
+    } = req.body;
+
+    if (!userId || !developerName) {
+        return res.status(400).json({
+            success: false,
+            error: 'userId e developerName são obrigatórios'
+        });
+    }
+
+    const result = await service.notifyAdminsDeveloperRequest({
+        requesterId: userId,
+        requesterName: userName,
+        developerName,
+        propertyTitle,
+        city,
+        state,
+        notes
+    });
+
+    if (result.success) {
+        return res.status(200).json({
+            success: true,
+            message: 'Solicitação enviada para os administradores',
+            sent: result.sent,
+            total: result.total
+        });
+    } else {
+        return res.status(500).json({
+            success: false,
+            error: 'Erro ao notificar administradores',
             details: result.error
         });
     }

@@ -1,13 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity, ActivityIndicator, FlatList } from 'react-native';
+import {
+    View,
+    Text,
+    StyleSheet,
+    TextInput,
+    ScrollView,
+    TouchableOpacity,
+    ActivityIndicator,
+    FlatList,
+    Alert,
+    Modal,
+    KeyboardAvoidingView,
+    Platform,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { DeveloperService } from '../../../lib/developerService';
+import { useAuth } from '../../../contexts/AuthContext';
 
 export default function Step6Developer({ formData, updateFormData }) {
     const [developers, setDevelopers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedDeveloper, setSelectedDeveloper] = useState(null);
+    const [showMissingModal, setShowMissingModal] = useState(false);
+    const [missingDeveloperName, setMissingDeveloperName] = useState('');
+    const [missingNotes, setMissingNotes] = useState('');
+    const [submittingRequest, setSubmittingRequest] = useState(false);
+
+    const { user } = useAuth();
 
     useEffect(() => {
         loadDevelopers();
@@ -53,6 +73,65 @@ export default function Step6Developer({ formData, updateFormData }) {
         setSelectedDeveloper(null);
         updateFormData('developer_id', null);
         setSearchQuery('');
+    };
+
+    const handleOpenMissingModal = () => {
+        setMissingDeveloperName('');
+        setMissingNotes('');
+        setShowMissingModal(true);
+    };
+
+    const handleSubmitDeveloperRequest = async () => {
+        const trimmedName = missingDeveloperName.trim();
+        if (!trimmedName) {
+            Alert.alert('Informe a construtora', 'Digite o nome da construtora para enviar a solicitação.');
+            return;
+        }
+
+        if (!user?.id) {
+            Alert.alert('Sessão não encontrada', 'Faça login novamente para enviar a solicitação.');
+            return;
+        }
+
+        try {
+            setSubmittingRequest(true);
+
+            const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'https://buscabusca.vercel.app';
+            const response = await fetch(`${apiUrl}/api/in-app-notifications?action=request-developer`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId: user.id,
+                    userName: user?.user_metadata?.full_name || user?.email || null,
+                    developerName: trimmedName,
+                    propertyTitle: formData?.title || null,
+                    city: formData?.city || null,
+                    state: formData?.state || null,
+                    notes: missingNotes.trim() || null,
+                }),
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || 'Erro ao enviar solicitação');
+            }
+
+            setShowMissingModal(false);
+            Alert.alert(
+                'Solicitação enviada',
+                'Recebemos sua sugestão de construtora. Nossa equipe vai analisar e cadastrar em breve.',
+            );
+        } catch (error) {
+            console.error('Erro ao solicitar nova construtora:', error);
+            Alert.alert(
+                'Erro',
+                'Não foi possível enviar a solicitação agora. Tente novamente em instantes.',
+            );
+        } finally {
+            setSubmittingRequest(false);
+        }
     };
 
     return (
@@ -123,6 +202,14 @@ export default function Step6Developer({ formData, updateFormData }) {
                                         : 'Não há construtoras cadastradas'
                                     }
                                 </Text>
+
+                                <TouchableOpacity
+                                    style={styles.missingButton}
+                                    onPress={handleOpenMissingModal}
+                                >
+                                    <Ionicons name="alert-circle" size={20} color="#1F2937" />
+                                    <Text style={styles.missingButtonText}>Não encontrei a construtora</Text>
+                                </TouchableOpacity>
                             </View>
                         ) : (
                             <View style={styles.resultsContainer}>
@@ -170,6 +257,85 @@ export default function Step6Developer({ formData, updateFormData }) {
                     </TouchableOpacity>
                 )}
             </View>
+
+            <Modal
+                animationType="slide"
+                transparent
+                visible={showMissingModal}
+                onRequestClose={() => !submittingRequest && setShowMissingModal(false)}
+            >
+                <KeyboardAvoidingView
+                    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                    style={styles.modalOverlay}
+                >
+                    <View style={styles.modalContent}>
+                        <View style={styles.modalHeader}>
+                            <View style={styles.modalHeaderIcon}>
+                                <Ionicons name="alert-circle" size={28} color="#1e3a8a" />
+                            </View>
+                            <View style={{ flex: 1 }}>
+                                <Text style={styles.modalTitle}>Solicitar nova construtora</Text>
+                                <Text style={styles.modalSubtitle}>
+                                    Informe o nome da construtora que não encontrou. Vamos avisar os administradores para cadastrar.
+                                </Text>
+                            </View>
+                            <TouchableOpacity
+                                onPress={() => !submittingRequest && setShowMissingModal(false)}
+                                disabled={submittingRequest}
+                            >
+                                <Ionicons name="close" size={24} color="#6B7280" />
+                            </TouchableOpacity>
+                        </View>
+
+                        <View style={styles.modalBody}>
+                            <Text style={styles.modalLabel}>Nome da construtora *</Text>
+                            <TextInput
+                                style={styles.modalInput}
+                                value={missingDeveloperName}
+                                onChangeText={setMissingDeveloperName}
+                                placeholder="Ex: Construtora Exemplo"
+                                placeholderTextColor="#9CA3AF"
+                                editable={!submittingRequest}
+                            />
+
+                            <Text style={styles.modalLabel}>Observações (opcional)</Text>
+                            <TextInput
+                                style={[styles.modalInput, styles.modalTextArea]}
+                                value={missingNotes}
+                                onChangeText={setMissingNotes}
+                                placeholder="Ex: Empreendimento no bairro Centro..."
+                                placeholderTextColor="#9CA3AF"
+                                multiline
+                                numberOfLines={3}
+                                textAlignVertical="top"
+                                editable={!submittingRequest}
+                            />
+
+                            <View style={styles.modalHintBox}>
+                                <Ionicons name="information-circle-outline" size={18} color="#1e3a8a" />
+                                <Text style={styles.modalHintText}>
+                                    Você pode continuar criando o anúncio normalmente. Vamos avisar quando a construtora estiver disponível.
+                                </Text>
+                            </View>
+                        </View>
+
+                        <TouchableOpacity
+                            style={[styles.modalButton, submittingRequest && styles.modalButtonDisabled]}
+                            onPress={handleSubmitDeveloperRequest}
+                            disabled={submittingRequest}
+                        >
+                            {submittingRequest ? (
+                                <ActivityIndicator color="#fff" />
+                            ) : (
+                                <>
+                                    <Ionicons name="send" size={18} color="#fff" />
+                                    <Text style={styles.modalButtonText}>Enviar para avaliação</Text>
+                                </>
+                            )}
+                        </TouchableOpacity>
+                    </View>
+                </KeyboardAvoidingView>
+            </Modal>
         </ScrollView>
     );
 }
@@ -305,6 +471,23 @@ const styles = StyleSheet.create({
         color: '#9CA3AF',
         textAlign: 'center',
     },
+    missingButton: {
+        marginTop: 24,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+        backgroundColor: '#F9FAFB',
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    missingButtonText: {
+        fontSize: 15,
+        fontWeight: '600',
+        color: '#1F2937',
+    },
     resultsContainer: {
         marginBottom: 20,
     },
@@ -362,6 +545,104 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         color: '#6B7280',
         marginRight: 8,
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(15, 23, 42, 0.35)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+    },
+    modalContent: {
+        width: '100%',
+        maxWidth: 420,
+        backgroundColor: '#fff',
+        borderRadius: 16,
+        padding: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 12,
+        elevation: 6,
+    },
+    modalHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 20,
+        gap: 12,
+    },
+    modalHeaderIcon: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        backgroundColor: '#E0E7FF',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: '#1F2937',
+    },
+    modalSubtitle: {
+        fontSize: 14,
+        color: '#6B7280',
+        marginTop: 4,
+        lineHeight: 20,
+    },
+    modalBody: {
+        gap: 16,
+        marginBottom: 20,
+    },
+    modalLabel: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#1F2937',
+    },
+    modalInput: {
+        width: '100%',
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+        borderRadius: 10,
+        paddingHorizontal: 14,
+        paddingVertical: 12,
+        fontSize: 15,
+        color: '#111827',
+        backgroundColor: '#F9FAFB',
+    },
+    modalTextArea: {
+        minHeight: 100,
+    },
+    modalHintBox: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        backgroundColor: '#EFF6FF',
+        borderRadius: 10,
+        padding: 12,
+        gap: 10,
+    },
+    modalHintText: {
+        flex: 1,
+        fontSize: 13,
+        color: '#1E3A8A',
+        lineHeight: 18,
+    },
+    modalButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 10,
+        backgroundColor: '#1e3a8a',
+        paddingVertical: 14,
+        borderRadius: 10,
+    },
+    modalButtonText: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#fff',
+    },
+    modalButtonDisabled: {
+        opacity: 0.6,
     },
 });
 
