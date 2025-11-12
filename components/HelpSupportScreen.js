@@ -15,7 +15,7 @@ export default function HelpSupportScreen({ navigation }) {
     console.log('Rendered HelpSupportScreen');
 
     const handleEmailContact = () => {
-        Linking.openURL('mailto:contato@buscabusca.com.br');
+        Linking.openURL('mailto:suporte@buscabuscaimoveis.com.br');
     };
 
     const handleWhatsAppSupport = () => {
@@ -62,7 +62,7 @@ export default function HelpSupportScreen({ navigation }) {
                             </View>
                             <View style={styles.contactContent}>
                                 <Text style={styles.contactLabel}>E-mail</Text>
-                                <Text style={styles.contactValue}>contato@buscabusca.com.br</Text>
+                                <Text style={styles.contactValue}>suporte@buscabuscaimoveis.com.br</Text>
                             </View>
                             <Ionicons name="chevron-forward" size={20} color="#7f8c8d" />
                         </TouchableOpacity>

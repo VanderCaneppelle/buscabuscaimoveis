@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 const { width, height } = Dimensions.get('window');
 
-export default function StoryVideo({ videoUrl, optimizedUrl, videoRef, onLoad, onPlaybackStatusUpdate, onError }) {
+export default function StoryVideo({ videoUrl, optimizedUrl, videoRef, isMuted = false, onLoad, onPlaybackStatusUpdate, onError }) {
     const videoSource = optimizedUrl || videoUrl;
 
     return (
@@ -19,6 +19,7 @@ export default function StoryVideo({ videoUrl, optimizedUrl, videoRef, onLoad, o
                 isLooping={false}
                 useNativeControls={false}
                 volume={1}
+                isMuted={false}
                 onLoad={onLoad}
                 onPlaybackStatusUpdate={onPlaybackStatusUpdate}
                 onError={onError}

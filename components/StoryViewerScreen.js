@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { View, TouchableOpacity, TouchableWithoutFeedback, Dimensions, StyleSheet, Animated, Text, SafeAreaView, StatusBar, Platform, Alert } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Audio } from 'expo-av';
 import { supabase } from "../lib/supabase";
 import { getOptimizedUrl } from "../lib/mediaCacheService";
 import StoryItem from "./StoryItem";
@@ -19,6 +20,8 @@ export default function ViewerScreen({ navigation, route }) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [optimizedUrls, setOptimizedUrls] = useState({});
     const [currentProgress, setCurrentProgress] = useState(0);
+    const [isMuted, setIsMuted] = useState(false); // false = som ligado, true = mudo
+    const [isPaused, setIsPaused] = useState(false); // false = rodando, true = pausado
     const hasClosed = useRef(false);
     const progressAnim = useRef(null);
 
@@ -26,6 +29,30 @@ export default function ViewerScreen({ navigation, route }) {
     useEffect(() => {
         const forceReload = !!route.params?.forceReload;
         fetchStories(forceReload);
+        
+        // Configurar Audio Mode para iOS
+        const setupAudio = async () => {
+            try {
+                await Audio.setAudioModeAsync({
+                    playsInSilentModeIOS: true, // Toca mesmo no modo silencioso
+                    staysActiveInBackground: false,
+                    shouldDuckAndroid: true,
+                    playThroughEarpieceAndroid: false,
+                });
+            } catch (error) {
+                console.warn('⚠️ Erro ao configurar Audio Mode:', error);
+            }
+        };
+        
+        setupAudio();
+        
+        // Cleanup: restaurar modo de áudio padrão ao sair
+        return () => {
+            Audio.setAudioModeAsync({
+                playsInSilentModeIOS: false,
+                staysActiveInBackground: false,
+            }).catch(() => {});
+        };
     }, []);
 
     useEffect(() => {
@@ -48,6 +75,7 @@ export default function ViewerScreen({ navigation, route }) {
     useEffect(() => {
         // Reset progress quando muda de story
         setCurrentProgress(0);
+        setIsPaused(false); // Reset pause ao mudar de story
     }, [currentIndex]);
 
     // Cleanup quando o componente é desmontado
@@ -219,6 +247,8 @@ export default function ViewerScreen({ navigation, route }) {
                         story={currentStory}
                         optimizedUrl={optimizedUrls[currentStory.id]}
                         isActive={true}
+                        isMuted={isMuted}
+                        isPaused={isPaused}
                         onComplete={handleStoryComplete}
                         onProgressUpdate={handleProgressUpdate}
                     />
@@ -232,6 +262,10 @@ export default function ViewerScreen({ navigation, route }) {
                         currentIndex={currentIndex}
                         currentProgress={currentProgress}
                         canDeleteStory={canDeleteStory}
+                        isMuted={isMuted}
+                        isPaused={isPaused}
+                        onMuteToggle={() => setIsMuted(!isMuted)}
+                        onPauseToggle={() => setIsPaused(!isPaused)}
                         onDeletePress={handleDeleteStory}
                         onClosePress={handleCloseViewer}
                     />

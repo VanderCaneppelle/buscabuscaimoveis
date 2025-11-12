@@ -9,6 +9,8 @@ export default function StoryItem({
     story,
     optimizedUrl,
     isActive,
+    isMuted = false,
+    isPaused = false,
     onComplete,
     onProgressUpdate
 }) {
@@ -16,6 +18,7 @@ export default function StoryItem({
     const progressAnim = useRef(new Animated.Value(0)).current;
     const [isVideoLoaded, setIsVideoLoaded] = useState(false);
     const [isVideoBuffering, setIsVideoBuffering] = useState(true);
+    const videoDurationRef = useRef(null); // Armazenar duração do vídeo
 
     // Reset progress quando o story se torna ativo
     useEffect(() => {
@@ -23,8 +26,9 @@ export default function StoryItem({
             setIsVideoLoaded(false);
             setIsVideoBuffering(true);
             progressAnim.setValue(0);
+            videoDurationRef.current = null; // Reset duração
 
-            if (story.media_type === 'image') {
+            if (story.media_type === 'image' && !isPaused) {
                 startImageProgress();
             }
         } else {
@@ -38,6 +42,104 @@ export default function StoryItem({
             progressAnim.removeAllListeners();
         };
     }, [isActive, story.id]);
+
+    // Atualizar mute quando mudar (sem pausar o vídeo)
+    useEffect(() => {
+        if (videoRef.current && story.media_type === 'video' && isActive && isVideoLoaded && !isPaused) {
+            // Verificar status atual do vídeo antes de mudar mute
+            videoRef.current.getStatusAsync().then(status => {
+                const wasPlaying = status.isPlaying;
+                
+                // Usar apenas setVolumeAsync (mais estável que setIsMutedAsync)
+                // Volume 0 = mudo, Volume 1 = com som
+                return videoRef.current.setVolumeAsync(isMuted ? 0 : 1).then(() => {
+                    // Verificar status novamente após mudar volume
+                    return videoRef.current.getStatusAsync();
+                }).then(newStatus => {
+                    // Se estava tocando mas parou após mudar volume, retomar
+                    if (wasPlaying && !newStatus.isPlaying) {
+                        return videoRef.current.playAsync();
+                    }
+                });
+            }).catch(err => {
+                console.warn('Erro ao atualizar volume:', err);
+            });
+        }
+    }, [isMuted, story.media_type, isActive, isVideoLoaded, isPaused]);
+
+    // Controlar pause/play do vídeo e animação
+    useEffect(() => {
+        if (!isActive) return;
+
+        if (story.media_type === 'video') {
+            if (isPaused) {
+                // Pausar vídeo
+                videoRef.current?.pauseAsync().catch(err => {
+                    console.warn('Erro ao pausar vídeo:', err);
+                });
+                // Pausar animação de progresso
+                progressAnim.stopAnimation();
+            } else {
+                // Retomar vídeo
+                videoRef.current?.playAsync().catch(err => {
+                    console.warn('Erro ao retomar vídeo:', err);
+                });
+                // Retomar animação de progresso
+                if (isVideoLoaded && videoDurationRef.current) {
+                    const currentValue = progressAnim._value || 0;
+                    const remainingDuration = (1 - currentValue) * videoDurationRef.current;
+                    
+                    // Remover listener antigo antes de adicionar novo
+                    progressAnim.removeAllListeners();
+                    
+                    Animated.timing(progressAnim, {
+                        toValue: 1,
+                        duration: remainingDuration,
+                        useNativeDriver: false,
+                    }).start(({ finished }) => {
+                        if (finished) {
+                            onComplete();
+                        }
+                    });
+
+                    // Adicionar listener para notificar progresso
+                    progressAnim.addListener(({ value }) => {
+                        if (onProgressUpdate) {
+                            onProgressUpdate(value, progressAnim);
+                        }
+                    });
+                }
+            }
+        } else {
+            // Para imagens, pausar/retomar apenas a animação
+            if (isPaused) {
+                progressAnim.stopAnimation();
+            } else {
+                const currentValue = progressAnim._value || 0;
+                const remainingDuration = (1 - currentValue) * IMAGE_DURATION;
+                
+                // Remover listener antigo antes de adicionar novo
+                progressAnim.removeAllListeners();
+                
+                Animated.timing(progressAnim, {
+                    toValue: 1,
+                    duration: remainingDuration,
+                    useNativeDriver: false,
+                }).start(({ finished }) => {
+                    if (finished) {
+                        onComplete();
+                    }
+                });
+
+                // Adicionar listener para notificar progresso
+                progressAnim.addListener(({ value }) => {
+                    if (onProgressUpdate) {
+                        onProgressUpdate(value, progressAnim);
+                    }
+                });
+            }
+        }
+    }, [isPaused, isActive, story.media_type, isVideoLoaded]);
 
     const startImageProgress = () => {
         if (story.media_type === 'image') {
@@ -64,8 +166,13 @@ export default function StoryItem({
         setIsVideoLoaded(true);
         setIsVideoBuffering(false);
 
-        // Iniciar animação de progresso para vídeo
+        // Armazenar duração do vídeo
         if (data.durationMillis > 0) {
+            videoDurationRef.current = data.durationMillis;
+        }
+
+        // Iniciar animação de progresso para vídeo (só se não estiver pausado)
+        if (data.durationMillis > 0 && !isPaused) {
             Animated.timing(progressAnim, {
                 toValue: 1,
                 duration: data.durationMillis,
@@ -84,7 +191,10 @@ export default function StoryItem({
             });
         }
 
-        videoRef.current?.playAsync();
+        // Só iniciar o vídeo se não estiver pausado
+        if (!isPaused) {
+            videoRef.current?.playAsync();
+        }
     };
 
     const handleVideoProgress = (status) => {
@@ -138,6 +248,7 @@ export default function StoryItem({
                         videoUrl={currentVideoUrl}
                         optimizedUrl={optimizedUrl || currentVideoUrl}
                         videoRef={videoRef}
+                        isMuted={isMuted}
                         onLoad={handleVideoLoad}
                         onPlaybackStatusUpdate={handleVideoProgress}
                         onError={() => {

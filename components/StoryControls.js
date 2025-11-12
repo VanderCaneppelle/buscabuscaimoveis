@@ -6,11 +6,14 @@ import { useNavigation } from '@react-navigation/native';
 
 
 export default function StoryControls({
-
     stories,
     currentIndex,
     currentProgress,
     canDeleteStory,
+    isMuted,
+    isPaused,
+    onMuteToggle,
+    onPauseToggle,
     onDeletePress,
     onClosePress
 }) {
@@ -42,6 +45,36 @@ export default function StoryControls({
                         <Ionicons name="close" size={28} color="#fff" />
                     </TouchableOpacity>
                 </View>
+
+                {/* Botão de pause/play - aparece para todos os stories */}
+                {onPauseToggle && (
+                    <View style={styles.buttonWrapper}>
+                        <TouchableOpacity style={styles.pauseButton} onPress={onPauseToggle}>
+                            <Ionicons 
+                                name={isPaused ? "play" : "pause"} 
+                                size={24} 
+                                color="#fff" 
+                            />
+                        </TouchableOpacity>
+                    </View>
+                )}
+
+                {/* Botão de mute/unmute - SÓ aparece se o story atual for vídeo */}
+                {stories[currentIndex]?.media_type === 'video' && onMuteToggle && (
+                    <View style={styles.buttonWrapper}>
+                        <TouchableOpacity 
+                            style={styles.muteButton} 
+                            onPress={onMuteToggle}
+                            activeOpacity={0.7}
+                        >
+                            <Ionicons 
+                                name={isMuted ? "volume-mute" : "volume-high"} 
+                                size={24} 
+                                color="#fff" 
+                            />
+                        </TouchableOpacity>
+                    </View>
+                )}
 
                 {/* Botão de deletar - SÓ aparece se canDeleteStory for true */}
                 {canDeleteStory && onDeletePress && (
@@ -104,6 +137,34 @@ const styles = StyleSheet.create({
     },
 
     closeButton: {
+        backgroundColor: "rgba(0,0,0,0.6)",
+        borderRadius: 25,
+        width: 50,
+        height: 50,
+        alignItems: "center",
+        justifyContent: "center",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+        elevation: 10,
+        zIndex: 10000,
+    },
+    pauseButton: {
+        backgroundColor: "rgba(0,0,0,0.6)",
+        borderRadius: 25,
+        width: 50,
+        height: 50,
+        alignItems: "center",
+        justifyContent: "center",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+        elevation: 10,
+        zIndex: 10000,
+    },
+    muteButton: {
         backgroundColor: "rgba(0,0,0,0.6)",
         borderRadius: 25,
         width: 50,
