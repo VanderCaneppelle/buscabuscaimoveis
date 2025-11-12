@@ -173,12 +173,18 @@
         <div id="main-app" style="display: none;">
             <!-- Header -->
             <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-                <div class="container">
-                    <a class="navbar-brand" href="#">
-                        <i class="fas fa-home me-2"></i>
-                        Busca Busca Imóveis - Admin
-                    </a>
-                    <div class="navbar-nav ms-auto">
+                <div class="container d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-3">
+                        <a class="navbar-brand" href="#">
+                            <i class="fas fa-home me-2"></i>
+                            Busca Busca Imóveis - Admin
+                        </a>
+                        <div class="navbar-nav">
+                            <a class="nav-link active text-white" aria-current="page" href="index.html">Anúncios</a>
+                            <a class="nav-link text-white" href="developers.html">Construtoras</a>
+                        </div>
+                    </div>
+                    <div class="navbar-nav ms-auto align-items-center">
                         <span class="navbar-text me-3">
                             <i class="fas fa-user me-2"></i>
                             <span id="admin-name">Administrador</span>
@@ -288,6 +294,7 @@
 
     <!-- Serviços Globais -->
     <script src="moderationService.js"></script>
+
     <!-- Admin App -->
     <script src="admin.js"></script>
 </body>

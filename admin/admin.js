@@ -121,7 +121,6 @@ const logoutBtn = document.getElementById('logout-btn');
 const adminName = document.getElementById('admin-name');
 const loginError = document.getElementById('login-error');
 const errorMessage = document.getElementById('error-message');
-
 // Inicializar aplicação
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🎯 DOM carregado, inicializando aplicação...');
