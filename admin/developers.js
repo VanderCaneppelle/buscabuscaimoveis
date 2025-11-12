@@ -197,12 +197,22 @@ function renderDevelopers() {
             </td>
             <td>${dev.created_at ? formatDate(dev.created_at) : '-'}</td>
             <td class="text-end">
-                <button class="btn btn-sm btn-outline-primary edit-developer me-2" data-id="${dev.id}">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-danger delete-developer" data-id="${dev.id}">
-                    <i class="fas fa-trash"></i>
-                </button>
+                <div class="btn-group" role="group">
+                    <button class="btn btn-sm btn-outline-primary edit-developer" data-id="${dev.id}" title="Editar">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    ${dev.is_active
+                        ? `<button class="btn btn-sm btn-outline-warning inactivate-developer" data-id="${dev.id}" title="Inativar">
+                                <i class="fas fa-ban"></i>
+                           </button>`
+                        : `<button class="btn btn-sm btn-outline-success activate-developer" data-id="${dev.id}" title="Ativar">
+                                <i class="fas fa-check"></i>
+                           </button>`
+                    }
+                    <button class="btn btn-sm btn-outline-danger delete-developer" data-id="${dev.id}" title="Excluir definitivamente">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
             </td>
         </tr>
     `).join('');
@@ -239,6 +249,20 @@ function bindDeveloperActionButtons() {
             if (developer) {
                 openDeveloperModalForEdit(developer);
             }
+        });
+    });
+
+    document.querySelectorAll('.inactivate-developer').forEach(button => {
+        button.addEventListener('click', () => {
+            const id = button.getAttribute('data-id');
+            handleInactivateDeveloper(id);
+        });
+    });
+
+    document.querySelectorAll('.activate-developer').forEach(button => {
+        button.addEventListener('click', () => {
+            const id = button.getAttribute('data-id');
+            handleActivateDeveloper(id);
         });
     });
 
@@ -442,7 +466,25 @@ async function handleDeveloperSubmit(event) {
 
 async function handleDeleteDeveloper(id) {
     if (!id) return;
-    const confirmed = confirm('Tem certeza que deseja excluir esta construtora?');
+    const confirmed = confirm('Tem certeza que deseja excluir PERMANENTEMENTE esta construtora?\nEsta ação não pode ser desfeita.');
+    if (!confirmed) return;
+
+    try {
+        await apiCall('developers', {
+            method: 'DELETE',
+            body: JSON.stringify({ id, hardDelete: true })
+        });
+        showSuccess('Construtora excluída permanentemente!');
+        await fetchDevelopersServer();
+    } catch (error) {
+        console.error('Erro ao excluir construtora:', error);
+        showError(error.message || 'Erro ao excluir construtora.');
+    }
+}
+
+async function handleInactivateDeveloper(id) {
+    if (!id) return;
+    const confirmed = confirm('Deseja inativar esta construtora?\nEla deixará de aparecer na criação de anúncios.');
     if (!confirmed) return;
 
     try {
@@ -450,11 +492,27 @@ async function handleDeleteDeveloper(id) {
             method: 'DELETE',
             body: JSON.stringify({ id })
         });
-        showSuccess('Construtora removida com sucesso!');
+        showSuccess('Construtora inativada com sucesso!');
         await fetchDevelopersServer();
     } catch (error) {
-        console.error('Erro ao excluir construtora:', error);
-        showError(error.message || 'Erro ao excluir construtora.');
+        console.error('Erro ao inativar construtora:', error);
+        showError(error.message || 'Erro ao inativar construtora.');
+    }
+}
+
+async function handleActivateDeveloper(id) {
+    if (!id) return;
+
+    try {
+        await apiCall('developers', {
+            method: 'PUT',
+            body: JSON.stringify({ id, isActive: true })
+        });
+        showSuccess('Construtora ativada com sucesso!');
+        await fetchDevelopersServer();
+    } catch (error) {
+        console.error('Erro ao ativar construtora:', error);
+        showError(error.message || 'Erro ao ativar construtora.');
     }
 }
 
