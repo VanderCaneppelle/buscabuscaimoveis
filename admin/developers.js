@@ -148,6 +148,7 @@ async function fetchDevelopersServer() {
     const params = new URLSearchParams();
     params.set('limit', developerPageSize);
     params.set('page', developerCurrentPage);
+    params.set('includeInactive', 'true');
     if (developerSearchTerm) {
         params.set('search', developerSearchTerm);
     }
