@@ -33,6 +33,8 @@ async function handleGet(req, res) {
             phone,
             email,
             website,
+            description,
+            cnpj,
             is_verified,
             is_active,
             created_at,
@@ -150,6 +152,140 @@ async function handlePost(req, res) {
     });
 }
 
+async function handlePut(req, res) {
+    const {
+        id,
+        name,
+        nameComposition = null,
+        cityName,
+        cityUf,
+        phone,
+        email = null,
+        website = null,
+        description = null,
+        cnpj = null,
+        isVerified = null,
+        isActive = null,
+    } = req.body || {};
+
+    if (!id) {
+        return res.status(400).json({
+            success: false,
+            error: 'ID da construtora é obrigatório',
+        });
+    }
+
+    if (name !== undefined || cityName !== undefined || phone !== undefined) {
+        if (!name || !cityName || !phone) {
+            return res.status(400).json({
+                success: false,
+                error: 'Campos obrigatórios ausentes',
+                details: 'Informe nome, cidade e telefone.',
+            });
+        }
+    }
+
+    const payload = {};
+
+    if (name !== undefined) payload.name = name.trim();
+    if (nameComposition !== undefined) payload.name_composition = nameComposition?.trim() || null;
+    if (cityName !== undefined) payload.city_name = cityName.trim();
+    if (cityUf !== undefined) payload.city_uf = cityUf ? cityUf.trim().toUpperCase() : null;
+    if (phone !== undefined) payload.phone = phone.trim();
+    if (email !== undefined) payload.email = email?.trim() || null;
+    if (website !== undefined) payload.website = website?.trim() || null;
+    if (description !== undefined) payload.description = description?.trim() || null;
+    if (cnpj !== undefined) payload.cnpj = cnpj?.trim() || null;
+    if (isVerified !== null) payload.is_verified = Boolean(isVerified);
+    if (isActive !== null) payload.is_active = Boolean(isActive);
+
+    if (Object.keys(payload).length === 0) {
+        return res.status(400).json({
+            success: false,
+            error: 'Nenhum campo para atualizar',
+        });
+    }
+
+    const { data, error } = await supabase
+        .from('developers')
+        .update(payload)
+        .eq('id', id)
+        .select()
+        .single();
+
+    if (error) {
+        const isUniqueViolation = error.code === '23505';
+        console.error('❌ Erro ao atualizar construtora:', error);
+        return res.status(isUniqueViolation ? 409 : 500).json({
+            success: false,
+            error: isUniqueViolation
+                ? 'Já existe uma construtora com esses dados'
+                : 'Erro ao atualizar construtora',
+            details: error.message,
+        });
+    }
+
+    return res.status(200).json({
+        success: true,
+        message: 'Construtora atualizada com sucesso',
+        data,
+    });
+}
+
+async function handleDelete(req, res) {
+    const { id, hardDelete = false } = req.body || req.query || {};
+
+    if (!id) {
+        return res.status(400).json({
+            success: false,
+            error: 'ID da construtora é obrigatório',
+        });
+    }
+
+    if (hardDelete === 'true' || hardDelete === true) {
+        const { error } = await supabase
+            .from('developers')
+            .delete()
+            .eq('id', id);
+
+        if (error) {
+            console.error('❌ Erro ao excluir construtora:', error);
+            return res.status(500).json({
+                success: false,
+                error: 'Erro ao excluir construtora',
+                details: error.message,
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: 'Construtora excluída permanentemente',
+        });
+    }
+
+    const { data, error } = await supabase
+        .from('developers')
+        .update({ is_active: false })
+        .eq('id', id)
+        .select()
+        .single();
+
+    if (error) {
+        console.error('❌ Erro ao inativar construtora:', error);
+        return res.status(500).json({
+            success: false,
+            error: 'Erro ao inativar construtora',
+            details: error.message,
+        });
+    }
+
+    return res.status(200).json({
+        success: true,
+        message: 'Construtora inativada com sucesso',
+        data,
+    });
+}
+
 async function handler(req, res) {
     try {
         switch (req.method) {
@@ -157,8 +293,12 @@ async function handler(req, res) {
                 return await handleGet(req, res);
             case 'POST':
                 return await handlePost(req, res);
+            case 'PUT':
+                return await handlePut(req, res);
+            case 'DELETE':
+                return await handleDelete(req, res);
             default:
-                res.setHeader('Allow', ['GET', 'POST']);
+                res.setHeader('Allow', ['GET', 'POST', 'PUT', 'DELETE']);
                 return res.status(405).json({
                     success: false,
                     error: 'Método não permitido',

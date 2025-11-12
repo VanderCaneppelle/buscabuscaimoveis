@@ -83,13 +83,23 @@ const errorMessage = document.getElementById('error-message');
 const developerSearchInput = document.getElementById('developer-search');
 const developersTableBody = document.getElementById('developers-table-body');
 const developersEmptyState = document.getElementById('developers-empty');
+const developersPaginationEl = document.getElementById('developers-pagination');
+const developersPrevBtn = document.getElementById('developers-prev-page');
+const developersNextBtn = document.getElementById('developers-next-page');
+const developersCurrentPageEl = document.getElementById('developers-current-page');
+const developersTotalPagesEl = document.getElementById('developers-total-pages');
+const developersTotalCountEl = document.getElementById('developers-total-count');
 const openDeveloperModalBtn = document.getElementById('open-developer-modal');
 const developerForm = document.getElementById('developer-form');
 const developerSubmitBtn = document.getElementById('developer-submit-btn');
+const developerModalTitle = document.getElementById('developer-modal-title');
 
 let developerModalInstance = null;
 let developers = [];
 let developerSearchTerm = '';
+let developerCurrentPage = 1;
+let developerPaginationInfo = { page: 1, pages: 1, total: 0 };
+let editingDeveloperId = null;
 const developerPageSize = 20;
 let listenersBound = false;
 
@@ -137,13 +147,22 @@ async function initializeDevelopersPanel(user) {
 async function fetchDevelopersServer() {
     const params = new URLSearchParams();
     params.set('limit', developerPageSize);
+    params.set('page', developerCurrentPage);
     if (developerSearchTerm) {
         params.set('search', developerSearchTerm);
     }
 
     const result = await apiCall(`developers?${params.toString()}`);
     developers = result.data || [];
+    developerPaginationInfo = result.pagination || { page: 1, pages: 1, total: developers.length || 0 };
+
+    if (developerPaginationInfo.pages && developerPaginationInfo.pages > 0 && developerCurrentPage > developerPaginationInfo.pages) {
+        developerCurrentPage = developerPaginationInfo.pages;
+        return fetchDevelopersServer();
+    }
+
     renderDevelopers();
+    renderDevelopersPagination();
 }
 
 function renderDevelopers() {
@@ -153,7 +172,7 @@ function renderDevelopers() {
         developersEmptyState.style.display = 'block';
         developersTableBody.innerHTML = `
             <tr>
-                <td colspan="7" class="text-center text-muted py-3">
+                <td colspan="8" class="text-center text-muted py-3">
                     Nenhuma construtora cadastrada.
                 </td>
             </tr>
@@ -177,8 +196,93 @@ function renderDevelopers() {
                 ${dev.is_verified ? '<span class="badge bg-primary ms-1">Verificada</span>' : ''}
             </td>
             <td>${dev.created_at ? formatDate(dev.created_at) : '-'}</td>
+            <td class="text-end">
+                <button class="btn btn-sm btn-outline-primary edit-developer me-2" data-id="${dev.id}">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger delete-developer" data-id="${dev.id}">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
         </tr>
     `).join('');
+
+    bindDeveloperActionButtons();
+}
+
+function renderDevelopersPagination() {
+    if (!developersPaginationEl || !developersPrevBtn || !developersNextBtn) return;
+
+    const total = developerPaginationInfo.total || developers.length || 0;
+    const totalPages = Math.max(1, developerPaginationInfo.pages || 1);
+    const currentPage = Math.min(Math.max(developerPaginationInfo.page || developerCurrentPage, 1), totalPages);
+
+    if (total <= developerPageSize) {
+        developersPaginationEl.style.display = 'none';
+    } else {
+        developersPaginationEl.style.display = 'flex';
+    }
+
+    developersCurrentPageEl.textContent = currentPage;
+    developersTotalPagesEl.textContent = totalPages;
+    developersTotalCountEl.textContent = total;
+
+    developersPrevBtn.disabled = currentPage <= 1;
+    developersNextBtn.disabled = currentPage >= totalPages;
+}
+
+function bindDeveloperActionButtons() {
+    document.querySelectorAll('.edit-developer').forEach(button => {
+        button.addEventListener('click', () => {
+            const id = button.getAttribute('data-id');
+            const developer = developers.find(dev => dev.id === id);
+            if (developer) {
+                openDeveloperModalForEdit(developer);
+            }
+        });
+    });
+
+    document.querySelectorAll('.delete-developer').forEach(button => {
+        button.addEventListener('click', () => {
+            const id = button.getAttribute('data-id');
+            handleDeleteDeveloper(id);
+        });
+    });
+}
+
+function openDeveloperModalForCreate() {
+    editingDeveloperId = null;
+    if (developerModalTitle) {
+        developerModalTitle.innerHTML = `<i class="fas fa-building me-2 text-primary"></i>Nova Construtora`;
+    }
+    if (developerSubmitBtn) {
+        developerSubmitBtn.innerHTML = `<i class="fas fa-save me-2"></i>Salvar construtora`;
+    }
+    if (developerForm) {
+        developerForm.reset();
+    }
+    developerModalInstance?.show();
+}
+
+function openDeveloperModalForEdit(developer) {
+    editingDeveloperId = developer.id;
+    if (developerModalTitle) {
+        developerModalTitle.innerHTML = `<i class="fas fa-building me-2 text-primary"></i>Editar Construtora`;
+    }
+    if (developerSubmitBtn) {
+        developerSubmitBtn.innerHTML = `<i class="fas fa-save me-2"></i>Salvar alterações`;
+    }
+    if (developerForm) {
+        document.getElementById('developer-name').value = developer.name || '';
+        document.getElementById('developer-name-composition').value = developer.name_composition || '';
+        document.getElementById('developer-city').value = developer.city_name || '';
+        document.getElementById('developer-state').value = developer.city_uf || '';
+        document.getElementById('developer-phone').value = developer.phone || '';
+        document.getElementById('developer-email').value = developer.email || '';
+        document.getElementById('developer-website').value = developer.website || '';
+        document.getElementById('developer-description').value = developer.description || '';
+    }
+    developerModalInstance?.show();
 }
 
 function normalizeUrl(url) {
@@ -203,6 +307,7 @@ function setupEventListeners() {
     if (developerSearchInput) {
         developerSearchInput.addEventListener('input', debounce(() => {
             developerSearchTerm = developerSearchInput.value.trim();
+            developerCurrentPage = 1;
             fetchDevelopersServer().catch(error => {
                 console.error('Erro ao atualizar lista:', error);
                 showError('Erro ao buscar construtoras.');
@@ -211,16 +316,36 @@ function setupEventListeners() {
     }
 
     if (openDeveloperModalBtn) {
-        openDeveloperModalBtn.addEventListener('click', () => {
-            if (developerForm) {
-                developerForm.reset();
-            }
-            developerModalInstance?.show();
-        });
+        openDeveloperModalBtn.addEventListener('click', openDeveloperModalForCreate);
     }
 
     if (developerForm) {
         developerForm.addEventListener('submit', handleDeveloperSubmit);
+    }
+
+    if (developersPrevBtn) {
+        developersPrevBtn.addEventListener('click', () => {
+            if (developerCurrentPage > 1) {
+                developerCurrentPage -= 1;
+                fetchDevelopersServer().catch(error => {
+                    console.error('Erro ao mudar página:', error);
+                    showError('Erro ao carregar página anterior.');
+                });
+            }
+        });
+    }
+
+    if (developersNextBtn) {
+        developersNextBtn.addEventListener('click', () => {
+            const totalPages = Math.max(1, developerPaginationInfo.pages || 1);
+            if (developerCurrentPage < totalPages) {
+                developerCurrentPage += 1;
+                fetchDevelopersServer().catch(error => {
+                    console.error('Erro ao mudar página:', error);
+                    showError('Erro ao carregar próxima página.');
+                });
+            }
+        });
     }
 
     listenersBound = true;
@@ -273,31 +398,63 @@ async function handleDeveloperSubmit(event) {
     const originalBtnContent = developerSubmitBtn.innerHTML;
     developerSubmitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Salvando...`;
 
-    try {
-        await apiCall('developers', {
-            method: 'POST',
-            body: JSON.stringify({
-                name,
-                nameComposition,
-                cityName: city,
-                cityUf: state,
-                phone,
-                email,
-                website,
-                description,
-            })
-        });
+    const payload = {
+        name,
+        nameComposition,
+        cityName: city,
+        cityUf: state,
+        phone,
+        email,
+        website,
+        description,
+    };
 
-        showSuccess('Construtora cadastrada com sucesso!');
+    try {
+        if (editingDeveloperId) {
+            await apiCall('developers', {
+                method: 'PUT',
+                body: JSON.stringify({
+                    id: editingDeveloperId,
+                    ...payload,
+                })
+            });
+            showSuccess('Construtora atualizada com sucesso!');
+        } else {
+            await apiCall('developers', {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+            showSuccess('Construtora cadastrada com sucesso!');
+        }
+
         developerForm.reset();
         developerModalInstance?.hide();
         await fetchDevelopersServer();
     } catch (error) {
         console.error('Erro ao cadastrar construtora:', error);
-        showError(error.message || 'Erro ao cadastrar construtora.');
+        showError(error.message || 'Erro ao salvar construtora.');
     } finally {
         developerSubmitBtn.disabled = false;
         developerSubmitBtn.innerHTML = originalBtnContent;
+        editingDeveloperId = null;
+    }
+}
+
+async function handleDeleteDeveloper(id) {
+    if (!id) return;
+    const confirmed = confirm('Tem certeza que deseja excluir esta construtora?');
+    if (!confirmed) return;
+
+    try {
+        await apiCall('developers', {
+            method: 'DELETE',
+            body: JSON.stringify({ id })
+        });
+        showSuccess('Construtora removida com sucesso!');
+        await fetchDevelopersServer();
+    } catch (error) {
+        console.error('Erro ao excluir construtora:', error);
+        showError(error.message || 'Erro ao excluir construtora.');
     }
 }
 
