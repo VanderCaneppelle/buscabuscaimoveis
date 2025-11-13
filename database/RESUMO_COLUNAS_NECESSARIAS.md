@@ -3,6 +3,7 @@
 ## 🔍 De onde a função pega os dados:
 
 A função `get_boosted_properties()` faz um **INNER JOIN** entre duas tabelas:
+
 - **`properties`** (alias `p`) - Tabela principal de imóveis
 - **`property_boosts`** (alias `pb`) - Tabela de impulsionamentos
 
@@ -11,6 +12,7 @@ A função `get_boosted_properties()` faz um **INNER JOIN** entre duas tabelas:
 ## 📊 TABELA `properties` - Colunas Necessárias:
 
 ### ✅ Colunas que JÁ EXISTEM (da função original):
+
 - `id` → UUID
 - `title` → TEXT
 - `description` → TEXT
@@ -36,6 +38,7 @@ A função `get_boosted_properties()` faz um **INNER JOIN** entre duas tabelas:
 - `user_id` → UUID
 
 ### ⚠️ Colunas NOVAS que precisam existir (adicionadas agora):
+
 - `video_urls` → TEXT[] (array de URLs de vídeos)
 - `promotional_price` → DECIMAL(10,2) (preço promocional)
 - `promo_price` → DECIMAL(10,2) (preço promocional alternativo)
@@ -48,6 +51,7 @@ A função `get_boosted_properties()` faz um **INNER JOIN** entre duas tabelas:
 ## 📊 TABELA `property_boosts` - Colunas Necessárias:
 
 ### ✅ Colunas que JÁ EXISTEM:
+
 - `id` → UUID
 - `property_id` → UUID (FK para properties.id)
 - `end_date` → TIMESTAMP WITH TIME ZONE
@@ -82,7 +86,8 @@ ORDER BY column_name;
 
 ## ⚠️ Se alguma coluna não existir:
 
-Se alguma das colunas novas não existir na tabela `properties`, você precisará criá-las. Exemplo:
+Se alguma das colunas novas não existir na tabela `properties`, você precisará
+criá-las. Exemplo:
 
 ```sql
 -- Adicionar colunas faltantes (se necessário)
@@ -99,13 +104,16 @@ ALTER TABLE properties
 
 ## 📝 Observações:
 
-1. **`video_urls`**: A função usa `COALESCE(p.video_urls, ARRAY[]::TEXT[])` para garantir que sempre retorne um array (mesmo que vazio).
+1. **`video_urls`**: A função usa `COALESCE(p.video_urls, ARRAY[]::TEXT[])` para
+   garantir que sempre retorne um array (mesmo que vazio).
 
-2. **`promotional_price` e `promo_price`**: A função usa `COALESCE(p.promotional_price, NULL)` e `COALESCE(p.promo_price, NULL)` para retornar NULL se não existir.
+2. **`promotional_price` e `promo_price`**: A função usa
+   `COALESCE(p.promotional_price, NULL)` e `COALESCE(p.promo_price, NULL)` para
+   retornar NULL se não existir.
 
-3. **Campos calculados**: 
-   - `days_remaining` é calculado: `GREATEST(0, EXTRACT(DAY FROM (pb.end_date - NOW()))::INTEGER)`
+3. **Campos calculados**:
+   - `days_remaining` é calculado:
+     `GREATEST(0, EXTRACT(DAY FROM (pb.end_date - NOW()))::INTEGER)`
    - `property_status` vem de `p.status`
    - `property_views` vem de `p.views`
    - `property_created_at` vem de `p.created_at`
-
