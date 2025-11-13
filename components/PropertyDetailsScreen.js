@@ -342,14 +342,20 @@ export default function PropertyDetailsScreen({ route, navigation }) {
     }, [mediaViewMode, displayMedia.length, openFullscreenImage]);
 
     const formatPrice = (price) => {
+        if (!price && price !== 0) return 'R$ 0,00';
+        const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+        if (isNaN(numPrice)) return 'R$ 0,00';
         return new Intl.NumberFormat('pt-BR', {
             style: 'currency',
             currency: 'BRL',
-        }).format(price);
+        }).format(numPrice);
     };
 
     const formatArea = (area) => {
-        return `${area}m²`;
+        if (!area && area !== 0) return '0m²';
+        const numArea = typeof area === 'string' ? parseFloat(area) : area;
+        if (isNaN(numArea)) return '0m²';
+        return `${numArea}m²`;
     };
 
     const handleWhatsAppContact = async () => {
@@ -712,7 +718,7 @@ export default function PropertyDetailsScreen({ route, navigation }) {
             >
                 {/* Informações Principais */}
                 <View style={styles.mainInfo}>
-                    <Text style={styles.title}>{property.title}</Text>
+                    <Text style={styles.title}>{property.title || 'Sem título'}</Text>
 
 
                     <Text style={styles.location}>
@@ -724,7 +730,7 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                                 property.neighborhood?.trim(),
                                 property.city?.trim()
                             ].filter(Boolean);
-                            return parts.join(', ') || 'Localização não informada';
+                            return String(parts.join(', ') || 'Localização não informada');
                         })()}
                     </Text>
                     
@@ -732,22 +738,23 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                     {(() => {
                         // Verificar preço promocional (sale_price, promotional_price ou promo_price)
                         const promoPrice = property.sale_price ?? property.promotional_price ?? property.promo_price;
-                        const hasPromo = promoPrice && parseFloat(promoPrice) > 0;
+                        const hasPromo = promoPrice && !isNaN(parseFloat(promoPrice)) && parseFloat(promoPrice) > 0;
+                        const mainPrice = property.price || 0;
                         
                         if (hasPromo) {
                             return (
                                 <View style={styles.priceContainer}>
-                                    <Text style={styles.originalPrice}>{formatPrice(property.price)}</Text>
+                                    <Text style={styles.originalPrice}>{formatPrice(mainPrice)}</Text>
                                     <Text style={styles.salePrice}>{formatPrice(parseFloat(promoPrice))}</Text>
                                 </View>
                             );
                         } else {
-                            return <Text style={styles.price}>{formatPrice(property.price)}</Text>;
+                            return <Text style={styles.price}>{formatPrice(mainPrice)}</Text>;
                         }
                     })()}
                     
                     <Text style={styles.type}>
-                        {property.property_type} • {property.transaction_type}
+                        {String(property.property_type || 'Não informado')} • {String(property.transaction_type || 'Não informado')}
                     </Text>
                 </View>
 
@@ -755,30 +762,30 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                 <View style={styles.characteristics}>
                     <Text style={styles.sectionTitle}>Características</Text>
                     <View style={styles.characteristicsGrid}>
-                        {property.bedrooms && (
+                        {property.bedrooms && property.bedrooms > 0 ? (
                             <View style={styles.characteristicItem}>
                                 <Ionicons name="bed" size={24} color="#1e3a8a" />
-                                <Text style={styles.characteristicText}>{property.bedrooms} quartos</Text>
+                                <Text style={styles.characteristicText}>{String(property.bedrooms)} quartos</Text>
                             </View>
-                        )}
-                        {property.bathrooms && (
+                        ) : null}
+                        {property.bathrooms && property.bathrooms > 0 ? (
                             <View style={styles.characteristicItem}>
                                 <MaterialCommunityIcons name="toilet" size={24} color="#1e3a8a" />
-                                <Text style={styles.characteristicText}>{property.bathrooms} banheiros</Text>
+                                <Text style={styles.characteristicText}>{String(property.bathrooms)} banheiros</Text>
                             </View>
-                        )}
-                        {property.area && (
+                        ) : null}
+                        {property.area && property.area > 0 ? (
                             <View style={styles.characteristicItem}>
                                 <Ionicons name="resize" size={24} color="#1e3a8a" />
                                 <Text style={styles.characteristicText}>{formatArea(property.area)}</Text>
                             </View>
-                        )}
-                        {property.parking_spaces && (
+                        ) : null}
+                        {property.parking_spaces && property.parking_spaces > 0 ? (
                             <View style={styles.characteristicItem}>
                                 <Ionicons name="car" size={24} color="#1e3a8a" />
-                                <Text style={styles.characteristicText}>{property.parking_spaces} vagas</Text>
+                                <Text style={styles.characteristicText}>{String(property.parking_spaces)} vagas</Text>
                             </View>
-                        )}
+                        ) : null}
                     </View>
                 </View>
 

@@ -759,30 +759,30 @@ export default function HomeScreen({ navigation }) {
 
                     {/* Características com ícones */}
                     <View style={styles.featuresContainer}>
-                        {item.bedrooms != null && (
+                        {item.bedrooms && item.bedrooms > 0 ? (
                             <View style={styles.feature}>
                                 <Ionicons name="bed-outline" size={16} color="#666" />
-                                <Text style={styles.featureText}>{item.bedrooms}</Text>
+                                <Text style={styles.featureText}>{String(item.bedrooms)}</Text>
                             </View>
-                        )}
-                        {item.bathrooms != null && (
+                        ) : null}
+                        {item.bathrooms && item.bathrooms > 0 ? (
                             <View style={styles.feature}>
                                 <Ionicons name="water-outline" size={16} color="#666" />
-                                <Text style={styles.featureText}>{item.bathrooms}</Text>
+                                <Text style={styles.featureText}>{String(item.bathrooms)}</Text>
                             </View>
-                        )}
-                        {item.parking_spaces != null && (
+                        ) : null}
+                        {item.parking_spaces && item.parking_spaces > 0 ? (
                             <View style={styles.feature}>
                                 <Ionicons name="car-outline" size={16} color="#666" />
-                                <Text style={styles.featureText}>{item.parking_spaces}</Text>
+                                <Text style={styles.featureText}>{String(item.parking_spaces)}</Text>
                             </View>
-                        )}
-                        {item.area != null && (
+                        ) : null}
+                        {item.area && item.area > 0 ? (
                             <View style={styles.feature}>
                                 <Ionicons name="resize-outline" size={16} color="#666" />
-                                <Text style={styles.featureText}>{`${item.area} m²`}</Text>
+                                <Text style={styles.featureText}>{`${String(item.area)} m²`}</Text>
                             </View>
-                        )}
+                        ) : null}
                     </View>
 
                     {/* Preço */}
@@ -1204,21 +1204,21 @@ export default function HomeScreen({ navigation }) {
                                                             : `R$ ${property.price?.toLocaleString('pt-BR') ?? '—'}`}
                                                     </Text>
                                                     <View style={styles.multiPropertyFeatures}>
-                                                        {property.bedrooms && (
+                                                        {property.bedrooms && property.bedrooms > 0 ? (
                                                             <Text style={styles.multiPropertyFeature}>
-                                                                <Ionicons name="bed-outline" size={14} /> {property.bedrooms}
+                                                                <Ionicons name="bed-outline" size={14} /> {String(property.bedrooms)}
                                                             </Text>
-                                                        )}
-                                                        {property.bathrooms && (
+                                                        ) : null}
+                                                        {property.bathrooms && property.bathrooms > 0 ? (
                                                             <Text style={styles.multiPropertyFeature}>
-                                                                <Ionicons name="water-outline" size={14} /> {property.bathrooms}
+                                                                <Ionicons name="water-outline" size={14} /> {String(property.bathrooms)}
                                                             </Text>
-                                                        )}
-                                                        {property.area && (
+                                                        ) : null}
+                                                        {property.area && property.area > 0 ? (
                                                             <Text style={styles.multiPropertyFeature}>
-                                                                <Ionicons name="resize-outline" size={14} /> {property.area}m²
+                                                                <Ionicons name="resize-outline" size={14} /> {String(property.area)}m²
                                                             </Text>
-                                                        )}
+                                                        ) : null}
                                                     </View>
                                                 </View>
                                                 <Ionicons name="chevron-forward" size={24} color="#64748b" />

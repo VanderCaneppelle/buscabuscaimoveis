@@ -72,7 +72,7 @@ export default function MapaImovelUnico({ navigation, route }) {
     };
 
     useEffect(() => {
-        console.log('🎯 MapaImovelUnico: Focando em', property.title);
+        console.log('🎯 MapaImovelUnico: Focando em', property.title || 'Imóvel');
         // Parar loading após um pequeno delay para suavizar
         setTimeout(() => {
             setLoading(false);
@@ -100,7 +100,7 @@ export default function MapaImovelUnico({ navigation, route }) {
                 </TouchableOpacity>
 
                 <Text style={styles.headerTitle} numberOfLines={1}>
-                    📍 {property.title}
+                    📍 {property.title || 'Imóvel'}
                 </Text>
 
                 <View style={styles.headerSpacer} />
@@ -128,8 +128,8 @@ export default function MapaImovelUnico({ navigation, route }) {
                             latitude: lat,
                             longitude: lng
                         }}
-                        title={property.title}
-                        description={`R$ ${property.price?.toLocaleString('pt-BR')} - ${property.transaction_type === 'rent' ? 'Aluguel' : 'Venda'}`}
+                        title={property.title || 'Imóvel'}
+                        description={`R$ ${property.price ? property.price.toLocaleString('pt-BR') : '0'} - ${property.transaction_type === 'rent' ? 'Aluguel' : 'Venda'}`}
                         pinColor={getMarkerColor(property)}
                     />
                 </MapView>
@@ -138,40 +138,50 @@ export default function MapaImovelUnico({ navigation, route }) {
                 <View style={styles.propertyInfo}>
                     <View style={styles.propertyHeader}>
                         <Text style={styles.propertyTitle} numberOfLines={2}>
-                            {property.title}
+                            {property.title || 'Sem título'}
                         </Text>
                         <Text style={styles.propertyPrice}>
-                            R$ {property.price?.toLocaleString('pt-BR')}
+                            R$ {property.price ? property.price.toLocaleString('pt-BR') : '0'}
                         </Text>
                     </View>
 
                     <View style={styles.propertyLocation}>
                         <Ionicons name="location" size={16} color="#6b7280" />
                         <Text style={styles.locationText}>
-                            {property.address}, {property.neighborhood} - {property.city}/{property.state}
+                            {(() => {
+                                const parts = [
+                                    property.address?.trim(),
+                                    property.neighborhood?.trim(),
+                                    property.city?.trim(),
+                                    property.state?.trim()
+                                ].filter(Boolean);
+                                return parts.length > 0 
+                                    ? parts.join(', ') 
+                                    : 'Localização não informada';
+                            })()}
                         </Text>
                     </View>
 
                     {/* Características básicas */}
                     <View style={styles.propertyFeatures}>
-                        {property.bedrooms && (
+                        {property.bedrooms && property.bedrooms > 0 ? (
                             <View style={styles.feature}>
                                 <Ionicons name="bed" size={16} color="#6b7280" />
-                                <Text style={styles.featureText}>{property.bedrooms} quartos</Text>
+                                <Text style={styles.featureText}>{String(property.bedrooms)} quartos</Text>
                             </View>
-                        )}
-                        {property.bathrooms && (
+                        ) : null}
+                        {property.bathrooms && property.bathrooms > 0 ? (
                             <View style={styles.feature}>
                                 <Ionicons name="water" size={16} color="#6b7280" />
-                                <Text style={styles.featureText}>{property.bathrooms} banheiros</Text>
+                                <Text style={styles.featureText}>{String(property.bathrooms)} banheiros</Text>
                             </View>
-                        )}
-                        {property.area && (
+                        ) : null}
+                        {property.area && property.area > 0 ? (
                             <View style={styles.feature}>
                                 <Ionicons name="resize" size={16} color="#6b7280" />
-                                <Text style={styles.featureText}>{property.area}m²</Text>
+                                <Text style={styles.featureText}>{String(property.area)}m²</Text>
                             </View>
-                        )}
+                        ) : null}
                     </View>
                 </View>
             </View>

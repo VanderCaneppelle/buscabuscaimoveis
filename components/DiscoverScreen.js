@@ -276,21 +276,21 @@ export default function DiscoverScreen({ navigation }) {
                             </Text>
                         )}
                         <View style={styles.propertyFeatures}>
-                            {property.bedrooms != null && (
+                            {property.bedrooms && property.bedrooms > 0 ? (
                                 <Text style={styles.propertyFeature}>
-                                    {`${property.bedrooms} quartos`}
+                                    {`${String(property.bedrooms)} quartos`}
                                 </Text>
-                            )}
-                            {property.bathrooms != null && (
+                            ) : null}
+                            {property.bathrooms && property.bathrooms > 0 ? (
                                 <Text style={styles.propertyFeature}>
-                                    {`${property.bathrooms} banheiros`}
+                                    {`${String(property.bathrooms)} banheiros`}
                                 </Text>
-                            )}
-                            {property.area != null && (
+                            ) : null}
+                            {property.area && property.area > 0 ? (
                                 <Text style={styles.propertyFeature}>
-                                    {`${property.area}m²`}
+                                    {`${String(property.area)}m²`}
                                 </Text>
-                            )}
+                            ) : null}
                         </View>
                     </View>
                     <Text style={styles.propertyType}>

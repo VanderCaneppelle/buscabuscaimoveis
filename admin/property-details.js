@@ -1,6 +1,5 @@
 // Configuração da API
 const API_BASE_URL = getApiBaseUrl();
-console.log('API_BASE_URL - admin.js:', API_BASE_URL);
 
 // Estado de autenticação
 let currentUser = null;
@@ -15,19 +14,13 @@ function loadAuthData() {
         authToken = localStorage.getItem('adminToken');
         currentUser = JSON.parse(localStorage.getItem('adminUser') || 'null');
         
-        console.log('🔍 PROPERTY-DETAILS - Token carregado:', authToken ? 'SIM' : 'NÃO');
-        console.log('🔍 PROPERTY-DETAILS - Usuário carregado:', currentUser ? 'SIM' : 'NÃO');
-        
         if (!authToken) {
-            console.error('❌ PROPERTY-DETAILS - Token não encontrado no localStorage');
-            console.error('❌ PROPERTY-DETAILS - Redirecionando para login...');
             window.location.href = 'index.html';
             return false;
         }
         
         return true;
     } catch (error) {
-        console.error('❌ PROPERTY-DETAILS - Erro ao carregar dados de autenticação:', error);
         window.location.href = 'index.html';
         return false;
     }
@@ -37,7 +30,6 @@ function loadAuthData() {
 function getApiBaseUrl() {
     // 🔧 DINÂMICO: Detectar ambiente baseado no hostname
     const hostname = window.location.hostname;
-    console.log('🔍 PROPERTY-DETAILS - Hostname detectado:', hostname);
     
     // Produção: admin.buscabuscaimoveis.com.br
     if (hostname === 'admin.buscabuscaimoveis.com.br' || hostname.includes('buscabusca-admin-prod')) {
@@ -106,13 +98,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Carregar detalhes da propriedade
 async function loadPropertyDetails(propertyId) {
     try {
-        console.log('🔍 PROPERTY-DETAILS - Carregando detalhes da propriedade:', propertyId);
-        console.log('🔍 PROPERTY-DETAILS - Usando API segura:', `${API_BASE_URL}/api/admin/property-details?id=${propertyId}`);
-
-        // ✨ NOVO: Usar API segura em vez de Supabase direto
-        console.log('🔍 PROPERTY-DETAILS - Token sendo enviado:', authToken ? 'SIM' : 'NÃO');
-        console.log('🔍 PROPERTY-DETAILS - Token (primeiros 20 chars):', authToken ? authToken.substring(0, 20) + '...' : 'NENHUM');
-        
+               
         const response = await fetch(`${API_BASE_URL}/api/admin/property-details?id=${propertyId}`, {
             headers: {
                 'Authorization': `Bearer ${authToken}`,
@@ -161,9 +147,7 @@ async function populateOwnerData(property) {
         const ownerCreciEl = document.getElementById('owner-creci');
 
         // ✨ NOVO: Buscar dados do perfil via API segura
-        console.log('🔍 PROPERTY-DETAILS - Buscando perfil do usuário:', property.user_id);
-        
-        console.log('🔍 PROPERTY-DETAILS - Buscando perfil com token:', authToken ? 'SIM' : 'NÃO');
+
         
         const profileResponse = await fetch(`${API_BASE_URL}/api/admin/user-profile?userId=${property.user_id}`, {
             headers: {
@@ -179,7 +163,6 @@ async function populateOwnerData(property) {
         }
 
         if (!userProfile) {
-            console.error('❌ PROPERTY-DETAILS - Perfil não encontrado');
             // Fallback para dados básicos
             ownerNameEl.textContent = 'Usuário não encontrado';
             ownerEmailEl.textContent = '—';
@@ -200,9 +183,7 @@ async function populateOwnerData(property) {
 
         // ✨ NOVO: Buscar email via API segura
         try {
-            console.log('🔍 PROPERTY-DETAILS - Buscando email do usuário:', property.user_id);
-            
-            console.log('🔍 PROPERTY-DETAILS - Buscando email com token:', authToken ? 'SIM' : 'NÃO');
+    
             
             const emailResponse = await fetch(`${API_BASE_URL}/api/admin/user-email?userId=${property.user_id}`, {
                 headers: {
@@ -254,7 +235,8 @@ function populatePropertyData(property) {
         bathrooms: property.bathrooms,
         parking_spaces: property.parking_spaces,
         area: property.area,
-        images: property.images
+        images: property.images,
+        ad_id: property.ad_id
     });
     
     // Armazenar dados da propriedade globalmente para uso no mapa
@@ -717,16 +699,18 @@ async function setupWhatsAppLink(property) {
         // Mensagem personalizada para o admin
         const message = `Olá ${userProfile.full_name || 'usuário'}! 
 
-Sou administrador do Busca Busca Imóveis e estou analisando o anúncio "${property.title}" (ID: ${property.id}).
+Sou administrador do Busca Busca Imóveis e estou analisando o anúncio "${property.title}" (ID: ${property.ad_id || property.id}).
 
 Para prosseguir com a aprovação, preciso de algumas informações adicionais:
 
-1. Documentos do imóvel (matrícula, IPTU, etc.)
-2. Construtora responsável
-3. Registro de incorporação
-4. Confirmação dos dados cadastrados
+1. Estado da documentação do imóvel.
+2. Confirmação dos dados cadastrados.
 
-Poderia me enviar essas informações?`;
+Poderia me enviar essas informações?
+
+Atenciosamente,
+
+${currentUser.name}`;
 
         // Criar link do WhatsApp
         const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
@@ -753,7 +737,7 @@ function setupDefaultWhatsApp(property) {
 
     const message = `Olá! 
 
-Sou administrador do Busca Busca Imóveis e estou analisando o anúncio "${property.title}" (ID: ${property.id}).
+Sou administrador do Busca Busca Imóveis e estou analisando o anúncio "${property.title}" (ID: ${property.ad_id || property.id}).
 
 Para prosseguir com a aprovação, preciso de algumas informações adicionais:
 
