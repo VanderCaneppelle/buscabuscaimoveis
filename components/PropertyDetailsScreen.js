@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
     View,
     Text,
@@ -40,6 +40,7 @@ export default function PropertyDetailsScreen({ route, navigation }) {
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [isOwnerOnFreePlan, setIsOwnerOnFreePlan] = useState(false);
     const [mediaViewMode, setMediaViewMode] = useState('photos'); // 'photos' ou 'videos'
+    const fullscreenListRef = useRef(null);
     
     // Verificar plano do dono do anúncio (usando RPC com fallback)
     useEffect(() => {
@@ -122,21 +123,41 @@ export default function PropertyDetailsScreen({ route, navigation }) {
 
     // Navegação no modal fullscreen
     const handlePreviousFullscreen = useCallback(() => {
-        setSelectedImageIndex(prev => {
-            const maxLength = mediaViewMode === 'photos' ? imageFiles.length : videoUrls.length;
-            return prev > 0 ? prev - 1 : maxLength - 1;
-        });
-    }, [mediaViewMode, imageFiles.length, videoUrls.length]);
+        const maxLength = mediaViewMode === 'photos' ? imageFiles.length : videoUrls.length;
+        const newIndex = selectedImageIndex > 0 ? selectedImageIndex - 1 : maxLength - 1;
+        
+        // Scroll para o item anterior (não atualizar o índice aqui, deixar o onMomentumScrollEnd fazer isso)
+        if (fullscreenListRef.current) {
+            fullscreenListRef.current.scrollToIndex({
+                index: newIndex,
+                animated: true,
+            });
+        }
+    }, [mediaViewMode, imageFiles.length, videoUrls.length, selectedImageIndex]);
 
     const handleNextFullscreen = useCallback(() => {
-        setSelectedImageIndex(prev => {
-            const maxLength = mediaViewMode === 'photos' ? imageFiles.length : videoUrls.length;
-            return prev < maxLength - 1 ? prev + 1 : 0;
-        });
-    }, [mediaViewMode, imageFiles.length, videoUrls.length]);
+        const maxLength = mediaViewMode === 'photos' ? imageFiles.length : videoUrls.length;
+        const newIndex = selectedImageIndex < maxLength - 1 ? selectedImageIndex + 1 : 0;
+        
+        // Scroll para o próximo item (não atualizar o índice aqui, deixar o onMomentumScrollEnd fazer isso)
+        if (fullscreenListRef.current) {
+            fullscreenListRef.current.scrollToIndex({
+                index: newIndex,
+                animated: true,
+            });
+        }
+    }, [mediaViewMode, imageFiles.length, videoUrls.length, selectedImageIndex]);
 
-    // Função para detectar scroll no modal fullscreen
+    // Função para detectar scroll no modal fullscreen (usado durante o swipe)
     const handleFullscreenScroll = useCallback((event) => {
+        const contentOffset = event.nativeEvent.contentOffset.x;
+        const imageIndex = Math.round(contentOffset / width);
+        // Atualizar apenas durante swipe manual, não durante animação programática
+        setSelectedImageIndex(imageIndex);
+    }, []);
+
+    // Função para atualizar índice quando o scroll terminar (após animação)
+    const handleMomentumScrollEnd = useCallback((event) => {
         const contentOffset = event.nativeEvent.contentOffset.x;
         const imageIndex = Math.round(contentOffset / width);
         setSelectedImageIndex(imageIndex);
@@ -887,6 +908,11 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                     {/* Galeria com swipe para navegação */}
                     {mediaViewMode === 'photos' ? (
                         <FlatList
+                            ref={(ref) => {
+                                if (ref) {
+                                    fullscreenListRef.current = ref;
+                                }
+                            }}
                             data={imageFiles}
                             renderItem={renderFullscreenMedia}
                             keyExtractor={(item, index) => `fullscreen-photo-${index}-${item.substring(0, 20)}`}
@@ -894,6 +920,7 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                             pagingEnabled
                             showsHorizontalScrollIndicator={false}
                             onScroll={handleFullscreenScroll}
+                            onMomentumScrollEnd={handleMomentumScrollEnd}
                             scrollEventThrottle={16}
                             initialScrollIndex={selectedImageIndex}
                             getItemLayout={(data, index) => ({
@@ -907,6 +934,11 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                         />
                     ) : (
                         <FlatList
+                            ref={(ref) => {
+                                if (ref) {
+                                    fullscreenListRef.current = ref;
+                                }
+                            }}
                             data={videoUrls}
                             renderItem={renderFullscreenYouTubeVideo}
                             keyExtractor={(item, index) => `fullscreen-video-${index}-${item.substring(0, 20)}`}
@@ -914,6 +946,7 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                             pagingEnabled
                             showsHorizontalScrollIndicator={false}
                             onScroll={handleFullscreenScroll}
+                            onMomentumScrollEnd={handleMomentumScrollEnd}
                             scrollEventThrottle={16}
                             initialScrollIndex={selectedImageIndex}
                             getItemLayout={(data, index) => ({
@@ -926,6 +959,39 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                             decelerationRate="fast"
                         />
                     )}
+
+                    {/* Setas de navegação */}
+                    {(() => {
+                        const totalItems = mediaViewMode === 'photos' ? imageFiles.length : videoUrls.length;
+                        const canGoPrevious = selectedImageIndex > 0;
+                        const canGoNext = selectedImageIndex < totalItems - 1;
+
+                        return (
+                            <>
+                                {/* Seta esquerda (anterior) */}
+                                {canGoPrevious && (
+                                    <TouchableOpacity
+                                        style={styles.fullscreenArrowLeft}
+                                        onPress={handlePreviousFullscreen}
+                                        activeOpacity={0.7}
+                                    >
+                                        <Ionicons name="chevron-back" size={32} color="#fff" />
+                                    </TouchableOpacity>
+                                )}
+
+                                {/* Seta direita (próxima) */}
+                                {canGoNext && (
+                                    <TouchableOpacity
+                                        style={styles.fullscreenArrowRight}
+                                        onPress={handleNextFullscreen}
+                                        activeOpacity={0.7}
+                                    >
+                                        <Ionicons name="chevron-forward" size={32} color="#fff" />
+                                    </TouchableOpacity>
+                                )}
+                            </>
+                        );
+                    })()}
                 </View>
             </Modal>
         </SafeAreaView>
@@ -1158,6 +1224,30 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: '#000',
+    },
+    fullscreenArrowLeft: {
+        position: 'absolute',
+        left: 20,
+        top: height / 2 - 25, // Centralizar verticalmente (altura da tela / 2 - metade da altura do botão)
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        borderRadius: 25,
+        width: 50,
+        height: 50,
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 10,
+    },
+    fullscreenArrowRight: {
+        position: 'absolute',
+        right: 20,
+        top: height / 2 - 25, // Centralizar verticalmente
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        borderRadius: 25,
+        width: 50,
+        height: 50,
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 10,
     },
     content: {
         flex: 1,
