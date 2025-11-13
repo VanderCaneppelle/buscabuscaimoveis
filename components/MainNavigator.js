@@ -32,6 +32,7 @@ import EditProfileScreen from './EditProfileScreen';
 import BoostOptionsScreen from './BoostOptionsScreen';
 import BoostPaymentScreen from './BoostPaymentScreen';
 import NotificationsScreen from './NotificationsScreen'; //  NOVO
+import DeleteAccountScreen from './DeleteAccountScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -526,6 +527,21 @@ export default function MainNavigator() {
                 component={EditProfileScreen}
                 options={{
                     title: 'Editar Perfil',
+                    headerBackTitle: 'Voltar',
+                    presentation: 'fullScreenModal',
+                    headerShown: false,
+                    cardStyle: { backgroundColor: 'white' },
+                    animation: 'none',
+                    tabBarStyle: { display: 'none' },
+                }}
+            />
+
+            {/* Delete Account - tela de exclusão de conta */}
+            <Stack.Screen
+                name="DeleteAccount"
+                component={DeleteAccountScreen}
+                options={{
+                    title: 'Excluir Conta',
                     headerBackTitle: 'Voltar',
                     presentation: 'fullScreenModal',
                     headerShown: false,

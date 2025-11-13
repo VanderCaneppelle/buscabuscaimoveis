@@ -7,6 +7,7 @@ import {
     SafeAreaView,
     ScrollView,
     Alert,
+    Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
@@ -193,6 +194,7 @@ export default function AccountScreen({ navigation }) {
         );
     };
 
+
     const renderMenuItem = (title, subtitle, icon, color, onPress, showBadge = false) => (
         <TouchableOpacity style={styles.menuItem} onPress={onPress}>
             <View style={[styles.menuIcon, { backgroundColor: color }]}>
@@ -351,6 +353,14 @@ export default function AccountScreen({ navigation }) {
                             'trash-outline',
                             '#c0392b',
                             handleClearCache
+                        )}
+
+                        {renderMenuItem(
+                            'Excluir Conta',
+                            'Remover sua conta permanentemente',
+                            'trash',
+                            '#DC2626',
+                            () => navigation.navigate('DeleteAccount')
                         )}
                     </View>
 
