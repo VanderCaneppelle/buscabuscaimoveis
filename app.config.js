@@ -10,7 +10,7 @@ export default {
   expo: {
     name: "Busca Busca Imóveis",
     slug: "buscabuscaimoveis",
-    version: "1.0.0",
+    version: "1.2.3",
     host: "lan",
     orientation: "portrait",
     icon: "./assets/logo_bb.jpg",
@@ -27,7 +27,7 @@ export default {
       bundleIdentifier: "com.buscabuscaimoveis.app",
       supportsTablet: true,
       jsEngine: "hermes",
-      buildNumber: '2.0',
+      buildNumber: '3.0',
       config: {
         usesNonExemptEncryption: false
       },
@@ -45,7 +45,7 @@ export default {
         backgroundColor: "#ffffff"
       },
       googleServicesFile: "./google-services.json",
-      versionCode:  3,
+      versionCode:  4,
     },
     web: {
       favicon: "./assets/logo_bb.jpg"
