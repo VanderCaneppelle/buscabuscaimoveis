@@ -4,6 +4,7 @@ console.log('✅ Carregando variáveis de ambiente:');
 console.log('API_BASE_URL =>', process.env.API_BASE_URL);
 console.log('RESET_PASSWORD_URL =>', process.env.EXPO_PUBLIC_RESET_PASSWORD_URL);
 
+
 export default {
 
   expo: {
@@ -26,6 +27,7 @@ export default {
       bundleIdentifier: "com.buscabuscaimoveis.app",
       supportsTablet: true,
       jsEngine: "hermes",
+      buildNumber: '2.0',
       config: {
         usesNonExemptEncryption: false
       },
@@ -42,7 +44,8 @@ export default {
         foregroundImage: "./assets/logo_bb.jpg",
         backgroundColor: "#ffffff"
       },
-      googleServicesFile: "./google-services.json"
+      googleServicesFile: "./google-services.json",
+      versionCode:  3,
     },
     web: {
       favicon: "./assets/logo_bb.jpg"
