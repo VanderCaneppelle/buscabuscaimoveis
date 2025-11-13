@@ -19,6 +19,7 @@ import { supabase } from '../lib/supabase';
 import { CONFIRM_EMAIL_URL } from '../lib/config';
 import TermsAndPrivacyScreen from './TermsAndPrivacyScreen';
 import { saveTermsAcceptance } from '../lib/termsConfig';
+import { translateError } from '../lib/errorMessages';
 
 export default function SignUpForm({ onBack }) {
     const [formData, setFormData] = useState({
@@ -101,7 +102,8 @@ export default function SignUpForm({ onBack }) {
             });
 
             if (error) {
-                Alert.alert('Erro', 'Falha ao comunicar com o servidor. Tente novamente.');
+                const friendlyMessage = translateError(error);
+                Alert.alert('Erro', friendlyMessage);
                 return;
             }
 
@@ -140,7 +142,8 @@ export default function SignUpForm({ onBack }) {
             );
 
         } catch (error) {
-            Alert.alert('Erro', error?.message || 'Falha ao criar conta.');
+            const friendlyMessage = translateError(error);
+            Alert.alert('Erro', friendlyMessage || 'Falha ao criar conta.');
         } finally {
             setIsLoading(false);
         }

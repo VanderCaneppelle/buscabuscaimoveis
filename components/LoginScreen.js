@@ -20,6 +20,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 // import { useLoading } from '../contexts/LoadingContext';
 import { supabase } from '../lib/supabase';
+import { translateError } from '../lib/errorMessages';
 import { RESET_PASSWORD_URL } from '../lib/config';
 import SignUpForm from './SignUpForm';
 
@@ -65,7 +66,8 @@ export default function LoginScreen() {
                 : await signIn(email, password);
 
             if (error) {
-                Alert.alert('Erro', error.message);
+                const friendlyMessage = translateError(error);
+                Alert.alert('Erro ao entrar', friendlyMessage);
             } else if (isSignUp) {
                 Alert.alert(
                     'Sucesso!',
@@ -95,7 +97,8 @@ export default function LoginScreen() {
             });
 
             if (error) {
-                Alert.alert('Erro', error.message);
+                const friendlyMessage = translateError(error);
+                Alert.alert('Erro', friendlyMessage);
             } else {
                 Alert.alert(
                     'Email enviado!',

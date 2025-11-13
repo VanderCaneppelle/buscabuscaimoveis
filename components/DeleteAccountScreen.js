@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import StandardHeader from './StandardHeader';
+import { translateError } from '../lib/errorMessages';
 
 export default function DeleteAccountScreen({ navigation }) {
     const { user, signOut } = useAuth();
@@ -67,9 +68,10 @@ export default function DeleteAccountScreen({ navigation }) {
 
         } catch (error) {
             console.error('Erro ao excluir conta:', error);
+            const friendlyMessage = translateError(error);
             Alert.alert(
                 'Erro ao Excluir Conta',
-                error.message || 'Não foi possível excluir sua conta. Por favor, tente novamente ou entre em contato com o suporte.'
+                friendlyMessage || 'Não foi possível excluir sua conta. Por favor, tente novamente ou entre em contato com o suporte.'
             );
         } finally {
             setDeletingAccount(false);
