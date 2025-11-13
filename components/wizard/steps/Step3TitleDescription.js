@@ -1,33 +1,61 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function Step2TitleDescription({ formData, updateFormData }) {
     const titleInputRef = useRef(null);
     const descriptionInputRef = useRef(null);
+    const scrollViewRef = useRef(null);
+    const insets = useSafeAreaInsets();
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
 
     useEffect(() => {
         // Auto-focus no título quando entrar na tela
         setTimeout(() => {
             titleInputRef.current?.focus();
         }, 300);
+
+        // Listener para teclado no Android
+        if (Platform.OS === 'android') {
+            const keyboardWillShow = Keyboard.addListener('keyboardDidShow', (e) => {
+                setKeyboardHeight(e.endCoordinates.height);
+            });
+            const keyboardWillHide = Keyboard.addListener('keyboardDidHide', () => {
+                setKeyboardHeight(0);
+            });
+
+            return () => {
+                keyboardWillShow.remove();
+                keyboardWillHide.remove();
+            };
+        }
     }, []);
 
     const titleLength = formData.title?.length || 0;
     const descriptionLength = formData.description?.length || 0;
+    
+    // Altura aproximada do footer (padding + botão + safe area)
+    const footerHeight = 80 + insets.bottom;
+    
+    // No Android, adicionar espaço extra quando o teclado está aberto
+    const extraPadding = Platform.OS === 'android' && keyboardHeight > 0 ? 20 : 0;
 
     return (
         <KeyboardAvoidingView 
             style={styles.container}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 180 : 20}
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+            enabled={Platform.OS === 'ios'}
         >
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                 <ScrollView 
+                    ref={scrollViewRef}
                     style={styles.scrollView}
-                    contentContainerStyle={styles.scrollContent}
+                    contentContainerStyle={[styles.scrollContent, { paddingBottom: footerHeight + extraPadding }]}
                     showsVerticalScrollIndicator={false}
                     keyboardShouldPersistTaps="handled"
+                    keyboardDismissMode="interactive"
                 >
                     <View style={styles.content}>
                 {/* Título */}
@@ -50,7 +78,13 @@ export default function Step2TitleDescription({ formData, updateFormData }) {
                             maxLength={100}
                             multiline
                             returnKeyType="next"
-                            onSubmitEditing={() => descriptionInputRef.current?.focus()}
+                            onSubmitEditing={() => {
+                                descriptionInputRef.current?.focus();
+                                // Scroll para o campo de descrição após um pequeno delay
+                                setTimeout(() => {
+                                    scrollViewRef.current?.scrollToEnd({ animated: true });
+                                }, 100);
+                            }}
                             blurOnSubmit={false}
                             submitBehavior="submit"
                         />
@@ -104,9 +138,14 @@ export default function Step2TitleDescription({ formData, updateFormData }) {
                             maxLength={1000}
                             multiline
                             textAlignVertical="top"
-                            returnKeyType="done"
-                            blurOnSubmit={true}
-                            submitBehavior="blurAndSubmit"
+                            returnKeyType="default"
+                            blurOnSubmit={false}
+                            onFocus={() => {
+                                // Scroll para o campo quando recebe foco
+                                setTimeout(() => {
+                                    scrollViewRef.current?.scrollToEnd({ animated: true });
+                                }, 100);
+                            }}
                         />
                         <View style={styles.characterCount}>
                             <Text style={[
@@ -158,7 +197,6 @@ const styles = StyleSheet.create({
     },
     scrollContent: {
         flexGrow: 1,
-        paddingBottom: 120,
     },
     content: {
         padding: 20,

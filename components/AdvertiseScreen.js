@@ -172,7 +172,7 @@ export default function AdvertiseScreen({ navigation }) {
                 {!isPlanExpired && availableAds < 2 && (
                     <View style={styles.upgradeSection}>
                         <Text style={styles.upgradeMessage}>
-                            {isFreePlan ? 'Contrate um plano e comece a anunciar.' :
+                            {isFreePlan ? 'Contrate um plano para liberar todos os recursos.' :
                                 availableAds === 0
                                     ? '⚠️ Você não tem mais anúncios disponíveis! Não fique sem anunciar, aumente seus limites.'
                                     : '⚠️ Seu limite de anúncios esta quase esgotado! Não fique sem vender! Libere mais anúncios.'}

@@ -233,7 +233,7 @@ export default function Step8Media({ formData, mediaFiles, setMediaFiles, videoU
                         <View style={styles.limitReachedCard}>
                             <Ionicons name="information-circle" size={20} color="#F59E0B" />
                             <Text style={styles.limitReachedText}>
-                                Seu plano não permite adicionar vídeos do YouTube
+                                Seu plano não permite adicionar vídeos.
                             </Text>
                         </View>
                     )}
@@ -485,7 +485,7 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
     limitReachedCard: {
-        backgroundColor: '#FFFBEB',
+        backgroundColor: '##8697A9',
         borderRadius: 12,
         padding: 16,
         flexDirection: 'row',

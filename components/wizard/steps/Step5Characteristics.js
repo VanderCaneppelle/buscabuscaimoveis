@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 const CounterButton = ({ label, value, onChange, icon, color, unit }) => {
@@ -68,18 +69,49 @@ const CounterButton = ({ label, value, onChange, icon, color, unit }) => {
 };
 
 export default function Step4Characteristics({ formData, updateFormData }) {
+    const areaInputRef = useRef(null);
+    const scrollViewRef = useRef(null);
+    const insets = useSafeAreaInsets();
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+    useEffect(() => {
+        // Listener para teclado no Android
+        if (Platform.OS === 'android') {
+            const keyboardWillShow = Keyboard.addListener('keyboardDidShow', (e) => {
+                setKeyboardHeight(e.endCoordinates.height);
+            });
+            const keyboardWillHide = Keyboard.addListener('keyboardDidHide', () => {
+                setKeyboardHeight(0);
+            });
+
+            return () => {
+                keyboardWillShow.remove();
+                keyboardWillHide.remove();
+            };
+        }
+    }, []);
+
+    // Altura aproximada do footer (padding + botão + safe area)
+    const footerHeight = 80 + insets.bottom;
+    
+    // No Android, adicionar espaço extra quando o teclado está aberto
+    const extraPadding = Platform.OS === 'android' && keyboardHeight > 0 ? 20 : 0;
+
     return (
         <KeyboardAvoidingView 
             style={styles.container}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+            enabled={Platform.OS === 'ios'}
         >
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                 <ScrollView 
+                    ref={scrollViewRef}
                     style={styles.scrollView}
-                    contentContainerStyle={styles.scrollContent}
+                    contentContainerStyle={[styles.scrollContent, { paddingBottom: footerHeight + extraPadding }]}
                     showsVerticalScrollIndicator={false}
                     keyboardShouldPersistTaps="handled"
+                    keyboardDismissMode="interactive"
                 >
                     <View style={styles.content}>
                 <Text style={styles.title}>Características do imóvel</Text>
@@ -128,6 +160,7 @@ export default function Step4Characteristics({ formData, updateFormData }) {
                     </Text>
                     <View style={styles.areaInputContainer}>
                         <TextInput
+                            ref={areaInputRef}
                             style={styles.areaInput}
                             value={formData.area}
                             onChangeText={(value) => {
@@ -140,6 +173,12 @@ export default function Step4Characteristics({ formData, updateFormData }) {
                             keyboardType="decimal-pad"
                             returnKeyType="done"
                             onSubmitEditing={Keyboard.dismiss}
+                            onFocus={() => {
+                                // Scroll para o campo quando recebe foco
+                                setTimeout(() => {
+                                    scrollViewRef.current?.scrollToEnd({ animated: true });
+                                }, 300);
+                            }}
                         />
                         <View style={styles.areaUnitContainer}>
                             <Text style={styles.areaUnit}>m²</Text>
@@ -171,7 +210,6 @@ const styles = StyleSheet.create({
     },
     scrollContent: {
         flexGrow: 1,
-        paddingBottom: 120,
     },
     content: {
         padding: 20,
