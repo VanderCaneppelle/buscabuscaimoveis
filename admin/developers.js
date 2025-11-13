@@ -8,12 +8,20 @@ let currentUser = null;
 let authToken = null;
 
 function getApiBaseUrl() {
-    if (window.location.hostname.includes('buscabusca-admin-qa')) {
+    const hostname = window.location.hostname;
+    
+    // Produção: admin.buscabuscaimoveis.com.br
+    if (hostname === 'admin.buscabuscaimoveis.com.br' || hostname.includes('buscabusca-admin-prod')) {
+        return 'https://api.buscabuscaimoveis.com.br';
+    } 
+    // QA: admin-qa.buscabuscaimoveis.com.br ou outros domínios de QA
+    else if (hostname.includes('qa') || hostname.includes('buscabusca-admin-qa')) {
         return 'https://buscabuscaimoveis-qa.vercel.app';
-    } else if (window.location.hostname.includes('buscabusca-admin-prod')) {
-        return 'https://buscabusca.vercel.app';
+    } 
+    // Desenvolvimento local
+    else {
+        return 'https://buscabuscaimoveis-qa.vercel.app';
     }
-    return 'https://buscabuscaimoveis-qa.vercel.app';
 }
 
 async function apiCall(endpoint, options = {}) {

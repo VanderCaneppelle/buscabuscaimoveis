@@ -39,12 +39,16 @@ function getApiBaseUrl() {
     const hostname = window.location.hostname;
     console.log('🔍 PROPERTY-DETAILS - Hostname detectado:', hostname);
     
-    if (hostname.includes('buscabusca-admin-qa')) {
+    // Produção: admin.buscabuscaimoveis.com.br
+    if (hostname === 'admin.buscabuscaimoveis.com.br' || hostname.includes('buscabusca-admin-prod')) {
+        return 'https://api.buscabuscaimoveis.com.br';
+    } 
+    // QA: admin-qa.buscabuscaimoveis.com.br ou outros domínios de QA
+    else if (hostname.includes('qa') || hostname.includes('buscabusca-admin-qa')) {
         return 'https://buscabuscaimoveis-qa.vercel.app';
-    } else if (hostname.includes('buscabusca-admin-prod')) {
-        return 'https://buscabusca.vercel.app';
-    } else {
-        // Desenvolvimento local - detectar automaticamente
+    } 
+    // Desenvolvimento local
+    else {
         return 'https://buscabuscaimoveis-qa.vercel.app';
     }
 }

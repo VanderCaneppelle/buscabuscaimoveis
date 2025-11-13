@@ -12,13 +12,19 @@ let authToken = null;
 // Função para obter URL da API baseada no ambiente
 function getApiBaseUrl() {
     // Detectar ambiente baseado na URL atual
-    if (window.location.hostname.includes('buscabusca-admin-qa')) {
-        return 'https://buscabuscaimoveis-qa.vercel.app';
-    } else if (window.location.hostname.includes('buscabusca-admin-prod')) {
-        return 'https://buscabusca.vercel.app';
-    } else {
-        // Desenvolvimento local
-        return 'https://buscabuscaimoveis-qa.vercel.app';
+    const hostname = window.location.hostname;
+    
+    // Produção: admin.buscabuscaimoveis.com.br
+    if (hostname === 'admin.buscabuscaimoveis.com.br' || hostname.includes('buscabusca-admin-prod')) {
+        return 'https://api.buscabuscaimoveis.com.br';
+    } 
+    // QA: admin-qa.buscabuscaimoveis.com.br ou outros domínios de QA
+    else if (hostname.includes('qa') || hostname.includes('buscabusca-admin-qa')) {
+        return 'https://qa.api.buscabuscaimoveis.com.br';
+    } 
+    // Desenvolvimento local
+    else {
+        return 'https://qa.api.buscabuscaimoveis.com.br';
     }
 }
 
