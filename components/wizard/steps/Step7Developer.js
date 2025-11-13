@@ -17,7 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { DeveloperService } from '../../../lib/developerService';
 import { useAuth } from '../../../contexts/AuthContext';
 
-export default function Step6Developer({ formData, updateFormData }) {
+export default function Step6Developer({ formData, updateFormData, onNext }) {
     const [developers, setDevelopers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
@@ -250,7 +250,12 @@ export default function Step6Developer({ formData, updateFormData }) {
                 {!selectedDeveloper && (
                     <TouchableOpacity 
                         style={styles.skipButton}
-                        onPress={() => updateFormData('developer_id', null)}
+                        onPress={() => {
+                            updateFormData('developer_id', null);
+                            if (onNext) {
+                                onNext();
+                            }
+                        }}
                     >
                         <Text style={styles.skipButtonText}>Pular esta etapa</Text>
                         <Ionicons name="arrow-forward" size={18} color="#6B7280" />

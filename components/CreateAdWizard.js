@@ -310,6 +310,7 @@ export default function CreateAdWizard({ navigation }) {
         const stepProps = {
             formData,
             updateFormData,
+            onNext: handleNext,
         };
 
         const animatedStyle = {
