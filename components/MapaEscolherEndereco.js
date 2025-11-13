@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     View,
     Text,
@@ -38,16 +38,48 @@ const MapaEscolherEndereco = ({
     const [loadingLocation, setLoadingLocation] = useState(false);
     const [userLocation, setUserLocation] = useState(null);
 
+    // Função para fazer reverse geocode de coordenadas
+    const handleReverseGeocode = useCallback(async (latitude, longitude) => {
+        console.log('📍 Buscando endereço para coordenadas:', { latitude, longitude });
+        
+        setLoading(true);
+        setAddressInfo(null);
+
+        try {
+            // Adicionar timeout para evitar travamento
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Timeout: operação demorou muito')), 10000)
+            );
+
+            const addressPromise = reverseGeocode(latitude, longitude);
+            const address = await Promise.race([addressPromise, timeoutPromise]);
+
+            if (address) {
+                setAddressInfo(address);
+                console.log('✅ Endereço obtido:', address);
+            } else {
+                console.warn('⚠️ Não foi possível obter o endereço para estas coordenadas');
+            }
+        } catch (error) {
+            console.error('❌ Erro ao obter endereço:', error);
+            if (error.message.includes('Timeout')) {
+                console.warn('⚠️ Timeout ao buscar endereço - operação demorou muito');
+            }
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
     useEffect(() => {
         if (visible) {
             requestLocationPermission();
             
             // Se tem coordenadas iniciais, buscar o endereço
-            if (initialCoordinates) {
+            if (initialCoordinates && initialCoordinates.latitude && initialCoordinates.longitude) {
                 handleReverseGeocode(initialCoordinates.latitude, initialCoordinates.longitude);
             }
         }
-    }, [visible]);
+    }, [visible, initialCoordinates, handleReverseGeocode]);
 
     // Monitorar mudanças no userLocation para debug
     useEffect(() => {
@@ -346,7 +378,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: '#ffcc1e',
-        paddingHorizontal: 16,
+        paddingHorizontal: 8,
         paddingVertical: 10,
         borderRadius: 12,
         gap: 8,
@@ -391,7 +423,7 @@ const styles = StyleSheet.create({
     },
     addressContainer: {
         backgroundColor: '#f8f9fa',
-        padding: 15,
+        padding: 5,
         borderRadius: 8,
         marginTop: 10,
     },
