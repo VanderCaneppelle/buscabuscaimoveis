@@ -23,6 +23,7 @@ import ClusteredMapView from 'react-native-map-clustering';
 import FavoriteButton from './FavoriteButton';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext';
+import { useAdmin } from '../contexts/AdminContext';
 import { useFavoritesStore } from '../stores/favoritesStore';
 import { useBoostsStore } from '../stores/boostsStore';
 import { usePropertiesStore } from '../stores/propertiesStore'; // ✨ NOVO
@@ -55,6 +56,7 @@ export default function HomeScreen({ navigation }) {
     // console.log('  HomeScreen: COMPONENTE MONTADO/RENDERIZADO'); // Removido para evitar logs excessivos
 
     const { user, signOut } = useAuth();
+    const { isAdmin } = useAdmin();
 
     // Zustand: Favoritos
     const isFavorite = useFavoritesStore(state => state.isFavorite);
@@ -940,28 +942,30 @@ export default function HomeScreen({ navigation }) {
                             </Text>
                         </TouchableOpacity>
                         
-                        <TouchableOpacity 
-                            style={[
-                                styles.quickFilterButton,
-                                quickFilter === 'developer' && styles.quickFilterButtonActive
-                            ]}
-                            onPress={() => handleQuickFilter('developer')}
-                            activeOpacity={0.7}
-                        >
-                            {!isSmallScreen && (
-                                <Ionicons 
-                                    name="business" 
-                                    size={14} 
-                                    color={quickFilter === 'developer' ? '#fff' : '#00335e'} 
-                                />
-                            )}
-                            <Text style={[
-                                styles.quickFilterText,
-                                quickFilter === 'developer' && styles.quickFilterTextActive
-                            ]}>
-                                Construtoras
-                            </Text>
-                        </TouchableOpacity>
+                        {isAdmin && (
+                            <TouchableOpacity 
+                                style={[
+                                    styles.quickFilterButton,
+                                    quickFilter === 'developer' && styles.quickFilterButtonActive
+                                ]}
+                                onPress={() => handleQuickFilter('developer')}
+                                activeOpacity={0.7}
+                            >
+                                {!isSmallScreen && (
+                                    <Ionicons 
+                                        name="business" 
+                                        size={14} 
+                                        color={quickFilter === 'developer' ? '#fff' : '#00335e'} 
+                                    />
+                                )}
+                                <Text style={[
+                                    styles.quickFilterText,
+                                    quickFilter === 'developer' && styles.quickFilterTextActive
+                                ]}>
+                                    Construtoras
+                                </Text>
+                            </TouchableOpacity>
+                        )}
                         
                         <TouchableOpacity 
                             style={[

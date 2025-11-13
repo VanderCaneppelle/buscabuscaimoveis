@@ -80,6 +80,7 @@ export default function DiscoverScreen({ navigation }) {
                 description: item.description,
                 price: item.price,
                 sale_price: item.sale_price,
+                promotional_price: item.promotional_price || item.sale_price,
                 property_type: item.property_type,
                 transaction_type: item.transaction_type,
                 bedrooms: item.bedrooms,
@@ -94,8 +95,8 @@ export default function DiscoverScreen({ navigation }) {
                 latitude: item.latitude,
                 longitude: item.longitude,
                 images: item.images,
+                video_urls: item.video_urls || [],
                 status: item.property_status,
-                views: item.property_views || 0,
                 created_at: item.property_created_at,
                 user_id: item.user_id,
                 boost_info: {
@@ -132,8 +133,9 @@ export default function DiscoverScreen({ navigation }) {
         const property = item;
 
         // Memoizar o onPress para evitar re-renderizações
+        // Navegar para a rota PropertyDetails do MainNavigator principal (mesma que HomeScreen usa)
         const handlePress = useCallback(() => {
-            navigation.navigate('PropertyDetails', { property: property });
+            navigation.getParent()?.navigate('PropertyDetails', { property: property });
         }, [navigation, property]);
 
         const mediaFiles = property.images || [];

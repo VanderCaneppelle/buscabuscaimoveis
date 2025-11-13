@@ -179,21 +179,7 @@ function DiscoverStack() {
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="DiscoverMain" component={DiscoverScreen} />
-            <Stack.Screen
-                name="PropertyDetails"
-                component={PropertyDetailsScreen}
-                options={{
-                    headerShown: true,
-                    title: 'Detalhes do Imóvel',
-                    headerStyle: {
-                        backgroundColor: '#ffcc1e',
-                    },
-                    headerTintColor: '#00335e',
-                    headerTitleStyle: {
-                        fontWeight: 'bold',
-                    },
-                }}
-            />
+            {/* PropertyDetails removido - usar a rota do MainNavigator principal */}
         </Stack.Navigator>
     );
 }

@@ -708,14 +708,22 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                     </Text>
                     
                     {/* Preços: mostrar preço normal + promocional se houver */}
-                    {property.sale_price && parseFloat(property.sale_price) > 0 ? (
-                        <View style={styles.priceContainer}>
-                            <Text style={styles.originalPrice}>{formatPrice(property.price)}</Text>
-                            <Text style={styles.salePrice}>{formatPrice(property.sale_price)}</Text>
-                        </View>
-                    ) : (
-                        <Text style={styles.price}>{formatPrice(property.price)}</Text>
-                    )}
+                    {(() => {
+                        // Verificar preço promocional (sale_price, promotional_price ou promo_price)
+                        const promoPrice = property.sale_price ?? property.promotional_price ?? property.promo_price;
+                        const hasPromo = promoPrice && parseFloat(promoPrice) > 0;
+                        
+                        if (hasPromo) {
+                            return (
+                                <View style={styles.priceContainer}>
+                                    <Text style={styles.originalPrice}>{formatPrice(property.price)}</Text>
+                                    <Text style={styles.salePrice}>{formatPrice(parseFloat(promoPrice))}</Text>
+                                </View>
+                            );
+                        } else {
+                            return <Text style={styles.price}>{formatPrice(property.price)}</Text>;
+                        }
+                    })()}
                     
                     <Text style={styles.type}>
                         {property.property_type} • {property.transaction_type}
