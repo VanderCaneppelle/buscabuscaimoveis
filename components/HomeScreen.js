@@ -1234,6 +1234,7 @@ export default function HomeScreen({ navigation }) {
                         data={properties}
                         renderItem={renderProperty}
                         keyExtractor={(item) => `property-${item.id}`}
+                        style={styles.flatListStyle}
                         refreshControl={
                             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
                         }
@@ -1420,6 +1421,10 @@ const styles = StyleSheet.create({
     },
     listContainer: {
         paddingBottom: 80,
+        backgroundColor: '#fff',
+        flexGrow: 1,
+    },
+    flatListStyle: {
         backgroundColor: '#fff',
     },
     storiesSection: {
@@ -1815,6 +1820,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingVertical: 60,
         paddingHorizontal: 20,
+        backgroundColor: '#fff', // Mesma cor da lista
     },
     emptyText: {
         fontSize: 18,
