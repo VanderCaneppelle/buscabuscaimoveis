@@ -377,7 +377,16 @@ function renderProperties() {
                         
                         <div class="row mb-2">
                             <div class="col-6">
-                                <strong class="text-primary">R$ ${formatPrice(property.price)}</strong>
+                                ${property.sale_price && property.sale_price > 0 ? `
+                                    <div>
+                                        <span style="text-decoration: line-through; color: #64748b; font-size: 0.9em; margin-right: 0.5rem;">
+                                            R$ ${formatPrice(property.price)}
+                                        </span>
+                                        <strong class="text-success">R$ ${formatPrice(property.sale_price)}</strong>
+                                    </div>
+                                ` : `
+                                    <strong class="text-primary">R$ ${formatPrice(property.price)}</strong>
+                                `}
                             </div>
                             <div class="col-6 text-end">
                                 <small class="text-muted">

@@ -6,16 +6,15 @@ const supabase = createClient(
     process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-async function handler(req, res) {
-    console.log('🔍 PROPERTY-DETAILS - Endpoint chamado!');
-    console.log('🔍 PROPERTY-DETAILS - Method:', req.method);
-    console.log('🔍 PROPERTY-DETAILS - Query:', req.query);
+async function handleGet(req, res) {
+    console.log('🔍 PROPERTY-DETAILS - GET - Buscando propriedade');
     
     try {
         const { id } = req.query;
         
         if (!id) {
             return res.status(400).json({ 
+                success: false,
                 error: 'Property ID is required' 
             });
         }
@@ -64,6 +63,7 @@ async function handler(req, res) {
         if (error) {
             console.error('❌ PROPERTY-DETAILS - Erro ao buscar propriedade:', error);
             return res.status(500).json({ 
+                success: false,
                 error: 'Failed to fetch property',
                 details: error.message 
             });
@@ -72,22 +72,12 @@ async function handler(req, res) {
         if (!property) {
             console.error('❌ PROPERTY-DETAILS - Propriedade não encontrada:', id);
             return res.status(404).json({ 
+                success: false,
                 error: 'Property not found' 
             });
         }
 
         console.log('✅ PROPERTY-DETAILS - Propriedade encontrada:', property.id);
-        console.log('📦 PROPERTY-DETAILS - Dados retornados:', {
-            id: property.id,
-            title: property.title,
-            address: property.address,
-            neighborhood: property.neighborhood,
-            city: property.city,
-            bedrooms: property.bedrooms,
-            bathrooms: property.bathrooms,
-            images: property.images ? 'SIM' : 'NÃO',
-            video_urls: property.video_urls ? 'SIM' : 'NÃO'
-        });
 
         return res.status(200).json({
             success: true,
@@ -97,6 +87,105 @@ async function handler(req, res) {
     } catch (error) {
         console.error('❌ PROPERTY-DETAILS - Erro interno:', error);
         return res.status(500).json({ 
+            success: false,
+            error: 'Internal server error',
+            details: error.message 
+        });
+    }
+}
+
+async function handlePut(req, res) {
+    console.log('🔍 PROPERTY-DETAILS - PUT - Atualizando propriedade');
+    
+    try {
+        const { id } = req.query;
+        const { admin_notes } = req.body;
+        
+        if (!id) {
+            return res.status(400).json({ 
+                success: false,
+                error: 'Property ID is required' 
+            });
+        }
+
+        // Validar que admin_notes foi fornecido
+        if (admin_notes === undefined) {
+            return res.status(400).json({ 
+                success: false,
+                error: 'admin_notes is required' 
+            });
+        }
+
+        console.log('🔍 PROPERTY-DETAILS - Atualizando notas da propriedade:', id);
+
+        // Atualizar apenas admin_notes
+        const { data: property, error } = await supabase
+            .from('properties')
+            .update({ 
+                admin_notes: admin_notes || null,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) {
+            console.error('❌ PROPERTY-DETAILS - Erro ao atualizar propriedade:', error);
+            return res.status(500).json({ 
+                success: false,
+                error: 'Failed to update property',
+                details: error.message 
+            });
+        }
+
+        if (!property) {
+            console.error('❌ PROPERTY-DETAILS - Propriedade não encontrada:', id);
+            return res.status(404).json({ 
+                success: false,
+                error: 'Property not found' 
+            });
+        }
+
+        console.log('✅ PROPERTY-DETAILS - Propriedade atualizada:', property.id);
+
+        return res.status(200).json({
+            success: true,
+            message: 'Notas do admin atualizadas com sucesso',
+            data: property
+        });
+
+    } catch (error) {
+        console.error('❌ PROPERTY-DETAILS - Erro interno:', error);
+        return res.status(500).json({ 
+            success: false,
+            error: 'Internal server error',
+            details: error.message 
+        });
+    }
+}
+
+async function handler(req, res) {
+    console.log('🔍 PROPERTY-DETAILS - Endpoint chamado!');
+    console.log('🔍 PROPERTY-DETAILS - Method:', req.method);
+    console.log('🔍 PROPERTY-DETAILS - Query:', req.query);
+    
+    try {
+        switch (req.method) {
+            case 'GET':
+                return await handleGet(req, res);
+            case 'PUT':
+                return await handlePut(req, res);
+            default:
+                res.setHeader('Allow', ['GET', 'PUT']);
+                return res.status(405).json({
+                    success: false,
+                    error: 'Método não permitido'
+                });
+        }
+    } catch (error) {
+        console.error('❌ PROPERTY-DETAILS - Erro inesperado:', error);
+        return res.status(500).json({ 
+            success: false,
             error: 'Internal server error',
             details: error.message 
         });

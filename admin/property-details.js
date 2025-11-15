@@ -273,7 +273,25 @@ function populatePropertyData(property) {
 
     if (propertyTypeEl) propertyTypeEl.textContent = property.property_type || '-';
     if (transactionTypeEl) transactionTypeEl.textContent = property.transaction_type || '-';
-    if (priceDisplayEl) priceDisplayEl.textContent = formatPrice(property.price);
+    
+    // ✨ NOVO: Mostrar price e sale_price quando disponível
+    if (priceDisplayEl) {
+        if (property.sale_price && property.sale_price > 0) {
+            // Mostrar price riscado e sale_price em destaque
+            priceDisplayEl.innerHTML = `
+                <span style="text-decoration: line-through; color: #64748b; font-size: 1.5rem; margin-right: 0.5rem;">
+                    ${formatPrice(property.price)}
+                </span>
+                <span style="color: #10b981; font-size: 2.2rem; font-weight: 700;">
+                    ${formatPrice(property.sale_price)}
+                </span>
+            `;
+        } else {
+            // Mostrar apenas price normal
+            priceDisplayEl.textContent = formatPrice(property.price);
+        }
+    }
+    
     if (statusDisplayEl) statusDisplayEl.textContent = getStatusText(property.status);
 
     const statusInline = document.getElementById('status-display-inline');
@@ -306,6 +324,25 @@ function populatePropertyData(property) {
     if (zipCodeEl) zipCodeEl.textContent = property.zip_code || '-';
     if (createdDateEl) createdDateEl.textContent = formatDate(property.created_at);
 
+    // ✨ NOVO: Preço na seção Informações do Imóvel
+    const propertyPriceInfoEl = document.getElementById('property-price-info');
+    if (propertyPriceInfoEl) {
+        if (property.sale_price && property.sale_price > 0) {
+            // Mostrar price riscado e sale_price em destaque
+            propertyPriceInfoEl.innerHTML = `
+                <span style="text-decoration: line-through; color: #64748b; margin-right: 0.5rem;">
+                    ${formatPrice(property.price)}
+                </span>
+                <span style="color: #10b981; font-weight: 600;">
+                    ${formatPrice(property.sale_price)}
+                </span>
+            `;
+        } else {
+            // Mostrar apenas price normal
+            propertyPriceInfoEl.textContent = formatPrice(property.price);
+        }
+    }
+
     // Descrição
     if (property.description) {
         const descriptionTextEl = document.getElementById('description-text');
@@ -337,12 +374,28 @@ function setupAdminNotes(propertyId, initialNotes) {
             saveBtn.disabled = true;
             saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Salvando...';
 
-            const { error } = await supabase
-                .from('properties')
-                .update({ admin_notes: notes })
-                .eq('id', propertyId);
+            // ✨ NOVO: Usar API segura em vez de Supabase direto
+            const response = await fetch(`${API_BASE_URL}/api/admin/property-details?id=${propertyId}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${authToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    admin_notes: notes
+                })
+            });
 
-            if (error) throw error;
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || `HTTP ${response.status}`);
+            }
+
+            const result = await response.json();
+            
+            if (!result.success) {
+                throw new Error(result.error || 'Erro ao salvar notas');
+            }
 
             alert('Notas salvas com sucesso');
         } catch (err) {

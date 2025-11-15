@@ -39,7 +39,7 @@
       "environment": "production",
       "distribution": "store",
       "android": {
-        "buildType": "apk"
+        "buildType": "app-bundle"
       },
       "env": {
         "API_BASE_URL": "https://api.buscabuscaimoveis.com.br",
