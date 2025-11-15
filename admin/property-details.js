@@ -8,6 +8,103 @@ let authToken = null;
 // Propriedade atual (para uso no mapa e outras funções)
 let currentProperty = null;
 
+// Função para refresh do token
+async function refreshToken() {
+    try {
+        const refreshToken = localStorage.getItem('adminRefreshToken');
+        
+        if (!refreshToken) {
+            throw new Error('No refresh token found');
+        }
+
+        console.log('🔄 Fazendo refresh do token...');
+        
+        const response = await fetch(`${API_BASE_URL}/api/admin/refresh`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ refresh_token: refreshToken })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(data.error || 'Token refresh failed');
+        }
+
+        // Atualizar tokens no localStorage
+        authToken = data.session.access_token;
+        localStorage.setItem('adminToken', data.session.access_token);
+        localStorage.setItem('adminRefreshToken', data.session.refresh_token);
+        localStorage.setItem('adminTokenExpiresAt', data.session.expires_at);
+
+        console.log('✅ Token refresh bem-sucedido');
+        return data.session.access_token;
+    } catch (error) {
+        console.error('❌ Erro ao fazer refresh do token:', error);
+        window.location.href = 'index.html';
+        throw error;
+    }
+}
+
+// Verificar se o token está expirado ou próximo de expirar
+function isTokenExpired() {
+    const expiresAt = localStorage.getItem('adminTokenExpiresAt');
+    if (!expiresAt) return true;
+    
+    // Converter timestamp Unix para milissegundos
+    const expiresAtMs = parseInt(expiresAt) * 1000;
+    const now = Date.now();
+    
+    // Considerar expirado se faltar menos de 5 minutos (300000ms)
+    const bufferTime = 5 * 60 * 1000; // 5 minutos
+    
+    return (expiresAtMs - now) < bufferTime;
+}
+
+// Função para chamadas autenticadas à API com refresh automático
+async function authenticatedFetch(url, options = {}) {
+    // Verificar se o token está expirado ou próximo de expirar
+    if (isTokenExpired()) {
+        console.log('⏰ Token expirado ou próximo de expirar, fazendo refresh...');
+        await refreshToken();
+        authToken = localStorage.getItem('adminToken');
+    }
+    
+    if (!authToken) {
+        throw new Error('No authentication token found');
+    }
+
+    let response = await fetch(url, {
+        ...options,
+        headers: {
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+
+    // Se receber 401, tentar refresh e repetir a requisição
+    if (response.status === 401) {
+        console.log('🔐 Token inválido, tentando refresh...');
+        const newToken = await refreshToken();
+        authToken = newToken;
+        
+        // Repetir a requisição com o novo token
+        response = await fetch(url, {
+            ...options,
+            headers: {
+                'Authorization': `Bearer ${newToken}`,
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+
+    return response;
+}
+
 // ✨ NOVO: Carregar token do localStorage
 function loadAuthData() {
     try {
@@ -17,6 +114,16 @@ function loadAuthData() {
         if (!authToken) {
             window.location.href = 'index.html';
             return false;
+        }
+        
+        // Verificar se o token está expirado ao carregar
+        if (isTokenExpired()) {
+            console.log('⏰ Token expirado ao carregar, tentando refresh...');
+            refreshToken().then(() => {
+                authToken = localStorage.getItem('adminToken');
+            }).catch(() => {
+                window.location.href = 'index.html';
+            });
         }
         
         return true;
@@ -99,11 +206,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function loadPropertyDetails(propertyId) {
     try {
                
-        const response = await fetch(`${API_BASE_URL}/api/admin/property-details?id=${propertyId}`, {
-            headers: {
-                'Authorization': `Bearer ${authToken}`,
-                'Content-Type': 'application/json'
-            }
+        const response = await authenticatedFetch(`${API_BASE_URL}/api/admin/property-details?id=${propertyId}`, {
+            method: 'GET'
         });
 
         if (!response.ok) {
@@ -185,11 +289,8 @@ async function populateOwnerData(property) {
         try {
     
             
-            const emailResponse = await fetch(`${API_BASE_URL}/api/admin/user-email?userId=${property.user_id}`, {
-                headers: {
-                    'Authorization': `Bearer ${authToken}`,
-                    'Content-Type': 'application/json'
-                }
+            const emailResponse = await authenticatedFetch(`${API_BASE_URL}/api/admin/user-email?userId=${property.user_id}`, {
+                method: 'GET'
             });
 
             if (emailResponse.ok) {
@@ -375,12 +476,8 @@ function setupAdminNotes(propertyId, initialNotes) {
             saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Salvando...';
 
             // ✨ NOVO: Usar API segura em vez de Supabase direto
-            const response = await fetch(`${API_BASE_URL}/api/admin/property-details?id=${propertyId}`, {
+            const response = await authenticatedFetch(`${API_BASE_URL}/api/admin/property-details?id=${propertyId}`, {
                 method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${authToken}`,
-                    'Content-Type': 'application/json'
-                },
                 body: JSON.stringify({
                     admin_notes: notes
                 })
@@ -425,11 +522,8 @@ async function setupModerationActions(propertyId) {
         console.log('🔍 Buscando status da propriedade:', propertyId);
         
         // ✨ NOVO: Buscar status via API segura
-        const statusResponse = await fetch(`${API_BASE_URL}/api/admin/property-details?id=${propertyId}`, {
-            headers: {
-                'Authorization': `Bearer ${authToken}`,
-                'Content-Type': 'application/json'
-            }
+        const statusResponse = await authenticatedFetch(`${API_BASE_URL}/api/admin/property-details?id=${propertyId}`, {
+            method: 'GET'
         });
 
         if (!statusResponse.ok) {
@@ -718,11 +812,8 @@ async function setupWhatsAppLink(property) {
         
         let userProfile = null;
         try {
-            const profileResponse = await fetch(`${API_BASE_URL}/api/admin/user-profile?userId=${property.user_id}`, {
-                headers: {
-                    'Authorization': `Bearer ${authToken}`,
-                    'Content-Type': 'application/json'
-                }
+            const profileResponse = await authenticatedFetch(`${API_BASE_URL}/api/admin/user-profile?userId=${property.user_id}`, {
+                method: 'GET'
             });
 
             if (profileResponse.ok) {

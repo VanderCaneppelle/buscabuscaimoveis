@@ -28,15 +28,78 @@ function getApiBaseUrl() {
     }
 }
 
-// Função para chamadas autenticadas à API
+// Função para refresh do token
+async function refreshToken() {
+    try {
+        const refreshToken = localStorage.getItem('adminRefreshToken');
+        
+        if (!refreshToken) {
+            throw new Error('No refresh token found');
+        }
+
+        console.log('🔄 Fazendo refresh do token...');
+        
+        const response = await fetch(`${API_BASE_URL}/api/admin/refresh`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ refresh_token: refreshToken })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(data.error || 'Token refresh failed');
+        }
+
+        // Atualizar tokens no localStorage
+        authToken = data.session.access_token;
+        localStorage.setItem('adminToken', data.session.access_token);
+        localStorage.setItem('adminRefreshToken', data.session.refresh_token);
+        localStorage.setItem('adminTokenExpiresAt', data.session.expires_at);
+
+        console.log('✅ Token refresh bem-sucedido');
+        return data.session.access_token;
+    } catch (error) {
+        console.error('❌ Erro ao fazer refresh do token:', error);
+        // Se o refresh falhar, fazer logout
+        logoutAdmin();
+        window.location.reload();
+        throw error;
+    }
+}
+
+// Verificar se o token está expirado ou próximo de expirar
+function isTokenExpired() {
+    const expiresAt = localStorage.getItem('adminTokenExpiresAt');
+    if (!expiresAt) return true;
+    
+    // Converter timestamp Unix para milissegundos
+    const expiresAtMs = parseInt(expiresAt) * 1000;
+    const now = Date.now();
+    
+    // Considerar expirado se faltar menos de 5 minutos (300000ms)
+    const bufferTime = 5 * 60 * 1000; // 5 minutos
+    
+    return (expiresAtMs - now) < bufferTime;
+}
+
+// Função para chamadas autenticadas à API com refresh automático
 async function apiCall(endpoint, options = {}) {
+    // Verificar se o token está expirado ou próximo de expirar
+    if (isTokenExpired()) {
+        console.log('⏰ Token expirado ou próximo de expirar, fazendo refresh...');
+        await refreshToken();
+    }
+    
     const token = localStorage.getItem('adminToken');
     
     if (!token) {
         throw new Error('No authentication token found');
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/admin/${endpoint}`, {
+    let response = await fetch(`${API_BASE_URL}/api/admin/${endpoint}`, {
         ...options,
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -45,9 +108,25 @@ async function apiCall(endpoint, options = {}) {
         }
     });
 
+    // Se receber 401, tentar refresh e repetir a requisição
+    if (response.status === 401) {
+        console.log('🔐 Token inválido, tentando refresh...');
+        const newToken = await refreshToken();
+        
+        // Repetir a requisição com o novo token
+        response = await fetch(`${API_BASE_URL}/api/admin/${endpoint}`, {
+            ...options,
+            headers: {
+                'Authorization': `Bearer ${newToken}`,
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+
     if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `HTTP ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || errorData.error || `HTTP ${response.status}`);
     }
 
     return response.json();
@@ -70,10 +149,12 @@ async function loginAdmin(email, password) {
             throw new Error(data.message || 'Login failed');
         }
 
-        // Salvar token e dados do usuário
+        // Salvar token, refresh token e dados do usuário
         authToken = data.session.access_token;
         currentUser = data.user;
         localStorage.setItem('adminToken', authToken);
+        localStorage.setItem('adminRefreshToken', data.session.refresh_token);
+        localStorage.setItem('adminTokenExpiresAt', data.session.expires_at);
         localStorage.setItem('adminUser', JSON.stringify(currentUser));
 
         console.log('✅ Login admin bem-sucedido:', currentUser.email);
@@ -89,6 +170,8 @@ function logoutAdmin() {
     authToken = null;
     currentUser = null;
     localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminRefreshToken');
+    localStorage.removeItem('adminTokenExpiresAt');
     localStorage.removeItem('adminUser');
     console.log('✅ Logout realizado');
 }
@@ -142,7 +225,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         if (savedToken && savedUser) {
             console.log('👤 Usuário já logado:', JSON.parse(savedUser).email);
-            authToken = savedToken;
+            
+            // Verificar se o token está expirado
+            if (isTokenExpired()) {
+                console.log('⏰ Token expirado, tentando refresh...');
+                try {
+                    await refreshToken();
+                    authToken = localStorage.getItem('adminToken');
+                } catch (error) {
+                    console.error('❌ Erro ao fazer refresh, redirecionando para login');
+                    showLoginScreen('Sessão expirada. Faça login novamente.');
+                    return;
+                }
+            } else {
+                authToken = savedToken;
+            }
+            
             currentUser = JSON.parse(savedUser);
             await initializeAdminPanel(currentUser);
         } else {
