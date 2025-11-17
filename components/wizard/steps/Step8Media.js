@@ -191,7 +191,7 @@ export default function Step8Media({ formData, mediaFiles, setMediaFiles, videoU
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>🎥 Vídeos</Text>
                     <Text style={styles.sectionSubtitle}>
-                        Cole o link do vídeo do YouTube (não pode ser YouTube Shorts)
+                        Cole o link do vídeo do YouTube (vídeos normais ou Shorts)
                     </Text>
 
                     {/* YouTube URL Input */}

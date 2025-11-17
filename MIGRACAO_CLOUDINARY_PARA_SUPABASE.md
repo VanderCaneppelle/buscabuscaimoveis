@@ -2,13 +2,15 @@
 
 ## 📋 Resumo das Mudanças
 
-As imagens dos anúncios agora são armazenadas no **Supabase Storage** ao invés do **Cloudinary**.
+As imagens dos anúncios agora são armazenadas no **Supabase Storage** ao invés
+do **Cloudinary**.
 
 ---
 
 ## ✅ O que foi alterado
 
 ### 1. **Nova Função de Upload**
+
 - **Arquivo:** `lib/mediaServiceOptimized.js`
 - **Função:** `uploadImageToSupabase()`
 - **O que faz:**
@@ -18,11 +20,14 @@ As imagens dos anúncios agora são armazenadas no **Supabase Storage** ao invé
   - Retorna URL pública no formato compatível (objeto com `secure_url`)
 
 ### 2. **Modificação do Fluxo Principal**
+
 - **Arquivo:** `lib/mediaServiceOptimized.js`
 - **Função:** `uploadToSupabase()`
-- **Mudança:** Agora chama `uploadImageToSupabase()` para imagens ao invés de `uploadImageToCloudinary()`
+- **Mudança:** Agora chama `uploadImageToSupabase()` para imagens ao invés de
+  `uploadImageToCloudinary()`
 
 ### 3. **Função de Delete Atualizada**
+
 - **Arquivo:** `lib/propertyService.js`
 - **Função:** `deleteMedia()`
 - **O que faz:**
@@ -31,6 +36,7 @@ As imagens dos anúncios agora são armazenadas no **Supabase Storage** ao invé
   - Mantém compatibilidade com imagens antigas do Cloudinary
 
 ### 4. **Função de Delete do Supabase Melhorada**
+
 - **Arquivo:** `lib/mediaServiceOptimized.js`
 - **Função:** `deleteFromSupabase()`
 - **Melhoria:** Agora extrai corretamente o caminho completo do arquivo da URL
@@ -79,11 +85,13 @@ Se não existirem, execute o script `database/create_storage_bucket.sql`.
 ## 📊 Formato de URLs
 
 ### **Antes (Cloudinary):**
+
 ```
 https://res.cloudinary.com/djtl3cvkz/image/upload/v1234567890/media/image.jpg
 ```
 
 ### **Agora (Supabase Storage):**
+
 ```
 https://[project].supabase.co/storage/v1/object/public/properties/media/1234567890-abc123.jpg
 ```
@@ -110,7 +118,8 @@ Isso mantém compatibilidade com o código existente que espera `url.secure_url`
 
 A função `deleteMedia()` detecta automaticamente o tipo de URL:
 
-- **Supabase Storage:** URLs contendo `supabase.co` ou `/storage/v1/object/public/`
+- **Supabase Storage:** URLs contendo `supabase.co` ou
+  `/storage/v1/object/public/`
 - **Cloudinary:** URLs contendo `cloudinary.com`
 
 Isso permite deletar imagens antigas do Cloudinary e novas do Supabase Storage.
@@ -136,30 +145,37 @@ Isso permite deletar imagens antigas do Cloudinary e novas do Supabase Storage.
 
 ## 📝 Notas Importantes
 
-1. **Imagens Antigas:** Imagens já armazenadas no Cloudinary continuarão funcionando normalmente
+1. **Imagens Antigas:** Imagens já armazenadas no Cloudinary continuarão
+   funcionando normalmente
 2. **Vídeos:** Continuam usando Supabase Storage (não houve mudança)
 3. **Stories:** Continuam usando Cloudinary (não foi alterado)
-4. **Bucket:** O bucket `properties` deve estar público para permitir visualização das imagens
+4. **Bucket:** O bucket `properties` deve estar público para permitir
+   visualização das imagens
 
 ---
 
 ## 🚨 Possíveis Problemas e Soluções
 
 ### **Erro: "Bucket não encontrado"**
+
 - **Solução:** Verificar se o bucket `properties` existe no Supabase Dashboard
 - **Comando SQL:** `SELECT * FROM storage.buckets WHERE id = 'properties';`
 
 ### **Erro: "Permission denied"**
+
 - **Solução:** Verificar se as políticas RLS estão configuradas corretamente
 - **Script:** Execute `database/create_storage_bucket.sql`
 
 ### **Erro: "File size limit exceeded"**
+
 - **Solução:** Verificar o limite do bucket (padrão: 50MB)
 - **Ajuste:** Aumentar `file_size_limit` no bucket se necessário
 
 ### **Imagens não aparecem**
+
 - **Solução:** Verificar se o bucket está marcado como público
-- **Comando SQL:** `UPDATE storage.buckets SET public = true WHERE id = 'properties';`
+- **Comando SQL:**
+  `UPDATE storage.buckets SET public = true WHERE id = 'properties';`
 
 ---
 
@@ -189,4 +205,3 @@ Isso permite deletar imagens antigas do Cloudinary e novas do Supabase Storage.
 - [ ] Testar upload de imagens
 - [ ] Testar delete de imagens
 - [ ] Verificar compatibilidade com imagens antigas
-
