@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
     View,
-    Text,
     StyleSheet,
     TouchableOpacity,
     Alert,
@@ -13,6 +12,7 @@ import { useAdmin } from '../contexts/AdminContext';
 import { MediaServiceOptimized as MediaService } from '../lib/mediaServiceOptimized';
 import { useAuth } from '../contexts/AuthContext';
 import StoryPreviewModal from './modals/StoryPreviewModal';
+import AppText from './AppText';
 
 
 const { width, height } = Dimensions.get('window');
@@ -351,12 +351,12 @@ export default function CreateStoryScreen({ navigation }) {
                 <TouchableOpacity onPress={() => navigation.goBack()}>
                     <Ionicons name="arrow-back" size={24} color="#1e3a8a" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Criar Story</Text>
+                <AppText style={styles.headerTitle}>Criar Story</AppText>
                 <View style={{ width: 24 }} />
             </View>
 
             <View style={styles.content}>
-                <Text style={styles.sectionTitle}>Escolha uma opção:</Text>
+                <AppText style={styles.sectionTitle}>Escolha uma opção:</AppText>
 
                 <View style={styles.optionsContainer}>
                     <TouchableOpacity
@@ -366,8 +366,8 @@ export default function CreateStoryScreen({ navigation }) {
                         <View style={styles.optionIcon}>
                             <Ionicons name="camera" size={40} color="#1e3a8a" />
                         </View>
-                        <Text style={styles.optionText}>Foto</Text>
-                        <Text style={styles.optionSubtext}>Tirar foto</Text>
+                        <AppText style={styles.optionText}>Foto</AppText>
+                        <AppText style={styles.optionSubtext}>Tirar foto</AppText>
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -377,8 +377,8 @@ export default function CreateStoryScreen({ navigation }) {
                         <View style={styles.optionIcon}>
                             <Ionicons name="videocam" size={40} color="#1e3a8a" />
                         </View>
-                        <Text style={styles.optionText}>Vídeo</Text>
-                        <Text style={styles.optionSubtext}>Gravar vídeo</Text>
+                        <AppText style={styles.optionText}>Vídeo</AppText>
+                        <AppText style={styles.optionSubtext}>Gravar vídeo</AppText>
                     </TouchableOpacity>
 
 
@@ -389,8 +389,8 @@ export default function CreateStoryScreen({ navigation }) {
                         <View style={styles.optionIcon}>
                             <Ionicons name="images" size={40} color="#1e3a8a" />
                         </View>
-                        <Text style={styles.optionText}>Galeria</Text>
-                        <Text style={styles.optionSubtext}>Selecionar mídia</Text>
+                        <AppText style={styles.optionText}>Galeria</AppText>
+                        <AppText style={styles.optionSubtext}>Selecionar mídia</AppText>
                     </TouchableOpacity>
                 </View>
 
@@ -398,9 +398,9 @@ export default function CreateStoryScreen({ navigation }) {
 
                 <View style={styles.infoContainer}>
                     <Ionicons name="information-circle" size={20} color="#1e3a8a" />
-                    <Text style={styles.infoText}>
+                    <AppText style={styles.infoText}>
                         Stories são exibidos por 24 horas e podem conter fotos ou vídeos de até 30 segundos.
-                    </Text>
+                    </AppText>
                 </View>
             </View>
 

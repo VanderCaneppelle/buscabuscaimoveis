@@ -7,12 +7,13 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { TouchableOpacity, View, Text, StyleSheet, Platform } from 'react-native';
+import { TouchableOpacity, View, StyleSheet, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { InAppNotificationAPI } from '../lib/inAppNotificationService';
 import { useFocusEffect } from '@react-navigation/native';
 import { supabase } from '../lib/supabase'; // ✨ NOVO - Para Realtime
+import AppText from './AppText';
 
 export default function NotificationBell({ navigation }) {
     const { user } = useAuth();
@@ -156,9 +157,9 @@ export default function NotificationBell({ navigation }) {
             />
             {unreadCount > 0 && (
                 <View style={styles.badge}>
-                    <Text style={styles.badgeText}>
+                    <AppText style={styles.badgeText}>
                         {unreadCount > 99 ? '99+' : unreadCount}
-                    </Text>
+                    </AppText>
                 </View>
             )}
         </TouchableOpacity>

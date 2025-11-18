@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
     View,
-    Text,
-    TextInput,
     TouchableOpacity,
     StyleSheet,
     Alert,
@@ -17,6 +15,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import StandardHeader from './StandardHeader';
+import AppText from './AppText';
+import AppTextInput from './AppTextInput';
 
 export default function EditProfileScreen({ navigation }) {
     console.log('Rendered EditProfileScreen');
@@ -113,7 +113,7 @@ export default function EditProfileScreen({ navigation }) {
             <SafeAreaView style={styles.container}>
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color="#3498db" />
-                    <Text style={styles.loadingText}>Carregando perfil...</Text>
+                    <AppText style={styles.loadingText}>Carregando perfil...</AppText>
                 </View>
             </SafeAreaView>
         );
@@ -143,22 +143,22 @@ export default function EditProfileScreen({ navigation }) {
                         {/* Info Card */}
                         <View style={styles.infoCard}>
                             <Ionicons name="person-circle" size={48} color="#3498db" />
-                            <Text style={styles.infoTitle}>Suas Informações</Text>
-                            <Text style={styles.infoText}>
+                            <AppText style={styles.infoTitle}>Suas Informações</AppText>
+                            <AppText style={styles.infoText}>
                                 Atualize seus dados para melhorar sua experiência no app
-                            </Text>
+                            </AppText>
                         </View>
 
                         {/* Telefone */}
                         <View style={styles.section}>
-                            <Text style={styles.sectionTitle}>Contato</Text>
+                            <AppText style={styles.sectionTitle}>Contato</AppText>
                             <View style={styles.inputCard}>
-                                <Text style={styles.label}>
-                                    Telefone <Text style={styles.required}>*</Text>
-                                </Text>
+                                <AppText style={styles.label}>
+                                    Telefone <AppText style={styles.required}>*</AppText>
+                                </AppText>
                                 <View style={styles.inputContainer}>
                                     <Ionicons name="call" size={20} color="#7f8c8d" style={styles.inputIcon} />
-                                    <TextInput
+                                    <AppTextInput
                                         style={styles.input}
                                         placeholder="(00) 00000-0000"
                                         placeholderTextColor="#bdc3c7"
@@ -172,17 +172,17 @@ export default function EditProfileScreen({ navigation }) {
 
                         {/* Tipo de Usuário */}
                         <View style={styles.section}>
-                            <Text style={styles.sectionTitle}>Tipo de Usuário</Text>
+                            <AppText style={styles.sectionTitle}>Tipo de Usuário</AppText>
                             <View style={styles.switchCard}>
                                 <View style={styles.switchContent}>
                                     <Ionicons name="briefcase" size={24} color="#3498db" />
                                     <View style={styles.switchTextContainer}>
-                                        <Text style={styles.switchLabel}>Sou Corretor</Text>
-                                        <Text style={styles.switchDescription}>
+                                        <AppText style={styles.switchLabel}>Sou Corretor</AppText>
+                                        <AppText style={styles.switchDescription}>
                                             {profile.isRealtor
                                                 ? 'Você tem acesso a recursos profissionais'
                                                 : 'Ative para acessar recursos profissionais'}
-                                        </Text>
+                                        </AppText>
                                     </View>
                                 </View>
                                 <Switch
@@ -197,16 +197,16 @@ export default function EditProfileScreen({ navigation }) {
                         {/* Campos de Corretor (condicional) */}
                         {profile.isRealtor && (
                             <View style={styles.section}>
-                                <Text style={styles.sectionTitle}>Informações Profissionais</Text>
+                                <AppText style={styles.sectionTitle}>Informações Profissionais</AppText>
 
                                 {/* CRECI */}
                                 <View style={styles.inputCard}>
-                                    <Text style={styles.label}>
-                                        CRECI <Text style={styles.required}>*</Text>
-                                    </Text>
+                                    <AppText style={styles.label}>
+                                        CRECI <AppText style={styles.required}>*</AppText>
+                                    </AppText>
                                     <View style={styles.inputContainer}>
                                         <Ionicons name="card" size={20} color="#7f8c8d" style={styles.inputIcon} />
-                                        <TextInput
+                                        <AppTextInput
                                             style={styles.input}
                                             placeholder="Ex: 12345-F"
                                             placeholderTextColor="#bdc3c7"
@@ -214,17 +214,17 @@ export default function EditProfileScreen({ navigation }) {
                                             onChangeText={(text) => setProfile({ ...profile, creci: text })}
                                         />
                                     </View>
-                                    <Text style={styles.hint}>
+                                    <AppText style={styles.hint}>
                                         Seu número de registro no CRECI
-                                    </Text>
+                                    </AppText>
                                 </View>
 
                                 {/* Nome da Empresa */}
                                 <View style={styles.inputCard}>
-                                    <Text style={styles.label}>Nome da Empresa (Opcional)</Text>
+                                    <AppText style={styles.label}>Nome da Empresa (Opcional)</AppText>
                                     <View style={styles.inputContainer}>
                                         <Ionicons name="business" size={20} color="#7f8c8d" style={styles.inputIcon} />
-                                        <TextInput
+                                        <AppTextInput
                                             style={styles.input}
                                             placeholder="Ex: Imobiliária XYZ"
                                             placeholderTextColor="#bdc3c7"
@@ -248,7 +248,7 @@ export default function EditProfileScreen({ navigation }) {
                                 ) : (
                                     <>
                                         <Ionicons name="checkmark-circle" size={20} color="#fff" />
-                                        <Text style={styles.saveButtonText}>Salvar Alterações</Text>
+                                        <AppText style={styles.saveButtonText}>Salvar Alterações</AppText>
                                     </>
                                 )}
                             </TouchableOpacity>
@@ -258,7 +258,7 @@ export default function EditProfileScreen({ navigation }) {
                                 onPress={() => navigation.goBack()}
                                 disabled={saving}
                             >
-                                <Text style={styles.cancelButtonText}>Cancelar</Text>
+                                <AppText style={styles.cancelButtonText}>Cancelar</AppText>
                             </TouchableOpacity>
                         </View>
 

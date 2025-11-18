@@ -2,7 +2,6 @@ import React, { useState, useRef } from 'react';
 import { Animated, PanResponder } from 'react-native';
 import {
     View,
-    Text,
     StyleSheet,
     TouchableOpacity,
     SafeAreaView,
@@ -10,10 +9,11 @@ import {
     Dimensions,
     ActivityIndicator,
     Image,
-    TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Video } from 'expo-av';
+import AppText from "../../components/AppText";
+import AppTextInput from "../../components/AppTextInput";
 
 const { width, height } = Dimensions.get('window');
 
@@ -170,7 +170,7 @@ const InteractiveTitle = ({
                     style={styles.titleTouchArea}
                 >
                     <View style={styles.titleBackground}>
-                        <Text 
+                        <AppText 
                             style={[
                                 styles.fixedTitleText, 
                                 { 
@@ -181,7 +181,7 @@ const InteractiveTitle = ({
                             numberOfLines={3}
                         >
                             {title}
-                        </Text>
+                        </AppText>
                     </View>
                     
                     {/* Hint visual para gestos */}
@@ -351,9 +351,9 @@ const InteractiveLink = ({
                             size={baseIconSize}
                             color="#fff"
                         />
-                        <Text style={[styles.draggableLinkText, { fontSize: baseFontSize }]}>
+                        <AppText style={[styles.draggableLinkText, { fontSize: baseFontSize }]}>
                             {linkData.text}
-                        </Text>
+                        </AppText>
                     </View>
                     
                     {/* Hint visual */}
@@ -511,7 +511,7 @@ export default function StoryPreviewModal({
                         onPress={() => setShowTitleModal(true)}
                     >
                         <Ionicons name="text" size={24} color="#fff" />
-                        <Text style={styles.floatingButtonText}>Título</Text>
+                        <AppText style={styles.floatingButtonText}>Título</AppText>
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -519,7 +519,7 @@ export default function StoryPreviewModal({
                         onPress={() => setShowLinkModal(true)}
                     >
                         <Ionicons name="link" size={24} color="#fff" />
-                        <Text style={styles.floatingButtonText}>Link</Text>
+                        <AppText style={styles.floatingButtonText}>Link</AppText>
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -527,9 +527,9 @@ export default function StoryPreviewModal({
                         onPress={() => setShowNotificationModal(true)}
                     >
                         <Ionicons name="notifications" size={24} color="#fff" />
-                        <Text style={styles.floatingButtonText}>
+                        <AppText style={styles.floatingButtonText}>
                             {notificationTitle?.trim() ? 'Notificação (custom)' : 'Notificação'}
-                        </Text>
+                        </AppText>
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -550,13 +550,13 @@ export default function StoryPreviewModal({
                     <View style={styles.modalOverlay}>
                         <View style={styles.modalContent}>
                             <View style={styles.modalHeader}>
-                                <Text style={styles.modalTitle}>Adicionar Título</Text>
+                                <AppText style={styles.modalTitle}>Adicionar Título</AppText>
                                 <TouchableOpacity onPress={() => setShowTitleModal(false)}>
                                     <Ionicons name="close" size={24} color="#333" />
                                 </TouchableOpacity>
                             </View>
 
-                            <TextInput
+                            <AppTextInput 
                                 style={styles.modalInput}
                                 placeholder="Digite o título do story..."
                                 placeholderTextColor="#666"
@@ -569,9 +569,9 @@ export default function StoryPreviewModal({
                             {/* Dica de uso dos gestos */}
                             <View style={styles.gestureInfoBox}>
                                 <Ionicons name="information-circle-outline" size={18} color="#1e3a8a" />
-                                <Text style={styles.gestureInfoText}>
-                                    Use <Text style={styles.gestureInfoBold}>1 dedo</Text> para arrastar e <Text style={styles.gestureInfoBold}>2 dedos</Text> para aumentar/diminuir
-                                </Text>
+                                <AppText style={styles.gestureInfoText}>
+                                    Use <AppText style={styles.gestureInfoBold}>1 dedo</AppText> para arrastar e <AppText style={styles.gestureInfoBold}>2 dedos</AppText> para aumentar/diminuir
+                                </AppText>
                             </View>
 
                             <View style={styles.modalActions}>
@@ -590,15 +590,15 @@ export default function StoryPreviewModal({
                                     style={[styles.modalButton, { flex: 1 }]}
                                     onPress={() => setShowTitleModal(false)}
                                 >
-                                    <Text style={styles.modalButtonText}>Cancelar</Text>
+                                    <AppText style={styles.modalButtonText}>Cancelar</AppText>
                                 </TouchableOpacity>
                                 <TouchableOpacity
                                     style={[styles.modalButton, styles.modalButtonPrimary, { flex: 1 }]}
                                     onPress={() => setShowTitleModal(false)}
                                 >
-                                    <Text style={[styles.modalButtonText, styles.modalButtonTextPrimary]}>
+                                    <AppText style={[styles.modalButtonText, styles.modalButtonTextPrimary]}>
                                         Salvar
-                                    </Text>
+                                    </AppText>
                                 </TouchableOpacity>
                             </View>
                         </View>
@@ -610,14 +610,14 @@ export default function StoryPreviewModal({
                     <View style={styles.modalOverlay}>
                         <View style={styles.modalContent}>
                             <View style={styles.modalHeader}>
-                                <Text style={styles.modalTitle}>Adicionar Link</Text>
+                                <AppText style={styles.modalTitle}>Adicionar Link</AppText>
                                 <TouchableOpacity onPress={() => setShowLinkModal(false)}>
                                     <Ionicons name="close" size={24} color="#333" />
                                 </TouchableOpacity>
                             </View>
 
                             <View style={styles.linkTypeContainer}>
-                                <Text style={styles.modalLabel}>Tipo de link:</Text>
+                                <AppText style={styles.modalLabel}>Tipo de link:</AppText>
                                 <View style={styles.linkTypeButtons}>
                                     {['whatsapp', 'phone', 'email', 'website'].map((type) => (
                                         <TouchableOpacity
@@ -628,18 +628,18 @@ export default function StoryPreviewModal({
                                             ]}
                                             onPress={() => onLinkTypeChange(type)}
                                         >
-                                            <Text style={[
+                                            <AppText style={[
                                                 styles.linkTypeButtonText,
                                                 linkType === type && styles.linkTypeButtonTextActive
                                             ]}>
                                                 {type.charAt(0).toUpperCase() + type.slice(1)}
-                                            </Text>
+                                            </AppText>
                                         </TouchableOpacity>
                                     ))}
                                 </View>
                             </View>
 
-                            <TextInput
+                            <AppTextInput 
                                 style={styles.modalInput}
                                 placeholder={getLinkPlaceholder(linkType)}
                                 placeholderTextColor="#666"
@@ -648,7 +648,7 @@ export default function StoryPreviewModal({
                                 keyboardType={linkType === 'phone' ? 'phone-pad' : 'url'}
                             />
 
-                            <TextInput
+                            <AppTextInput 
                                 style={styles.modalInput}
                                 placeholder="Texto do botão (ex: Fale conosco)"
                                 placeholderTextColor="#666"
@@ -673,15 +673,15 @@ export default function StoryPreviewModal({
                                     style={[styles.modalButton, { flex: 1 }]}
                                     onPress={() => setShowLinkModal(false)}
                                 >
-                                    <Text style={styles.modalButtonText}>Cancelar</Text>
+                                    <AppText style={styles.modalButtonText}>Cancelar</AppText>
                                 </TouchableOpacity>
                                 <TouchableOpacity
                                     style={[styles.modalButton, styles.modalButtonPrimary, { flex: 1 }]}
                                     onPress={() => setShowLinkModal(false)}
                                 >
-                                    <Text style={[styles.modalButtonText, styles.modalButtonTextPrimary]}>
+                                    <AppText style={[styles.modalButtonText, styles.modalButtonTextPrimary]}>
                                         Salvar
-                                    </Text>
+                                    </AppText>
                                 </TouchableOpacity>
                             </View>
                         </View>
@@ -693,17 +693,17 @@ export default function StoryPreviewModal({
                     <View style={styles.modalOverlay}>
                         <View style={styles.modalContent}>
                             <View style={styles.modalHeader}>
-                                <Text style={styles.modalTitle}>Texto da Notificação</Text>
+                                <AppText style={styles.modalTitle}>Texto da Notificação</AppText>
                                 <TouchableOpacity onPress={() => setShowNotificationModal(false)}>
                                     <Ionicons name="close" size={24} color="#333" />
                                 </TouchableOpacity>
                             </View>
 
-                            <Text style={styles.modalDescription}>
+                            <AppText style={styles.modalDescription}>
                                 Personalize a mensagem enviada no push quando o story ficar ativo. Deixe vazio para usar o texto padrão.
-                            </Text>
+                            </AppText>
 
-                            <TextInput
+                            <AppTextInput 
                                 style={[styles.modalInput, styles.modalTextarea]}
                                 placeholder="Ex: Oferta especial disponível por tempo limitado!"
                                 placeholderTextColor="#666"
@@ -714,9 +714,9 @@ export default function StoryPreviewModal({
                                 numberOfLines={3}
                             />
 
-                            <Text style={styles.charCounter}>
+                            <AppText style={styles.charCounter}>
                                 {(notificationTitle?.length ?? 0)}/140
-                            </Text>
+                            </AppText>
 
                             <View style={styles.modalActions}>
                                 {notificationTitle?.trim() ? (
@@ -734,15 +734,15 @@ export default function StoryPreviewModal({
                                     style={[styles.modalButton, { flex: 1 }]}
                                     onPress={() => setShowNotificationModal(false)}
                                 >
-                                    <Text style={styles.modalButtonText}>Cancelar</Text>
+                                    <AppText style={styles.modalButtonText}>Cancelar</AppText>
                                 </TouchableOpacity>
                                 <TouchableOpacity
                                     style={[styles.modalButton, styles.modalButtonPrimary, { flex: 1 }]}
                                     onPress={() => setShowNotificationModal(false)}
                                 >
-                                    <Text style={[styles.modalButtonText, styles.modalButtonTextPrimary]}>
+                                    <AppText style={[styles.modalButtonText, styles.modalButtonTextPrimary]}>
                                         Salvar
-                                    </Text>
+                                    </AppText>
                                 </TouchableOpacity>
                             </View>
                         </View>

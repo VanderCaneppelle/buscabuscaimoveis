@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
     View,
-    Text,
     StyleSheet,
     FlatList,
     TouchableOpacity,
@@ -18,6 +17,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useFavoritesStore } from '../stores/favoritesStore';
 import StandardHeader from './StandardHeader';
 import PropertyCard from './PropertyCard';
+import AppText from './AppText';
 
 const { width } = Dimensions.get('window');
 
@@ -201,15 +201,15 @@ export default function FavoritesScreen({ navigation }) {
                     ListEmptyComponent={
                         <View style={styles.emptyContainer}>
                             <Ionicons name="heart-outline" size={64} color="#bdc3c7" />
-                            <Text style={styles.emptyText}>Nenhum favorito ainda</Text>
-                            <Text style={styles.emptySubtext}>
+                            <AppText style={styles.emptyText}>Nenhum favorito ainda</AppText>
+                            <AppText style={styles.emptySubtext}>
                                 Adicione imóveis aos favoritos para vê-los aqui
-                            </Text>
+                            </AppText>
                             <TouchableOpacity
                                 style={styles.browseButton}
                                 onPress={() => navigation.navigate('Busca')}
                             >
-                                <Text style={styles.browseButtonText}>Procurar Imóveis</Text>
+                                <AppText style={styles.browseButtonText}>Procurar Imóveis</AppText>
                             </TouchableOpacity>
                         </View>
                     }

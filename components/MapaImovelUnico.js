@@ -6,12 +6,12 @@
 import React, { useState, useEffect } from 'react';
 import {
     View,
-    Text,
     StyleSheet,
     TouchableOpacity,
     ActivityIndicator,
     Platform,
 } from 'react-native';
+import AppText from "../components/AppText";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import MapView, { Marker, PROVIDER_GOOGLE, PROVIDER_DEFAULT } from 'react-native-maps';
@@ -44,15 +44,15 @@ export default function MapaImovelUnico({ navigation, route }) {
                     >
                         <Ionicons name="arrow-back" size={24} color="#00335e" />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Erro de Localização</Text>
+                    <AppText style={styles.headerTitle}>Erro de Localização</AppText>
                     <View style={styles.headerSpacer} />
                 </View>
                 <View style={styles.errorContainer}>
                     <Ionicons name="location-outline" size={64} color="#ef4444" />
-                    <Text style={styles.errorTitle}>Localização não disponível</Text>
-                    <Text style={styles.errorMessage}>
+                    <AppText style={styles.errorTitle}>Localização não disponível</AppText>
+                    <AppText style={styles.errorMessage}>
                         Este imóvel não possui coordenadas válidas para exibir no mapa.
-                    </Text>
+                    </AppText>
                 </View>
             </SafeAreaView>
         );
@@ -83,7 +83,7 @@ export default function MapaImovelUnico({ navigation, route }) {
         return (
             <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color="#00335e" />
-                <Text style={styles.loadingText}>Carregando localização...</Text>
+                <AppText style={styles.loadingText}>Carregando localização...</AppText>
             </View>
         );
     }
@@ -99,9 +99,9 @@ export default function MapaImovelUnico({ navigation, route }) {
                     <Ionicons name="arrow-back" size={24} color="#00335e" />
                 </TouchableOpacity>
 
-                <Text style={styles.headerTitle} numberOfLines={1}>
+                <AppText style={styles.headerTitle} numberOfLines={1}>
                     📍 {property.title || 'Imóvel'}
-                </Text>
+                </AppText>
 
                 <View style={styles.headerSpacer} />
             </View>
@@ -137,17 +137,17 @@ export default function MapaImovelUnico({ navigation, route }) {
                 {/* Informações da propriedade fixas no bottom */}
                 <View style={styles.propertyInfo}>
                     <View style={styles.propertyHeader}>
-                        <Text style={styles.propertyTitle} numberOfLines={2}>
+                        <AppText style={styles.propertyTitle} numberOfLines={2}>
                             {property.title || 'Sem título'}
-                        </Text>
-                        <Text style={styles.propertyPrice}>
+                        </AppText>
+                        <AppText style={styles.propertyPrice}>
                             R$ {property.price ? property.price.toLocaleString('pt-BR') : '0'}
-                        </Text>
+                        </AppText>
                     </View>
 
                     <View style={styles.propertyLocation}>
                         <Ionicons name="location" size={16} color="#6b7280" />
-                        <Text style={styles.locationText}>
+                        <AppText style={styles.locationText}>
                             {(() => {
                                 const parts = [
                                     property.address?.trim(),
@@ -159,7 +159,7 @@ export default function MapaImovelUnico({ navigation, route }) {
                                     ? parts.join(', ') 
                                     : 'Localização não informada';
                             })()}
-                        </Text>
+                        </AppText>
                     </View>
 
                     {/* Características básicas */}
@@ -167,19 +167,19 @@ export default function MapaImovelUnico({ navigation, route }) {
                         {property.bedrooms && property.bedrooms > 0 ? (
                             <View style={styles.feature}>
                                 <Ionicons name="bed" size={16} color="#6b7280" />
-                                <Text style={styles.featureText}>{String(property.bedrooms)} quartos</Text>
+                                <AppText style={styles.featureText}>{String(property.bedrooms)} quartos</AppText>
                             </View>
                         ) : null}
                         {property.bathrooms && property.bathrooms > 0 ? (
                             <View style={styles.feature}>
                                 <Ionicons name="water" size={16} color="#6b7280" />
-                                <Text style={styles.featureText}>{String(property.bathrooms)} banheiros</Text>
+                                <AppText style={styles.featureText}>{String(property.bathrooms)} banheiros</AppText>
                             </View>
                         ) : null}
                         {property.area && property.area > 0 ? (
                             <View style={styles.feature}>
                                 <Ionicons name="resize" size={16} color="#6b7280" />
-                                <Text style={styles.featureText}>{String(property.area)}m²</Text>
+                                <AppText style={styles.featureText}>{String(property.area)}m²</AppText>
                             </View>
                         ) : null}
                     </View>

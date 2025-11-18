@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import {
     View,
-    Text,
     StyleSheet,
     Modal,
     TouchableOpacity,
     FlatList,
-    TextInput,
     ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { RealtorService } from '../../lib/realtorService';
+import AppText from "../../components/AppText";
+import AppTextInput from "../../components/AppTextInput";
 
 /**
  * Modal para selecionar corretor
@@ -77,13 +77,13 @@ export default function RealtorsFilterModal({ visible, onClose, onSelectRealtor,
                 activeOpacity={0.7}
             >
                 <View style={styles.realtorInfo}>
-                    <Text style={styles.realtorName}>{item.full_name}</Text>
+                    <AppText style={styles.realtorName}>{item.full_name}</AppText>
                     {item.email && (
-                        <Text style={styles.realtorEmail}>{item.email}</Text>
+                        <AppText style={styles.realtorEmail}>{item.email}</AppText>
                     )}
-                    <Text style={styles.propertyCount}>
+                    <AppText style={styles.propertyCount}>
                         {item.property_count} {item.property_count === 1 ? 'imóvel' : 'imóveis'}
-                    </Text>
+                    </AppText>
                 </View>
                 {isSelected && (
                     <Ionicons name="checkmark-circle" size={24} color="#00335e" />
@@ -103,7 +103,7 @@ export default function RealtorsFilterModal({ visible, onClose, onSelectRealtor,
                 <View style={styles.modalContainer}>
                     {/* Header */}
                     <View style={styles.header}>
-                        <Text style={styles.title}>Selecionar Corretor</Text>
+                        <AppText style={styles.title}>Selecionar Corretor</AppText>
                         <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                             <Ionicons name="close" size={28} color="#666" />
                         </TouchableOpacity>
@@ -112,7 +112,7 @@ export default function RealtorsFilterModal({ visible, onClose, onSelectRealtor,
                     {/* Busca */}
                     <View style={styles.searchContainer}>
                         <Ionicons name="search" size={20} color="#999" style={styles.searchIcon} />
-                        <TextInput
+                        <AppTextInput 
                             style={styles.searchInput}
                             placeholder="Buscar corretor..."
                             placeholderTextColor="#999"
@@ -131,16 +131,16 @@ export default function RealtorsFilterModal({ visible, onClose, onSelectRealtor,
                     {loading ? (
                         <View style={styles.loadingContainer}>
                             <ActivityIndicator size="large" color="#00335e" />
-                            <Text style={styles.loadingText}>Carregando corretores...</Text>
+                            <AppText style={styles.loadingText}>Carregando corretores...</AppText>
                         </View>
                     ) : filteredRealtors.length === 0 ? (
                         <View style={styles.emptyContainer}>
                             <Ionicons name="people-outline" size={64} color="#ccc" />
-                            <Text style={styles.emptyText}>
+                            <AppText style={styles.emptyText}>
                                 {searchQuery 
                                     ? 'Nenhum corretor encontrado' 
                                     : 'Nenhum corretor com imóveis disponível'}
-                            </Text>
+                            </AppText>
                         </View>
                     ) : (
                         <FlatList
@@ -161,7 +161,7 @@ export default function RealtorsFilterModal({ visible, onClose, onSelectRealtor,
                             activeOpacity={0.8}
                         >
                             <Ionicons name="close-circle-outline" size={20} color="#00335e" />
-                            <Text style={styles.clearButtonText}>Limpar Filtro</Text>
+                            <AppText style={styles.clearButtonText}>Limpar Filtro</AppText>
                         </TouchableOpacity>
                     </View>
                 </View>

@@ -1,7 +1,8 @@
 import React, { useCallback } from 'react';
-import { TouchableOpacity, View, Text } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFavoritesStore } from '../stores/favoritesStore';
+import AppText from './AppText';
 
 /**
  * FavoriteButton - Botão de selecionar usando Zustand
@@ -39,7 +40,7 @@ const FavoriteButton = React.memo(({ propertyId, disabled }) => {
                     color={isFavorited ? '#00335e' : '#666'}
                 />
             </TouchableOpacity>
-            <Text style={{
+            <AppText style={{
                 fontSize: 9,
                 color: '#fff',
                 marginTop: 2,
@@ -49,8 +50,8 @@ const FavoriteButton = React.memo(({ propertyId, disabled }) => {
                 paddingVertical: 1,
                 borderRadius: 3,
             }}>
-                {isFavorited ? 'Selecionado' : 'Selecionar'}
-            </Text>
+                {isFavorited ? 'Adicionado' : 'Adicionar'}
+            </AppText>
         </View>
     );
 }); // ✨ Removida comparação customizada - deixa Zustand notificar

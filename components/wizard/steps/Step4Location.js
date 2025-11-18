@@ -1,9 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { 
     View, 
-    Text, 
     StyleSheet, 
-    TextInput, 
     ScrollView, 
     TouchableOpacity,
     ActivityIndicator,
@@ -13,6 +11,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import MapaEscolherEndereco from '../../MapaEscolherEndereco';
 import { searchAddresses } from '../../../lib/geocodingService';
+import AppText from '../../AppText';
+import AppTextInput from '../../AppTextInput';
 
 export default function Step3Location({ formData, updateFormData }) {
     const [addressQuery, setAddressQuery] = useState('');
@@ -144,10 +144,10 @@ export default function Step3Location({ formData, updateFormData }) {
             <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
                 <View style={styles.content}>
                     {/* Header */}
-                    <Text style={styles.title}>Onde fica o imóvel?</Text>
-                    <Text style={styles.subtitle}>
+                    <AppText style={styles.title}>Onde fica o imóvel?</AppText>
+                    <AppText style={styles.subtitle}>
                         Digite o endereço ou escolha no mapa
-                    </Text>
+                    </AppText>
 
                     {/* Search Input */}
                     <View style={styles.searchContainer}>
@@ -157,7 +157,7 @@ export default function Step3Location({ formData, updateFormData }) {
                             color="#6B7280" 
                             style={styles.searchIcon} 
                         />
-                        <TextInput
+                        <AppTextInput
                             style={styles.searchInput}
                             value={addressQuery}
                             onChangeText={handleAddressSearch}
@@ -185,11 +185,11 @@ export default function Step3Location({ formData, updateFormData }) {
                                     >
                                         <Ionicons name="location" size={20} color="#3498db" />
                                         <View style={styles.suggestionTextContainer}>
-                                            <Text style={styles.suggestionAddress}>{item.address}</Text>
-                                            <Text style={styles.suggestionLocation}>
+                                            <AppText style={styles.suggestionAddress}>{item.address}</AppText>
+                                            <AppText style={styles.suggestionLocation}>
                                                 {item.neighborhood ? `${item.neighborhood}, ` : ''}
                                                 {item.city}, {item.state}
-                                            </Text>
+                                            </AppText>
                                         </View>
                                     </TouchableOpacity>
                                 )}
@@ -204,7 +204,7 @@ export default function Step3Location({ formData, updateFormData }) {
                         onPress={() => setShowMapPicker(true)}
                     >
                         <Ionicons name="map" size={20} color="#3498db" />
-                        <Text style={styles.mapButtonText}>Escolher no mapa</Text>
+                        <AppText style={styles.mapButtonText}>Escolher no mapa</AppText>
                     </TouchableOpacity>
 
                     {/* Selected Address Display */}
@@ -212,25 +212,25 @@ export default function Step3Location({ formData, updateFormData }) {
                         <View style={styles.selectedAddressContainer}>
                             <View style={styles.selectedAddressHeader}>
                                 <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-                                <Text style={styles.selectedAddressTitle}>Endereço selecionado</Text>
+                                <AppText style={styles.selectedAddressTitle}>Endereço selecionado</AppText>
                             </View>
                             <View style={styles.selectedAddressContent}>
-                                <Text style={styles.selectedAddressText}>{formData.address}</Text>
+                                <AppText style={styles.selectedAddressText}>{formData.address}</AppText>
                                 {formData.neighborhood && (
-                                    <Text style={styles.selectedAddressText}>{formData.neighborhood}</Text>
+                                    <AppText style={styles.selectedAddressText}>{formData.neighborhood}</AppText>
                                 )}
-                                <Text style={styles.selectedAddressText}>
+                                <AppText style={styles.selectedAddressText}>
                                     {formData.city}, {formData.state}
-                                </Text>
+                                </AppText>
                                 {formData.zipCode && (
-                                    <Text style={styles.selectedAddressText}>CEP: {formData.zipCode}</Text>
+                                    <AppText style={styles.selectedAddressText}>CEP: {formData.zipCode}</AppText>
                                 )}
                                 {formData.latitude && formData.longitude && (
                                     <View style={styles.coordinatesContainer}>
                                         <Ionicons name="location" size={14} color="#047857" style={styles.coordIcon} />
-                                        <Text style={styles.coordinatesText}>
+                                        <AppText style={styles.coordinatesText}>
                                             Coordenadas: {parseFloat(formData.latitude).toFixed(6)}, {parseFloat(formData.longitude).toFixed(6)}
-                                        </Text>
+                                        </AppText>
                                     </View>
                                 )}
                             </View>
@@ -239,7 +239,7 @@ export default function Step3Location({ formData, updateFormData }) {
                                 onPress={clearAddress}
                             >
                                 <Ionicons name="create-outline" size={16} color="#3498db" />
-                                <Text style={styles.editButtonText}>Alterar endereço</Text>
+                                <AppText style={styles.editButtonText}>Alterar endereço</AppText>
                             </TouchableOpacity>
                         </View>
                     )}

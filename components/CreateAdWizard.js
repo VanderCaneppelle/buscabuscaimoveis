@@ -3,7 +3,6 @@ import {
     View,
     StyleSheet,
     TouchableOpacity,
-    Text,
     Alert,
     Animated,
     Dimensions,
@@ -19,6 +18,7 @@ import { useUserPlanStore } from '../stores/userPlanStore';
 import { validateMediaLimitsByPlan } from '../lib/validation/mediaLimits';
 import { PropertyService } from '../lib/propertyService';
 import { useFocusEffect } from '@react-navigation/native';
+import AppText from './AppText';
 
 // Steps
 import ProgressIndicator from './wizard/ProgressIndicator';
@@ -374,7 +374,7 @@ export default function CreateAdWizard({ navigation }) {
                 >
                     <Ionicons name="arrow-back" size={24} color="#1F2937" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Novo Anúncio</Text>
+                <AppText style={styles.headerTitle}>Novo Anúncio</AppText>
                 <View style={styles.backButton} />
             </View>
 
@@ -394,7 +394,7 @@ export default function CreateAdWizard({ navigation }) {
                     onPress={handleBack}
                 >
                     <Ionicons name="chevron-back" size={20} color="#6B7280" />
-                    <Text style={styles.secondaryButtonText}>Voltar</Text>
+                    <AppText style={styles.secondaryButtonText}>Voltar</AppText>
                 </TouchableOpacity>
             )}
             <TouchableOpacity
@@ -406,7 +406,7 @@ export default function CreateAdWizard({ navigation }) {
                 onPress={handleNext}
                 disabled={submitting}
             >
-                <Text style={styles.primaryButtonText}>{getButtonText()}</Text>
+                <AppText style={styles.primaryButtonText}>{getButtonText()}</AppText>
                 {currentStep < TOTAL_STEPS && (
                     <Ionicons name="chevron-forward" size={20} color="#fff" />
                 )}
@@ -418,8 +418,8 @@ export default function CreateAdWizard({ navigation }) {
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
                         <Ionicons name="alert-circle" size={48} color="#F59E0B" />
-                        <Text style={styles.modalTitle}>Limite atingido</Text>
-                        <Text style={styles.modalMessage}>{createAdReason}</Text>
+                        <AppText style={styles.modalTitle}>Limite atingido</AppText>
+                        <AppText style={styles.modalMessage}>{createAdReason}</AppText>
                         <TouchableOpacity
                             style={styles.modalButton}
                             onPress={() => {
@@ -427,7 +427,7 @@ export default function CreateAdWizard({ navigation }) {
                                 navigation.goBack();
                             }}
                         >
-                            <Text style={styles.modalButtonText}>Entendi</Text>
+                            <AppText style={styles.modalButtonText}>Entendi</AppText>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -438,10 +438,10 @@ export default function CreateAdWizard({ navigation }) {
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
                         <ActivityIndicator size="large" color="#ffcc1e" />
-                        <Text style={styles.modalTitle}>Criando anúncio...</Text>
-                        <Text style={styles.modalMessage}>
+                        <AppText style={styles.modalTitle}>Criando anúncio...</AppText>
+                        <AppText style={styles.modalMessage}>
                             {uploadProgress}% concluído
-                        </Text>
+                        </AppText>
                         <View style={styles.progressBar}>
                             <View style={[styles.progressFill, { width: `${uploadProgress}%` }]} />
                         </View>

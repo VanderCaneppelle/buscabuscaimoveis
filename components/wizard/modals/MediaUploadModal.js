@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
 import {
     View,
-    Text,
     StyleSheet,
     Modal,
     TouchableOpacity,
     Alert,
-    ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import AppText from "../../../components/AppText";
 
 export default function MediaUploadModal({ 
     visible, 
@@ -152,28 +151,28 @@ export default function MediaUploadModal({
                 <View style={styles.modal}>
                     <View style={styles.handle} />
                     
-                    <Text style={styles.title}>Adicionar Fotos</Text>
-                    <Text style={styles.subtitle}>
+                    <AppText style={styles.title}>Adicionar Fotos</AppText>
+                    <AppText style={styles.subtitle}>
                         {imagesOnly 
                             ? 'Escolha como deseja adicionar fotos'
                             : 'Escolha como deseja adicionar fotos ou vídeos'
                         }
-                    </Text>
+                    </AppText>
 
                     {/* Limits Info */}
                     <View style={styles.limitsContainer}>
                         <View style={styles.limitItem}>
                             <Ionicons name="images" size={16} color="#3498db" />
-                            <Text style={styles.limitText}>
+                            <AppText style={styles.limitText}>
                                 {imagesCount}/{maxImages} fotos
-                            </Text>
+                            </AppText>
                         </View>
                         {!imagesOnly && (
                             <View style={styles.limitItem}>
                                 <Ionicons name="videocam" size={16} color="#e74c3c" />
-                                <Text style={styles.limitText}>
+                                <AppText style={styles.limitText}>
                                     {videosCount}/{maxVideos} vídeos
-                                </Text>
+                                </AppText>
                             </View>
                         )}
                     </View>
@@ -188,8 +187,8 @@ export default function MediaUploadModal({
                             <View style={[styles.optionIcon, { backgroundColor: '#3498db15' }]}>
                                 <Ionicons name="camera" size={28} color="#3498db" />
                             </View>
-                            <Text style={styles.optionTitle}>Tirar Foto</Text>
-                            <Text style={styles.optionDescription}>Use a câmera</Text>
+                            <AppText style={styles.optionTitle}>Tirar Foto</AppText>
+                            <AppText style={styles.optionDescription}>Use a câmera</AppText>
                         </TouchableOpacity>
 
                         <TouchableOpacity
@@ -200,8 +199,8 @@ export default function MediaUploadModal({
                             <View style={[styles.optionIcon, { backgroundColor: '#9b59b615' }]}>
                                 <Ionicons name="images" size={28} color="#9b59b6" />
                             </View>
-                            <Text style={styles.optionTitle}>Galeria</Text>
-                            <Text style={styles.optionDescription}>Selecione fotos</Text>
+                            <AppText style={styles.optionTitle}>Galeria</AppText>
+                            <AppText style={styles.optionDescription}>Selecione fotos</AppText>
                         </TouchableOpacity>
 
                         {!imagesOnly && (
@@ -213,11 +212,11 @@ export default function MediaUploadModal({
                                 <View style={[styles.optionIcon, { backgroundColor: '#e74c3c15' }]}>
                                     <Ionicons name="videocam" size={28} color="#e74c3c" />
                                 </View>
-                                <Text style={styles.optionTitle}>Vídeo</Text>
-                                <Text style={styles.optionDescription}>Selecione vídeo</Text>
+                                <AppText style={styles.optionTitle}>Vídeo</AppText>
+                                <AppText style={styles.optionDescription}>Selecione vídeo</AppText>
                                 {!canAddVideos && (
                                     <View style={styles.disabledBadge}>
-                                        <Text style={styles.disabledBadgeText}>Limite</Text>
+                                        <AppText style={styles.disabledBadgeText}>Limite</AppText>
                                     </View>
                                 )}
                             </TouchableOpacity>
@@ -229,7 +228,7 @@ export default function MediaUploadModal({
                         style={styles.cancelButton}
                         onPress={onClose}
                     >
-                        <Text style={styles.cancelButtonText}>Cancelar</Text>
+                        <AppText style={styles.cancelButtonText}>Cancelar</AppText>
                     </TouchableOpacity>
                 </View>
             </TouchableOpacity>

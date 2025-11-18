@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import {
     View,
-    Text,
-    TextInput,
     TouchableOpacity,
     StyleSheet,
     Alert,
@@ -20,6 +18,8 @@ import { CONFIRM_EMAIL_URL } from '../lib/config';
 import TermsAndPrivacyScreen from './TermsAndPrivacyScreen';
 import { saveTermsAcceptance } from '../lib/termsConfig';
 import { translateError } from '../lib/errorMessages';
+import AppText from './AppText';
+import AppTextInput from './AppTextInput';
 
 export default function SignUpForm({ onBack }) {
     const [formData, setFormData] = useState({
@@ -171,16 +171,16 @@ export default function SignUpForm({ onBack }) {
                             <View style={styles.iconContainer}>
                                 <Ionicons name="person-add" size={60} color="#3498db" />
                             </View>
-                            <Text style={styles.title}>Criar Conta</Text>
-                            <Text style={styles.subtitle}>
+                            <AppText style={styles.title}>Criar Conta</AppText>
+                            <AppText style={styles.subtitle}>
                                 Preencha seus dados para começar
-                            </Text>
+                            </AppText>
 
                             <View style={styles.form}>
                                 {/* Nome Completo */}
                                 <View style={styles.inputContainer}>
                                     <Ionicons name="person-outline" size={20} color="#7f8c8d" style={styles.inputIcon} />
-                                    <TextInput
+                                    <AppTextInput
                                         style={styles.input}
                                         placeholder="Nome completo (ex: João Silva) *"
                                         placeholderTextColor="#7f8c8d"
@@ -193,7 +193,7 @@ export default function SignUpForm({ onBack }) {
                                 {/* Email */}
                                 <View style={styles.inputContainer}>
                                     <Ionicons name="mail-outline" size={20} color="#7f8c8d" style={styles.inputIcon} />
-                                    <TextInput
+                                    <AppTextInput
                                         style={styles.input}
                                         placeholder="Email *"
                                         placeholderTextColor="#7f8c8d"
@@ -208,7 +208,7 @@ export default function SignUpForm({ onBack }) {
                                 {/* Telefone */}
                                 <View style={styles.inputContainer}>
                                     <Ionicons name="call-outline" size={20} color="#7f8c8d" style={styles.inputIcon} />
-                                    <TextInput
+                                    <AppTextInput
                                         style={styles.input}
                                         placeholder="Telefone *"
                                         placeholderTextColor="#7f8c8d"
@@ -221,7 +221,7 @@ export default function SignUpForm({ onBack }) {
                                 {/* Senha */}
                                 <View style={styles.inputContainer}>
                                     <Ionicons name="lock-closed-outline" size={20} color="#7f8c8d" style={styles.inputIcon} />
-                                    <TextInput
+                                    <AppTextInput
                                         style={styles.input}
                                         placeholder="Senha *"
                                         placeholderTextColor="#7f8c8d"
@@ -232,13 +232,13 @@ export default function SignUpForm({ onBack }) {
                                     />
                                 </View>
                                 <View style={styles.passwordRequirementsContainer}>
-                                    <Text style={styles.passwordRequirements}>A senha deve ter pelo menos 6 caracteres</Text>
+                                    <AppText style={styles.passwordRequirements}>A senha deve ter pelo menos 6 caracteres</AppText>
                                 </View>
 
                                 {/* Confirmar Senha */}
                                 <View style={styles.inputContainer}>
                                     <Ionicons name="lock-closed-outline" size={20} color="#7f8c8d" style={styles.inputIcon} />
-                                    <TextInput
+                                    <AppTextInput
                                         style={styles.input}
                                         placeholder="Confirmar senha *"
                                         placeholderTextColor="#7f8c8d"
@@ -253,7 +253,7 @@ export default function SignUpForm({ onBack }) {
                                 <View style={styles.switchContainer}>
                                     <View style={styles.switchLabel}>
                                         <Ionicons name="business-outline" size={20} color="#7f8c8d" style={styles.switchIcon} />
-                                        <Text style={styles.switchText}>Sou corretor de imóveis</Text>
+                                        <AppText style={styles.switchText}>Sou corretor de imóveis</AppText>
                                     </View>
                                     <Switch
                                         value={formData.isRealtor}
@@ -267,7 +267,7 @@ export default function SignUpForm({ onBack }) {
                                 {formData.isRealtor && (
                                     <View style={styles.inputContainer}>
                                         <Ionicons name="card-outline" size={20} color="#7f8c8d" style={styles.inputIcon} />
-                                        <TextInput
+                                        <AppTextInput
                                             style={styles.input}
                                             placeholder="CRECI *"
                                             placeholderTextColor="#7f8c8d"
@@ -282,7 +282,7 @@ export default function SignUpForm({ onBack }) {
                                 {formData.isRealtor && (
                                     <View style={styles.inputContainer}>
                                         <Ionicons name="business-outline" size={20} color="#7f8c8d" style={styles.inputIcon} />
-                                        <TextInput
+                                        <AppTextInput
                                             style={styles.input}
                                             placeholder="Nome da empresa"
                                             placeholderTextColor="#7f8c8d"
@@ -304,9 +304,9 @@ export default function SignUpForm({ onBack }) {
                                                 <Ionicons name="checkmark" size={16} color="#fff" />
                                             )}
                                         </View>
-                                        <Text style={styles.termsText}>
+                                        <AppText style={styles.termsText}>
                                             Li e aceito os{' '}
-                                            <Text
+                                            <AppText
                                                 style={styles.termsLink}
                                                 onPress={() => {
                                                     setTermsType('terms');
@@ -314,9 +314,9 @@ export default function SignUpForm({ onBack }) {
                                                 }}
                                             >
                                                 Termos de Uso
-                                            </Text>
+                                            </AppText>
                                             {' '}e{' '}
-                                            <Text
+                                            <AppText
                                                 style={styles.termsLink}
                                                 onPress={() => {
                                                     setTermsType('privacy');
@@ -324,8 +324,8 @@ export default function SignUpForm({ onBack }) {
                                                 }}
                                             >
                                                 Política de Privacidade
-                                            </Text>
-                                        </Text>
+                                            </AppText>
+                                        </AppText>
                                     </TouchableOpacity>
                                 </View>
 
@@ -341,9 +341,9 @@ export default function SignUpForm({ onBack }) {
                                         color="#fff"
                                         style={styles.buttonIcon}
                                     />
-                                    <Text style={styles.buttonText}>
+                                    <AppText style={styles.buttonText}>
                                         {isLoading ? 'Criando conta...' : !acceptedTerms ? 'Aceite os termos para continuar' : 'Criar Conta'}
-                                    </Text>
+                                    </AppText>
                                 </TouchableOpacity>
 
                                 {/* Botão Voltar */}
@@ -352,7 +352,7 @@ export default function SignUpForm({ onBack }) {
                                     onPress={onBack}
                                 >
                                     <Ionicons name="arrow-back-outline" size={16} color="#3498db" style={styles.backIcon} />
-                                    <Text style={styles.backText}>Voltar ao login</Text>
+                                    <AppText style={styles.backText}>Voltar ao login</AppText>
                                 </TouchableOpacity>
                             </View>
                         </View>

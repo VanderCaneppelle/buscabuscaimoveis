@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
     View,
-    Text,
     StyleSheet,
     FlatList,
     TouchableOpacity,
@@ -19,6 +18,7 @@ import { useBoostsStore } from '../stores/boostsStore';
 import { useUserPlanStore } from '../stores/userPlanStore';
 import StandardHeader from './StandardHeader';
 import AdBoostingScreen from './AdBoostingScreen';
+import AppText from './AppText';
 
 const { width } = Dimensions.get('window');
 
@@ -221,15 +221,15 @@ export default function DiscoverScreen({ navigation }) {
                     {/* Badge de Destaque */}
                     <View style={styles.boostBadge}>
                         <Ionicons name="rocket" size={14} color="#fff" />
-                        <Text style={styles.boostBadgeText}>DESTAQUE</Text>
+                        <AppText style={styles.boostBadgeText}>DESTAQUE</AppText>
                     </View>
 
                     {/* Indicador de quantidade de mídias */}
                     {hasMultipleMedia && (
                         <View style={styles.mediaCountBadge}>
-                            <Text style={styles.mediaCountText}>
+                            <AppText style={styles.mediaCountText}>
                                 {currentIndex + 1}/{displayMediaFiles.length}
-                            </Text>
+                            </AppText>
                         </View>
                     )}
 
@@ -239,13 +239,13 @@ export default function DiscoverScreen({ navigation }) {
                             {imageFiles.length > 0 && (
                                 <View style={styles.mediaTypeItem}>
                                     <Ionicons name="image" size={14} color="#fff" />
-                                    <Text style={styles.mediaTypeText}>{imageFiles.length}</Text>
+                                    <AppText style={styles.mediaTypeText}>{imageFiles.length}</AppText>
                                 </View>
                             )}
                             {videoFiles.length > 0 && (
                                 <View style={styles.mediaTypeItem}>
                                     <Ionicons name="videocam" size={14} color="#fff" />
-                                    <Text style={styles.mediaTypeText}>{videoFiles.length}</Text>
+                                    <AppText style={styles.mediaTypeText}>{videoFiles.length}</AppText>
                                 </View>
                             )}
                         </View>
@@ -253,49 +253,49 @@ export default function DiscoverScreen({ navigation }) {
                 </View>
 
                 <View style={styles.propertyInfo}>
-                    <Text style={styles.propertyTitle} numberOfLines={2}>
+                    <AppText style={styles.propertyTitle} numberOfLines={2}>
                         {property.title ?? 'Título indisponível'}
-                    </Text>
+                    </AppText>
 
-                    <Text style={styles.propertyLocation}>
+                    <AppText style={styles.propertyLocation}>
                         {property.neighborhood ?? 'Bairro indisponível'}, {property.city ?? 'Cidade indisponível'}
-                    </Text>
+                    </AppText>
                     <View style={styles.propertyDetails}>
                         {((property.sale_price ?? property.salePrice) && parseFloat(property.sale_price ?? property.salePrice) > 0) ? (
                             <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-                                <Text style={{ fontSize: 14, color: '#dc2626', textDecorationLine: 'line-through', marginBottom: 2 }}>
+                                <AppText style={{ fontSize: 14, color: '#dc2626', textDecorationLine: 'line-through', marginBottom: 2 }}>
                                     R$ {property.price?.toLocaleString('pt-BR') ?? 'Preço indisponível'}
-                                </Text>
-                                <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#059669' }}>
+                                </AppText>
+                                <AppText style={{ fontSize: 18, fontWeight: 'bold', color: '#059669' }}>
                                     R$ {(property.sale_price ?? property.salePrice)?.toLocaleString('pt-BR')}
-                                </Text>
+                                </AppText>
                             </View>
                         ) : (
-                            <Text style={styles.propertyPrice}>
+                            <AppText style={styles.propertyPrice}>
                                 R$ {property.price?.toLocaleString('pt-BR') ?? 'Preço indisponível'}
-                            </Text>
+                            </AppText>
                         )}
                         <View style={styles.propertyFeatures}>
                             {property.bedrooms && property.bedrooms > 0 ? (
-                                <Text style={styles.propertyFeature}>
+                                <AppText style={styles.propertyFeature}>
                                     {`${String(property.bedrooms)} quartos`}
-                                </Text>
+                                </AppText>
                             ) : null}
                             {property.bathrooms && property.bathrooms > 0 ? (
-                                <Text style={styles.propertyFeature}>
+                                <AppText style={styles.propertyFeature}>
                                     {`${String(property.bathrooms)} banheiros`}
-                                </Text>
+                                </AppText>
                             ) : null}
                             {property.area && property.area > 0 ? (
-                                <Text style={styles.propertyFeature}>
+                                <AppText style={styles.propertyFeature}>
                                     {`${String(property.area)}m²`}
-                                </Text>
+                                </AppText>
                             ) : null}
                         </View>
                     </View>
-                    <Text style={styles.propertyType}>
+                    <AppText style={styles.propertyType}>
                         {(property.property_type ?? '') + ' • ' + (property.transaction_type ?? '')}
-                    </Text>
+                    </AppText>
 
                     {/* Botão "Ver detalhes" para indicar que o card é clicável */}
                     <TouchableOpacity
@@ -303,7 +303,7 @@ export default function DiscoverScreen({ navigation }) {
                         onPress={handlePress}
                         activeOpacity={0.8}
                     >
-                        <Text style={styles.verDetalhesText}>Ver detalhes</Text>
+                        <AppText style={styles.verDetalhesText}>Ver detalhes</AppText>
                     </TouchableOpacity>
                 </View>
 
@@ -351,13 +351,13 @@ export default function DiscoverScreen({ navigation }) {
                             <View style={styles.ctaContainer}>
                                 <View style={styles.ctaCard}>
                                     <Ionicons name="ribbon" size={18} color="#6c5ce7" />
-                                    <Text style={styles.ctaText}>Quer dar mais visibilidade para seus anúncios?</Text>
+                                    <AppText style={styles.ctaText}>Quer dar mais visibilidade para seus anúncios?</AppText>
                                     <TouchableOpacity
                                         style={styles.ctaButton}
                                         onPress={() => navigation.navigate('Anuncie', { screen: 'AdBoosting' })}
                                     >
                                         <Ionicons name="rocket" size={16} color="#fff" />
-                                        <Text style={styles.ctaButtonText}>Impulsionar agora</Text>
+                                        <AppText style={styles.ctaButtonText}>Impulsionar agora</AppText>
                                     </TouchableOpacity>
                                 </View>
                             </View>
@@ -366,10 +366,10 @@ export default function DiscoverScreen({ navigation }) {
                     ListEmptyComponent={
                         <View style={styles.emptyContainer}>
                             <Ionicons name="home-outline" size={64} color="#bdc3c7" />
-                            <Text style={styles.emptyText}>Nenhum imóvel encontrado</Text>
-                            <Text style={styles.emptySubtext}>
+                            <AppText style={styles.emptyText}>Nenhum imóvel encontrado</AppText>
+                            <AppText style={styles.emptySubtext}>
                                 Tente novamente mais tarde
-                            </Text>
+                            </AppText>
                         </View>
                     }
                     contentContainerStyle={styles.listContainer}

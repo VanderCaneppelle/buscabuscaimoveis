@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
     View,
-    Text,
     StyleSheet,
     ScrollView,
     TouchableOpacity,
@@ -18,6 +17,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase.js';
 import StandardHeader from './StandardHeader';
 import { PlanService } from '../lib/planService';
+import AppText from './AppText';
 // Modal removido: fluxo migrado para telas dedicadas
 
 
@@ -436,7 +436,7 @@ export default function PaymentDetailsScreen({ route, navigation }) {
             <SafeAreaView style={styles.container}>
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color="#27ae60" />
-                    <Text style={styles.loadingText}>Processando pagamento...</Text>
+                    <AppText style={styles.loadingText}>Processando pagamento...</AppText>
                 </View>
             </SafeAreaView>
         );
@@ -460,13 +460,13 @@ export default function PaymentDetailsScreen({ route, navigation }) {
                     <View style={styles.planCard}>
                         <View style={styles.planHeader}>
                             <Ionicons name="star" size={24} color="#f39c12" />
-                            <Text style={styles.planName}>{plan.display_name || plan.name || 'Plano'}</Text>
+                            <AppText style={styles.planName}>{plan.display_name || plan.name || 'Plano'}</AppText>
                         </View>
 
                         <View style={styles.divider} />
 
                         <View style={styles.planFeatures}>
-                            <Text style={styles.featuresTitle}>Recursos Inclusos:</Text>
+                            <AppText style={styles.featuresTitle}>Recursos Inclusos:</AppText>
                             {getPlanFeatures().map((feature, index) => (
                                 <View key={index} style={styles.featureItem}>
                                     <Ionicons
@@ -474,7 +474,7 @@ export default function PaymentDetailsScreen({ route, navigation }) {
                                         size={20}
                                         style={styles.featureIcon}
                                     />
-                                    <Text style={styles.featureText}>{feature}</Text>
+                                    <AppText style={styles.featureText}>{feature}</AppText>
                                 </View>
                             ))}
                         </View>
@@ -483,7 +483,7 @@ export default function PaymentDetailsScreen({ route, navigation }) {
                     {/* Period Selection */}
                     {loadingPlans ? (
                         <View style={styles.periodSelectionCard}>
-                            <Text style={styles.periodSelectionTitle}>Selecione um plano</Text>
+                            <AppText style={styles.periodSelectionTitle}>Selecione um plano</AppText>
 
                             {/* Skeleton para Plano Anual */}
                             <View style={styles.periodOptionSkeleton}>
@@ -510,7 +510,7 @@ export default function PaymentDetailsScreen({ route, navigation }) {
                         </View>
                     ) : planOptions.monthly && planOptions.annual ? (
                         <View style={styles.periodSelectionCard}>
-                            <Text style={styles.periodSelectionTitle}>Selecione um plano</Text>
+                            <AppText style={styles.periodSelectionTitle}>Selecione um plano</AppText>
 
                             {/* Plano Anual */}
                             <TouchableOpacity
@@ -524,27 +524,27 @@ export default function PaymentDetailsScreen({ route, navigation }) {
                             >
                                 <View style={styles.periodOptionContent}>
                                     <View style={styles.periodOptionHeader}>
-                                        <Text style={[
+                                        <AppText style={[
                                             styles.periodOptionTitle,
                                             isOptionBlocked('annual') && styles.periodOptionTitleBlocked
                                         ]}>
                                             Anual
-                                        </Text>
+                                        </AppText>
                                         {isOptionBlocked('annual') ? (
                                             <View style={styles.currentBadge}>
-                                                <Text style={styles.currentText}>Atual</Text>
+                                                <AppText style={styles.currentText}>Atual</AppText>
                                             </View>
                                         ) : planOptions.monthly && planOptions.annual && (
                                             <View style={styles.savingsBadge}>
-                                                <Text style={styles.savingsText}>
+                                                <AppText style={styles.savingsText}>
                                                     Economize {Math.round((((planOptions.monthly.price * 12) - planOptions.annual.price) / (planOptions.monthly.price * 12)) * 100)}%
-                                                </Text>
+                                                </AppText>
                                             </View>
                                         )}
                                     </View>
-                                    <Text style={styles.periodOptionDescription}>
+                                    <AppText style={styles.periodOptionDescription}>
                                         R$ {planOptions.annual.price.toFixed(2).replace('.', ',')}/ano (R$ {(planOptions.annual.price / 12).toFixed(2).replace('.', ',')}/mês)
-                                    </Text>
+                                    </AppText>
                                 </View>
                                 <View style={[
                                     styles.radioButton,
@@ -572,24 +572,24 @@ export default function PaymentDetailsScreen({ route, navigation }) {
                             >
                                 <View style={styles.periodOptionContent}>
                                     <View style={styles.periodOptionHeader}>
-                                        <Text style={[
+                                        <AppText style={[
                                             styles.periodOptionTitle,
                                             isOptionBlocked('monthly') && styles.periodOptionTitleBlocked
                                         ]}>
                                             Mensal
-                                        </Text>
+                                        </AppText>
                                         {isOptionBlocked('monthly') && (
                                             <View style={styles.currentBadge}>
-                                                <Text style={styles.currentText}>Atual</Text>
+                                                <AppText style={styles.currentText}>Atual</AppText>
                                             </View>
                                         )}
                                     </View>
-                                    <Text style={[
+                                    <AppText style={[
                                         styles.periodOptionDescription,
                                         isOptionBlocked('monthly') && styles.periodOptionDescriptionBlocked
                                     ]}>
                                         R$ {planOptions.monthly.price.toFixed(2).replace('.', ',')}/mês
-                                    </Text>
+                                    </AppText>
                                 </View>
                                 <View style={[
                                     styles.radioButton,
@@ -612,9 +612,9 @@ export default function PaymentDetailsScreen({ route, navigation }) {
 
                         <View style={styles.mercadopagoInfo}>
                             <Ionicons name="shield-checkmark" size={20} color="#27ae60" />
-                            <Text style={styles.mercadopagoText}>
+                            <AppText style={styles.mercadopagoText}>
                                 Mercado Pago - Pagamento 100% seguro
-                            </Text>
+                            </AppText>
                         </View>
                     </View>
 
@@ -622,20 +622,20 @@ export default function PaymentDetailsScreen({ route, navigation }) {
                         <View style={styles.securityCard}>
                             <View style={styles.securityHeader}>
                                 <Ionicons name="lock-closed" size={20} color="#e74c3c" />
-                                <Text style={styles.securityTitle}>Informações de Segurança</Text>
+                                <AppText style={styles.securityTitle}>Informações de Segurança</AppText>
                             </View>
                             <View style={styles.securityItems}>
                                 <View style={styles.securityItem}>
                                     <Ionicons name="checkmark" size={16} color="#27ae60" />
-                                    <Text style={styles.securityText}>Dados criptografados</Text>
+                                    <AppText style={styles.securityText}>Dados criptografados</AppText>
                                 </View>
                                 <View style={styles.securityItem}>
                                     <Ionicons name="checkmark" size={16} color="#27ae60" />
-                                    <Text style={styles.securityText}>Pagamento processado pelo Mercado Pago</Text>
+                                    <AppText style={styles.securityText}>Pagamento processado pelo Mercado Pago</AppText>
                                 </View>
                                 <View style={styles.securityItem}>
                                     <Ionicons name="checkmark" size={16} color="#27ae60" />
-                                    <Text style={styles.securityText}>Nenhum dado bancário fica salvo</Text>
+                                    <AppText style={styles.securityText}>Nenhum dado bancário fica salvo</AppText>
                                 </View>
                             </View>
                         </View> */}
@@ -645,23 +645,23 @@ export default function PaymentDetailsScreen({ route, navigation }) {
                         <View style={styles.downgradeCard}>
                             <View style={styles.downgradeHeader}>
                                 <Ionicons name="warning" size={24} color="#f39c12" />
-                                <Text style={styles.downgradeTitle}>Atenção: Downgrade de Plano</Text>
+                                <AppText style={styles.downgradeTitle}>Atenção: Downgrade de Plano</AppText>
                             </View>
                             <View style={styles.downgradeContent}>
-                                <Text style={styles.downgradeText}>
-                                    Você está fazendo downgrade do plano <Text style={styles.planHighlight}>{currentPlan.display_name} </Text>
-                                    para o plano <Text style={styles.planHighlight}>{plan.display_name}</Text>.
-                                </Text>
-                                <Text style={styles.downgradeText}>
-                                    Anúncios ativos: <Text style={styles.adsHighlight}>{currentAdsCount}</Text>
-                                </Text>
-                                <Text style={styles.downgradeText}>
-                                    Limite do novo plano: <Text style={styles.adsHighlight}>{plan.max_ads}</Text>
-                                </Text>
+                                <AppText style={styles.downgradeText}>
+                                    Você está fazendo downgrade do plano <AppText style={styles.planHighlight}>{currentPlan.display_name} </AppText>
+                                    para o plano <AppText style={styles.planHighlight}>{plan.display_name}</AppText>.
+                                </AppText>
+                                <AppText style={styles.downgradeText}>
+                                    Anúncios ativos: <AppText style={styles.adsHighlight}>{currentAdsCount}</AppText>
+                                </AppText>
+                                <AppText style={styles.downgradeText}>
+                                    Limite do novo plano: <AppText style={styles.adsHighlight}>{plan.max_ads}</AppText>
+                                </AppText>
                                 {currentAdsCount > plan.max_ads && (
-                                    <Text style={styles.downgradeWarning}>
+                                    <AppText style={styles.downgradeWarning}>
                                         ⚠️ Você precisa remover {currentAdsCount - plan.max_ads} anúncio(s) antes de fazer o downgrade.
-                                    </Text>
+                                    </AppText>
                                 )}
                             </View>
                         </View>
@@ -674,9 +674,9 @@ export default function PaymentDetailsScreen({ route, navigation }) {
                         disabled={loading}
                     >
                         <Ionicons name="card" size={24} color="#fff" />
-                        <Text style={styles.paymentButtonText}>
+                        <AppText style={styles.paymentButtonText}>
                             Pagar com Mercado Pago
-                        </Text>
+                        </AppText>
                     </TouchableOpacity>
 
                     {/* Cancel Button */}
@@ -684,7 +684,7 @@ export default function PaymentDetailsScreen({ route, navigation }) {
                         style={styles.cancelButton}
                         onPress={() => navigation.goBack()}
                     >
-                        <Text style={styles.cancelButtonText}>Cancelar</Text>
+                        <AppText style={styles.cancelButtonText}>Cancelar</AppText>
                     </TouchableOpacity>
                 </ScrollView>
             </View>
@@ -700,7 +700,7 @@ export default function PaymentDetailsScreen({ route, navigation }) {
                         <TouchableOpacity onPress={() => setWebViewVisible(false)} style={{ padding: 8 }}>
                             <Ionicons name="close" size={24} color="#00335e" />
                         </TouchableOpacity>
-                        <Text style={{ marginLeft: 8, fontSize: 16, fontWeight: '600', color: '#00335e' }}>Pagamento Seguro</Text>
+                        <AppText style={{ marginLeft: 8, fontSize: 16, fontWeight: '600', color: '#00335e' }}>Pagamento Seguro</AppText>
                     </View>
                     {checkoutUrl ? (
                         <WebView
@@ -710,7 +710,7 @@ export default function PaymentDetailsScreen({ route, navigation }) {
                             renderLoading={() => (
                                 <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
                                     <ActivityIndicator size="large" color="#27ae60" />
-                                    <Text style={{ marginTop: 12, color: '#7f8c8d' }}>Carregando checkout...</Text>
+                                    <AppText style={{ marginTop: 12, color: '#7f8c8d' }}>Carregando checkout...</AppText>
                                 </View>
                             )}
                         />
@@ -735,19 +735,19 @@ export default function PaymentDetailsScreen({ route, navigation }) {
                             <Ionicons name="time-outline" size={48} color="#f39c12" />
                         </View>
 
-                        <Text style={styles.paymentInfoTitle}>Pagamento em Processamento</Text>
+                        <AppText style={styles.paymentInfoTitle}>Pagamento em Processamento</AppText>
 
-                        <Text style={styles.paymentInfoText}>
+                        <AppText style={styles.paymentInfoText}>
                             Ainda não detectamos seu pagamento, mas você pode concluir normalmente.
                             Assim que for aprovado, seu plano será ativado automaticamente.
-                        </Text>
+                        </AppText>
 
                         <View style={styles.paymentInfoButtons}>
                             <TouchableOpacity
                                 style={styles.paymentInfoButton}
                                 onPress={() => setShowPaymentInfoModal(false)}
                             >
-                                <Text style={styles.paymentInfoButtonText}>Entendi</Text>
+                                <AppText style={styles.paymentInfoButtonText}>Entendi</AppText>
                             </TouchableOpacity>
                         </View>
                     </View>

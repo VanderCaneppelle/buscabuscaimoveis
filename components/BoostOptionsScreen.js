@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
     View,
-    Text,
     StyleSheet,
     ScrollView,
     TouchableOpacity,
@@ -13,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { BoostService } from '../lib/boostService';
 import { useAuth } from '../contexts/AuthContext';
 import StandardHeader from './StandardHeader';
+import AppText from './AppText';
 
 export default function BoostOptionsScreen({ navigation, route }) {
     console.log('Rendered BoostOptionsScreen');
@@ -87,7 +87,7 @@ export default function BoostOptionsScreen({ navigation, route }) {
             >
                 {isPopular && (
                     <View style={styles.popularBadge}>
-                        <Text style={styles.popularText}>Mais Escolhido</Text>
+                        <AppText style={styles.popularText}>Mais Escolhido</AppText>
                     </View>
                 )}
 
@@ -95,29 +95,29 @@ export default function BoostOptionsScreen({ navigation, route }) {
                     <View style={styles.radioButton}>
                         {isSelected && <View style={styles.radioButtonInner} />}
                     </View>
-                    <Text style={styles.planDuration}>
+                    <AppText style={styles.planDuration}>
                         {plan.duration_days === 1 ? '1 Dia' : `${plan.duration_days} Dias`}
-                    </Text>
+                    </AppText>
                 </View>
 
                 <View style={styles.planPrice}>
-                    <Text style={styles.priceValue}>
+                    <AppText style={styles.priceValue}>
                         R$ {plan.price.toFixed(2).replace('.', ',')}
-                    </Text>
+                    </AppText>
                 </View>
 
                 <View style={styles.planFooter}>
                     {plan.duration_days > 1 && (
-                        <Text style={styles.pricePerDay}>
+                        <AppText style={styles.pricePerDay}>
                             R$ {(plan.price / plan.duration_days).toFixed(2).replace('.', ',')}/dia
-                        </Text>
+                        </AppText>
                     )}
                     {plan.duration_days > 1 && savingsPercent > 0 && (
                         <View style={styles.savingsBadge}>
                             <Ionicons name="trending-down" size={12} color="#fff" />
-                            <Text style={styles.savingsText}>
+                            <AppText style={styles.savingsText}>
                                 -{savingsPercent}%
-                            </Text>
+                            </AppText>
                         </View>
                     )}
                 </View>
@@ -130,7 +130,7 @@ export default function BoostOptionsScreen({ navigation, route }) {
             <SafeAreaView style={styles.container}>
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color="#3498db" />
-                    <Text style={styles.loadingText}>Carregando opções...</Text>
+                    <AppText style={styles.loadingText}>Carregando opções...</AppText>
                 </View>
             </SafeAreaView>
         );
@@ -152,36 +152,36 @@ export default function BoostOptionsScreen({ navigation, route }) {
 
                     {/* Boost Plans */}
                     <View style={styles.plansSection}>
-                        <Text style={styles.sectionTitle}>Escolha a Duração</Text>
+                        <AppText style={styles.sectionTitle}>Escolha a Duração</AppText>
                         {boostPlans.map(renderBoostPlanCard)}
                     </View>
 
                     {/* Benefits */}
                     <View style={styles.benefitsSection}>
-                        <Text style={styles.sectionTitle}>Benefícios do Impulsionamento</Text>
+                        <AppText style={styles.sectionTitle}>Benefícios do Impulsionamento</AppText>
                         <View style={styles.benefitItem}>
                             <Ionicons name="eye" size={20} color="#3498db" />
-                            <Text style={styles.benefitText}>
+                            <AppText style={styles.benefitText}>
                                 Apareça na aba "Destaques" do app
-                            </Text>
+                            </AppText>
                         </View>
                         <View style={styles.benefitItem}>
                             <Ionicons name="trending-up" size={20} color="#2ecc71" />
-                            <Text style={styles.benefitText}>
+                            <AppText style={styles.benefitText}>
                                 Aumente em até 10x a visibilidade
-                            </Text>
+                            </AppText>
                         </View>
                         <View style={styles.benefitItem}>
                             <Ionicons name="time" size={20} color="#f39c12" />
-                            <Text style={styles.benefitText}>
+                            <AppText style={styles.benefitText}>
                                 Venda mais rápido seu imóvel
-                            </Text>
+                            </AppText>
                         </View>
                         <View style={styles.benefitItem}>
                             <Ionicons name="star" size={20} color="#e74c3c" />
-                            <Text style={styles.benefitText}>
+                            <AppText style={styles.benefitText}>
                                 Destaque entre milhares de anúncios
-                            </Text>
+                            </AppText>
                         </View>
                     </View>
 
@@ -194,9 +194,9 @@ export default function BoostOptionsScreen({ navigation, route }) {
                         onPress={handleContinue}
                         disabled={!selectedPlan}
                     >
-                        <Text style={styles.continueButtonText}>
+                        <AppText style={styles.continueButtonText}>
                             Continuar para Pagamento
-                        </Text>
+                        </AppText>
                         <Ionicons name="arrow-forward" size={20} color="#fff" />
                     </TouchableOpacity>
                 </View>

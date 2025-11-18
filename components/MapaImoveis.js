@@ -7,7 +7,6 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { debounce } from 'lodash';
 import {
     View,
-    Text,
     StyleSheet,
     TouchableOpacity,
     ActivityIndicator,
@@ -15,9 +14,10 @@ import {
     Platform,
     ScrollView,
     Image,
-    TextInput,
     Modal,
 } from 'react-native';
+import AppText from "../components/AppText";
+import AppTextInput from "../components/AppTextInput";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import MapView, { Marker, PROVIDER_GOOGLE, PROVIDER_DEFAULT } from 'react-native-maps';
@@ -205,10 +205,10 @@ export default function MapaImoveis({ navigation, route }) {
                                     )}
                                     {Platform.OS === 'ios' ? (
                                         <View style={styles.markerBadge}>
-                                            <Text style={styles.markerBadgeText}>{group.properties.length}</Text>
+                                            <AppText style={styles.markerBadgeText}>{group.properties.length}</AppText>
                                         </View>
                                     ) : (
-                                        <Text style={styles.markerBadgeText}>{group.properties.length}</Text>
+                                        <AppText style={styles.markerBadgeText}>{group.properties.length}</AppText>
                                     )}
                                 </View>
                             </View>
@@ -400,7 +400,7 @@ export default function MapaImoveis({ navigation, route }) {
         return (
             <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color="#00335e" />
-                <Text style={styles.loadingText}>Carregando mapa...</Text>
+                <AppText style={styles.loadingText}>Carregando mapa...</AppText>
             </View>
         );
     }
@@ -411,7 +411,7 @@ export default function MapaImoveis({ navigation, route }) {
             <View style={styles.headerSearch}>
                 <View style={styles.searchBar}>
                     <Ionicons name="search" size={20} color="#7f8c8d" style={styles.searchIcon} />
-                    <TextInput
+                    <AppTextInput
                         ref={searchInputRef}
                         style={styles.searchInput}
                         placeholder="Buscar imóveis..."
@@ -478,7 +478,7 @@ export default function MapaImoveis({ navigation, route }) {
                             <Marker key={`cluster-${id}`} coordinate={{ latitude, longitude }} onPress={onPress}>
                                 <View style={styles.clusterContainer}>
                                     <View style={styles.clusterBubble}>
-                                        <Text style={styles.clusterText}>{count}</Text>
+                                        <AppText style={styles.clusterText}>{count}</AppText>
                                     </View>
                                 </View>
                             </Marker>
@@ -491,7 +491,7 @@ export default function MapaImoveis({ navigation, route }) {
                 {applyingFilters && (
                     <View style={styles.mapLoadingOverlay}>
                         <ActivityIndicator size="small" color="#00335e" />
-                        <Text style={styles.mapLoadingText}>Aplicando filtros...</Text>
+                        <AppText style={styles.mapLoadingText}>Aplicando filtros...</AppText>
                     </View>
                 )}
             </View>
@@ -510,10 +510,10 @@ export default function MapaImoveis({ navigation, route }) {
                             resizeMode="cover"
                         />
                         <View style={styles.mapPropertyInfo}>
-                            <Text style={styles.mapPropertyTitle} numberOfLines={2}>
+                            <AppText style={styles.mapPropertyTitle} numberOfLines={2}>
                                 {selectedProperty.title ?? 'Imóvel'}
-                            </Text>
-                            <Text style={styles.mapPropertyLocation} numberOfLines={1}>
+                            </AppText>
+                            <AppText style={styles.mapPropertyLocation} numberOfLines={1}>
                                 <Ionicons name="location-outline" size={14} color="#64748b" />
                                 {' '}
                                 {(() => {
@@ -523,14 +523,14 @@ export default function MapaImoveis({ navigation, route }) {
                                     const firstPart = neighborhood || address || '';
                                     return [firstPart, city].filter(Boolean).join(', ');
                                 })()}
-                            </Text>
-                            <Text style={styles.mapPropertyPrice}>
+                            </AppText>
+                            <AppText style={styles.mapPropertyPrice}>
                                 {(selectedProperty.sale_price && parseFloat(selectedProperty.sale_price) > 0)
                                     ? `R$ ${selectedProperty.sale_price.toLocaleString('pt-BR')}`
                                     : `R$ ${selectedProperty.price?.toLocaleString('pt-BR') ?? '—'}`}
-                            </Text>
+                            </AppText>
                             <View style={styles.mapPropertyButton}>
-                                <Text style={styles.mapPropertyButtonText}>Ver detalhes</Text>
+                                <AppText style={styles.mapPropertyButtonText}>Ver detalhes</AppText>
                                 <Ionicons name="arrow-forward" size={16} color="#fff" />
                             </View>
                         </View>
@@ -556,12 +556,12 @@ export default function MapaImoveis({ navigation, route }) {
                     <View style={styles.multiPropertiesModalContent}>
                         <View style={styles.multiPropertiesHeader}>
                             <View>
-                                <Text style={styles.multiPropertiesTitle}>
+                                <AppText style={styles.multiPropertiesTitle}>
                                     Imóveis nesta localização
-                                </Text>
-                                <Text style={styles.multiPropertiesSubtitle}>
+                                </AppText>
+                                <AppText style={styles.multiPropertiesSubtitle}>
                                     {propertiesAtLocation.length} imóveis disponíveis
-                                </Text>
+                                </AppText>
                             </View>
                             <TouchableOpacity
                                 onPress={() => setMultiplePropertiesModal(false)}
@@ -587,29 +587,29 @@ export default function MapaImoveis({ navigation, route }) {
                                         style={styles.multiPropertyImage}
                                     />
                                     <View style={styles.multiPropertyInfo}>
-                                        <Text style={styles.multiPropertyTitle} numberOfLines={2}>
+                                        <AppText style={styles.multiPropertyTitle} numberOfLines={2}>
                                             {property.title}
-                                        </Text>
-                                        <Text style={styles.multiPropertyPrice}>
+                                        </AppText>
+                                        <AppText style={styles.multiPropertyPrice}>
                                             {((property.sale_price ?? property.salePrice) && parseFloat(property.sale_price ?? property.salePrice) > 0)
                                                 ? `R$ ${(property.sale_price ?? property.salePrice)?.toLocaleString('pt-BR')}`
                                                 : `R$ ${property.price?.toLocaleString('pt-BR') ?? '—'}`}
-                                        </Text>
+                                        </AppText>
                                         <View style={styles.multiPropertyFeatures}>
                                             {property.bedrooms && (
-                                                <Text style={styles.multiPropertyFeature}>
+                                                <AppText style={styles.multiPropertyFeature}>
                                                     <Ionicons name="bed-outline" size={14} /> {property.bedrooms}
-                                                </Text>
+                                                </AppText>
                                             )}
                                             {property.bathrooms && (
-                                                <Text style={styles.multiPropertyFeature}>
+                                                <AppText style={styles.multiPropertyFeature}>
                                                     <Ionicons name="water-outline" size={14} /> {property.bathrooms}
-                                                </Text>
+                                                </AppText>
                                             )}
                                             {property.area && (
-                                                <Text style={styles.multiPropertyFeature}>
+                                                <AppText style={styles.multiPropertyFeature}>
                                                     <Ionicons name="resize-outline" size={14} /> {property.area}m²
-                                                </Text>
+                                                </AppText>
                                             )}
                                         </View>
                                     </View>

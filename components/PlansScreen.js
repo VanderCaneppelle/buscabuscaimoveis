@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
     View,
-    Text,
     StyleSheet,
     ScrollView,
     TouchableOpacity,
@@ -16,6 +15,7 @@ import { BackendService } from '../lib/backendService';
 import { useAuth } from '../contexts/AuthContext';
 import { useFocusEffect } from '@react-navigation/native';
 import StandardHeader from './StandardHeader';
+import AppText from './AppText';
 
 export default function PlansScreen({ navigation, route }) {
     console.log('Rendered PlansScreen');
@@ -236,27 +236,27 @@ export default function PlansScreen({ navigation, route }) {
                 >
                     {isPopular && (
                         <View style={styles.popularBadge}>
-                            <Text style={styles.popularText}>Mais Popular</Text>
+                            <AppText style={styles.popularText}>Mais Popular</AppText>
                         </View>
                     )}
 
                     {isCurrentPlan && (
                         <View style={styles.currentPlanBadge}>
                             <Ionicons name="checkmark-circle" size={16} color="#2ecc71" />
-                            <Text style={styles.currentPlanText}>Plano Atual</Text>
+                            <AppText style={styles.currentPlanText}>Plano Atual</AppText>
                         </View>
                     )}
 
                     <View style={styles.planHeader}>
-                        <Text style={styles.planName}>{plan.display_name}</Text>
+                        <AppText style={styles.planName}>{plan.display_name}</AppText>
                         <View style={styles.planPrice}>
-                            <Text style={styles.priceValue}>
+                            <AppText style={styles.priceValue}>
                                 {isFreePlan ? 'Grátis' : `R$ ${lowestPrice.toFixed(2).replace('.', ',')}`}
-                            </Text>
+                            </AppText>
                             {!isFreePlan && (
-                                <Text style={styles.pricePeriod}>
+                                <AppText style={styles.pricePeriod}>
                                     /mês{hasAnnualOption ? ' (a partir de)' : ''}
-                                </Text>
+                                </AppText>
                             )}
                         </View>
                     </View>
@@ -265,7 +265,7 @@ export default function PlansScreen({ navigation, route }) {
                         {plan.features && plan.features.length > 0 ? plan.features.map((feature, index) => (
                             <View key={index} style={styles.featureItem}>
                                 <Ionicons name="checkmark-circle" size={16} color="#2ecc71" />
-                                <Text style={styles.featureText}>{feature}</Text>
+                                <AppText style={styles.featureText}>{feature}</AppText>
                             </View>
                         )) : null}
                     </View>
@@ -279,14 +279,14 @@ export default function PlansScreen({ navigation, route }) {
                         onPress={() => handlePlanSelection(plan)}
                         disabled={isDowngradeToFree}
                     >
-                        <Text style={[
+                        <AppText style={[
                             styles.selectButtonText,
                             isCurrentPlan && styles.currentPlanButtonText,
                             isDowngradeToFree && styles.disabledButtonText
                         ]}>
                             {isCurrentPlan ? 'Alterar Plano' :
                                 isDowngradeToFree ? 'Contatar Suporte' : 'Selecionar Plano'}
-                        </Text>
+                        </AppText>
                     </TouchableOpacity>
                 </TouchableOpacity>
             </View>
@@ -298,7 +298,7 @@ export default function PlansScreen({ navigation, route }) {
             <SafeAreaView style={styles.container}>
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color="#3498db" />
-                    <Text style={styles.loadingText}>Carregando planos...</Text>
+                    <AppText style={styles.loadingText}>Carregando planos...</AppText>
                 </View>
             </SafeAreaView>
         );
@@ -327,32 +327,32 @@ export default function PlansScreen({ navigation, route }) {
                     <View style={styles.infoCard}>
                         <Ionicons name="information-circle" size={24} color="#3498db" />
                         <View style={styles.infoContent}>
-                            <Text style={styles.infoTitle}>Como funciona?</Text>
-                            <Text style={styles.infoText}>
+                            <AppText style={styles.infoTitle}>Como funciona?</AppText>
+                            <AppText style={styles.infoText}>
                                 Escolha um plano que se adapte às suas necessidades. Você pode alterar seu plano a qualquer momento.
-                            </Text>
+                            </AppText>
                         </View>
                     </View>
 
                     {/* Current Plan Info */}
                     {userPlan?.plan && (
                         <View style={styles.currentPlanInfo}>
-                            <Text style={styles.currentPlanTitle}>Seu Plano Atual</Text>
+                            <AppText style={styles.currentPlanTitle}>Seu Plano Atual</AppText>
                             <View style={styles.currentPlanDetails}>
-                                <Text style={styles.currentPlanName}>{userPlan.plan.display_name}</Text>
-                                <Text style={styles.currentPlanStatus}>
+                                <AppText style={styles.currentPlanName}>{userPlan.plan.display_name}</AppText>
+                                <AppText style={styles.currentPlanStatus}>
                                     {userPlan.canCreate.can_create
                                         ? `${userPlan.canCreate.current_ads}/${userPlan.canCreate.max_ads} anúncios ativos`
                                         : userPlan.canCreate.reason
                                     }
-                                </Text>
+                                </AppText>
                             </View>
                         </View>
                     )}
 
                     {/* Plans List */}
                     <View style={styles.plansSection}>
-                        <Text style={styles.sectionTitle}>Planos Disponíveis</Text>
+                        <AppText style={styles.sectionTitle}>Planos Disponíveis</AppText>
                         <View style={styles.plansList}>
                             {groupedPlans.monthly && groupedPlans.monthly.length > 0
                                 ? groupedPlans.monthly.map(renderPlanCard)
@@ -362,35 +362,35 @@ export default function PlansScreen({ navigation, route }) {
 
                     {/* Features Comparison */}
                     <View style={styles.featuresSection}>
-                        <Text style={styles.sectionTitle}>Recursos Inclusos</Text>
+                        <AppText style={styles.sectionTitle}>Recursos Inclusos</AppText>
                         <View style={styles.featuresGrid}>
                             <View style={styles.featureCard}>
                                 <Ionicons name="camera" size={24} color="#3498db" />
-                                <Text style={styles.featureCardTitle}>Limites de fotos de acordo com o plano</Text>
-                                <Text style={styles.featureCardText}>
+                                <AppText style={styles.featureCardTitle}>Limites de fotos de acordo com o plano</AppText>
+                                <AppText style={styles.featureCardText}>
                                     Quanto maior o plano, mais fotos você pode adicionar aos seus anúncios
-                                </Text>
+                                </AppText>
                             </View>
                             {/* <View style={styles.featureCard}>
                                 <Ionicons name="analytics" size={24} color="#e74c3c" />
-                                <Text style={styles.featureCardTitle}>Relatórios</Text>
-                                <Text style={styles.featureCardText}>
+                                <AppText style={styles.featureCardTitle}>Relatórios</AppText>
+                                <AppText style={styles.featureCardText}>
                                     Acompanhe o desempenho dos seus anúncios
-                                </Text>
+                                </AppText>
                             </View> */}
                             <View style={styles.featureCard}>
                                 <Ionicons name="headset" size={24} color="#2ecc71" />
-                                <Text style={styles.featureCardTitle}>Suporte</Text>
-                                <Text style={styles.featureCardText}>
+                                <AppText style={styles.featureCardTitle}>Suporte</AppText>
+                                <AppText style={styles.featureCardText}>
                                     Suporte especializado para corretores
-                                </Text>
+                                </AppText>
                             </View>
                             <View style={styles.featureCard}>
                                 <Ionicons name="trending-up" size={24} color="#f39c12" />
-                                <Text style={styles.featureCardTitle}>Destaque</Text>
-                                <Text style={styles.featureCardText}>
+                                <AppText style={styles.featureCardTitle}>Destaque</AppText>
+                                <AppText style={styles.featureCardText}>
                                     Possibilidade de Impulsionar seus anúncios para alcançar mais clientes
-                                </Text>
+                                </AppText>
                             </View>
                         </View>
                     </View>
@@ -406,18 +406,18 @@ export default function PlansScreen({ navigation, route }) {
             >
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
-                        <Text style={styles.modalTitle}>Confirmar Contratação</Text>
-                        <Text style={styles.modalText}>
+                        <AppText style={styles.modalTitle}>Confirmar Contratação</AppText>
+                        <AppText style={styles.modalText}>
                             Você está prestes a contratar o plano {selectedPlan?.display_name}.
-                        </Text>
+                        </AppText>
                         {selectedPlan?.name === 'free' ? (
-                            <Text style={styles.modalSubtext}>
+                            <AppText style={styles.modalSubtext}>
                                 Este é um plano gratuito. Nenhum pagamento será processado.
-                            </Text>
+                            </AppText>
                         ) : (
-                            <Text style={styles.modalSubtext}>
+                            <AppText style={styles.modalSubtext}>
                                 Pagamento será processado via Mercado Pago.
-                            </Text>
+                            </AppText>
                         )}
 
                         <View style={styles.modalButtons}>
@@ -426,7 +426,7 @@ export default function PlansScreen({ navigation, route }) {
                                 onPress={() => setShowConfirmModal(false)}
                                 disabled={subscribing}
                             >
-                                <Text style={styles.modalCancelText}>Cancelar</Text>
+                                <AppText style={styles.modalCancelText}>Cancelar</AppText>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={styles.modalConfirmButton}
@@ -436,9 +436,9 @@ export default function PlansScreen({ navigation, route }) {
                                 {subscribing ? (
                                     <ActivityIndicator size="small" color="#fff" />
                                 ) : (
-                                    <Text style={styles.modalConfirmText}>
+                                    <AppText style={styles.modalConfirmText}>
                                         {selectedPlan?.name === 'free' ? 'Confirmar' : 'Pagar Agora'}
-                                    </Text>
+                                    </AppText>
                                 )}
                             </TouchableOpacity>
                         </View>

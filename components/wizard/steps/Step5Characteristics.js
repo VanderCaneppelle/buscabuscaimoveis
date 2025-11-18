@@ -1,7 +1,9 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import AppText from '../../AppText';
+import AppTextInput from '../../AppTextInput';
 
 const CounterButton = ({ label, value, onChange, icon, color, unit }) => {
     const numValue = parseInt(value) || 0;
@@ -24,7 +26,7 @@ const CounterButton = ({ label, value, onChange, icon, color, unit }) => {
                 <View style={[styles.iconContainer, { backgroundColor: color + '15' }]}>
                     <Ionicons name={icon} size={24} color={color} />
                 </View>
-                <Text style={styles.counterLabel}>{label}</Text>
+                <AppText style={styles.counterLabel}>{label}</AppText>
             </View>
             <View style={styles.counterControls}>
                 <TouchableOpacity
@@ -44,8 +46,8 @@ const CounterButton = ({ label, value, onChange, icon, color, unit }) => {
                     />
                 </TouchableOpacity>
                 <View style={styles.counterValue}>
-                    <Text style={styles.counterValueText}>{numValue}</Text>
-                    {unit && <Text style={styles.counterUnit}>{unit}</Text>}
+                    <AppText style={styles.counterValueText}>{numValue}</AppText>
+                    {unit && <AppText style={styles.counterUnit}>{unit}</AppText>}
                 </View>
                 <TouchableOpacity
                     style={[
@@ -114,10 +116,10 @@ export default function Step4Characteristics({ formData, updateFormData }) {
                     keyboardDismissMode="interactive"
                 >
                     <View style={styles.content}>
-                <Text style={styles.title}>Características do imóvel</Text>
-                <Text style={styles.subtitle}>
+                <AppText style={styles.title}>Características do imóvel</AppText>
+                <AppText style={styles.subtitle}>
                     Informe os detalhes que tornam seu imóvel único
-                </Text>
+                </AppText>
 
                 {/* Counters */}
                 <View style={styles.countersContainer}>
@@ -152,14 +154,14 @@ export default function Step4Characteristics({ formData, updateFormData }) {
                         <View style={styles.areaIconContainer}>
                             <Ionicons name="resize" size={24} color="#f39c12" />
                         </View>
-                        <Text style={styles.areaSectionTitle}>Área Total</Text>
-                        <Text style={styles.optional}>(opcional)</Text>
+                        <AppText style={styles.areaSectionTitle}>Área Total</AppText>
+                        <AppText style={styles.optional}>(opcional)</AppText>
                     </View>
-                    <Text style={styles.areaHint}>
+                    <AppText style={styles.areaHint}>
                         Informe a área total do imóvel em metros quadrados
-                    </Text>
+                    </AppText>
                     <View style={styles.areaInputContainer}>
-                        <TextInput
+                        <AppTextInput
                             ref={areaInputRef}
                             style={styles.areaInput}
                             value={formData.area}
@@ -181,7 +183,7 @@ export default function Step4Characteristics({ formData, updateFormData }) {
                             }}
                         />
                         <View style={styles.areaUnitContainer}>
-                            <Text style={styles.areaUnit}>m²</Text>
+                            <AppText style={styles.areaUnit}>m²</AppText>
                         </View>
                     </View>
                 </View>
@@ -189,9 +191,9 @@ export default function Step4Characteristics({ formData, updateFormData }) {
                 {/* Info Card */}
                 <View style={styles.infoCard}>
                     <Ionicons name="information-circle" size={20} color="#3498db" />
-                    <Text style={styles.infoText}>
+                    <AppText style={styles.infoText}>
                         Preencha todos os campos com precisão. Isso ajuda os interessados a encontrarem exatamente o que procuram.
-                    </Text>
+                    </AppText>
                 </View>
                     </View>
                 </ScrollView>

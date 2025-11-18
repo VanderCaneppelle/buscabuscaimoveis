@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, TouchableOpacity, TouchableWithoutFeedback, Dimensions, StyleSheet, Animated, Text, SafeAreaView, StatusBar, Platform, Alert } from "react-native";
+import { View, TouchableOpacity, TouchableWithoutFeedback, Dimensions, StyleSheet, Animated, SafeAreaView, StatusBar, Platform, Alert } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Audio } from 'expo-av';

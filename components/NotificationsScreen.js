@@ -9,7 +9,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
     View,
-    Text,
     StyleSheet,
     FlatList,
     TouchableOpacity,
@@ -23,6 +22,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { InAppNotificationAPI, NotificationUtils } from '../lib/inAppNotificationService';
 import { useFocusEffect } from '@react-navigation/native';
 import { supabase } from '../lib/supabase'; // ✨ NOVO - Para Realtime
+import AppText from './AppText';
 
 export default function NotificationsScreen({ navigation }) {
     const { user } = useAuth();
@@ -320,13 +320,13 @@ export default function NotificationsScreen({ navigation }) {
                 {/* Conteúdo */}
                 <View style={styles.contentContainer}>
                     <View style={styles.headerRow}>
-                        <Text style={styles.title}>{item.title}</Text>
+                        <AppText style={styles.title}>{item.title}</AppText>
                         {!item.read && <View style={styles.unreadDot} />}
                     </View>
-                    <Text style={styles.message} numberOfLines={3}>
+                    <AppText style={styles.message} numberOfLines={3}>
                         {item.message}
-                    </Text>
-                    <Text style={styles.time}>{timeAgo}</Text>
+                    </AppText>
+                    <AppText style={styles.time}>{timeAgo}</AppText>
                 </View>
 
                 {/* Botão de ação */}
@@ -355,10 +355,10 @@ export default function NotificationsScreen({ navigation }) {
     const renderEmptyState = () => (
         <View style={styles.emptyContainer}>
             <Ionicons name="notifications-off-outline" size={80} color="#d1d5db" />
-            <Text style={styles.emptyText}>Nenhuma notificação</Text>
-            <Text style={styles.emptySubtext}>
+            <AppText style={styles.emptyText}>Nenhuma notificação</AppText>
+            <AppText style={styles.emptySubtext}>
                 Você receberá notificações sobre seus anúncios, planos e contatos
-            </Text>
+            </AppText>
         </View>
     );
 
@@ -379,16 +379,16 @@ export default function NotificationsScreen({ navigation }) {
                     >
                         <Ionicons name="arrow-back" size={24} color="#00335e" />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Notificações</Text>
+                    <AppText style={styles.headerTitle}>Notificações</AppText>
                 </View>
                 {notifications.some(n => !n.read) && (
                     <TouchableOpacity 
                         onPress={handleMarkAllAsRead}
                         style={styles.markAllButton}
                     >
-                        <Text style={styles.markAllButtonText}>
+                        <AppText style={styles.markAllButtonText}>
                             Marcar todas como lidas
-                        </Text>
+                        </AppText>
                     </TouchableOpacity>
                 )}
             </View>

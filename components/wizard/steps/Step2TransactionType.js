@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AppText from '../../AppText';
 
 const TRANSACTION_TYPES = [
     { 
@@ -25,10 +26,10 @@ export default function Step2TransactionType({ formData, updateFormData }) {
             <View style={styles.content}>
                 {/* Título e Descrição */}
                 <View style={styles.header}>
-                    <Text style={styles.title}>O imóvel é para venda ou aluguel?</Text>
-                    <Text style={styles.subtitle}>
+                    <AppText style={styles.title}>O imóvel é para venda ou aluguel?</AppText>
+                    <AppText style={styles.subtitle}>
                         Defina como você quer disponibilizar seu {formData.propertyType || 'imóvel'}
-                    </Text>
+                    </AppText>
                 </View>
 
                 {/* Cards de Transação */}
@@ -54,18 +55,18 @@ export default function Step2TransactionType({ formData, updateFormData }) {
                                 />
                             </View>
                             <View style={styles.transactionContent}>
-                                <Text style={[
+                                <AppText style={[
                                     styles.transactionTitle,
                                     formData.transactionType === transaction.value && styles.transactionTitleSelected
                                 ]}>
                                     {transaction.value}
-                                </Text>
-                                <Text style={styles.transactionDescription}>
+                                </AppText>
+                                <AppText style={styles.transactionDescription}>
                                     {transaction.description}
-                                </Text>
-                                <Text style={styles.transactionBenefits}>
+                                </AppText>
+                                <AppText style={styles.transactionBenefits}>
                                     {transaction.benefits}
-                                </Text>
+                                </AppText>
                             </View>
                             {formData.transactionType === transaction.value && (
                                 <Ionicons name="checkmark-circle" size={28} color={transaction.color} />
@@ -78,10 +79,10 @@ export default function Step2TransactionType({ formData, updateFormData }) {
                 {formData.transactionType && (
                     <View style={styles.infoCard}>
                         <Ionicons name="information-circle" size={20} color="#3498db" />
-                        <Text style={styles.infoText}>
-                            Perfeito! Seu imóvel <Text style={styles.infoBold}>{formData.propertyType}</Text> será 
-                            anunciado para <Text style={styles.infoBold}>{formData.transactionType}</Text>.
-                        </Text>
+                        <AppText style={styles.infoText}>
+                            Perfeito! Seu imóvel <AppText style={styles.infoBold}>{formData.propertyType}</AppText> será 
+                            anunciado para <AppText style={styles.infoBold}>{formData.transactionType}</AppText>.
+                        </AppText>
                     </View>
                 )}
             </View>

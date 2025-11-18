@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
     View,
-    Text,
     StyleSheet,
     TouchableOpacity,
     SafeAreaView,
@@ -14,6 +13,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import StandardHeader from './StandardHeader';
 import { translateError } from '../lib/errorMessages';
+import AppText from './AppText';
 
 export default function DeleteAccountScreen({ navigation }) {
     const { user, signOut } = useAuth();
@@ -114,51 +114,51 @@ export default function DeleteAccountScreen({ navigation }) {
                     <View style={styles.warningIconContainer}>
                         <Ionicons name="warning" size={48} color="#DC2626" />
                     </View>
-                    <Text style={styles.warningTitle}>
+                    <AppText style={styles.warningTitle}>
                         Atenção: Esta ação é permanente
-                    </Text>
-                    <Text style={styles.warningText}>
+                    </AppText>
+                    <AppText style={styles.warningText}>
                         Ao excluir sua conta, todos os seus dados serão removidos permanentemente e não poderão ser recuperados.
-                    </Text>
+                    </AppText>
                 </View>
 
                 {/* O que será deletado */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>O que será removido:</Text>
+                    <AppText style={styles.sectionTitle}>O que será removido:</AppText>
                     
                     <View style={styles.listItem}>
                         <Ionicons name="home" size={20} color="#DC2626" />
-                        <Text style={styles.listItemText}>Todos os seus anúncios e imóveis</Text>
+                        <AppText style={styles.listItemText}>Todos os seus anúncios e imóveis</AppText>
                     </View>
 
                     <View style={styles.listItem}>
                         <Ionicons name="film" size={20} color="#DC2626" />
-                        <Text style={styles.listItemText}>Todos os seus stories</Text>
+                        <AppText style={styles.listItemText}>Todos os seus stories</AppText>
                     </View>
 
                     <View style={styles.listItem}>
                         <Ionicons name="heart" size={20} color="#DC2626" />
-                        <Text style={styles.listItemText}>Todos os seus favoritos</Text>
+                        <AppText style={styles.listItemText}>Todos os seus favoritos</AppText>
                     </View>
 
                     <View style={styles.listItem}>
                         <Ionicons name="card" size={20} color="#DC2626" />
-                        <Text style={styles.listItemText}>Seu histórico de pagamentos</Text>
+                        <AppText style={styles.listItemText}>Seu histórico de pagamentos</AppText>
                     </View>
 
                     <View style={styles.listItem}>
                         <Ionicons name="notifications" size={20} color="#DC2626" />
-                        <Text style={styles.listItemText}>Todas as suas notificações</Text>
+                        <AppText style={styles.listItemText}>Todas as suas notificações</AppText>
                     </View>
 
                     <View style={styles.listItem}>
                         <Ionicons name="person" size={20} color="#DC2626" />
-                        <Text style={styles.listItemText}>Seu perfil e informações pessoais</Text>
+                        <AppText style={styles.listItemText}>Seu perfil e informações pessoais</AppText>
                     </View>
 
                     <View style={styles.listItem}>
                         <Ionicons name="calendar" size={20} color="#DC2626" />
-                        <Text style={styles.listItemText}>Suas assinaturas e planos</Text>
+                        <AppText style={styles.listItemText}>Suas assinaturas e planos</AppText>
                     </View>
                 </View>
 
@@ -166,14 +166,14 @@ export default function DeleteAccountScreen({ navigation }) {
                 <View style={styles.planWarningCard}>
                     <View style={styles.planWarningHeader}>
                         <Ionicons name="card" size={24} color="#DC2626" />
-                        <Text style={styles.planWarningTitle}>Atenção: Planos e Assinaturas</Text>
+                        <AppText style={styles.planWarningTitle}>Atenção: Planos e Assinaturas</AppText>
                     </View>
                     <View style={styles.planWarningContent}>
                         <View style={styles.planWarningItem}>
                             <Ionicons name="close-circle" size={20} color="#DC2626" />
-                            <Text style={styles.planWarningText}>
-                                Todos os seus planos e assinaturas serão <Text style={styles.planWarningBold}>cancelados e invalidados imediatamente</Text>
-                            </Text>
+                            <AppText style={styles.planWarningText}>
+                                Todos os seus planos e assinaturas serão <AppText style={styles.planWarningBold}>cancelados e invalidados imediatamente</AppText>
+                            </AppText>
                         </View>
                         <View style={styles.planWarningItem}>
                             <Ionicons name="cash-outline" size={20} color="#DC2626" />
@@ -205,14 +205,14 @@ export default function DeleteAccountScreen({ navigation }) {
                     </View>
 
                     <View style={styles.infoItem}>
-                        <Text style={styles.infoBullet}>•</Text>
-                        <Text style={styles.infoText}>
+                        <AppText style={styles.infoBullet}>•</AppText>
+                        <AppText style={styles.infoText}>
                             Seus anúncios serão removidos imediatamente e não aparecerão mais no app
-                        </Text>
+                        </AppText>
                     </View>
 
                     <View style={styles.infoItem}>
-                        <Text style={styles.infoBullet}>•</Text>
+                        <AppText style={styles.infoBullet}>•</AppText>
                         <Text style={styles.infoText}>
                             Esta ação não pode ser desfeita ou cancelada após a confirmação
                         </Text>
@@ -229,12 +229,12 @@ export default function DeleteAccountScreen({ navigation }) {
                         {deletingAccount ? (
                             <>
                                 <ActivityIndicator size="small" color="#fff" />
-                                <Text style={styles.deleteButtonText}>Excluindo conta...</Text>
+                                <AppText style={styles.deleteButtonText}>Excluindo conta...</AppText>
                             </>
                         ) : (
                             <>
                                 <Ionicons name="trash" size={20} color="#fff" />
-                                <Text style={styles.deleteButtonText}>Excluir Conta Permanentemente</Text>
+                                <AppText style={styles.deleteButtonText}>Excluir Conta Permanentemente</AppText>
                             </>
                         )}
                     </TouchableOpacity>
@@ -244,7 +244,7 @@ export default function DeleteAccountScreen({ navigation }) {
                         onPress={() => navigation.goBack()}
                         disabled={deletingAccount}
                     >
-                        <Text style={styles.cancelButtonText}>Cancelar</Text>
+                        <AppText style={styles.cancelButtonText}>Cancelar</AppText>
                     </TouchableOpacity>
                 </View>
             </ScrollView>

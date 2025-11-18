@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
     View,
-    Text,
     StyleSheet,
     ScrollView,
     TouchableOpacity,
-    TextInput,
     Alert,
     ActivityIndicator,
     Modal,
@@ -18,6 +16,8 @@ import {
     Pressable,
     Image,
 } from 'react-native';
+import AppText from './AppText';
+import AppTextInput from './AppTextInput';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -875,9 +875,9 @@ export default function CreateAdScreen({ navigation, route }) {
 
                 {/* Indicador de tamanho do arquivo */}
                 <View style={[styles.fileSizeIndicator, isLargeFile && styles.largeFileIndicator]}>
-                    <Text style={[styles.fileSizeText, isLargeFile && styles.largeFileText]}>
+                    <AppText style={[styles.fileSizeText, isLargeFile && styles.largeFileText]}>
                         {fileSizeMB}MB
-                    </Text>
+                    </AppText>
                 </View>
             </View>
         );
@@ -888,7 +888,7 @@ export default function CreateAdScreen({ navigation, route }) {
             <SafeAreaView style={styles.container}>
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color="#3498db" />
-                    <Text style={styles.loadingText}>Verificando permissões...</Text>
+                    <AppText style={styles.loadingText}>Verificando permissões...</AppText>
                 </View>
             </SafeAreaView>
         );
@@ -934,36 +934,36 @@ export default function CreateAdScreen({ navigation, route }) {
                                 <View style={styles.planInfoCard}>
                                     <Ionicons name="information-circle" size={20} color="#3498db" />
                                     <View style={styles.planInfoContent}>
-                                        <Text style={styles.planInfoTitle}>
+                                        <AppText style={styles.planInfoTitle}>
                                             Plano {planName}
-                                        </Text>
-                                        <Text style={styles.planInfoText}>
+                                        </AppText>
+                                        <AppText style={styles.planInfoText}>
                                             {canCreateAd
                                                 ? `${currentAds}/${maxAds} anúncios ativos`
                                                 : createAdReason
                                             }
-                                        </Text>
+                                        </AppText>
                                     </View>
                                 </View>
                             )}
 
                             {/* Media Section */}
                             <View style={styles.formSection}>
-                                <Text style={styles.sectionTitle}>Fotos e Vídeos</Text>
+                                <AppText style={styles.sectionTitle}>Fotos e Vídeos</AppText>
                                 
                                 {/* Contadores de mídia */}
                                 <View style={styles.mediaCountersContainer}>
                                     <View style={styles.mediaCounter}>
                                         <Ionicons name="images" size={16} color="#3498db" />
-                                        <Text style={styles.mediaCounterText}>
+                                        <AppText style={styles.mediaCounterText}>
                                             Imagens: {mediaFiles.filter(f => f.type !== 'video').length}/{plan?.max_images || 10}
-                                        </Text>
+                                        </AppText>
                                     </View>
                                     <View style={styles.mediaCounter}>
                                         <Ionicons name="videocam" size={16} color="#e74c3c" />
-                                        <Text style={styles.mediaCounterText}>
+                                        <AppText style={styles.mediaCounterText}>
                                             Vídeos: {mediaFiles.filter(f => f.type === 'video').length}/{plan?.max_videos || 0}
-                                        </Text>
+                                        </AppText>
                                     </View>
                                 </View>
 
@@ -992,29 +992,29 @@ export default function CreateAdScreen({ navigation, route }) {
                                             onPress={() => setShowMediaModal(true)}
                                         >
                                             <Ionicons name="add" size={24} color="#3498db" />
-                                            <Text style={styles.addMediaText}>Adicionar Mídia</Text>
+                                            <AppText style={styles.addMediaText}>Adicionar Mídia</AppText>
                                         </TouchableOpacity>
                                     ) : (
-                                        <Text style={styles.mediaLimitText}>
+                                        <AppText style={styles.mediaLimitText}>
                                             Limite máximo atingido ({currentImages} imagens / {currentVideos} vídeos)
-                                        </Text>
+                                        </AppText>
                                     );
                                 })()}
                             </View>
 
                             {/* Localização - Movida para depois da mídia */}
                             <View style={[styles.formSection, styles.addressSection]} ref={contentRef}>
-                                <Text style={styles.sectionTitle}>Localização</Text>
+                                <AppText style={styles.sectionTitle}>Localização</AppText>
 
                                 <View style={styles.addressOuterContainer}>
                                     <View style={[styles.inputGroup, styles.addressInputGroup]}>
-                                        <Text style={styles.inputLabel}>Endereço *</Text>
+                                        <AppText style={styles.inputLabel}>Endereço *</AppText>
                                         <TouchableOpacity
                                             activeOpacity={0.7}
                                             onPress={() => setShowAddressModal(true)}
                                             style={{ flex: 1 }}
                                         >
-                                            <TextInput
+                                            <AppTextInput
                                                 style={[styles.textInput, styles.addressSearchInput, styles.multilineAddressInput, selectedAddress && styles.readOnlyInput]}
                                                 value={selectedAddress ?
                                                     `${selectedAddress.address || ''}\n${selectedAddress.neighborhood || ''}\n${selectedAddress.city || ''}, ${selectedAddress.state || ''}`.trim() :
@@ -1039,7 +1039,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                                 }}
                                             >
                                                 <Ionicons name="create-outline" size={16} color="#007AFF" />
-                                                <Text style={styles.editAddressText}>Editar Endereço</Text>
+                                                <AppText style={styles.editAddressText}>Editar Endereço</AppText>
                                             </TouchableOpacity>
                                         )}
 
@@ -1053,7 +1053,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                                 }}
                                             >
                                                 <Ionicons name="map-outline" size={18} color="#007AFF" />
-                                                <Text style={styles.mapPickerButtonText}>Escolher endereço no mapa</Text>
+                                                <AppText style={styles.mapPickerButtonText}>Escolher endereço no mapa</AppText>
                                             </TouchableOpacity>
                                         )}
                                     </View>
@@ -1064,11 +1064,11 @@ export default function CreateAdScreen({ navigation, route }) {
                             {/* Form Fields - Unificado */}
                             <View style={[styles.formSection, styles.belowAddressSection]}>
                                 {/* Informações Básicas */}
-                                <Text style={styles.sectionTitle}>Informações Básicas</Text>
+                                <AppText style={styles.sectionTitle}>Informações Básicas</AppText>
 
                                 <View style={styles.inputGroup}>
-                                    <Text style={styles.inputLabel}>Título do Anúncio *</Text>
-                                    <TextInput
+                                    <AppText style={styles.inputLabel}>Título do Anúncio *</AppText>
+                                    <AppTextInput
                                         style={styles.textInput}
                                         value={formData.title}
                                         onChangeText={(value) => handleInputChange('title', value)}
@@ -1078,8 +1078,8 @@ export default function CreateAdScreen({ navigation, route }) {
                                 </View>
 
                                 <View style={styles.inputGroup}>
-                                    <Text style={styles.inputLabel}>Descrição</Text>
-                                    <TextInput
+                                    <AppText style={styles.inputLabel}>Descrição</AppText>
+                                    <AppTextInput
                                         style={[styles.textInput, styles.textArea]}
                                         value={formData.description}
                                         onChangeText={(value) => handleInputChange('description', value)}
@@ -1092,7 +1092,7 @@ export default function CreateAdScreen({ navigation, route }) {
 
                                 {/* Campo de Construtora (Opcional) */}
                                 <View style={styles.inputGroup}>
-                                    <Text style={styles.inputLabel}>Construtora (Opcional)</Text>
+                                    <AppText style={styles.inputLabel}>Construtora (Opcional)</AppText>
                                     <TouchableOpacity
                                         style={styles.dropdownButton}
                                         onPress={() => {
@@ -1100,7 +1100,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                             setShowDeveloperModal(true);
                                         }}
                                     >
-                                        <Text style={[
+                                        <AppText style={[
                                             styles.dropdownButtonText,
                                             !selectedDeveloper && styles.placeholderText
                                         ]}>
@@ -1108,7 +1108,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                                 ? `${selectedDeveloper.full_name}${selectedDeveloper.city_name ? ` - ${selectedDeveloper.city_name}/${selectedDeveloper.city_uf}` : ''}`
                                                 : 'Selecione a construtora (opcional)'
                                             }
-                                        </Text>
+                                        </AppText>
                                         <Ionicons
                                             name={showDeveloperModal ? 'chevron-up' : 'chevron-down'}
                                             size={20}
@@ -1124,15 +1124,15 @@ export default function CreateAdScreen({ navigation, route }) {
                                             }}
                                         >
                                             <Ionicons name="close-circle" size={16} color="#e74c3c" />
-                                            <Text style={styles.clearButtonText}>Limpar seleção</Text>
+                                            <AppText style={styles.clearButtonText}>Limpar seleção</AppText>
                                         </TouchableOpacity>
                                     )}
                                 </View>
 
                                 <View style={styles.row}>
                                     <View style={[styles.inputGroup, styles.halfWidth]}>
-                                        <Text style={styles.inputLabel}>Preço *</Text>
-                                        <TextInput
+                                        <AppText style={styles.inputLabel}>Preço *</AppText>
+                                        <AppTextInput
                                             style={styles.textInput}
                                             value={formData.price}
                                             onChangeText={handlePriceChange}
@@ -1142,8 +1142,8 @@ export default function CreateAdScreen({ navigation, route }) {
                                         />
                                     </View>
                                     <View style={[styles.inputGroup, styles.halfWidth]}>
-                                        <Text style={styles.inputLabel}>Preço Promocional</Text>
-                                        <TextInput
+                                        <AppText style={styles.inputLabel}>Preço Promocional</AppText>
+                                        <AppTextInput
                                             style={styles.textInput}
                                             value={formData.salePrice}
                                             onChangeText={handleSalePriceChange}
@@ -1156,8 +1156,8 @@ export default function CreateAdScreen({ navigation, route }) {
 
                                 <View style={styles.row}>
                                     <View style={[styles.inputGroup, styles.halfWidth]}>
-                                        <Text style={styles.inputLabel}>Área (m²)</Text>
-                                        <TextInput
+                                        <AppText style={styles.inputLabel}>Área (m²)</AppText>
+                                        <AppTextInput
                                             style={styles.textInput}
                                             value={formData.area}
                                             onChangeText={(value) => handleInputChange('area', value)}
@@ -1170,7 +1170,7 @@ export default function CreateAdScreen({ navigation, route }) {
 
                                 <View style={styles.row}>
                                     <View style={[styles.inputGroup, styles.halfWidth, styles.primaryDropdownContainer]}>
-                                        <Text style={styles.inputLabel}>Tipo *</Text>
+                                        <AppText style={styles.inputLabel}>Tipo *</AppText>
                                         <TouchableOpacity
                                             style={styles.dropdownButton}
                                             onPress={() => {
@@ -1178,12 +1178,12 @@ export default function CreateAdScreen({ navigation, route }) {
                                                 setShowPropertyTypeModal(true);
                                             }}
                                         >
-                                            <Text style={[
+                                            <AppText style={[
                                                 styles.dropdownButtonText,
                                                 !formData.propertyType && styles.placeholderText
                                             ]}>
                                                 {formData.propertyType || 'Selecione o tipo'}
-                                            </Text>
+                                            </AppText>
                                             <Ionicons
                                                 name={showPropertyTypeModal ? 'chevron-up' : 'chevron-down'}
                                                 size={20}
@@ -1194,7 +1194,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                         {/* Dropdown de Tipo via Modal - removido inline */}
                                     </View>
                                     <View style={[styles.inputGroup, styles.halfWidth, styles.primaryDropdownContainer]}>
-                                        <Text style={styles.inputLabel}>Transação *</Text>
+                                        <AppText style={styles.inputLabel}>Transação *</AppText>
                                         <TouchableOpacity
                                             style={styles.dropdownButton}
                                             onPress={() => {
@@ -1202,12 +1202,12 @@ export default function CreateAdScreen({ navigation, route }) {
                                                 setShowTransactionTypeModal(true);
                                             }}
                                         >
-                                            <Text style={[
+                                            <AppText style={[
                                                 styles.dropdownButtonText,
                                                 !formData.transactionType && styles.placeholderText
                                             ]}>
                                                 {formData.transactionType || 'Selecione a transação'}
-                                            </Text>
+                                            </AppText>
                                             <Ionicons
                                                 name={showTransactionTypeModal ? 'chevron-up' : 'chevron-down'}
                                                 size={20}
@@ -1220,7 +1220,7 @@ export default function CreateAdScreen({ navigation, route }) {
 
                                 <View style={styles.row}>
                                     <View style={[styles.inputGroup, styles.thirdWidth, styles.secondaryDropdownContainer]}>
-                                        <Text style={styles.inputLabel}>Quartos</Text>
+                                        <AppText style={styles.inputLabel}>Quartos</AppText>
                                         <TouchableOpacity
                                             style={styles.dropdownButton}
                                             onPress={() => {
@@ -1228,12 +1228,12 @@ export default function CreateAdScreen({ navigation, route }) {
                                                 setShowBedroomsModal(true);
                                             }}
                                         >
-                                            <Text style={[
+                                            <AppText style={[
                                                 styles.dropdownButtonText,
                                                 !formData.bedrooms && styles.placeholderText
                                             ]}>
                                                 {formData.bedrooms || '0'}
-                                            </Text>
+                                            </AppText>
                                             <Ionicons
                                                 name={showBedroomsModal ? 'chevron-up' : 'chevron-down'}
                                                 size={20}
@@ -1243,7 +1243,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                         {/* Quartos via Modal */}
                                     </View>
                                     <View style={[styles.inputGroup, styles.thirdWidth, styles.secondaryDropdownContainer]}>
-                                        <Text style={styles.inputLabel}>Banheiros</Text>
+                                        <AppText style={styles.inputLabel}>Banheiros</AppText>
                                         <TouchableOpacity
                                             style={styles.dropdownButton}
                                             onPress={() => {
@@ -1251,12 +1251,12 @@ export default function CreateAdScreen({ navigation, route }) {
                                                 setShowBathroomsModal(true);
                                             }}
                                         >
-                                            <Text style={[
+                                            <AppText style={[
                                                 styles.dropdownButtonText,
                                                 !formData.bathrooms && styles.placeholderText
                                             ]}>
                                                 {formData.bathrooms || '0'}
-                                            </Text>
+                                            </AppText>
                                             <Ionicons
                                                 name={showBathroomsModal ? 'chevron-up' : 'chevron-down'}
                                                 size={20}
@@ -1266,7 +1266,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                         {/* Banheiros via Modal */}
                                     </View>
                                     <View style={[styles.inputGroup, styles.thirdWidth, styles.secondaryDropdownContainer]}>
-                                        <Text style={styles.inputLabel}>Vagas</Text>
+                                        <AppText style={styles.inputLabel}>Vagas</AppText>
                                         <TouchableOpacity
                                             style={styles.dropdownButton}
                                             onPress={() => {
@@ -1274,12 +1274,12 @@ export default function CreateAdScreen({ navigation, route }) {
                                                 setShowParkingModal(true);
                                             }}
                                         >
-                                            <Text style={[
+                                            <AppText style={[
                                                 styles.dropdownButtonText,
                                                 !formData.parkingSpaces && styles.placeholderText
                                             ]}>
                                                 {formData.parkingSpaces || '0'}
-                                            </Text>
+                                            </AppText>
                                             <Ionicons
                                                 name={showParkingModal ? 'chevron-up' : 'chevron-down'}
                                                 size={20}
@@ -1304,7 +1304,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                     {submitting ? (
                                         <ActivityIndicator size="small" color="#fff" />
                                     ) : (
-                                        <Text style={styles.submitButtonText}>Criar Anúncio</Text>
+                                        <AppText style={styles.submitButtonText}>Criar Anúncio</AppText>
                                     )}
                                 </TouchableOpacity>
                             </View>
@@ -1322,7 +1322,7 @@ export default function CreateAdScreen({ navigation, route }) {
                     <View style={styles.modalOverlay}>
                         <View style={styles.mediaModalContent}>
                             <View style={styles.mediaModalHeader}>
-                                <Text style={styles.mediaModalTitle}>Adicionar Mídia</Text>
+                                <AppText style={styles.mediaModalTitle}>Adicionar Mídia</AppText>
                                 <TouchableOpacity onPress={() => setShowMediaModal(false)}>
                                     <Ionicons name="close" size={24} color="#2c3e50" />
                                 </TouchableOpacity>
@@ -1336,7 +1336,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                     <View style={[styles.mediaOptionIcon, { backgroundColor: '#1e3a8a' }]}>
                                         <Ionicons name="camera" size={32} color="#fff" />
                                     </View>
-                                    <Text style={styles.mediaOptionText}>Tirar Foto</Text>
+                                    <AppText style={styles.mediaOptionText}>Tirar Foto</AppText>
                                 </TouchableOpacity>
 
                                 <TouchableOpacity
@@ -1346,7 +1346,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                     <View style={[styles.mediaOptionIcon, { backgroundColor: '#2ecc71' }]}>
                                         <Ionicons name="images" size={32} color="#fff" />
                                     </View>
-                                    <Text style={styles.mediaOptionText}>Galeria</Text>
+                                    <AppText style={styles.mediaOptionText}>Galeria</AppText>
                                 </TouchableOpacity>
 
                                 <TouchableOpacity
@@ -1356,7 +1356,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                     <View style={[styles.mediaOptionIcon, { backgroundColor: '#e74c3c' }]}>
                                         <Ionicons name="videocam" size={32} color="#fff" />
                                     </View>
-                                    <Text style={styles.mediaOptionText}>Vídeo</Text>
+                                    <AppText style={styles.mediaOptionText}>Vídeo</AppText>
                                 </TouchableOpacity>
                             </View>
                         </View>
@@ -1378,7 +1378,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                         <View style={styles.typeModalHandle} />
                                     </View>
                                     <View style={styles.typeModalHeader}>
-                                        <Text style={styles.typeModalHeaderText}>Selecione o tipo</Text>
+                                        <AppText style={styles.typeModalHeaderText}>Selecione o tipo</AppText>
                                     </View>
 
                                     <FlatList
@@ -1392,7 +1392,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                                     setShowPropertyTypeModal(false);
                                                 }}
                                             >
-                                                <Text style={styles.typeModalItemText}>{item}</Text>
+                                                <AppText style={styles.typeModalItemText}>{item}</AppText>
                                             </TouchableOpacity>
                                         )}
                                         showsVerticalScrollIndicator={true}
@@ -1405,7 +1405,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                         style={styles.typeModalCloseButton}
                                         onPress={() => setShowPropertyTypeModal(false)}
                                     >
-                                        <Text style={styles.typeModalCloseText}>Fechar</Text>
+                                        <AppText style={styles.typeModalCloseText}>Fechar</AppText>
                                     </TouchableOpacity>
                                 </View>
                             </TouchableWithoutFeedback>
@@ -1428,7 +1428,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                         <View style={styles.typeModalHandle} />
                                     </View>
                                     <View style={styles.typeModalHeader}>
-                                        <Text style={styles.typeModalHeaderText}>Selecione a transação</Text>
+                                        <AppText style={styles.typeModalHeaderText}>Selecione a transação</AppText>
                                     </View>
 
                                     <FlatList
@@ -1442,7 +1442,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                                     setShowTransactionTypeModal(false);
                                                 }}
                                             >
-                                                <Text style={styles.typeModalItemText}>{item}</Text>
+                                                <AppText style={styles.typeModalItemText}>{item}</AppText>
                                             </TouchableOpacity>
                                         )}
                                         showsVerticalScrollIndicator
@@ -1455,7 +1455,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                         style={styles.typeModalCloseButton}
                                         onPress={() => setShowTransactionTypeModal(false)}
                                     >
-                                        <Text style={styles.typeModalCloseText}>Fechar</Text>
+                                        <AppText style={styles.typeModalCloseText}>Fechar</AppText>
                                     </TouchableOpacity>
                                 </View>
                             </TouchableWithoutFeedback>
@@ -1478,7 +1478,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                         <View style={styles.typeModalHandle} />
                                     </View>
                                     <View style={styles.typeModalHeader}>
-                                        <Text style={styles.typeModalHeaderText}>Selecione quartos</Text>
+                                        <AppText style={styles.typeModalHeaderText}>Selecione quartos</AppText>
                                     </View>
 
                                     <FlatList
@@ -1492,7 +1492,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                                     setShowBedroomsModal(false);
                                                 }}
                                             >
-                                                <Text style={styles.typeModalItemText}>{item}</Text>
+                                                <AppText style={styles.typeModalItemText}>{item}</AppText>
                                             </TouchableOpacity>
                                         )}
                                         showsVerticalScrollIndicator
@@ -1505,7 +1505,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                         style={styles.typeModalCloseButton}
                                         onPress={() => setShowBedroomsModal(false)}
                                     >
-                                        <Text style={styles.typeModalCloseText}>Fechar</Text>
+                                        <AppText style={styles.typeModalCloseText}>Fechar</AppText>
                                     </TouchableOpacity>
                                 </View>
                             </TouchableWithoutFeedback>
@@ -1528,7 +1528,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                         <View style={styles.typeModalHandle} />
                                     </View>
                                     <View style={styles.typeModalHeader}>
-                                        <Text style={styles.typeModalHeaderText}>Selecione banheiros</Text>
+                                        <AppText style={styles.typeModalHeaderText}>Selecione banheiros</AppText>
                                     </View>
 
                                     <FlatList
@@ -1542,7 +1542,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                                     setShowBathroomsModal(false);
                                                 }}
                                             >
-                                                <Text style={styles.typeModalItemText}>{item}</Text>
+                                                <AppText style={styles.typeModalItemText}>{item}</AppText>
                                             </TouchableOpacity>
                                         )}
                                         showsVerticalScrollIndicator
@@ -1555,7 +1555,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                         style={styles.typeModalCloseButton}
                                         onPress={() => setShowBathroomsModal(false)}
                                     >
-                                        <Text style={styles.typeModalCloseText}>Fechar</Text>
+                                        <AppText style={styles.typeModalCloseText}>Fechar</AppText>
                                     </TouchableOpacity>
                                 </View>
                             </TouchableWithoutFeedback>
@@ -1578,7 +1578,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                         <View style={styles.typeModalHandle} />
                                     </View>
                                     <View style={styles.typeModalHeader}>
-                                        <Text style={styles.typeModalHeaderText}>Selecione vagas</Text>
+                                        <AppText style={styles.typeModalHeaderText}>Selecione vagas</AppText>
                                     </View>
 
                                     <FlatList
@@ -1592,7 +1592,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                                     setShowParkingModal(false);
                                                 }}
                                             >
-                                                <Text style={styles.typeModalItemText}>{item}</Text>
+                                                <AppText style={styles.typeModalItemText}>{item}</AppText>
                                             </TouchableOpacity>
                                         )}
                                         showsVerticalScrollIndicator
@@ -1605,7 +1605,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                         style={styles.typeModalCloseButton}
                                         onPress={() => setShowParkingModal(false)}
                                     >
-                                        <Text style={styles.typeModalCloseText}>Fechar</Text>
+                                        <AppText style={styles.typeModalCloseText}>Fechar</AppText>
                                     </TouchableOpacity>
                                 </View>
                             </TouchableWithoutFeedback>
@@ -1634,13 +1634,13 @@ export default function CreateAdScreen({ navigation, route }) {
                                         <View style={styles.typeModalHandle} />
                                     </View>
                                     <View style={styles.typeModalHeader}>
-                                        <Text style={styles.typeModalHeaderText}>Selecione a construtora</Text>
+                                        <AppText style={styles.typeModalHeaderText}>Selecione a construtora</AppText>
                                     </View>
 
                                     {/* Campo de busca */}
                                     <View style={styles.developerSearchContainer}>
                                         <Ionicons name="search" size={20} color="#7f8c8d" style={styles.searchIcon} />
-                                        <TextInput
+                                        <AppTextInput
                                             style={styles.developerSearchInput}
                                             value={developerSearchQuery}
                                             onChangeText={setDeveloperSearchQuery}
@@ -1657,17 +1657,17 @@ export default function CreateAdScreen({ navigation, route }) {
                                     {loadingDevelopers ? (
                                         <View style={styles.loadingContainer}>
                                             <ActivityIndicator size="large" color="#3498db" />
-                                            <Text style={styles.loadingText}>Carregando construtoras...</Text>
+                                            <AppText style={styles.loadingText}>Carregando construtoras...</AppText>
                                         </View>
                                     ) : filteredDevelopers.length === 0 ? (
                                         <View style={styles.emptyContainer}>
                                             <Ionicons name="business-outline" size={48} color="#bdc3c7" />
-                                            <Text style={styles.emptyText}>
+                                            <AppText style={styles.emptyText}>
                                                 {developerSearchQuery 
                                                     ? 'Nenhuma construtora encontrada' 
                                                     : 'Nenhuma construtora disponível'
                                                 }
-                                            </Text>
+                                            </AppText>
                                         </View>
                                     ) : (
                                         <FlatList
@@ -1683,11 +1683,11 @@ export default function CreateAdScreen({ navigation, route }) {
                                                     onPress={() => handleDeveloperSelect(item)}
                                                 >
                                                     <View style={styles.developerItemContent}>
-                                                        <Text style={styles.developerItemName}>{item.full_name}</Text>
+                                                        <AppText style={styles.developerItemName}>{item.full_name}</AppText>
                                                         {item.city_name && (
-                                                            <Text style={styles.developerItemLocation}>
+                                                            <AppText style={styles.developerItemLocation}>
                                                                 {item.city_name}/{item.city_uf}
-                                                            </Text>
+                                                            </AppText>
                                                         )}
                                                     </View>
                                                     {selectedDeveloper?.id === item.id && (
@@ -1709,7 +1709,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                             setDeveloperSearchQuery('');
                                         }}
                                     >
-                                        <Text style={styles.typeModalCloseText}>Fechar</Text>
+                                        <AppText style={styles.typeModalCloseText}>Fechar</AppText>
                                     </TouchableOpacity>
                                 </View>
                             </TouchableWithoutFeedback>
@@ -1732,12 +1732,12 @@ export default function CreateAdScreen({ navigation, route }) {
                                         <View style={styles.typeModalHandle} />
                                     </View>
                                     <View style={styles.typeModalHeader}>
-                                        <Text style={styles.typeModalHeaderText}>Buscar Endereço</Text>
+                                        <AppText style={styles.typeModalHeaderText}>Buscar Endereço</AppText>
                                     </View>
 
                                     <View style={{ padding: 12 }}>
                                         <View style={styles.addressSearchContainer}>
-                                            <TextInput
+                                            <AppTextInput
                                                 style={[styles.textInput, styles.addressSearchInput, styles.addressSearchInputWithClear]}
                                                 value={addressQuery}
                                                 onChangeText={handleAddressSearch}
@@ -1787,12 +1787,12 @@ export default function CreateAdScreen({ navigation, route }) {
                                                     style={styles.suggestionIcon}
                                                 />
                                                 <View style={styles.suggestionContent}>
-                                                    <Text style={styles.suggestionAddress}>
+                                                    <AppText style={styles.suggestionAddress}>
                                                         {item.address || item.formattedAddress.split(',')[0]}
-                                                    </Text>
-                                                    <Text style={styles.suggestionLocation}>
+                                                    </AppText>
+                                                    <AppText style={styles.suggestionLocation}>
                                                         {[item.neighborhood, item.city, item.state].filter(Boolean).join(', ')}
-                                                    </Text>
+                                                    </AppText>
                                                 </View>
                                             </TouchableOpacity>
                                         )}
@@ -1805,7 +1805,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                                 handleOpenMapPicker();
                                             }}>
                                                 <Ionicons name="map-outline" size={16} color="#007AFF" />
-                                                <Text style={styles.mapPickerButtonText}>Não encontrou? Escolher no mapa</Text>
+                                                <AppText style={styles.mapPickerButtonText}>Não encontrou? Escolher no mapa</AppText>
                                             </TouchableOpacity>
                                         }
                                     />
@@ -1814,7 +1814,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                         style={styles.typeModalCloseButton}
                                         onPress={() => setShowAddressModal(false)}
                                     >
-                                        <Text style={styles.typeModalCloseText}>Fechar</Text>
+                                        <AppText style={styles.typeModalCloseText}>Fechar</AppText>
                                     </TouchableOpacity>
                                 </View>
                             </TouchableWithoutFeedback>
@@ -1834,8 +1834,8 @@ export default function CreateAdScreen({ navigation, route }) {
                             <View style={styles.modalIcon}>
                                 <Ionicons name="lock-closed" size={48} color="#e74c3c" />
                             </View>
-                            <Text style={styles.modalTitle}>Você não pode criar anúncios no momento.</Text>
-                            <Text style={styles.modalText}>
+                            <AppText style={styles.modalTitle}>Você não pode criar anúncios no momento.</AppText>
+                            <AppText style={styles.modalText}>
                                 {!planName
                                     ? 'Não foi possível verificar suas permissões agora.'
                                     : isPlanExpired
@@ -1846,20 +1846,20 @@ export default function CreateAdScreen({ navigation, route }) {
                                                 ? `Você atingiu o limite de ${maxAds} anúncios do seu plano (${planName}).`
                                                 : createAdReason || 'Não é possível criar anúncios no momento.'
                                 }
-                            </Text>
+                            </AppText>
 
                             <View style={styles.modalButtons}>
                                 <TouchableOpacity
                                     style={styles.modalCancelButton}
                                     onPress={() => setShowPlanModal(false)}
                                 >
-                                    <Text style={styles.modalCancelText}>Cancelar</Text>
+                                    <AppText style={styles.modalCancelText}>Cancelar</AppText>
                                 </TouchableOpacity>
                                 <TouchableOpacity
                                     style={styles.modalConfirmButton}
                                     onPress={handleUpgradePlan}
                                 >
-                                    <Text style={styles.modalConfirmText}>Ver Planos</Text>
+                                    <AppText style={styles.modalConfirmText}>Ver Planos</AppText>
                                 </TouchableOpacity>
                             </View>
                         </View>
@@ -1879,10 +1879,10 @@ export default function CreateAdScreen({ navigation, route }) {
                                 <Ionicons name="cloud-upload" size={48} color="#3498db" />
                             </View>
 
-                            <Text style={styles.modalTitle}>Enviando Mídias</Text>
-                            <Text style={styles.modalText}>
+                            <AppText style={styles.modalTitle}>Enviando Mídias</AppText>
+                            <AppText style={styles.modalText}>
                                 Aguarde enquanto suas mídias são enviadas...
-                            </Text>
+                            </AppText>
 
                             {/* Progress Bar */}
                             <View style={styles.progressContainer}>
@@ -1894,7 +1894,7 @@ export default function CreateAdScreen({ navigation, route }) {
                                         ]}
                                     />
                                 </View>
-                                <Text style={styles.progressText}>{uploadProgress}%</Text>
+                                <AppText style={styles.progressText}>{uploadProgress}%</AppText>
                             </View>
 
                             <ActivityIndicator size="large" color="#3498db" style={{ marginTop: 20 }} />

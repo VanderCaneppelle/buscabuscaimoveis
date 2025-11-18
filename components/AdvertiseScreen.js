@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
     View,
-    Text,
     StyleSheet,
     TouchableOpacity,
     SafeAreaView,
@@ -13,6 +12,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useUserPlanStore } from '../stores/userPlanStore';
 import { useFocusEffect } from '@react-navigation/native';
 import StandardHeader from './StandardHeader';
+import AppText from './AppText';
 
 
 export default function AdvertiseScreen({ navigation }) {
@@ -130,40 +130,40 @@ export default function AdvertiseScreen({ navigation }) {
             <View style={styles.planInfoCard}>
                 <View style={styles.planInfoHeader}>
                     <Ionicons name="card" size={24} color={isPlanExpired ? "#e74c3c" : "#3498db"} />
-                    <Text style={styles.planInfoTitle}>Seu Plano Atual</Text>
+                    <AppText style={styles.planInfoTitle}>Seu Plano Atual</AppText>
                 </View>
-                <Text style={[styles.planName, isPlanExpired && styles.planNameExpired]}>
+                <AppText style={[styles.planName, isPlanExpired && styles.planNameExpired]}>
                     {planDisplayName}
-                </Text>
+                </AppText>
                 {isPlanExpired && planEndDate && (
-                    <Text style={styles.planExpiredDate}>
+                    <AppText style={styles.planExpiredDate}>
                         Venceu em {new Date(planEndDate).toLocaleDateString('pt-BR')}
-                    </Text>
+                    </AppText>
                 )}
-                <Text style={styles.planStatus}>
+                <AppText style={styles.planStatus}>
                     {canCreateAd
                         ? `${currentAds}/${maxAds} anúncios ativos`
                         : createAdReason}
-                </Text>
+                </AppText>
 
                 {/* Aviso de Plano Vencido */}
                 {isPlanExpired && (
                     <View style={styles.expiredWarning}>
                         <View style={styles.expiredWarningHeader}>
                             <Ionicons name="warning" size={20} color="#e74c3c" />
-                            <Text style={styles.expiredWarningTitle}>Atenção: Plano Vencido</Text>
+                            <AppText style={styles.expiredWarningTitle}>Atenção: Plano Vencido</AppText>
                         </View>
-                        <Text style={styles.expiredWarningText}>
+                        <AppText style={styles.expiredWarningText}>
                             Seus anúncios foram inativados e ficarão em nosso sistema por até 72 horas.
                             {'\n'}
                             Caso o plano não seja renovado, eles serão permanentemente excluídos.
-                        </Text>
+                        </AppText>
                         <TouchableOpacity
                             style={styles.renewButton}
                             onPress={() => navigation.navigate('Plans')}
                         >
                             <Ionicons name="refresh" size={16} color="#fff" />
-                            <Text style={styles.renewButtonText}>Renovar Plano Agora</Text>
+                            <AppText style={styles.renewButtonText}>Renovar Plano Agora</AppText>
                         </TouchableOpacity>
                     </View>
                 )}
@@ -171,19 +171,19 @@ export default function AdvertiseScreen({ navigation }) {
                 {/* Botão para liberar mais anúncios quando disponível < 2 */}
                 {!isPlanExpired && availableAds < 2 && (
                     <View style={styles.upgradeSection}>
-                        <Text style={styles.upgradeMessage}>
+                        <AppText style={styles.upgradeMessage}>
                             {isFreePlan ? 'Contrate um plano para liberar todos os recursos.' :
                                 availableAds === 0
                                     ? '⚠️ Você não tem mais anúncios disponíveis! Não fique sem anunciar, aumente seus limites.'
                                     : '⚠️ Seu limite de anúncios esta quase esgotado! Não fique sem vender! Libere mais anúncios.'}
-                        </Text>
+                        </AppText>
                         <TouchableOpacity
                             style={styles.upgradeButton}
                             onPress={() => handleViewPlans('gold')}
                         >
                             <Ionicons name="arrow-up-circle" size={16} color="#fff" />
 
-                            <Text style={styles.upgradeButtonText}>{planDisplayName === 'Gratuito' ? 'Contratar Plano' : 'Liberar Mais Anúncios'}</Text>
+                            <AppText style={styles.upgradeButtonText}>{planDisplayName === 'Gratuito' ? 'Contratar Plano' : 'Liberar Mais Anúncios'}</AppText>
 
                         </TouchableOpacity>
                     </View>
@@ -202,8 +202,8 @@ export default function AdvertiseScreen({ navigation }) {
                 <Ionicons name={icon} size={32} color="#fff" />
             </View>
             <View style={styles.actionContent}>
-                <Text style={styles.actionTitle}>{title}</Text>
-                <Text style={styles.actionDescription}>{description}</Text>
+                <AppText style={styles.actionTitle}>{title}</AppText>
+                <AppText style={styles.actionDescription}>{description}</AppText>
             </View>
             <Ionicons name="chevron-forward" size={24} color="#7f8c8d" />
         </TouchableOpacity>
@@ -215,8 +215,8 @@ export default function AdvertiseScreen({ navigation }) {
                 <Ionicons name={icon} size={20} color="#fff" />
             </View>
             <View style={styles.statsContent}>
-                <Text style={styles.statsValue}>{value}</Text>
-                <Text style={styles.statsTitle}>{title}</Text>
+                <AppText style={styles.statsValue}>{value}</AppText>
+                <AppText style={styles.statsTitle}>{title}</AppText>
             </View>
         </View>
     );
@@ -238,7 +238,7 @@ export default function AdvertiseScreen({ navigation }) {
                     <View style={styles.statsSection}>
 
                         {/* Quick Stats */}
-                        <Text style={styles.sectionTitle}>Resumo</Text>
+                        <AppText style={styles.sectionTitle}>Resumo</AppText>
                         <View style={styles.statsGrid}>
                             {renderStatsCard(
                                 'Anúncios',
@@ -263,7 +263,7 @@ export default function AdvertiseScreen({ navigation }) {
 
                     {/* Actions */}
                     <View style={styles.actionsSection}>
-                        {/* <Text style={styles.sectionTitle}>Ações</Text> */}
+                        {/* <AppText style={styles.sectionTitle}>Ações</AppText> */}
 
                         {renderActionCard(
                             'Criar Novo Anúncio',
@@ -313,24 +313,24 @@ export default function AdvertiseScreen({ navigation }) {
 
                     {/* Tips */}
                     <View style={styles.tipsSection}>
-                        <Text style={styles.sectionTitle}>Dicas</Text>
+                        <AppText style={styles.sectionTitle}>Dicas</AppText>
                         <View style={styles.tipCard}>
                             <Ionicons name="bulb" size={20} color="#f39c12" />
-                            <Text style={styles.tipText}>
+                            <AppText style={styles.tipText}>
                                 Adicione fotos de qualidade para aumentar as visualizações do seu anúncio
-                            </Text>
+                            </AppText>
                         </View>
                         <View style={styles.tipCard}>
                             <Ionicons name="time" size={20} color="#3498db" />
-                            <Text style={styles.tipText}>
+                            <AppText style={styles.tipText}>
                                 Mantenha seus anúncios sempre atualizados com informações precisas
-                            </Text>
+                            </AppText>
                         </View>
                         <View style={styles.tipCard}>
                             <Ionicons name="star" size={20} color="#e74c3c" />
-                            <Text style={styles.tipText}>
+                            <AppText style={styles.tipText}>
                                 Responda rapidamente aos interessados para aumentar as chances de venda
-                            </Text>
+                            </AppText>
                         </View>
                     </View>
                 </ScrollView>

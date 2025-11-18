@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AppText from './AppText';
 
 /**
  * Header padrão para todas as telas do app (exceto HomeScreen)
@@ -38,10 +39,10 @@ export default function StandardHeader({
                         resizeMode="contain"
                     />
                 )}
-                <Text style={styles.headerTitle}>{title}</Text>
+                <AppText style={styles.headerTitle}>{title}</AppText>
             </View>
             {subtitle && (
-                <Text style={styles.headerSubtitle}>{subtitle}</Text>
+                <AppText style={styles.headerSubtitle}>{subtitle}</AppText>
             )}
         </View>
     );

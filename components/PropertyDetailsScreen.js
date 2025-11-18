@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
     View,
-    Text,
     StyleSheet,
     TouchableOpacity,
     SafeAreaView,
@@ -25,6 +24,7 @@ import { useFavoritesStore } from '../stores/favoritesStore';
 import { supabase } from '../lib/supabase';
 import { PlanService } from '../lib/planService';
 import { extractYouTubeVideoId } from '../lib/youtubeUtils';
+import AppText from './AppText';
 
 const { width, height } = Dimensions.get('window');
 
@@ -94,13 +94,18 @@ export default function PropertyDetailsScreen({ route, navigation }) {
 
     useEffect(() => {
         navigation.setOptions({
+            headerTitle: () => (
+                <AppText style={styles.headerTitle}>
+                    Detalhes do Imóvel
+                </AppText>
+            ),
             headerRight: () => (
                 <View style={styles.headerButton}>
                     <FavoriteButton disabled={loading} propertyId={property.id} />
                 </View>
             ),
         });
-    }, [loading]);
+    }, [loading, navigation]);
 
     // Removido: não precisamos mais verificar status manualmente
 
@@ -199,12 +204,12 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                 <View style={styles.fullscreenVideoItem}>
                     <View style={styles.errorContainer}>
                         <Ionicons name="alert-circle" size={48} color="#e74c3c" />
-                        <Text style={styles.errorText}>Erro ao carregar vídeo</Text>
+                        <AppText style={styles.errorText}>Erro ao carregar vídeo</AppText>
                         <TouchableOpacity
                             style={styles.openExternalButton}
                             onPress={() => Linking.openURL(videoUrl)}
                         >
-                            <Text style={styles.openExternalText}>Abrir no YouTube</Text>
+                            <AppText style={styles.openExternalText}>Abrir no YouTube</AppText>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -217,7 +222,7 @@ export default function PropertyDetailsScreen({ route, navigation }) {
             <View style={styles.fullscreenVideoItem}>
                 {!isReady && !hasError && (
                     <View style={styles.loadingContainer}>
-                        <Text style={styles.loadingText}>Carregando vídeo...</Text>
+                        <AppText style={styles.loadingText}>Carregando vídeo...</AppText>
                     </View>
                 )}
                 <View style={{ width: width, height: videoHeight, backgroundColor: '#000' }}>
@@ -302,7 +307,7 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                     {/* Overlay "+X" para o último tile se há mais vídeos */}
                     {isLastTile && hasMoreItems && (
                         <View style={styles.moreImagesOverlay}>
-                            <Text style={styles.moreImagesText}>+{remainingCount}</Text>
+                            <AppText style={styles.moreImagesText}>+{remainingCount}</AppText>
                         </View>
                     )}
 
@@ -334,7 +339,7 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                 {/* Overlay "+X" para o último tile se há mais imagens */}
                 {isLastTile && hasMoreItems && (
                     <View style={styles.moreImagesOverlay}>
-                        <Text style={styles.moreImagesText}>+{remainingCount}</Text>
+                        <AppText style={styles.moreImagesText}>+{remainingCount}</AppText>
                     </View>
                 )}
             </TouchableOpacity>
@@ -637,9 +642,9 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                             activeOpacity={0.7}
                         >
                             <Ionicons name="images" size={20} color={mediaViewMode === 'photos' ? '#fff' : '#6B7280'} />
-                            <Text style={[styles.mediaToggleText, mediaViewMode === 'photos' && styles.mediaToggleTextActive]}>
+                            <AppText style={[styles.mediaToggleText, mediaViewMode === 'photos' && styles.mediaToggleTextActive]}>
                                 Fotos ({imageFiles.length})
-                            </Text>
+                            </AppText>
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={[styles.mediaToggleButton, mediaViewMode === 'videos' && styles.mediaToggleButtonActive]}
@@ -647,9 +652,9 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                             activeOpacity={0.7}
                         >
                             <Ionicons name="videocam" size={20} color={mediaViewMode === 'videos' ? '#fff' : '#6B7280'} />
-                            <Text style={[styles.mediaToggleText, mediaViewMode === 'videos' && styles.mediaToggleTextActive]}>
+                            <AppText style={[styles.mediaToggleText, mediaViewMode === 'videos' && styles.mediaToggleTextActive]}>
                                 Vídeos ({videoUrls.length})
-                            </Text>
+                            </AppText>
                         </TouchableOpacity>
                     </View>
                 )}
@@ -718,10 +723,10 @@ export default function PropertyDetailsScreen({ route, navigation }) {
             >
                 {/* Informações Principais */}
                 <View style={styles.mainInfo}>
-                    <Text style={styles.title}>{property.title || 'Sem título'}</Text>
+                    <AppText style={styles.title}>{property.title || 'Sem título'}</AppText>
 
 
-                    <Text style={styles.location}>
+                    <AppText style={styles.location}>
                         <Ionicons name="location" size={16} color="#64748b" />
                         {' '}{(() => {
                             // Mostrar: Endereço, Bairro, Cidade (apenas os que existirem)
@@ -732,7 +737,7 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                             ].filter(Boolean);
                             return String(parts.join(', ') || 'Localização não informada');
                         })()}
-                    </Text>
+                    </AppText>
                     
                     {/* Preços: mostrar preço normal + promocional se houver */}
                     {(() => {
@@ -744,46 +749,46 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                         if (hasPromo) {
                             return (
                                 <View style={styles.priceContainer}>
-                                    <Text style={styles.originalPrice}>{formatPrice(mainPrice)}</Text>
-                                    <Text style={styles.salePrice}>{formatPrice(parseFloat(promoPrice))}</Text>
+                                    <AppText style={styles.originalPrice}>{formatPrice(mainPrice)}</AppText>
+                                    <AppText style={styles.salePrice}>{formatPrice(parseFloat(promoPrice))}</AppText>
                                 </View>
                             );
                         } else {
-                            return <Text style={styles.price}>{formatPrice(mainPrice)}</Text>;
+                            return <AppText style={styles.price}>{formatPrice(mainPrice)}</AppText>;
                         }
                     })()}
                     
-                    <Text style={styles.type}>
+                    <AppText style={styles.type}>
                         {String(property.property_type || 'Não informado')} • {String(property.transaction_type || 'Não informado')}
-                    </Text>
+                    </AppText>
                 </View>
 
                 {/* Características */}
                 <View style={styles.characteristics}>
-                    <Text style={styles.sectionTitle}>Características</Text>
+                    <AppText style={styles.sectionTitle}>Características</AppText>
                     <View style={styles.characteristicsGrid}>
                         {property.bedrooms && property.bedrooms > 0 ? (
                             <View style={styles.characteristicItem}>
                                 <Ionicons name="bed" size={24} color="#1e3a8a" />
-                                <Text style={styles.characteristicText}>{String(property.bedrooms)} quartos</Text>
+                                <AppText style={styles.characteristicText}>{String(property.bedrooms)} quartos</AppText>
                             </View>
                         ) : null}
                         {property.bathrooms && property.bathrooms > 0 ? (
                             <View style={styles.characteristicItem}>
                                 <MaterialCommunityIcons name="toilet" size={24} color="#1e3a8a" />
-                                <Text style={styles.characteristicText}>{String(property.bathrooms)} banheiros</Text>
+                                <AppText style={styles.characteristicText}>{String(property.bathrooms)} banheiros</AppText>
                             </View>
                         ) : null}
                         {property.area && property.area > 0 ? (
                             <View style={styles.characteristicItem}>
                                 <Ionicons name="resize" size={24} color="#1e3a8a" />
-                                <Text style={styles.characteristicText}>{formatArea(property.area)}</Text>
+                                <AppText style={styles.characteristicText}>{formatArea(property.area)}</AppText>
                             </View>
                         ) : null}
                         {property.parking_spaces && property.parking_spaces > 0 ? (
                             <View style={styles.characteristicItem}>
                                 <Ionicons name="car" size={24} color="#1e3a8a" />
-                                <Text style={styles.characteristicText}>{String(property.parking_spaces)} vagas</Text>
+                                <AppText style={styles.characteristicText}>{String(property.parking_spaces)} vagas</AppText>
                             </View>
                         ) : null}
                     </View>
@@ -792,37 +797,37 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                 {/* Descrição */}
                 {property.description && (
                     <View style={styles.description}>
-                        <Text style={styles.sectionTitle}>Descrição</Text>
-                        <Text style={styles.descriptionText}>{property.description}</Text>
+                        <AppText style={styles.sectionTitle}>Descrição</AppText>
+                        <AppText style={styles.descriptionText}>{property.description}</AppText>
                     </View>
                 )}
 
                 {/* Informações Adicionais
                 <View style={styles.additionalInfo}>
-                    <Text style={styles.sectionTitle}>Informações Adicionais</Text>
+                    <AppText style={styles.sectionTitle}>Informações Adicionais</AppText>
                     <View style={styles.infoList}>
                         {property.construction_year && (
                             <View style={styles.infoItem}>
-                                <Text style={styles.infoLabel}>Ano de Construção:</Text>
-                                <Text style={styles.infoValue}>{property.construction_year}</Text>
+                                <AppText style={styles.infoLabel}>Ano de Construção:</AppText>
+                                <AppText style={styles.infoValue}>{property.construction_year}</AppText>
                             </View>
                         )}
                         {property.floor && (
                             <View style={styles.infoItem}>
-                                <Text style={styles.infoLabel}>Andar:</Text>
-                                <Text style={styles.infoValue}>{property.floor}</Text>
+                                <AppText style={styles.infoLabel}>Andar:</AppText>
+                                <AppText style={styles.infoValue}>{property.floor}</AppText>
                             </View>
                         )}
                         {property.condominium_fee && (
                             <View style={styles.infoItem}>
-                                <Text style={styles.infoLabel}>Taxa do Condomínio:</Text>
-                                <Text style={styles.infoValue}>{formatPrice(property.condominium_fee)}</Text>
+                                <AppText style={styles.infoLabel}>Taxa do Condomínio:</AppText>
+                                <AppText style={styles.infoValue}>{formatPrice(property.condominium_fee)}</AppText>
                             </View>
                         )}
                         {property.iptu && (
                             <View style={styles.infoItem}>
-                                <Text style={styles.infoLabel}>IPTU:</Text>
-                                <Text style={styles.infoValue}>{formatPrice(property.iptu)}</Text>
+                                <AppText style={styles.infoLabel}>IPTU:</AppText>
+                                <AppText style={styles.infoValue}>{formatPrice(property.iptu)}</AppText>
                             </View>
                         )}
                     </View>
@@ -842,7 +847,7 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                 activeOpacity={0.85}
             >
                 <Ionicons name="location" size={18} color="#fff" />
-                <Text style={styles.floatingMapText}>Ver no mapa</Text>
+                <AppText style={styles.floatingMapText}>Ver no mapa</AppText>
             </TouchableOpacity>
 
             {/* Botões de Contato Fixos no Bottom */}
@@ -854,7 +859,7 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                             onPress={handleWhatsAppContactOwner}
                         >
                             <Ionicons name="logo-whatsapp" size={24} color="#fff" />
-                            <Text style={styles.contactButtonText}>WhatsApp</Text>
+                            <AppText style={styles.contactButtonText}>WhatsApp</AppText>
                         </TouchableOpacity>
 
                         <TouchableOpacity
@@ -862,7 +867,7 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                             onPress={handlePhoneContact}
                         >
                             <Ionicons name="call" size={24} color="#fff" />
-                            <Text style={styles.contactButtonText}>Ligar</Text>
+                            <AppText style={styles.contactButtonText}>Ligar</AppText>
                         </TouchableOpacity>
                     </>
                 ) : (
@@ -872,7 +877,7 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                             onPress={handleWhatsAppContact}
                         >
                             <Ionicons name="logo-whatsapp" size={24} color="#fff" />
-                            <Text style={styles.contactButtonText}>WhatsApp</Text>
+                            <AppText style={styles.contactButtonText}>WhatsApp</AppText>
                         </TouchableOpacity>
 
                         <TouchableOpacity
@@ -880,7 +885,7 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                             onPress={handlePhoneContact}
                         >
                             <Ionicons name="call" size={24} color="#fff" />
-                            <Text style={styles.contactButtonText}>Ligar</Text>
+                            <AppText style={styles.contactButtonText}>Ligar</AppText>
                         </TouchableOpacity>
                     </>
                 )}
@@ -897,12 +902,12 @@ export default function PropertyDetailsScreen({ route, navigation }) {
                 <View style={styles.fullscreenContainer}>
                     {/* Header com contador e botão fechar */}
                     <View style={styles.fullscreenHeader}>
-                        <Text style={styles.fullscreenCounter}>
+                        <AppText style={styles.fullscreenCounter}>
                             {mediaViewMode === 'photos' 
                                 ? `${selectedImageIndex + 1} de ${imageFiles.length}`
                                 : `${selectedImageIndex + 1} de ${videoUrls.length}`
                             }
-                        </Text>
+                        </AppText>
                         <TouchableOpacity
                             style={styles.closeButton}
                             onPress={closeFullscreenModal}
@@ -1387,6 +1392,12 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '600',
         color: '#fff',
+    },
+    headerTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#00335e',
+        maxWidth: width - 120, // Largura máxima considerando botões laterais
     },
     headerButton: {
         padding: 5,

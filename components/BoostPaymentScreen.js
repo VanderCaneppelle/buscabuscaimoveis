@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
     View,
-    Text,
     StyleSheet,
     ScrollView,
     TouchableOpacity,
@@ -17,6 +16,7 @@ import BackendService from '../lib/backendService';
 import { useAuth } from '../contexts/AuthContext';
 import { useBoostsStore } from '../stores/boostsStore';
 import StandardHeader from './StandardHeader';
+import AppText from './AppText';
 
 export default function BoostPaymentScreen({ navigation, route }) {
     console.log('Rendered BoostPaymentScreen');
@@ -178,31 +178,31 @@ export default function BoostPaymentScreen({ navigation, route }) {
                         <View style={styles.stampContainer}>
                             <Ionicons name="receipt-outline" size={24} color="#00335e" />
                         </View>
-                        <Text style={styles.receiptTitle}>Comprovante de Impulsionamento</Text>
-                        <Text style={styles.receiptDate}>
+                        <AppText style={styles.receiptTitle}>Comprovante de Impulsionamento</AppText>
+                        <AppText style={styles.receiptDate}>
                             {new Date().toLocaleDateString('pt-BR', {
                                 day: '2-digit',
                                 month: 'long',
                                 year: 'numeric'
                             })}
-                        </Text>
+                        </AppText>
                     </View>
 
                     {/* Recibo Principal */}
                     <View style={styles.receiptBody}>
                         {/* Seção Imóvel */}
                         <View style={styles.receiptSection}>
-                            <Text style={styles.sectionTitle}>IMÓVEL</Text>
+                            <AppText style={styles.sectionTitle}>IMÓVEL</AppText>
                             <View style={styles.propertyDetailsOnly}>
-                                <Text style={styles.propertyTitle} numberOfLines={2}>
+                                <AppText style={styles.propertyTitle} numberOfLines={2}>
                                     {property.title}
-                                </Text>
-                                <Text style={styles.propertyLocation}>
+                                </AppText>
+                                <AppText style={styles.propertyLocation}>
                                     {property.city}, {property.state}
-                                </Text>
-                                <Text style={styles.propertyId}>
+                                </AppText>
+                                <AppText style={styles.propertyId}>
                                     ID: {property.id.substring(0, 8).toUpperCase()}
-                                </Text>
+                                </AppText>
                             </View>
                         </View>
 
@@ -210,16 +210,16 @@ export default function BoostPaymentScreen({ navigation, route }) {
 
                         {/* Seção Serviço */}
                         <View style={styles.receiptSection}>
-                            <Text style={styles.sectionTitle}>SERVIÇO CONTRATADO</Text>
+                            <AppText style={styles.sectionTitle}>SERVIÇO CONTRATADO</AppText>
                             <View style={styles.serviceRow}>
                                 <View style={styles.serviceIcon}>
                                     <Ionicons name="rocket" size={20} color="#fff" />
                                 </View>
                                 <View style={styles.serviceInfo}>
-                                    <Text style={styles.serviceName}>Impulsionamento Premium</Text>
-                                    <Text style={styles.serviceDuration}>
+                                    <AppText style={styles.serviceName}>Impulsionamento Premium</AppText>
+                                    <AppText style={styles.serviceDuration}>
                                         {boostPlan.duration_days === 1 ? '1 dia' : `${boostPlan.duration_days} dias`} de destaque
-                                    </Text>
+                                    </AppText>
                                 </View>
                             </View>
                         </View>
@@ -228,18 +228,18 @@ export default function BoostPaymentScreen({ navigation, route }) {
 
                         {/* Seção Detalhes */}
                         <View style={styles.receiptSection}>
-                            <Text style={styles.sectionTitle}>DETALHES</Text>
+                            <AppText style={styles.sectionTitle}>DETALHES</AppText>
                             <View style={styles.detailRow}>
-                                <Text style={styles.detailLabel}>Início do Impulsionamento:</Text>
-                                <Text style={styles.detailValue}>Após aprovação do pagamento</Text>
+                                <AppText style={styles.detailLabel}>Início do Impulsionamento:</AppText>
+                                <AppText style={styles.detailValue}>Após aprovação do pagamento</AppText>
                             </View>
                             <View style={styles.detailRow}>
-                                <Text style={styles.detailLabel}>Visibilidade:</Text>
-                                <Text style={styles.detailValue}>Seção "Destaques"</Text>
+                                <AppText style={styles.detailLabel}>Visibilidade:</AppText>
+                                <AppText style={styles.detailValue}>Seção "Destaques"</AppText>
                             </View>
                             <View style={styles.detailRow}>
-                                <Text style={styles.detailLabel}>Alcance estimado:</Text>
-                                <Text style={styles.detailValue}>Até 10x mais visualizações</Text>
+                                <AppText style={styles.detailLabel}>Alcance estimado:</AppText>
+                                <AppText style={styles.detailValue}>Até 10x mais visualizações</AppText>
                             </View>
                         </View>
 
@@ -247,21 +247,21 @@ export default function BoostPaymentScreen({ navigation, route }) {
 
                         {/* Seção Pagamento */}
                         <View style={styles.receiptSection}>
-                            <Text style={styles.sectionTitle}>FORMA DE PAGAMENTO</Text>
+                            <AppText style={styles.sectionTitle}>FORMA DE PAGAMENTO</AppText>
                             <View style={styles.paymentRow}>
                                 <Ionicons name="card" size={24} color="#27ae60" />
                                 <View style={styles.paymentInfo}>
-                                    <Text style={styles.paymentMethod}>Mercado Pago</Text>
-                                    <Text style={styles.paymentSubtext}>
+                                    <AppText style={styles.paymentMethod}>Mercado Pago</AppText>
+                                    <AppText style={styles.paymentSubtext}>
                                         Pix, Cartão, Boleto e mais opções
-                                    </Text>
+                                    </AppText>
                                 </View>
                             </View>
                             <View style={styles.receiptFooter}>
                                 <Ionicons name="shield-checkmark" size={18} color="#27ae60" />
-                                <Text style={styles.footerText}>
+                                <AppText style={styles.footerText}>
                                     Transação 100% segura via Mercado Pago
-                                </Text>
+                                </AppText>
                             </View>
                         </View>
 
@@ -270,20 +270,20 @@ export default function BoostPaymentScreen({ navigation, route }) {
                         {/* Seção Total */}
                         <View style={styles.totalSection}>
                             <View style={styles.totalRow}>
-                                <Text style={styles.totalLabel}>Subtotal</Text>
-                                <Text style={styles.totalValue}>
+                                <AppText style={styles.totalLabel}>Subtotal</AppText>
+                                <AppText style={styles.totalValue}>
                                     R$ {boostPlan.price.toFixed(2).replace('.', ',')}
-                                </Text>
+                                </AppText>
                             </View>
                             <View style={styles.totalRow}>
-                                <Text style={styles.totalLabel}>Taxas</Text>
-                                <Text style={styles.totalValue}>R$ 0,00</Text>
+                                <AppText style={styles.totalLabel}>Taxas</AppText>
+                                <AppText style={styles.totalValue}>R$ 0,00</AppText>
                             </View>
                             <View style={styles.grandTotalRow}>
-                                <Text style={styles.grandTotalLabel}>TOTAL</Text>
-                                <Text style={styles.grandTotalValue}>
+                                <AppText style={styles.grandTotalLabel}>TOTAL</AppText>
+                                <AppText style={styles.grandTotalValue}>
                                     R$ {boostPlan.price.toFixed(2).replace('.', ',')}
-                                </Text>
+                                </AppText>
                             </View>
                         </View>
                     </View>
@@ -304,9 +304,9 @@ export default function BoostPaymentScreen({ navigation, route }) {
                         ) : (
                             <View style={styles.paymentButtonContent}>
                                 <Ionicons name="card" size={20} color="#fff" />
-                                <Text style={styles.paymentButtonText}>
+                                <AppText style={styles.paymentButtonText}>
                                     Confirmar e Pagar
-                                </Text>
+                                </AppText>
                             </View>
                         )}
                     </TouchableOpacity>
@@ -325,7 +325,7 @@ export default function BoostPaymentScreen({ navigation, route }) {
                         <TouchableOpacity onPress={handleWebViewClose}>
                             <Ionicons name="close" size={28} color="#00335e" />
                         </TouchableOpacity>
-                        <Text style={styles.webViewTitle}>Mercado Pago</Text>
+                        <AppText style={styles.webViewTitle}>Mercado Pago</AppText>
                         <View style={{ width: 28 }} />
                     </View>
                     {checkoutUrl ? (
@@ -362,12 +362,12 @@ export default function BoostPaymentScreen({ navigation, route }) {
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
                         <View style={styles.successIconContainer}>
-                            <Text style={styles.successIcon}>🚀</Text>
+                            <AppText style={styles.successIcon}>🚀</AppText>
                         </View>
-                        <Text style={styles.modalTitle}>Anúncio Impulsionado!</Text>
-                        <Text style={styles.modalMessage}>
+                        <AppText style={styles.modalTitle}>Anúncio Impulsionado!</AppText>
+                        <AppText style={styles.modalMessage}>
                             Seu anúncio já está aparecendo na seção de Destaques e será visto por muito mais pessoas!
-                        </Text>
+                        </AppText>
                         <TouchableOpacity
                             style={styles.modalButton}
                             onPress={() => {
@@ -379,7 +379,7 @@ export default function BoostPaymentScreen({ navigation, route }) {
                                 });
                             }}
                         >
-                            <Text style={styles.modalButtonText}>Ir para Início</Text>
+                            <AppText style={styles.modalButtonText}>Ir para Início</AppText>
                         </TouchableOpacity>
                     </View>
                 </View>

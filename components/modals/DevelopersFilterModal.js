@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import {
     View,
-    Text,
     StyleSheet,
     Modal,
     TouchableOpacity,
     FlatList,
-    TextInput,
     ActivityIndicator,
 } from 'react-native';
+import AppText from "../../components/AppText";
+import AppTextInput from "../../components/AppTextInput";
 import { Ionicons } from '@expo/vector-icons';
 import { DeveloperService } from '../../lib/developerService';
 
@@ -78,15 +78,15 @@ export default function DevelopersFilterModal({ visible, onClose, onSelectDevelo
                 activeOpacity={0.7}
             >
                 <View style={styles.developerInfo}>
-                    <Text style={styles.developerName}>{item.full_name || item.name}</Text>
-                    <Text style={styles.developerLocation}>
+                    <AppText style={styles.developerName}>{item.full_name || item.name}</AppText>
+                    <AppText style={styles.developerLocation}>
                         {item.city_name && item.city_uf 
                             ? `${item.city_name} - ${item.city_uf}` 
                             : 'Localização não informada'}
-                    </Text>
-                    <Text style={styles.propertyCount}>
+                    </AppText>
+                    <AppText style={styles.propertyCount}>
                         {item.property_count} {item.property_count === 1 ? 'imóvel' : 'imóveis'}
-                    </Text>
+                    </AppText>
                 </View>
                 {isSelected && (
                     <Ionicons name="checkmark-circle" size={24} color="#00335e" />
@@ -106,7 +106,7 @@ export default function DevelopersFilterModal({ visible, onClose, onSelectDevelo
                 <View style={styles.modalContainer}>
                     {/* Header */}
                     <View style={styles.header}>
-                        <Text style={styles.title}>Selecionar Construtora</Text>
+                        <AppText style={styles.title}>Selecionar Construtora</AppText>
                         <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                             <Ionicons name="close" size={28} color="#666" />
                         </TouchableOpacity>
@@ -115,7 +115,7 @@ export default function DevelopersFilterModal({ visible, onClose, onSelectDevelo
                     {/* Busca */}
                     <View style={styles.searchContainer}>
                         <Ionicons name="search" size={20} color="#999" style={styles.searchIcon} />
-                        <TextInput
+                        <AppTextInput
                             style={styles.searchInput}
                             placeholder="Buscar construtora..."
                             placeholderTextColor="#999"
@@ -134,16 +134,16 @@ export default function DevelopersFilterModal({ visible, onClose, onSelectDevelo
                     {loading ? (
                         <View style={styles.loadingContainer}>
                             <ActivityIndicator size="large" color="#00335e" />
-                            <Text style={styles.loadingText}>Carregando construtoras...</Text>
+                            <AppText style={styles.loadingText}>Carregando construtoras...</AppText>
                         </View>
                     ) : filteredDevelopers.length === 0 ? (
                         <View style={styles.emptyContainer}>
                             <Ionicons name="business-outline" size={64} color="#ccc" />
-                            <Text style={styles.emptyText}>
+                            <AppText style={styles.emptyText}>
                                 {searchQuery 
                                     ? 'Nenhuma construtora encontrada' 
                                     : 'Nenhuma construtora com imóveis disponível'}
-                            </Text>
+                            </AppText>
                         </View>
                     ) : (
                         <FlatList
@@ -164,7 +164,7 @@ export default function DevelopersFilterModal({ visible, onClose, onSelectDevelo
                             activeOpacity={0.8}
                         >
                             <Ionicons name="close-circle-outline" size={20} color="#00335e" />
-                            <Text style={styles.clearButtonText}>Limpar Filtro</Text>
+                            <AppText style={styles.clearButtonText}>Limpar Filtro</AppText>
                         </TouchableOpacity>
                     </View>
                 </View>

@@ -572,7 +572,7 @@ export default function MyPropertiesScreen({ navigation }) {
             return (
                 <View style={[mediaStyle, { backgroundColor: '#f3f4f6', justifyContent: 'center', alignItems: 'center' }]}>
                     <Ionicons name="image-outline" size={30} color="#9ca3af" />
-                    <Text style={{ fontSize: 10, color: '#9ca3af', marginTop: 5 }}>Mídia inválida</Text>
+                    <AppText style={{ fontSize: 10, color: '#9ca3af', marginTop: 5 }}>Mídia inválida</AppText>
                 </View>
             );
         }
@@ -583,7 +583,7 @@ export default function MyPropertiesScreen({ navigation }) {
             return (
                 <View style={[mediaStyle, { backgroundColor: '#fef2f2', justifyContent: 'center', alignItems: 'center' }]}>
                     <Ionicons name="warning-outline" size={30} color="#ef4444" />
-                    <Text style={{ fontSize: 10, color: '#ef4444', marginTop: 5, textAlign: 'center' }}>URL malformada</Text>
+                    <AppText style={{ fontSize: 10, color: '#ef4444', marginTop: 5, textAlign: 'center' }}>URL malformada</AppText>
                 </View>
             );
         }
@@ -643,9 +643,9 @@ export default function MyPropertiesScreen({ navigation }) {
                     <View style={styles.propertyInfo}>
                         <View style={styles.propertyHeader}>
                             <View style={styles.titleContainer}>
-                                <Text style={styles.propertyTitle} numberOfLines={1}>
+                                <AppText style={styles.propertyTitle} numberOfLines={1}>
                                     {item.title || 'Título indisponível'}
-                                </Text>
+                                </AppText>
                                 {item.images && item.images.length > 0 && (
                                     <View style={styles.mediaCountContainer}>
                                         {(() => {
@@ -658,13 +658,13 @@ export default function MyPropertiesScreen({ navigation }) {
                                                     {imageCount > 0 && (
                                                         <View style={styles.mediaCountItem}>
                                                             <Ionicons name="image" size={12} color="#64748b" />
-                                                            <Text style={styles.mediaCountText}>{imageCount}</Text>
+                                                            <AppText style={styles.mediaCountText}>{imageCount}</AppText>
                                                         </View>
                                                     )}
                                                     {videoCount > 0 && (
                                                         <View style={styles.mediaCountItem}>
                                                             <Ionicons name="videocam" size={12} color="#64748b" />
-                                                            <Text style={styles.mediaCountText}>{videoCount}</Text>
+                                                            <AppText style={styles.mediaCountText}>{videoCount}</AppText>
                                                         </View>
                                                     )}
                                                 </View>
@@ -679,22 +679,22 @@ export default function MyPropertiesScreen({ navigation }) {
                                         styles.statusBadge,
                                         { backgroundColor: getStatusColor(item.status) }
                                     ]}>
-                                        <Text style={styles.statusText}>
+                                        <AppText style={styles.statusText}>
                                             {getStatusText(item.status)}
-                                        </Text>
+                                        </AppText>
                                     </View>
                                     {/* Badge de Ativação (ad_status) */}
                                     {item.ad_status && (
                                         <View style={[styles.boostedBadge, { backgroundColor: item.ad_status === 'active' ? '#16a34a' : '#9ca3af' }]}>
                                             <Ionicons name={item.ad_status === 'active' ? 'flash' : 'pause'} size={10} color="#fff" />
-                                            <Text style={styles.boostedBadgeText}>{item.ad_status === 'active' ? 'Ativo' : 'Inativo'}</Text>
+                                            <AppText style={styles.boostedBadgeText}>{item.ad_status === 'active' ? 'Ativo' : 'Inativo'}</AppText>
                                         </View>
                                     )}
                                     {/* Badge de Impulsionado */}
                                     {activeBoosts[item.id] && (
                                         <View style={styles.boostedBadge}>
                                             <Ionicons name="rocket" size={10} color="#fff" />
-                                            <Text style={styles.boostedBadgeText}>Impulsionado</Text>
+                                            <AppText style={styles.boostedBadgeText}>Impulsionado</AppText>
                                         </View>
                                     )}
                                 </View>
@@ -705,12 +705,12 @@ export default function MyPropertiesScreen({ navigation }) {
                                 />
                             </View>
                         </View>
-                        <Text style={styles.propertyLocation}>
+                        <AppText style={styles.propertyLocation}>
                             {item.city || 'Cidade indisponível'}
-                        </Text>
-                        <Text style={styles.propertyPrice}>
+                        </AppText>
+                        <AppText style={styles.propertyPrice}>
                             R$ {item.price?.toLocaleString('pt-BR') || 'Preço indisponível'}
-                        </Text>
+                        </AppText>
                     </View>
                 </TouchableOpacity>
 
@@ -718,36 +718,36 @@ export default function MyPropertiesScreen({ navigation }) {
                     <View style={styles.expandedContent}>
                         {item.description && (
                             <View style={styles.expandedSection}>
-                                <Text style={styles.expandedSectionTitle}>Descrição</Text>
-                                <Text style={styles.expandedSectionText}>{item.description}</Text>
+                                <AppText style={styles.expandedSectionTitle}>Descrição</AppText>
+                                <AppText style={styles.expandedSectionText}>{item.description}</AppText>
                             </View>
                         )}
 
                         <View style={styles.expandedSection}>
-                            <Text style={styles.expandedSectionTitle}>Características</Text>
+                            <AppText style={styles.expandedSectionTitle}>Características</AppText>
                             <View style={styles.characteristicsGrid}>
                                 {item.bedrooms && (
                                     <View style={styles.characteristicItem}>
                                         <Ionicons name="bed" size={16} color="#1e3a8a" />
-                                        <Text style={styles.characteristicText}>{item.bedrooms} quartos</Text>
+                                        <AppText style={styles.characteristicText}>{item.bedrooms} quartos</AppText>
                                     </View>
                                 )}
                                 {item.bathrooms && (
                                     <View style={styles.characteristicItem}>
                                         <Ionicons name="water" size={16} color="#1e3a8a" />
-                                        <Text style={styles.characteristicText}>{item.bathrooms} banheiros</Text>
+                                        <AppText style={styles.characteristicText}>{item.bathrooms} banheiros</AppText>
                                     </View>
                                 )}
                                 {item.area && (
                                     <View style={styles.characteristicItem}>
                                         <Ionicons name="resize" size={16} color="#1e3a8a" />
-                                        <Text style={styles.characteristicText}>{item.area}m²</Text>
+                                        <AppText style={styles.characteristicText}>{item.area}m²</AppText>
                                     </View>
                                 )}
                                 {item.parking_spaces && (
                                     <View style={styles.characteristicItem}>
                                         <Ionicons name="car" size={16} color="#1e3a8a" />
-                                        <Text style={styles.characteristicText}>{item.parking_spaces} vagas</Text>
+                                        <AppText style={styles.characteristicText}>{item.parking_spaces} vagas</AppText>
                                     </View>
                                 )}
                             </View>
@@ -755,7 +755,7 @@ export default function MyPropertiesScreen({ navigation }) {
 
                         {item.images && item.images.length > 0 && (
                             <View style={styles.expandedSection}>
-                                <Text style={styles.expandedSectionTitle}>Mídia</Text>
+                                <AppText style={styles.expandedSectionTitle}>Mídia</AppText>
                                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                                     {(() => {
                                         const validImages = item.images.filter(uri => uri && typeof uri === 'string' && uri.trim() !== '' && isValidUrl(uri));
@@ -786,9 +786,9 @@ export default function MyPropertiesScreen({ navigation }) {
 
                                     if (invalidCount > 0) {
                                         return (
-                                            <Text style={styles.invalidMediaText}>
+                                            <AppText style={styles.invalidMediaText}>
                                                 {invalidCount} mídia(s) com URL inválida(s) foram ocultada(s)
-                                            </Text>
+                                            </AppText>
                                         );
                                     }
                                     return null;
@@ -799,7 +799,7 @@ export default function MyPropertiesScreen({ navigation }) {
                         {/* Alternar ad_status quando aprovado */}
                         {item.status === 'approved' && (
                             <View style={[styles.expandedSection, { paddingTop: 0 }]}>
-                                <Text style={styles.expandedSectionTitle}>Disponibilidade</Text>
+                                <AppText style={styles.expandedSectionTitle}>Disponibilidade</AppText>
                                 <TouchableOpacity
                                     style={[styles.toggleAdStatusBtn, { backgroundColor: item.ad_status === 'active' ? '#f59e0b' : '#16a34a' }]}
                                     onPress={async () => {
@@ -823,9 +823,9 @@ export default function MyPropertiesScreen({ navigation }) {
                                     }}
                                 >
                                     <Ionicons name={item.ad_status === 'active' ? 'pause' : 'play'} size={16} color="#fff" />
-                                    <Text style={styles.toggleAdStatusText}>
+                                    <AppText style={styles.toggleAdStatusText}>
                                         {item.ad_status === 'active' ? 'Inativar anúncio' : 'Ativar anúncio'}
-                                    </Text>
+                                    </AppText>
                                 </TouchableOpacity>
                             </View>
                         )}
@@ -835,7 +835,7 @@ export default function MyPropertiesScreen({ navigation }) {
                                 style={styles.viewDetailsButton}
                                 onPress={() => navigation.navigate('PropertyDetails', { propertyId: item.id })}
                             >
-                                <Text style={styles.viewDetailsButtonText}>Ver Detalhes Completos</Text>
+                                <AppText style={styles.viewDetailsButtonText}>Ver Detalhes Completos</AppText>
                             </TouchableOpacity> */}
 
                             {/* Boost Status - Mostrar se anúncio está impulsionado */}
@@ -843,9 +843,9 @@ export default function MyPropertiesScreen({ navigation }) {
                                 <View style={styles.boostStatusContainer}>
                                     <View style={styles.boostStatusHeader}>
                                         <Ionicons name="rocket" size={18} color="#27ae60" />
-                                        <Text style={styles.boostStatusTitle}>🚀 Anúncio Impulsionado</Text>
+                                        <AppText style={styles.boostStatusTitle}>🚀 Anúncio Impulsionado</AppText>
                                     </View>
-                                    <Text style={styles.boostStatusText}>
+                                    <AppText style={styles.boostStatusText}>
                                         Impulsionado até {new Date(activeBoosts[item.id].end_date).toLocaleDateString('pt-BR', {
                                             day: '2-digit',
                                             month: '2-digit',
@@ -853,7 +853,7 @@ export default function MyPropertiesScreen({ navigation }) {
                                             hour: '2-digit',
                                             minute: '2-digit'
                                         })}
-                                    </Text>
+                                    </AppText>
                                 </View>
                             )}
 
@@ -873,12 +873,12 @@ export default function MyPropertiesScreen({ navigation }) {
                                             size={18}
                                             color={activeBoosts[item.id] ? '#95a5a6' : '#f39c12'}
                                         />
-                                        <Text style={[
+                                        <AppText style={[
                                             styles.boostButtonText,
                                             activeBoosts[item.id] && styles.boostButtonTextDisabled
                                         ]}>
                                             {activeBoosts[item.id] ? 'Impulsionado' : 'Impulsionar'}
-                                        </Text>
+                                        </AppText>
                                     </TouchableOpacity>
                                 )}
                                 <TouchableOpacity
@@ -886,14 +886,14 @@ export default function MyPropertiesScreen({ navigation }) {
                                     onPress={() => openEditModal(item)}
                                 >
                                     <Ionicons name="create-outline" size={18} color="#3498db" />
-                                    <Text style={styles.editButtonText}>Editar</Text>
+                                    <AppText style={styles.editButtonText}>Editar</AppText>
                                 </TouchableOpacity>
                                 <TouchableOpacity
                                     style={[styles.actionButton, styles.deleteButton]}
                                     onPress={() => openDeleteModal(item)}
                                 >
                                     <Ionicons name="trash-outline" size={18} color="#e74c3c" />
-                                    <Text style={styles.deleteButtonText}>Excluir</Text>
+                                    <AppText style={styles.deleteButtonText}>Excluir</AppText>
                                 </TouchableOpacity>
                             </View>
                         </View>
@@ -912,7 +912,7 @@ export default function MyPropertiesScreen({ navigation }) {
             <View style={[styles.container, { paddingTop: insets.top }]}>
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color="#00335e" />
-                    <Text style={styles.loadingText}>Carregando seus anúncios...</Text>
+                    <AppText style={styles.loadingText}>Carregando seus anúncios...</AppText>
                 </View>
             </View>
         );
@@ -929,8 +929,8 @@ export default function MyPropertiesScreen({ navigation }) {
                     <Ionicons name="arrow-back" size={24} color="#00335e" />
                 </TouchableOpacity>
                 <View style={styles.headerContent}>
-                    <Text style={styles.headerTitle}>Meus Anúncios</Text>
-                    <Text style={styles.headerSubtitle}>Gerencie seus anúncios</Text>
+                    <AppText style={styles.headerTitle}>Meus Anúncios</AppText>
+                    <AppText style={styles.headerSubtitle}>Gerencie seus anúncios</AppText>
                 </View>
                 <TouchableOpacity
                     style={styles.addButton}
@@ -953,25 +953,25 @@ export default function MyPropertiesScreen({ navigation }) {
             {/* Estatísticas */}
             <View style={styles.statsContainer}>
                 <View style={styles.planSummary}>
-                    <Text style={styles.planTitle}>
+                    <AppText style={styles.planTitle}>
                         {userPlan?.plans?.display_name || 'Plano Básico'}
-                    </Text>
-                    <Text style={styles.planLimit}>
+                    </AppText>
+                    <AppText style={styles.planLimit}>
                         {stats.total}/{userPlan?.plans?.max_ads || 0} anúncios utilizados
-                    </Text>
+                    </AppText>
                 </View>
                 <View style={styles.statsGrid}>
                     <View style={styles.statItem}>
-                        <Text style={styles.statNumber}>{stats.pending}</Text>
-                        <Text style={styles.statLabel}>Pendentes</Text>
+                        <AppText style={styles.statNumber}>{stats.pending}</AppText>
+                        <AppText style={styles.statLabel}>Pendentes</AppText>
                     </View>
                     <View style={styles.statItem}>
-                        <Text style={styles.statNumber}>{stats.approved}</Text>
-                        <Text style={styles.statLabel}>Aprovados</Text>
+                        <AppText style={styles.statNumber}>{stats.approved}</AppText>
+                        <AppText style={styles.statLabel}>Aprovados</AppText>
                     </View>
                     <View style={styles.statItem}>
-                        <Text style={styles.statNumber}>{stats.total}</Text>
-                        <Text style={styles.statLabel}>Total</Text>
+                        <AppText style={styles.statNumber}>{stats.total}</AppText>
+                        <AppText style={styles.statLabel}>Total</AppText>
                     </View>
                 </View>
             </View>
@@ -982,25 +982,25 @@ export default function MyPropertiesScreen({ navigation }) {
                     style={[styles.filterButton, selectedFilter === 'all' && styles.filterButtonActive]}
                     onPress={() => setSelectedFilter('all')}
                 >
-                    <Text style={[styles.filterButtonText, selectedFilter === 'all' && styles.filterButtonTextActive]}>
+                    <AppText style={[styles.filterButtonText, selectedFilter === 'all' && styles.filterButtonTextActive]}>
                         Todos
-                    </Text>
+                    </AppText>
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={[styles.filterButton, selectedFilter === 'pending' && styles.filterButtonActive]}
                     onPress={() => setSelectedFilter('pending')}
                 >
-                    <Text style={[styles.filterButtonText, selectedFilter === 'pending' && styles.filterButtonTextActive]}>
+                    <AppText style={[styles.filterButtonText, selectedFilter === 'pending' && styles.filterButtonTextActive]}>
                         Pendentes
-                    </Text>
+                    </AppText>
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={[styles.filterButton, selectedFilter === 'approved' && styles.filterButtonActive]}
                     onPress={() => setSelectedFilter('approved')}
                 >
-                    <Text style={[styles.filterButtonText, selectedFilter === 'approved' && styles.filterButtonTextActive]}>
+                    <AppText style={[styles.filterButtonText, selectedFilter === 'approved' && styles.filterButtonTextActive]}>
                         Aprovados
-                    </Text>
+                    </AppText>
                 </TouchableOpacity>
             </View>
 
@@ -1030,10 +1030,10 @@ export default function MyPropertiesScreen({ navigation }) {
                 ListEmptyComponent={
                     <View style={styles.emptyContainer}>
                         <Ionicons name="home-outline" size={64} color="#bdc3c7" />
-                        <Text style={styles.emptyText}>Nenhum anúncio encontrado</Text>
-                        <Text style={styles.emptySubtext}>
+                        <AppText style={styles.emptyText}>Nenhum anúncio encontrado</AppText>
+                        <AppText style={styles.emptySubtext}>
                             Você ainda não criou nenhum anúncio
-                        </Text>
+                        </AppText>
                         <TouchableOpacity
                             style={styles.createAdButton}
                             onPress={() => {
@@ -1052,7 +1052,7 @@ export default function MyPropertiesScreen({ navigation }) {
                                 }
                             }}
                         >
-                            <Text style={styles.createAdButtonText}>Criar Primeiro Anúncio</Text>
+                            <AppText style={styles.createAdButtonText}>Criar Primeiro Anúncio</AppText>
                         </TouchableOpacity>
                     </View>
                 }
@@ -1072,7 +1072,7 @@ export default function MyPropertiesScreen({ navigation }) {
                         >
                             <Ionicons name="close" size={24} color="#00335e" />
                         </TouchableOpacity>
-                        <Text style={styles.modalTitle}>Editar Anúncio</Text>
+                        <AppText style={styles.modalTitle}>Editar Anúncio</AppText>
                         <TouchableOpacity
                             style={styles.modalSaveButton}
                             onPress={handleSaveEdit}
@@ -1081,7 +1081,7 @@ export default function MyPropertiesScreen({ navigation }) {
                             {editLoading ? (
                                 <ActivityIndicator size="small" color="#fff" />
                             ) : (
-                                <Text style={styles.modalSaveButtonText}>Salvar</Text>
+                                <AppText style={styles.modalSaveButtonText}>Salvar</AppText>
                             )}
                         </TouchableOpacity>
                     </View>
@@ -1094,7 +1094,7 @@ export default function MyPropertiesScreen({ navigation }) {
                             <ScrollView style={styles.modalContent}>
                                 <View style={styles.formContainer}>
                                     <View style={styles.inputGroup}>
-                                        <Text style={styles.inputLabel}>Título do Anúncio *</Text>
+                                        <AppText style={styles.inputLabel}>Título do Anúncio *</AppText>
                                         <TextInput
                                             style={styles.textInput}
                                             value={editForm.title}
@@ -1105,7 +1105,7 @@ export default function MyPropertiesScreen({ navigation }) {
                                     </View>
 
                                     <View style={styles.inputGroup}>
-                                        <Text style={styles.inputLabel}>Descrição</Text>
+                                        <AppText style={styles.inputLabel}>Descrição</AppText>
                                         <TextInput
                                             style={[styles.textInput, styles.textArea]}
                                             value={editForm.description}
@@ -1119,7 +1119,7 @@ export default function MyPropertiesScreen({ navigation }) {
 
                                     <View style={styles.row}>
                                         <View style={[styles.inputGroup, styles.halfWidth]}>
-                                            <Text style={styles.inputLabel}>Preço *</Text>
+                                            <AppText style={styles.inputLabel}>Preço *</AppText>
                                             <TextInput
                                                 style={styles.textInput}
                                                 value={editForm.price}
@@ -1130,7 +1130,7 @@ export default function MyPropertiesScreen({ navigation }) {
                                             />
                                         </View>
                                         <View style={[styles.inputGroup, styles.halfWidth]}>
-                                            <Text style={styles.inputLabel}>Preço Promocional</Text>
+                                            <AppText style={styles.inputLabel}>Preço Promocional</AppText>
                                             <TextInput
                                                 style={styles.textInput}
                                                 value={editForm.salePrice}
@@ -1144,7 +1144,7 @@ export default function MyPropertiesScreen({ navigation }) {
 
                                     <View style={styles.row}>
                                         <View style={[styles.inputGroup, styles.halfWidth]}>
-                                            <Text style={styles.inputLabel}>Área (m²)</Text>
+                                            <AppText style={styles.inputLabel}>Área (m²)</AppText>
                                             <TextInput
                                                 style={styles.textInput}
                                                 value={editForm.area}
@@ -1157,11 +1157,11 @@ export default function MyPropertiesScreen({ navigation }) {
                                     </View>
 
                                     {/* Tipo de Imóvel */}
-                                    <Text style={[styles.sectionTitle, styles.sectionTitleWithMargin]}>Tipo de Imóvel</Text>
+                                    <AppText style={[styles.sectionTitle, styles.sectionTitleWithMargin]}>Tipo de Imóvel</AppText>
 
                                     <View style={styles.row}>
                                         <View style={[styles.inputGroup, styles.halfWidth]}>
-                                            <Text style={styles.inputLabel}>Tipo *</Text>
+                                            <AppText style={styles.inputLabel}>Tipo *</AppText>
                                             <TouchableOpacity
                                                 style={styles.dropdownButton}
                                                 onPress={() => {
@@ -1169,12 +1169,12 @@ export default function MyPropertiesScreen({ navigation }) {
                                                     setShowPropertyTypeDropdown(!showPropertyTypeDropdown);
                                                 }}
                                             >
-                                                <Text style={[
+                                                <AppText style={[
                                                     styles.dropdownButtonText,
                                                     !editForm.propertyType && styles.placeholderText
                                                 ]}>
                                                     {editForm.propertyType || 'Selecione o tipo'}
-                                                </Text>
+                                                </AppText>
                                                 <Ionicons
                                                     name={showPropertyTypeDropdown ? 'chevron-up' : 'chevron-down'}
                                                     size={20}
@@ -1199,7 +1199,7 @@ export default function MyPropertiesScreen({ navigation }) {
                                                                     setShowPropertyTypeDropdown(false);
                                                                 }}
                                                             >
-                                                                <Text style={styles.dropdownItemText}>{type}</Text>
+                                                                <AppText style={styles.dropdownItemText}>{type}</AppText>
                                                             </TouchableOpacity>
                                                         ))}
                                                     </ScrollView>
@@ -1207,7 +1207,7 @@ export default function MyPropertiesScreen({ navigation }) {
                                             )}
                                         </View>
                                         <View style={[styles.inputGroup, styles.halfWidth]}>
-                                            <Text style={styles.inputLabel}>Transação *</Text>
+                                            <AppText style={styles.inputLabel}>Transação *</AppText>
                                             <TouchableOpacity
                                                 style={styles.dropdownButton}
                                                 onPress={() => {
@@ -1215,12 +1215,12 @@ export default function MyPropertiesScreen({ navigation }) {
                                                     setShowTransactionTypeDropdown(!showTransactionTypeDropdown);
                                                 }}
                                             >
-                                                <Text style={[
+                                                <AppText style={[
                                                     styles.dropdownButtonText,
                                                     !editForm.transactionType && styles.placeholderText
                                                 ]}>
                                                     {editForm.transactionType || 'Selecione a transação'}
-                                                </Text>
+                                                </AppText>
                                                 <Ionicons
                                                     name={showTransactionTypeDropdown ? 'chevron-up' : 'chevron-down'}
                                                     size={20}
@@ -1245,7 +1245,7 @@ export default function MyPropertiesScreen({ navigation }) {
                                                                     setShowTransactionTypeDropdown(false);
                                                                 }}
                                                             >
-                                                                <Text style={styles.dropdownItemText}>{type}</Text>
+                                                                <AppText style={styles.dropdownItemText}>{type}</AppText>
                                                             </TouchableOpacity>
                                                         ))}
                                                     </ScrollView>
@@ -1256,7 +1256,7 @@ export default function MyPropertiesScreen({ navigation }) {
 
                                     <View style={styles.row}>
                                         <View style={[styles.inputGroup, styles.thirdWidth]}>
-                                            <Text style={styles.inputLabel}>Quartos</Text>
+                                            <AppText style={styles.inputLabel}>Quartos</AppText>
                                             <TouchableOpacity
                                                 style={styles.dropdownButton}
                                                 onPress={() => {
@@ -1264,12 +1264,12 @@ export default function MyPropertiesScreen({ navigation }) {
                                                     setShowBedroomsDropdown(!showBedroomsDropdown);
                                                 }}
                                             >
-                                                <Text style={[
+                                                <AppText style={[
                                                     styles.dropdownButtonText,
                                                     !editForm.bedrooms && styles.placeholderText
                                                 ]}>
                                                     {editForm.bedrooms || '0'}
-                                                </Text>
+                                                </AppText>
                                                 <Ionicons
                                                     name={showBedroomsDropdown ? 'chevron-up' : 'chevron-down'}
                                                     size={20}
@@ -1294,7 +1294,7 @@ export default function MyPropertiesScreen({ navigation }) {
                                                                     setShowBedroomsDropdown(false);
                                                                 }}
                                                             >
-                                                                <Text style={styles.dropdownItemText}>{value}</Text>
+                                                                <AppText style={styles.dropdownItemText}>{value}</AppText>
                                                             </TouchableOpacity>
                                                         ))}
                                                     </ScrollView>
@@ -1302,7 +1302,7 @@ export default function MyPropertiesScreen({ navigation }) {
                                             )}
                                         </View>
                                         <View style={[styles.inputGroup, styles.thirdWidth]}>
-                                            <Text style={styles.inputLabel}>Banheiros</Text>
+                                            <AppText style={styles.inputLabel}>Banheiros</AppText>
                                             <TouchableOpacity
                                                 style={styles.dropdownButton}
                                                 onPress={() => {
@@ -1310,12 +1310,12 @@ export default function MyPropertiesScreen({ navigation }) {
                                                     setShowBathroomsDropdown(!showBathroomsDropdown);
                                                 }}
                                             >
-                                                <Text style={[
+                                                <AppText style={[
                                                     styles.dropdownButtonText,
                                                     !editForm.bathrooms && styles.placeholderText
                                                 ]}>
                                                     {editForm.bathrooms || '0'}
-                                                </Text>
+                                                </AppText>
                                                 <Ionicons
                                                     name={showBathroomsDropdown ? 'chevron-up' : 'chevron-down'}
                                                     size={20}
@@ -1340,7 +1340,7 @@ export default function MyPropertiesScreen({ navigation }) {
                                                                     setShowBathroomsDropdown(false);
                                                                 }}
                                                             >
-                                                                <Text style={styles.dropdownItemText}>{value}</Text>
+                                                                <AppText style={styles.dropdownItemText}>{value}</AppText>
                                                             </TouchableOpacity>
                                                         ))}
                                                     </ScrollView>
@@ -1348,7 +1348,7 @@ export default function MyPropertiesScreen({ navigation }) {
                                             )}
                                         </View>
                                         <View style={[styles.inputGroup, styles.thirdWidth]}>
-                                            <Text style={styles.inputLabel}>Vagas</Text>
+                                            <AppText style={styles.inputLabel}>Vagas</AppText>
                                             <TouchableOpacity
                                                 style={styles.dropdownButton}
                                                 onPress={() => {
@@ -1356,12 +1356,12 @@ export default function MyPropertiesScreen({ navigation }) {
                                                     setShowParkingDropdown(!showParkingDropdown);
                                                 }}
                                             >
-                                                <Text style={[
+                                                <AppText style={[
                                                     styles.dropdownButtonText,
                                                     !editForm.parkingSpaces && styles.placeholderText
                                                 ]}>
                                                     {editForm.parkingSpaces || '0'}
-                                                </Text>
+                                                </AppText>
                                                 <Ionicons
                                                     name={showParkingDropdown ? 'chevron-up' : 'chevron-down'}
                                                     size={20}
@@ -1386,7 +1386,7 @@ export default function MyPropertiesScreen({ navigation }) {
                                                                     setShowParkingDropdown(false);
                                                                 }}
                                                             >
-                                                                <Text style={styles.dropdownItemText}>{value}</Text>
+                                                                <AppText style={styles.dropdownItemText}>{value}</AppText>
                                                             </TouchableOpacity>
                                                         ))}
                                                     </ScrollView>
@@ -1396,10 +1396,10 @@ export default function MyPropertiesScreen({ navigation }) {
                                     </View>
 
                                     {/* Localização */}
-                                    <Text style={[styles.sectionTitle, styles.sectionTitleWithMargin]}>Localização</Text>
+                                    <AppText style={[styles.sectionTitle, styles.sectionTitleWithMargin]}>Localização</AppText>
 
                                     <View style={styles.inputGroup}>
-                                        <Text style={styles.inputLabel}>Endereço *</Text>
+                                        <AppText style={styles.inputLabel}>Endereço *</AppText>
                                         <TextInput
                                             style={styles.textInput}
                                             value={editForm.address}
@@ -1411,7 +1411,7 @@ export default function MyPropertiesScreen({ navigation }) {
 
                                     <View style={styles.row}>
                                         <View style={[styles.inputGroup, styles.halfWidth]}>
-                                            <Text style={styles.inputLabel}>Bairro</Text>
+                                            <AppText style={styles.inputLabel}>Bairro</AppText>
                                             <TextInput
                                                 style={styles.textInput}
                                                 value={editForm.neighborhood}
@@ -1421,7 +1421,7 @@ export default function MyPropertiesScreen({ navigation }) {
                                             />
                                         </View>
                                         <View style={[styles.inputGroup, styles.halfWidth]}>
-                                            <Text style={styles.inputLabel}>CEP</Text>
+                                            <AppText style={styles.inputLabel}>CEP</AppText>
                                             <TextInput
                                                 style={styles.textInput}
                                                 value={editForm.zipCode}
@@ -1435,7 +1435,7 @@ export default function MyPropertiesScreen({ navigation }) {
 
                                     <View style={styles.row}>
                                         <View style={[styles.inputGroup, styles.halfWidth]}>
-                                            <Text style={styles.inputLabel}>Cidade *</Text>
+                                            <AppText style={styles.inputLabel}>Cidade *</AppText>
                                             <TextInput
                                                 style={styles.textInput}
                                                 value={editForm.city}
@@ -1445,7 +1445,7 @@ export default function MyPropertiesScreen({ navigation }) {
                                             />
                                         </View>
                                         <View style={[styles.inputGroup, styles.halfWidth]}>
-                                            <Text style={styles.inputLabel}>Estado *</Text>
+                                            <AppText style={styles.inputLabel}>Estado *</AppText>
                                             <TextInput
                                                 style={styles.textInput}
                                                 value={editForm.state}
@@ -1459,13 +1459,13 @@ export default function MyPropertiesScreen({ navigation }) {
                                     {/* Seção de Gerenciamento de Imagens */}
                                     <View style={styles.formGroup}>
                                         <View style={styles.mediaSectionHeader}>
-                                            <Text style={styles.formLabel}>Fotos</Text>
+                                            <AppText style={styles.formLabel}>Fotos</AppText>
                                             <TouchableOpacity
                                                 style={styles.addMediaButton}
                                                 onPress={addMedia}
                                             >
                                                 <Ionicons name="add" size={16} color="#fff" />
-                                                <Text style={styles.addMediaButtonText}>Adicionar Fotos</Text>
+                                                <AppText style={styles.addMediaButtonText}>Adicionar Fotos</AppText>
                                             </TouchableOpacity>
                                         </View>
 
@@ -1489,17 +1489,17 @@ export default function MyPropertiesScreen({ navigation }) {
                                         ) : (
                                             <View style={styles.noMediaContainer}>
                                                 <Ionicons name="images-outline" size={48} color="#bdc3c7" />
-                                                <Text style={styles.noMediaText}>Nenhuma foto adicionada</Text>
-                                                <Text style={styles.noMediaSubtext}>
+                                                <AppText style={styles.noMediaText}>Nenhuma foto adicionada</AppText>
+                                                <AppText style={styles.noMediaSubtext}>
                                                     Toque em "Adicionar Fotos" para incluir imagens
-                                                </Text>
+                                                </AppText>
                                             </View>
                                         )}
                                     </View>
 
                                     {/* Seção de Gerenciamento de Vídeos do YouTube */}
                                     <View style={styles.formGroup}>
-                                        <Text style={styles.formLabel}>Vídeos do YouTube</Text>
+                                        <AppText style={styles.formLabel}>Vídeos do YouTube</AppText>
                                         <View style={styles.youtubeInputContainer}>
                                             <TextInput
                                                 style={styles.youtubeInput}
@@ -1514,7 +1514,7 @@ export default function MyPropertiesScreen({ navigation }) {
                                                 style={styles.addYoutubeButton}
                                                 onPress={handleAddYouTubeUrl}
                                             >
-                                                <Text style={styles.addYoutubeButtonText}>Adicionar</Text>
+                                                <AppText style={styles.addYoutubeButtonText}>Adicionar</AppText>
                                             </TouchableOpacity>
                                         </View>
 
@@ -1547,10 +1547,10 @@ export default function MyPropertiesScreen({ navigation }) {
                                         ) : (
                                             <View style={styles.noMediaContainer}>
                                                 <Ionicons name="logo-youtube" size={48} color="#bdc3c7" />
-                                                <Text style={styles.noMediaText}>Nenhum vídeo adicionado</Text>
-                                                <Text style={styles.noMediaSubtext}>
+                                                <AppText style={styles.noMediaText}>Nenhum vídeo adicionado</AppText>
+                                                <AppText style={styles.noMediaSubtext}>
                                                     Cole uma URL do YouTube acima e toque em "+"
-                                                </Text>
+                                                </AppText>
                                             </View>
                                         )}
                                     </View>
@@ -1570,16 +1570,16 @@ export default function MyPropertiesScreen({ navigation }) {
                 <View style={styles.deleteModalOverlay}>
                     <View style={styles.deleteModalContent}>
                         <Ionicons name="warning" size={48} color="#e74c3c" />
-                        <Text style={styles.deleteModalTitle}>Excluir Anúncio</Text>
-                        <Text style={styles.deleteModalText}>
+                        <AppText style={styles.deleteModalTitle}>Excluir Anúncio</AppText>
+                        <AppText style={styles.deleteModalText}>
                             Tem certeza que deseja excluir "{selectedProperty?.title}"? Esta ação não pode ser desfeita.
-                        </Text>
+                        </AppText>
                         <View style={styles.deleteModalButtons}>
                             <TouchableOpacity
                                 style={styles.deleteModalCancelButton}
                                 onPress={() => setDeleteModalVisible(false)}
                             >
-                                <Text style={styles.deleteModalCancelText}>Cancelar</Text>
+                                <AppText style={styles.deleteModalCancelText}>Cancelar</AppText>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={styles.deleteModalConfirmButton}
@@ -1589,7 +1589,7 @@ export default function MyPropertiesScreen({ navigation }) {
                                 {deleteLoading ? (
                                     <ActivityIndicator size="small" color="#fff" />
                                 ) : (
-                                    <Text style={styles.deleteModalConfirmText}>Excluir</Text>
+                                    <AppText style={styles.deleteModalConfirmText}>Excluir</AppText>
                                 )}
                             </TouchableOpacity>
                         </View>

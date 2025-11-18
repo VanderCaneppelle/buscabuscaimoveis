@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
     View,
-    Text,
     StyleSheet,
     ScrollView,
     TouchableOpacity,
@@ -10,6 +9,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { getTermsInfo } from '../lib/termsConfig';
+import AppText from './AppText';
 
 export default function TermsAndPrivacyScreen({ navigation, visible, onClose, type = 'terms' }) {
     console.log('Rendered TermsAndPrivacyScreen');
@@ -108,29 +108,29 @@ Para dúvidas ou solicitações, entre em contato pelo WhatsApp disponível no a
             .map((line, index) => {
                 if (line.startsWith('# ')) {
                     return (
-                        <Text key={index} style={styles.title}>
+                        <AppText key={index} style={styles.title}>
                             {line.replace('# ', '')}
-                        </Text>
+                        </AppText>
                     );
                 } else if (line.startsWith('## ')) {
                     return (
-                        <Text key={index} style={styles.subtitle}>
+                        <AppText key={index} style={styles.subtitle}>
                             {line.replace('## ', '')}
-                        </Text>
+                        </AppText>
                     );
                 } else if (line.startsWith('- ')) {
                     return (
-                        <Text key={index} style={styles.listItem}>
+                        <AppText key={index} style={styles.listItem}>
                             • {line.replace('- ', '')}
-                        </Text>
+                        </AppText>
                     );
                 } else if (line.trim() === '') {
                     return <View key={index} style={styles.spacing} />;
                 } else {
                     return (
-                        <Text key={index} style={styles.paragraph}>
+                        <AppText key={index} style={styles.paragraph}>
                             {line}
-                        </Text>
+                        </AppText>
                     );
                 }
             });
@@ -152,25 +152,25 @@ Para dúvidas ou solicitações, entre em contato pelo WhatsApp disponível no a
                         <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
                             <Ionicons name="close" size={24} color="#3498db" />
                         </TouchableOpacity>
-                        <Text style={styles.headerTitle}>
+                        <AppText style={styles.headerTitle}>
                             {activeTab === 'terms' ? 'Termos de Uso' : 'Política de Privacidade'}
-                        </Text>
+                        </AppText>
                         <View style={styles.tabContainer}>
                             <TouchableOpacity
                                 style={[styles.tab, activeTab === 'terms' && styles.activeTab]}
                                 onPress={() => setActiveTab('terms')}
                             >
-                                <Text style={[styles.tabText, activeTab === 'terms' && styles.activeTabText]}>
+                                <AppText style={[styles.tabText, activeTab === 'terms' && styles.activeTabText]}>
                                     Termos
-                                </Text>
+                                </AppText>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={[styles.tab, activeTab === 'privacy' && styles.activeTab]}
                                 onPress={() => setActiveTab('privacy')}
                             >
-                                <Text style={[styles.tabText, activeTab === 'privacy' && styles.activeTabText]}>
+                                <AppText style={[styles.tabText, activeTab === 'privacy' && styles.activeTabText]}>
                                     Privacidade
-                                </Text>
+                                </AppText>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -192,25 +192,25 @@ Para dúvidas ou solicitações, entre em contato pelo WhatsApp disponível no a
                 <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
                     <Ionicons name="close" size={24} color="#3498db" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>
+                <AppText style={styles.headerTitle}>
                     {activeTab === 'terms' ? 'Termos de Uso' : 'Política de Privacidade'}
-                </Text>
+                </AppText>
                 <View style={styles.tabContainer}>
                     <TouchableOpacity
                         style={[styles.tab, activeTab === 'terms' && styles.activeTab]}
                         onPress={() => setActiveTab('terms')}
                     >
-                        <Text style={[styles.tabText, activeTab === 'terms' && styles.activeTabText]}>
+                        <AppText style={[styles.tabText, activeTab === 'terms' && styles.activeTabText]}>
                             Termos
-                        </Text>
+                        </AppText>
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={[styles.tab, activeTab === 'privacy' && styles.activeTab]}
                         onPress={() => setActiveTab('privacy')}
                     >
-                        <Text style={[styles.tabText, activeTab === 'privacy' && styles.activeTabText]}>
+                        <AppText style={[styles.tabText, activeTab === 'privacy' && styles.activeTabText]}>
                             Privacidade
-                        </Text>
+                        </AppText>
                     </TouchableOpacity>
                 </View>
             </View>

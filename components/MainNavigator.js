@@ -290,7 +290,7 @@ function TabNavigator() {
                 name="Favoritos"
                 component={FavoritesStack}
                 options={{
-                    tabBarLabel: 'Selecionados',
+                    tabBarLabel: 'Favoritos',
                     tabBarBadge: favCount > 0 ? (favCount > 99 ? '99+' : favCount) : undefined,
                     tabBarBadgeStyle: {
                         backgroundColor: '#00335e',

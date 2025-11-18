@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
     View,
-    Text,
     StyleSheet,
     TouchableOpacity,
     Modal,
@@ -13,6 +12,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Slider from '@react-native-community/slider';
 import { styles } from './FiltersModal.styles';
+import AppText from "../../components/AppText";
+import AppTextInput from "../../components/AppTextInput";
 
 export default function FiltersModal({
     visible,
@@ -142,7 +143,7 @@ export default function FiltersModal({
                     style={styles.modalContent}
                 >
                     <View style={styles.modalHeader}>
-                        <Text style={styles.modalTitle}>Filtros</Text>
+                        <AppText style={styles.modalTitle}>Filtros</AppText>
                         <TouchableOpacity onPress={onClose}>
                             <Ionicons name="close" size={24} color="#00335e" />
                         </TouchableOpacity>
@@ -158,7 +159,7 @@ export default function FiltersModal({
                         >
                             {/* Tipo de Propriedade */}
                             <View style={styles.filterGroup}>
-                                <Text style={styles.filterLabel}>Tipo de Propriedade</Text>
+                                <AppText style={styles.filterLabel}>Tipo de Propriedade</AppText>
                                 <View style={styles.propertyTypeContainer}>
                                     {propertyTypes.map((type) => (
                                         <TouchableOpacity
@@ -169,12 +170,12 @@ export default function FiltersModal({
                                             ]}
                                             onPress={() => togglePropertyType(type)}
                                         >
-                                            <Text style={[
+                                            <AppText style={[
                                                 styles.propertyTypeButtonText,
                                                 tempFilters.propertyType.includes(type) && styles.propertyTypeButtonTextSelected
                                             ]}>
                                                 {type}
-                                            </Text>
+                                            </AppText>
                                         </TouchableOpacity>
                                     ))}
                                 </View>
@@ -182,14 +183,14 @@ export default function FiltersModal({
 
                             {/* Cidade com Dropdown */}
                             <View style={styles.inputGroup}>
-                                <Text style={styles.inputLabel}>Cidade</Text>
+                                <AppText style={styles.inputLabel}>Cidade</AppText>
                                 <TouchableOpacity
                                     style={styles.dropdownButton}
                                     onPress={() => setShowCityDropdown(!showCityDropdown)}
                                 >
-                                    <Text style={styles.dropdownButtonText}>
+                                    <AppText style={styles.dropdownButtonText}>
                                         {tempFilters.city || 'Selecione a cidade'}
-                                    </Text>
+                                    </AppText>
                                     <Ionicons
                                         name={showCityDropdown ? "chevron-up" : "chevron-down"}
                                         size={24}
@@ -208,7 +209,7 @@ export default function FiltersModal({
                                                 style={styles.dropdownItem}
                                                 onPress={() => selectCity('')}
                                             >
-                                                <Text style={styles.dropdownItemText}>Todas as cidades</Text>
+                                                <AppText style={styles.dropdownItemText}>Todas as cidades</AppText>
                                             </TouchableOpacity>
                                             {cities.map((city, index) => (
                                                 <TouchableOpacity
@@ -216,7 +217,7 @@ export default function FiltersModal({
                                                     style={styles.dropdownItem}
                                                     onPress={() => selectCity(city)}
                                                 >
-                                                    <Text style={styles.dropdownItemText}>{city}</Text>
+                                                    <AppText style={styles.dropdownItemText}>{city}</AppText>
                                                 </TouchableOpacity>
                                             ))}
                                         </ScrollView>
@@ -226,21 +227,21 @@ export default function FiltersModal({
 
                             {/* Range de Preço com Slider */}
                             <View style={styles.filterGroup}>
-                                <Text style={styles.filterLabel}>Faixa de Preço</Text>
+                                <AppText style={styles.filterLabel}>Faixa de Preço</AppText>
 
                                 {/* Valores de preço acima dos sliders */}
                                 <View style={styles.priceDisplayContainer}>
-                                    <Text style={styles.priceDisplayText}>
+                                    <AppText style={styles.priceDisplayText}>
                                         R$ {formatPrice(sliderValues.min)}
-                                    </Text>
-                                    <Text style={styles.priceDisplayText}>
+                                    </AppText>
+                                    <AppText style={styles.priceDisplayText}>
                                         R$ {formatPrice(sliderValues.max)}
-                                    </Text>
+                                    </AppText>
                                 </View>
 
                                 {/* Sliders ocupando toda a largura */}
                                 <View style={styles.sliderContainer}>
-                                    <Text style={styles.sliderLabel}>Preço Mínimo</Text>
+                                    <AppText style={styles.sliderLabel}>Preço Mínimo</AppText>
                                     <Slider
                                         style={styles.slider}
                                         minimumValue={priceRange.min}
@@ -253,7 +254,7 @@ export default function FiltersModal({
                                         step={10000}
                                     />
 
-                                    <Text style={styles.sliderLabel}>Preço Máximo</Text>
+                                    <AppText style={styles.sliderLabel}>Preço Máximo</AppText>
                                     <Slider
                                         style={styles.slider}
                                         minimumValue={priceRange.min}
@@ -272,10 +273,10 @@ export default function FiltersModal({
 
                     <View style={[styles.filterButtons, { paddingBottom: insets.bottom + 20 }]}>
                         <TouchableOpacity style={styles.clearButton} onPress={clearFilters}>
-                            <Text style={styles.clearButtonText}>Limpar</Text>
+                            <AppText style={styles.clearButtonText}>Limpar</AppText>
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.applyButton} onPress={applyFilters}>
-                            <Text style={styles.applyButtonText}>Aplicar</Text>
+                            <AppText style={styles.applyButtonText}>Aplicar</AppText>
                         </TouchableOpacity>
                     </View>
                 </KeyboardAvoidingView>

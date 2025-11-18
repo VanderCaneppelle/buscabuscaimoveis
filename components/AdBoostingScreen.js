@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, FlatList, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { View, StyleSheet, SafeAreaView, FlatList, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { PropertyService } from '../lib/propertyService';
 import { BoostService } from '../lib/boostService';
 import StandardHeader from './StandardHeader';
+import AppText from './AppText';
 
 export default function AdBoostingScreen({ navigation }) {
     const { user } = useAuth();
@@ -51,17 +52,17 @@ export default function AdBoostingScreen({ navigation }) {
                 <View style={styles.row}>
                     <View style={styles.infoCol}>
                         <View style={styles.headerRow}>
-                            <Text numberOfLines={1} style={styles.title}>{item.title || 'Sem título'}</Text>
-                            <Text style={styles.idText}>#{String(item.id).slice(0, 8)}</Text>
+                            <AppText numberOfLines={1} style={styles.title}>{item.title || 'Sem título'}</AppText>
+                            <AppText style={styles.idText}>#{String(item.id).slice(0, 8)}</AppText>
                         </View>
-                        <Text numberOfLines={1} style={styles.address}>{[item.address, item.neighborhood, item.city].filter(Boolean).join(', ')}</Text>
-                        <Text style={styles.price}>R$ {(item.sale_price ?? item.price ?? 0).toLocaleString('pt-BR')}</Text>
+                        <AppText numberOfLines={1} style={styles.address}>{[item.address, item.neighborhood, item.city].filter(Boolean).join(', ')}</AppText>
+                        <AppText style={styles.price}>R$ {(item.sale_price ?? item.price ?? 0).toLocaleString('pt-BR')}</AppText>
 
                         {/* Badge de impulsionado */}
                         {isBoosted && (
                             <View style={styles.boostedBadge}>
                                 <Ionicons name="rocket" size={12} color="#27ae60" />
-                                <Text style={styles.boostedBadgeText}>Impulsionado</Text>
+                                <AppText style={styles.boostedBadgeText}>Impulsionado</AppText>
                             </View>
                         )}
                     </View>
@@ -79,9 +80,9 @@ export default function AdBoostingScreen({ navigation }) {
                     disabled={isBoosted}
                 >
                     <Ionicons name="rocket" size={18} color={isBoosted ? '#95a5a6' : '#fff'} />
-                    <Text style={[styles.boostButtonText, isBoosted && styles.boostButtonTextDisabled]}>
+                    <AppText style={[styles.boostButtonText, isBoosted && styles.boostButtonTextDisabled]}>
                         {isBoosted ? 'Já Impulsionado' : 'Impulsionar'}
-                    </Text>
+                    </AppText>
                 </TouchableOpacity>
             </View>
         );
@@ -114,15 +115,15 @@ export default function AdBoostingScreen({ navigation }) {
                 ListEmptyComponent={
                     <View style={styles.empty}>
                         <Ionicons name="alert-circle" size={48} color="#95a5a6" />
-                        <Text style={styles.emptyText}>Nenhum anúncio disponível para impulsionar.</Text>
-                        <Text style={styles.emptySub}>Apenas anúncios aprovados e ativos aparecem aqui.</Text>
-                        <Text style={styles.emptySub}>Se você tiver anúncios criados, acesse Anuncie - Gerenciar anúncios</Text>
+                        <AppText style={styles.emptyText}>Nenhum anúncio disponível para impulsionar.</AppText>
+                        <AppText style={styles.emptySub}>Apenas anúncios aprovados e ativos aparecem aqui.</AppText>
+                        <AppText style={styles.emptySub}>Se você tiver anúncios criados, acesse Anuncie - Gerenciar anúncios</AppText>
                         <View style={styles.emptyButton}>
                             <TouchableOpacity
                                 style={styles.emptyButtonTouchable}
                                 onPress={() => navigation.replace('MyProperties')}
                             >
-                                <Text style={styles.emptyButtonText}>Acessar Gerenciar anúncios</Text>
+                                <AppText style={styles.emptyButtonText}>Acessar Gerenciar anúncios</AppText>
                             </TouchableOpacity>
                         </View>
                     </View>

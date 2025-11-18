@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
     View,
-    Text,
     StyleSheet,
     ScrollView,
     TouchableOpacity,
@@ -12,6 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import StandardHeader from './StandardHeader';
 import { CommonActions } from '@react-navigation/native';
+import AppText from './AppText';
 
 export default function PaymentConfirmationScreen({ route, navigation }) {
     console.log('Rendered PaymentConfirmationScreen');
@@ -51,17 +51,17 @@ export default function PaymentConfirmationScreen({ route, navigation }) {
             <View style={styles.successCard}>
                 <View style={styles.successHeader}>
                     <Ionicons name="checkmark-circle" size={48} color="#27ae60" />
-                    <Text style={styles.successTitle}>Pagamento Aprovado!</Text>
+                    <AppText style={styles.successTitle}>Pagamento Aprovado!</AppText>
                 </View>
-                <Text style={styles.successText}>
-                    Seu plano <Text style={styles.planHighlight}>{plan.display_name}</Text> foi contratado com sucesso!
-                </Text>
-                <Text style={styles.successSubtext}>
+                <AppText style={styles.successText}>
+                    Seu plano <AppText style={styles.planHighlight}>{plan.display_name}</AppText> foi contratado com sucesso!
+                </AppText>
+                <AppText style={styles.successSubtext}>
                     Agora você pode criar anúncios e aproveitar todos os benefícios.
-                </Text>
-                <Text style={styles.successSubtext2}>
+                </AppText>
+                <AppText style={styles.successSubtext2}>
                     Caso não apareça, aguarde alguns minutos e atualize a página. A ativação do plano pode levar até 5 minutos. 
-                </Text>
+                </AppText>
             </View>
 
             {/* Action Buttons */}
@@ -72,7 +72,7 @@ export default function PaymentConfirmationScreen({ route, navigation }) {
                 </TouchableOpacity> */}
                 <TouchableOpacity style={styles.secondaryButton} onPress={handleVerImoveis}>
                     <Ionicons name="home-outline" size={20} color="#27ae60" />
-                    <Text style={styles.secondaryButtonText}>Ver Imóveis</Text>
+                    <AppText style={styles.secondaryButtonText}>Ver Imóveis</AppText>
                 </TouchableOpacity>
             </View>
         </>

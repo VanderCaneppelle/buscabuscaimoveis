@@ -1,12 +1,10 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
     View,
-    Text,
     StyleSheet,
     TouchableOpacity,
     Alert,
     FlatList,
-    TextInput,
     ScrollView,
     RefreshControl,
     Dimensions,
@@ -33,6 +31,8 @@ import StoriesComponent from './StoriesComponent';
 import { CardStyleInterpolators } from '@react-navigation/stack';
 import { FiltersModal, DevelopersFilterModal, RealtorsFilterModal } from './modals';
 import NotificationBell from './NotificationBell';
+import AppText from './AppText';
+import AppTextInput from './AppTextInput';
 
 const { width } = Dimensions.get('window');
 const isSmallScreen = width < 420; // Detectar telas menores (S22 e similares)
@@ -667,7 +667,7 @@ export default function HomeScreen({ navigation }) {
 
         return (
             <View style={styles.loadingMoreContainer}>
-                <Text style={styles.loadingMoreText}>Carregando mais anÃºncios...</Text>
+                <AppText style={styles.loadingMoreText}>Carregando mais anÃºncios...</AppText>
             </View>
         );
     };
@@ -709,7 +709,7 @@ export default function HomeScreen({ navigation }) {
                 {isPropertyBoosted && (
                     <View style={styles.boostBadgeTop}>
                         <Ionicons name="star" size={10} color="#fff" />
-                        <Text style={styles.boostBadgeText}>Destaque</Text>
+                        <AppText style={styles.boostBadgeText}>Destaque</AppText>
                     </View>
                 )}
 
@@ -737,14 +737,14 @@ export default function HomeScreen({ navigation }) {
                 </View>
 
                 <View style={styles.propertyInfo}>
-                    <Text style={styles.propertyTitle} numberOfLines={2}>
+                    <AppText style={styles.propertyTitle} numberOfLines={2}>
                         {item.title ?? 'Título indisponível'}
-                    </Text>
+                    </AppText>
 
                     {/* Endereço com ícone */}
                     <View style={styles.addressContainer}>
                         <Ionicons name="location-outline" size={14} color="#666" />
-                        <Text style={styles.propertyLocation}>
+                        <AppText style={styles.propertyLocation}>
                             {(() => {
                                 // Padrão: Bairro, Cidade. Se não tiver bairro: Endereço, Cidade
                                 const neighborhood = item.neighborhood?.trim();
@@ -754,7 +754,7 @@ export default function HomeScreen({ navigation }) {
                                 const firstPart = neighborhood || address || '';
                                 return [firstPart, city].filter(Boolean).join(', ');
                             })()}
-                        </Text>
+                        </AppText>
                     </View>
 
                     {/* Características com ícones */}
@@ -762,25 +762,25 @@ export default function HomeScreen({ navigation }) {
                         {item.bedrooms && item.bedrooms > 0 ? (
                             <View style={styles.feature}>
                                 <Ionicons name="bed-outline" size={16} color="#666" />
-                                <Text style={styles.featureText}>{String(item.bedrooms)}</Text>
+                                <AppText style={styles.featureText}>{String(item.bedrooms)}</AppText>
                             </View>
                         ) : null}
                         {item.bathrooms && item.bathrooms > 0 ? (
                             <View style={styles.feature}>
                                 <Ionicons name="water-outline" size={16} color="#666" />
-                                <Text style={styles.featureText}>{String(item.bathrooms)}</Text>
+                                <AppText style={styles.featureText}>{String(item.bathrooms)}</AppText>
                             </View>
                         ) : null}
                         {item.parking_spaces && item.parking_spaces > 0 ? (
                             <View style={styles.feature}>
                                 <Ionicons name="car-outline" size={16} color="#666" />
-                                <Text style={styles.featureText}>{String(item.parking_spaces)}</Text>
+                                <AppText style={styles.featureText}>{String(item.parking_spaces)}</AppText>
                             </View>
                         ) : null}
                         {item.area && item.area > 0 ? (
                             <View style={styles.feature}>
                                 <Ionicons name="resize-outline" size={16} color="#666" />
-                                <Text style={styles.featureText}>{`${String(item.area)} m²`}</Text>
+                                <AppText style={styles.featureText}>{`${String(item.area)} m²`}</AppText>
                             </View>
                         ) : null}
                     </View>
@@ -789,26 +789,26 @@ export default function HomeScreen({ navigation }) {
                     <View style={styles.priceContainer}>
                         {((item.sale_price ?? item.salePrice) && parseFloat(item.sale_price ?? item.salePrice) > 0) ? (
                             <View>
-                                <Text style={styles.originalPriceRed}>
+                                <AppText style={styles.originalPriceRed}>
                                     De: R$ {item.price?.toLocaleString('pt-BR') ?? 'Preço indisponível'}
-                                </Text>
-                                <Text style={styles.salePriceGreen}>
+                                </AppText>
+                                <AppText style={styles.salePriceGreen}>
                                     Por: R$ {(item.sale_price ?? item.salePrice)?.toLocaleString('pt-BR')}
-                                </Text>
+                                </AppText>
                             </View>
                         ) : (
-                            <Text style={styles.propertyPrice}>
+                            <AppText style={styles.propertyPrice}>
                                 R$ {item.price?.toLocaleString('pt-BR') ?? 'Preço indisponível'}
-                            </Text>
+                            </AppText>
                         )}
                     </View>
 
                     {(item.property_type || item.transaction_type) && (
-                        <Text style={styles.propertyType} numberOfLines={1}>
+                        <AppText style={styles.propertyType} numberOfLines={1}>
                             {(item.property_type ?? '').toString().trim()}
                             {(item.property_type && item.transaction_type) ? ' - ' : ''}
                             {item.transaction_type === 'rent' ? 'Aluguel' : item.transaction_type === 'sale' ? 'Venda' : item.transaction_type === 'season' ? 'Temporada' : (item.transaction_type ?? '')}
-                        </Text>
+                        </AppText>
                     )}
                 </View>
 
@@ -840,7 +840,7 @@ export default function HomeScreen({ navigation }) {
                 <View style={[styles.safeAreaTop, { height: insets.top }]} />
                 <View style={styles.contentContainer}>
                     <View style={styles.loadingContainer}>
-                        <Text style={styles.loadingText}>Carregando...</Text>
+                        <AppText style={styles.loadingText}>Carregando...</AppText>
                     </View>
                 </View>
             </View>
@@ -865,7 +865,7 @@ export default function HomeScreen({ navigation }) {
                             style={styles.titleLogo}
                             resizeMode="contain"
                         />
-                        <Text style={styles.storiesTitle}>Busca Busca Imóveis</Text>
+                        <AppText style={styles.storiesTitle}>Busca Busca Imóveis</AppText>
                         {/* ✨ NOVO: Sininho de notificações */}
                         <NotificationBell navigation={navigation} />
                     </View>
@@ -885,7 +885,7 @@ export default function HomeScreen({ navigation }) {
                         <View style={styles.searchContainer}>
                             <View style={styles.searchBar}>
                                 <Ionicons name="search" size={20} color="#7f8c8d" style={styles.searchIcon} />
-                                <TextInput
+                                <AppTextInput
                                     ref={searchInputRef}
                                     style={styles.searchInput}
                                     placeholder="Buscar imóveis..."
@@ -934,12 +934,12 @@ export default function HomeScreen({ navigation }) {
                             onPress={() => handleQuickFilter('all')}
                             activeOpacity={0.7}
                         >
-                            <Text style={[
+                            <AppText style={[
                                 styles.quickFilterText,
                                 quickFilter === 'all' && styles.quickFilterTextActive
                             ]}>
                                 Todos
-                            </Text>
+                            </AppText>
                         </TouchableOpacity>
                         
                         {isAdmin && (
@@ -958,12 +958,12 @@ export default function HomeScreen({ navigation }) {
                                         color={quickFilter === 'developer' ? '#fff' : '#00335e'} 
                                     />
                                 )}
-                                <Text style={[
+                                <AppText style={[
                                     styles.quickFilterText,
                                     quickFilter === 'developer' && styles.quickFilterTextActive
                                 ]}>
                                     Construtoras
-                                </Text>
+                                </AppText>
                             </TouchableOpacity>
                         )}
                         
@@ -982,12 +982,12 @@ export default function HomeScreen({ navigation }) {
                                     color={quickFilter === 'realtor' ? '#fff' : '#00335e'} 
                                 />
                             )}
-                            <Text style={[
+                            <AppText style={[
                                 styles.quickFilterText,
                                 quickFilter === 'realtor' && styles.quickFilterTextActive
                             ]}>
                                 Corretores
-                            </Text>
+                            </AppText>
                         </TouchableOpacity>
                         
                         <TouchableOpacity 
@@ -1005,12 +1005,12 @@ export default function HomeScreen({ navigation }) {
                                     color={quickFilter === 'owner' ? '#fff' : '#00335e'} 
                                 />
                             )}
-                            <Text style={[
+                            <AppText style={[
                                 styles.quickFilterText,
                                 quickFilter === 'owner' && styles.quickFilterTextActive
                             ]}>
                                 Proprietários
-                            </Text>
+                            </AppText>
                         </TouchableOpacity>
                     </View>
 
@@ -1042,7 +1042,7 @@ export default function HomeScreen({ navigation }) {
                                     <Marker key={`cluster-${id}`} coordinate={{ latitude, longitude }} onPress={onPress}>
                                         <View style={styles.clusterContainer}>
                                             <View style={styles.clusterBubble}>
-                                                <Text style={styles.clusterText}>{count}</Text>
+                                                <AppText style={styles.clusterText}>{count}</AppText>
                                             </View>
                                         </View>
                                     </Marker>
@@ -1075,10 +1075,10 @@ export default function HomeScreen({ navigation }) {
                                                     )}
                                                     {Platform.OS === 'ios' ? (
                                                         <View style={styles.markerBadge}>
-                                                            <Text style={styles.markerBadgeText}>{group.properties.length}</Text>
+                                                            <AppText style={styles.markerBadgeText}>{group.properties.length}</AppText>
                                                         </View>
                                                     ) : (
-                                                        <Text style={styles.markerBadgeText}>{group.properties.length}</Text>
+                                                        <AppText style={styles.markerBadgeText}>{group.properties.length}</AppText>
                                                     )}
                                                 </View>
                                             </View>
@@ -1099,7 +1099,7 @@ export default function HomeScreen({ navigation }) {
                         </ClusteredMapView>
                         {(listLoading || isSearching || refreshing) && (
                             <View style={styles.mapLoadingOverlay}>
-                                <Text style={styles.mapLoadingText}>Aplicando filtros...</Text>
+                                <AppText style={styles.mapLoadingText}>Aplicando filtros...</AppText>
                             </View>
                         )}
                         
@@ -1117,10 +1117,10 @@ export default function HomeScreen({ navigation }) {
                                         contentFit="cover"
                                     />
                                     <View style={styles.mapPropertyInfo}>
-                                        <Text style={styles.mapPropertyTitle} numberOfLines={2}>
+                                        <AppText style={styles.mapPropertyTitle} numberOfLines={2}>
                                             {selectedProperty.title ?? 'Imóvel'}
-                                        </Text>
-                                        <Text style={styles.mapPropertyLocation} numberOfLines={1}>
+                                        </AppText>
+                                        <AppText style={styles.mapPropertyLocation} numberOfLines={1}>
                                             <Ionicons name="location-outline" size={14} color="#64748b" />
                                             {' '}
                                             {(() => {
@@ -1130,14 +1130,14 @@ export default function HomeScreen({ navigation }) {
                                                 const firstPart = neighborhood || address || '';
                                                 return [firstPart, city].filter(Boolean).join(', ');
                                             })()}
-                                        </Text>
-                                        <Text style={styles.mapPropertyPrice}>
+                                        </AppText>
+                                        <AppText style={styles.mapPropertyPrice}>
                                             {((selectedProperty.sale_price ?? selectedProperty.salePrice) && parseFloat(selectedProperty.sale_price ?? selectedProperty.salePrice) > 0)
                                                 ? `R$ ${(selectedProperty.sale_price ?? selectedProperty.salePrice)?.toLocaleString('pt-BR')}`
                                                 : `R$ ${selectedProperty.price?.toLocaleString('pt-BR') ?? '—'}`}
-                                        </Text>
+                                        </AppText>
                                         <View style={styles.mapPropertyButton}>
-                                            <Text style={styles.mapPropertyButtonText}>Ver detalhes</Text>
+                                            <AppText style={styles.mapPropertyButtonText}>Ver detalhes</AppText>
                                             <Ionicons name="arrow-forward" size={16} color="#fff" />
                                         </View>
                                     </View>
@@ -1163,12 +1163,12 @@ export default function HomeScreen({ navigation }) {
                                 <View style={styles.multiPropertiesModalContent}>
                                     <View style={styles.multiPropertiesHeader}>
                                         <View>
-                                            <Text style={styles.multiPropertiesTitle}>
+                                            <AppText style={styles.multiPropertiesTitle}>
                                                 Imóveis nesta localização
-                                            </Text>
-                                            <Text style={styles.multiPropertiesSubtitle}>
+                                            </AppText>
+                                            <AppText style={styles.multiPropertiesSubtitle}>
                                                 {propertiesAtLocation.length} imóveis disponíveis
-                                            </Text>
+                                            </AppText>
                                         </View>
                                         <TouchableOpacity
                                             onPress={() => setMultiplePropertiesModal(false)}
@@ -1195,29 +1195,29 @@ export default function HomeScreen({ navigation }) {
                                                     contentFit="cover"
                                                 />
                                                 <View style={styles.multiPropertyInfo}>
-                                                    <Text style={styles.multiPropertyTitle} numberOfLines={2}>
+                                                    <AppText style={styles.multiPropertyTitle} numberOfLines={2}>
                                                         {property.title}
-                                                    </Text>
-                                                    <Text style={styles.multiPropertyPrice}>
+                                                    </AppText>
+                                                    <AppText style={styles.multiPropertyPrice}>
                                                         {((property.sale_price ?? property.salePrice) && parseFloat(property.sale_price ?? property.salePrice) > 0)
                                                             ? `R$ ${(property.sale_price ?? property.salePrice)?.toLocaleString('pt-BR')}`
                                                             : `R$ ${property.price?.toLocaleString('pt-BR') ?? '—'}`}
-                                                    </Text>
+                                                    </AppText>
                                                     <View style={styles.multiPropertyFeatures}>
                                                         {property.bedrooms && property.bedrooms > 0 ? (
-                                                            <Text style={styles.multiPropertyFeature}>
+                                                            <AppText style={styles.multiPropertyFeature}>
                                                                 <Ionicons name="bed-outline" size={14} /> {String(property.bedrooms)}
-                                                            </Text>
+                                                            </AppText>
                                                         ) : null}
                                                         {property.bathrooms && property.bathrooms > 0 ? (
-                                                            <Text style={styles.multiPropertyFeature}>
+                                                            <AppText style={styles.multiPropertyFeature}>
                                                                 <Ionicons name="water-outline" size={14} /> {String(property.bathrooms)}
-                                                            </Text>
+                                                            </AppText>
                                                         ) : null}
                                                         {property.area && property.area > 0 ? (
-                                                            <Text style={styles.multiPropertyFeature}>
+                                                            <AppText style={styles.multiPropertyFeature}>
                                                                 <Ionicons name="resize-outline" size={14} /> {String(property.area)}m²
-                                                            </Text>
+                                                            </AppText>
                                                         ) : null}
                                                     </View>
                                                 </View>
@@ -1241,16 +1241,16 @@ export default function HomeScreen({ navigation }) {
                         ListHeaderComponent={
                             <View style={styles.propertiesSection}>
                                 <View style={styles.sectionHeader}>
-                                    <Text style={styles.sectionTitle}>
+                                    <AppText style={styles.sectionTitle}>
                                         {`Anúncios (${totalCount})`}
                                         {searchTerm && (
-                                            <Text style={styles.searchResultInfo}>
+                                            <AppText style={styles.searchResultInfo}>
                                                 {` - Busca: "${searchTerm}"`}
-                                            </Text>
+                                            </AppText>
                                         )}
-                                    </Text>
+                                    </AppText>
                                     {isSearching && (
-                                        <Text style={styles.searchingText}>Buscando...</Text>
+                                        <AppText style={styles.searchingText}>Buscando...</AppText>
                                     )}
                                 </View>
                             </View>
@@ -1258,12 +1258,12 @@ export default function HomeScreen({ navigation }) {
                         ListEmptyComponent={
                             <View style={styles.emptyContainer}>
                                 <Ionicons name="home-outline" size={64} color="#bdc3c7" />
-                                <Text style={styles.emptyText}>
+                                <AppText style={styles.emptyText}>
                                     {searchTerm ? 'Nenhum imóvel encontrado para esta busca' : 'Nenhum anúncio encontrado'}
-                                </Text>
-                                <Text style={styles.emptySubtext}>
+                                </AppText>
+                                <AppText style={styles.emptySubtext}>
                                     {searchTerm ? 'Tente ajustar os termos de busca' : 'Tente ajustar os filtros ou volte mais tarde'}
-                                </Text>
+                                </AppText>
                             </View>
                         }
                         contentContainerStyle={styles.listContainer}
@@ -1287,7 +1287,7 @@ export default function HomeScreen({ navigation }) {
                                 {renderFooter()}
                                 {listLoading && (
                                     <View style={styles.loadingMoreContainer}>
-                                        <Text style={styles.loadingMoreText}>Atualizando lista...</Text>
+                                        <AppText style={styles.loadingMoreText}>Atualizando lista...</AppText>
                                     </View>
                                 )}
                             </>
@@ -1301,7 +1301,7 @@ export default function HomeScreen({ navigation }) {
                     activeOpacity={0.85}
                 >
                     <Ionicons name={showMap ? 'list' : 'location'} size={18} color="#fff" />
-                    <Text style={styles.floatingMapText}>{showMap ? 'Ver em lista' : 'Ver no mapa'}</Text>
+                    <AppText style={styles.floatingMapText}>{showMap ? 'Ver em lista' : 'Ver no mapa'}</AppText>
                 </TouchableOpacity>
 
                 {/* Modal de Filtros */}

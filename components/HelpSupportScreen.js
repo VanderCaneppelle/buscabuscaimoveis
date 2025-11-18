@@ -1,13 +1,13 @@
 import React from 'react';
 import {
     View,
-    Text,
     StyleSheet,
     TouchableOpacity,
     SafeAreaView,
     ScrollView,
     Linking,
 } from 'react-native';
+import AppText from './AppText';
 import { Ionicons } from '@expo/vector-icons';
 import StandardHeader from './StandardHeader';
 
@@ -47,22 +47,22 @@ export default function HelpSupportScreen({ navigation }) {
                     {/* Info Card */}
                     <View style={styles.infoCard}>
                         <Ionicons name="information-circle" size={48} color="#3498db" />
-                        <Text style={styles.infoTitle}>Como podemos ajudar?</Text>
-                        <Text style={styles.infoText}>
+                        <AppText style={styles.infoTitle}>Como podemos ajudar?</AppText>
+                        <AppText style={styles.infoText}>
                             Entre em contato conosco através dos canais abaixo. Estamos prontos para ajudá-lo!
-                        </Text>
+                        </AppText>
                     </View>
 
                     {/* Email Contact */}
                     <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Contato por E-mail</Text>
+                        <AppText style={styles.sectionTitle}>Contato por E-mail</AppText>
                         <TouchableOpacity style={styles.contactCard} onPress={handleEmailContact}>
                             <View style={styles.contactIcon}>
                                 <Ionicons name="mail" size={24} color="#fff" />
                             </View>
                             <View style={styles.contactContent}>
-                                <Text style={styles.contactLabel}>E-mail</Text>
-                                <Text style={styles.contactValue}>suporte@buscabuscaimoveis.com.br</Text>
+                                <AppText style={styles.contactLabel}>E-mail</AppText>
+                                <AppText style={styles.contactValue}>suporte@buscabuscaimoveis.com.br</AppText>
                             </View>
                             <Ionicons name="chevron-forward" size={20} color="#7f8c8d" />
                         </TouchableOpacity>
@@ -70,7 +70,7 @@ export default function HelpSupportScreen({ navigation }) {
 
                     {/* WhatsApp Contacts */}
                     <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Contato via WhatsApp</Text>
+                        <AppText style={styles.sectionTitle}>Contato via WhatsApp</AppText>
                         {/* Vendas/Parcerias */}
                         <TouchableOpacity
                             style={styles.whatsappCard}
@@ -80,11 +80,11 @@ export default function HelpSupportScreen({ navigation }) {
                                 <Ionicons name="logo-whatsapp" size={24} color="#fff" />
                             </View>
                             <View style={styles.whatsappContent}>
-                                <Text style={styles.whatsappLabel}>Vendas/Parcerias</Text>
-                                <Text style={styles.whatsappNumber}>(47) 99722-2222</Text>
-                                <Text style={styles.whatsappDescription}>
+                                <AppText style={styles.whatsappLabel}>Vendas/Parcerias</AppText>
+                                <AppText style={styles.whatsappNumber}>(47) 99722-2222</AppText>
+                                <AppText style={styles.whatsappDescription}>
                                     Informações sobre planos e parcerias comerciais
-                                </Text>
+                                </AppText>
                             </View>
                             <Ionicons name="chevron-forward" size={20} color="#7f8c8d" />
                         </TouchableOpacity>
@@ -98,11 +98,11 @@ export default function HelpSupportScreen({ navigation }) {
                                 <Ionicons name="logo-whatsapp" size={24} color="#fff" />
                             </View>
                             <View style={styles.whatsappContent}>
-                                <Text style={styles.whatsappLabel}>Suporte Técnico</Text>
-                                <Text style={styles.whatsappNumber}>(47) 99241-4450</Text>
-                                <Text style={styles.whatsappDescription}>
+                                <AppText style={styles.whatsappLabel}>Suporte Técnico</AppText>
+                                <AppText style={styles.whatsappNumber}>(47) 99241-4450</AppText>
+                                <AppText style={styles.whatsappDescription}>
                                     Ajuda com problemas técnicos e dúvidas
-                                </Text>
+                                </AppText>
                             </View>
                             <Ionicons name="chevron-forward" size={20} color="#7f8c8d" />
                         </TouchableOpacity>
@@ -111,30 +111,30 @@ export default function HelpSupportScreen({ navigation }) {
 
                     {/* FAQ Section */}
                     <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Perguntas Frequentes</Text>
+                        <AppText style={styles.sectionTitle}>Perguntas Frequentes</AppText>
 
                         <View style={styles.faqCard}>
-                            <Text style={styles.faqQuestion}>Como criar um anúncio?</Text>
-                            <Text style={styles.faqAnswer}>
+                            <AppText style={styles.faqQuestion}>Como criar um anúncio?</AppText>
+                            <AppText style={styles.faqAnswer}>
                                 Acesse a aba "Anunciar" no menu inferior e siga as instruções.
                                 Você precisará de um plano ativo para publicar.
-                            </Text>
+                            </AppText>
                         </View>
 
                         <View style={styles.faqCard}>
-                            <Text style={styles.faqQuestion}>Como alterar meu plano?</Text>
-                            <Text style={styles.faqAnswer}>
+                            <AppText style={styles.faqQuestion}>Como alterar meu plano?</AppText>
+                            <AppText style={styles.faqAnswer}>
                                 Vá em "Conta" → "Alterar Plano" e escolha o plano desejado.
                                 Você pode alternar entre planos mensais e anuais.
-                            </Text>
+                            </AppText>
                         </View>
 
                         <View style={styles.faqCard}>
-                            <Text style={styles.faqQuestion}>Meu anúncio foi recusado, por quê?</Text>
-                            <Text style={styles.faqAnswer}>
+                            <AppText style={styles.faqQuestion}>Meu anúncio foi recusado, por quê?</AppText>
+                            <AppText style={styles.faqAnswer}>
                                 Anúncios podem ser recusados por falta de informações, fotos inadequadas
                                 ou não conformidade com nossas políticas. Entre em contato para mais detalhes.
-                            </Text>
+                            </AppText>
                         </View>
                     </View>
 

@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
+import AppText from './AppText';
 import { Ionicons } from '@expo/vector-icons';
 import StandardHeader from './StandardHeader';
 
@@ -27,21 +28,21 @@ export default function InactiveAdsOptionsScreen({ route, navigation }) {
                 <View style={styles.infoCard}>
                     <Ionicons name="warning" size={28} color="#f39c12" />
                     <View style={styles.infoTextWrap}>
-                        <Text style={styles.title}>Seus anúncios não cabem no plano</Text>
-                        <Text style={styles.subtitle}>
+                        <AppText style={styles.title}>Seus anúncios não cabem no plano</AppText>
+                        <AppText style={styles.subtitle}>
                             Você possui {validation?.inactiveAdsCount || 0} anúncios, mas o plano selecionado permite apenas {validation?.targetPlanMaxAds || 0}.
-                        </Text>
+                        </AppText>
                     </View>
                 </View>
 
                 <TouchableOpacity style={styles.primaryBtn} onPress={handleGoToSelect}>
                     <Ionicons name="trash" size={20} color="#fff" />
-                    <Text style={styles.primaryBtnText}>Excluir {validation?.adsToRemove || 0} anúncio(s) e continuar</Text>
+                    <AppText style={styles.primaryBtnText}>Excluir {validation?.adsToRemove || 0} anúncio(s) e continuar</AppText>
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.secondaryBtn} onPress={handleChooseOtherPlan}>
                     <Ionicons name="arrow-back-circle" size={20} color="#3498db" />
-                    <Text style={styles.secondaryBtnText}>Voltar e escolher outro plano</Text>
+                    <AppText style={styles.secondaryBtnText}>Voltar e escolher outro plano</AppText>
                 </TouchableOpacity>
             </View>
         </SafeAreaView>

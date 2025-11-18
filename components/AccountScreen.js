@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
     View,
-    Text,
     StyleSheet,
     TouchableOpacity,
     SafeAreaView,
@@ -16,6 +15,7 @@ import { useUserPlanStore } from '../stores/userPlanStore';
 import PropertyCacheService from '../lib/propertyCacheService';
 import { useFocusEffect } from '@react-navigation/native';
 import StandardHeader from './StandardHeader';
+import AppText from './AppText';
 // Removido: NotificationManager
 
 export default function AccountScreen({ navigation }) {
@@ -201,8 +201,8 @@ export default function AccountScreen({ navigation }) {
                 <Ionicons name={icon} size={20} color="#fff" />
             </View>
             <View style={styles.menuContent}>
-                <Text style={styles.menuTitle}>{title}</Text>
-                {subtitle && <Text style={styles.menuSubtitle}>{subtitle}</Text>}
+                <AppText style={styles.menuTitle}>{title}</AppText>
+                {subtitle && <AppText style={styles.menuSubtitle}>{subtitle}</AppText>}
             </View>
             {showBadge && <View style={styles.badge} />}
             <Ionicons name="chevron-forward" size={20} color="#7f8c8d" />
@@ -235,13 +235,13 @@ export default function AccountScreen({ navigation }) {
                                 )}
                             </View>
                             <View style={styles.userDetails}>
-                                <Text style={styles.userName}>
+                                <AppText style={styles.userName}>
                                     {profile?.full_name || user?.email || 'Usuário'}
-                                </Text>
-                                <Text style={styles.userEmail}>{user?.email}</Text>
-                                <Text style={styles.userType}>
+                                </AppText>
+                                <AppText style={styles.userEmail}>{user?.email}</AppText>
+                                <AppText style={styles.userType}>
                                     {profile?.is_realtor ? 'Corretor' : 'Cliente'}
-                                </Text>
+                                </AppText>
                             </View>
                         </View>
                     </View>
@@ -249,28 +249,28 @@ export default function AccountScreen({ navigation }) {
 
                     {/* Plan Info */}
                     <View style={styles.planSection}>
-                        <Text style={styles.sectionTitle}>Plano Atual</Text>
+                        <AppText style={styles.sectionTitle}>Plano Atual</AppText>
                         <View style={styles.planCard}>
                             <View style={styles.planHeader}>
                                 <Ionicons name="card" size={24} color={planSummary.isExpired ? '#e74c3c' : '#3498db'} />
-                                <Text style={styles.planName}>
+                                <AppText style={styles.planName}>
                                     {planSummary.isExpired
                                         ? `${planSummary.planName} (Vencido)`
                                         : planSummary.planName}
-                                </Text>
+                                </AppText>
                             </View>
-                            <Text style={styles.planStatus}>
+                            <AppText style={styles.planStatus}>
                                 {planSummary.permissions.canCreate
                                     ? `${planSummary.ads.current}/${planSummary.ads.max} anúncios`
                                     : '—'}
-                            </Text>
+                            </AppText>
 
                             {planSummary.endDate && (
                                 <View style={styles.expirationInfo}>
                                     <Ionicons name="calendar-outline" size={16} color="#7f8c8d" />
-                                    <Text style={styles.expirationText}>
+                                    <AppText style={styles.expirationText}>
                                         Vence em: {formatExpirationDate(planSummary.endDate)}
-                                    </Text>
+                                    </AppText>
                                 </View>
                             )}
 
@@ -278,16 +278,16 @@ export default function AccountScreen({ navigation }) {
                                 <View style={styles.renewalReminder}>
                                     <View style={styles.reminderHeader}>
                                         <Ionicons name="warning" size={16} color="#f39c12" />
-                                        <Text style={styles.reminderTitle}>Renovação Necessária</Text>
+                                        <AppText style={styles.reminderTitle}>Renovação Necessária</AppText>
                                     </View>
-                                    <Text style={styles.reminderText}>
+                                    <AppText style={styles.reminderText}>
                                         Seu plano vence em breve. Renove para continuar usando todos os recursos.
-                                    </Text>
+                                    </AppText>
                                     <TouchableOpacity
                                         style={styles.renewalButton}
                                         onPress={() => navigation.navigate('Plans')}
                                     >
-                                        <Text style={styles.renewalButtonText}>Renovar Plano</Text>
+                                        <AppText style={styles.renewalButtonText}>Renovar Plano</AppText>
                                     </TouchableOpacity>
                                 </View>
                             )}
@@ -296,14 +296,14 @@ export default function AccountScreen({ navigation }) {
                                 style={styles.upgradeButton}
                                 onPress={() => navigation.navigate('Plans')}
                             >
-                                <Text style={styles.upgradeButtonText}>Alterar Plano</Text>
+                                <AppText style={styles.upgradeButtonText}>Alterar Plano</AppText>
                             </TouchableOpacity>
                         </View>
                     </View>
 
                     {/* Menu Items */}
                     <View style={styles.menuSection}>
-                        <Text style={styles.sectionTitle}>Configurações</Text>
+                        <AppText style={styles.sectionTitle}>Configurações</AppText>
 
                         {renderMenuItem(
                             'Editar Perfil',
@@ -369,7 +369,7 @@ export default function AccountScreen({ navigation }) {
                     {/* Logout Button */}
                     <TouchableOpacity style={styles.logoutButton} onPress={handleSignOut}>
                         <Ionicons name="log-out-outline" size={20} color="#fff" />
-                        <Text style={styles.logoutButtonText}>Sair do App</Text>
+                        <AppText style={styles.logoutButtonText}>Sair do App</AppText>
                     </TouchableOpacity>
                 </ScrollView>
             </View>

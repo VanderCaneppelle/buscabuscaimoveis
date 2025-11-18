@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
     View,
-    Text,
-    TextInput,
     TouchableOpacity,
     StyleSheet,
     Alert,
@@ -23,6 +21,8 @@ import { supabase } from '../lib/supabase';
 import { translateError } from '../lib/errorMessages';
 import { RESET_PASSWORD_URL } from '../lib/config';
 import SignUpForm from './SignUpForm';
+import AppText from './AppText';
+import AppTextInput from './AppTextInput';
 
 export default function LoginScreen() {
     console.log('Rendered LoginScreen');
@@ -164,18 +164,18 @@ export default function LoginScreen() {
                                     onError={(error) => console.log('❌ Erro no vídeo:', error)}
                                 />
                             </View>
-                            <Text style={styles.title}>Busca Busca Imóveis</Text>
-                            <Text style={styles.subtitle}>
+                            <AppText style={styles.title}>Busca Busca Imóveis</AppText>
+                            <AppText style={styles.subtitle}>
                                 {isForgotPassword
                                     ? 'Recuperar senha'
                                     : 'Faça login para continuar'
                                 }
-                            </Text>
+                            </AppText>
 
                             <View style={styles.form}>
                                 <View style={styles.inputContainer}>
                                     <Ionicons name="mail-outline" size={20} color="#7f8c8d" style={styles.inputIcon} />
-                                    <TextInput
+                                    <AppTextInput
                                         style={styles.input}
                                         placeholder="Email"
                                         placeholderTextColor="#7f8c8d"
@@ -190,7 +190,7 @@ export default function LoginScreen() {
                                 {!isForgotPassword && (
                                     <View style={styles.inputContainer}>
                                         <Ionicons name="lock-closed-outline" size={20} color="#7f8c8d" style={styles.inputIcon} />
-                                        <TextInput
+                                        <AppTextInput
                                             style={styles.input}
                                             placeholder="Senha"
                                             placeholderTextColor="#7f8c8d"
@@ -212,9 +212,9 @@ export default function LoginScreen() {
                                         color="#fff"
                                         style={styles.buttonIcon}
                                     />
-                                    <Text style={styles.buttonText}>
+                                    <AppText style={styles.buttonText}>
                                         {isForgotPassword ? 'Enviar Email' : 'Entrar'}
-                                    </Text>
+                                    </AppText>
                                 </TouchableOpacity>
 
                                 {!isForgotPassword && (
@@ -222,9 +222,9 @@ export default function LoginScreen() {
                                         style={styles.switchButton}
                                         onPress={() => setIsSignUp(true)}
                                     >
-                                        <Text style={styles.switchText}>
+                                        <AppText style={styles.switchText}>
                                             Não tem conta? Cadastre-se
-                                        </Text>
+                                        </AppText>
                                     </TouchableOpacity>
                                 )}
 
@@ -233,7 +233,7 @@ export default function LoginScreen() {
                                         style={styles.forgotButton}
                                         onPress={() => setIsForgotPassword(true)}
                                     >
-                                        <Text style={styles.forgotText}>Esqueci minha senha</Text>
+                                        <AppText style={styles.forgotText}>Esqueci minha senha</AppText>
                                     </TouchableOpacity>
                                 )}
 
@@ -242,7 +242,7 @@ export default function LoginScreen() {
                                         style={styles.switchButton}
                                         onPress={() => setIsForgotPassword(false)}
                                     >
-                                        <Text style={styles.switchText}>Voltar ao login</Text>
+                                        <AppText style={styles.switchText}>Voltar ao login</AppText>
                                     </TouchableOpacity>
                                 )}
                             </View>

@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView, Image, ActivityIndicator, Alert } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView, Image, ActivityIndicator, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import StandardHeader from './StandardHeader';
 import { PlanService } from '../lib/planService';
 import { PropertyService } from '../lib/propertyService';
+import AppText from './AppText';
 
 export default function InactiveAdsSelectScreen({ route, navigation }) {
     const { userId, validation, plan } = route.params || {};
@@ -80,9 +81,9 @@ export default function InactiveAdsSelectScreen({ route, navigation }) {
             <TouchableOpacity key={ad.id} style={[styles.item, selectedFlag && styles.itemSelected]} onPress={() => toggle(ad.id)}>
                 <Image source={{ uri: imageUrl }} style={styles.img} />
                 <View style={{ flex: 1 }}>
-                    <Text style={styles.itemTitle} numberOfLines={2}>{ad.title}</Text>
-                    <Text style={styles.itemPrice}>R$ {ad.price?.toLocaleString('pt-BR')}</Text>
-                    <Text style={styles.itemDate}>Criado em {new Date(ad.created_at).toLocaleDateString('pt-BR')}</Text>
+                    <AppText style={styles.itemTitle} numberOfLines={2}>{ad.title}</AppText>
+                    <AppText style={styles.itemPrice}>R$ {ad.price?.toLocaleString('pt-BR')}</AppText>
+                    <AppText style={styles.itemDate}>Criado em {new Date(ad.created_at).toLocaleDateString('pt-BR')}</AppText>
                 </View>
                 <View style={[styles.checkbox, selectedFlag && styles.checkboxOn]}>
                     {selectedFlag && <Ionicons name="checkmark" size={18} color="#fff" />}
@@ -98,12 +99,12 @@ export default function InactiveAdsSelectScreen({ route, navigation }) {
             {loading ? (
                 <View style={styles.center}>
                     <ActivityIndicator size="large" color="#3498db" />
-                    <Text style={styles.hint}>Carregando...</Text>
+                    <AppText style={styles.hint}>Carregando...</AppText>
                 </View>
             ) : (
                 <View style={{ flex: 1 }}>
                     <View style={styles.counterBar}>
-                        <Text style={styles.counterText}>{selected.length} / {required} selecionado(s)</Text>
+                        <AppText style={styles.counterText}>{selected.length} / {required} selecionado(s)</AppText>
                     </View>
                     <ScrollView style={{ flex: 1, padding: 16 }}>
                         {ads.map(renderItem)}
@@ -111,7 +112,7 @@ export default function InactiveAdsSelectScreen({ route, navigation }) {
                     <View style={styles.footer}>
                         <TouchableOpacity style={[styles.deleteBtn, selected.length !== required && styles.deleteBtnDisabled]} onPress={handleDelete} disabled={selected.length !== required || loading}>
                             <Ionicons name="trash" size={20} color="#fff" />
-                            <Text style={styles.deleteBtnText}>Excluir ({selected.length})</Text>
+                            <AppText style={styles.deleteBtnText}>Excluir ({selected.length})</AppText>
                         </TouchableOpacity>
                     </View>
                 </View>

@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AppText from '../../AppText';
 
 const SectionCard = ({ title, icon, iconColor, children, onEdit }) => (
     <View style={styles.sectionCard}>
@@ -8,10 +9,10 @@ const SectionCard = ({ title, icon, iconColor, children, onEdit }) => (
             <View style={[styles.sectionIcon, { backgroundColor: iconColor + '15' }]}>
                 <Ionicons name={icon} size={20} color={iconColor} />
             </View>
-            <Text style={styles.sectionTitle}>{title}</Text>
+            <AppText style={styles.sectionTitle}>{title}</AppText>
             <TouchableOpacity style={styles.editButton} onPress={onEdit}>
                 <Ionicons name="create-outline" size={18} color="#3498db" />
-                <Text style={styles.editButtonText}>Editar</Text>
+                <AppText style={styles.editButtonText}>Editar</AppText>
             </TouchableOpacity>
         </View>
         <View style={styles.sectionContent}>
@@ -22,8 +23,8 @@ const SectionCard = ({ title, icon, iconColor, children, onEdit }) => (
 
 const InfoRow = ({ label, value, highlight }) => (
     <View style={styles.infoRow}>
-        <Text style={styles.infoLabel}>{label}</Text>
-        <Text style={[styles.infoValue, highlight && styles.infoValueHighlight]}>{value}</Text>
+        <AppText style={styles.infoLabel}>{label}</AppText>
+        <AppText style={[styles.infoValue, highlight && styles.infoValueHighlight]}>{value}</AppText>
     </View>
 );
 
@@ -34,10 +35,10 @@ export default function Step9Review({ formData, mediaFiles, videoUrls = [], onEd
     return (
         <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
             <View style={styles.content}>
-                <Text style={styles.title}>Revise seu anúncio</Text>
-                <Text style={styles.subtitle}>
+                <AppText style={styles.title}>Revise seu anúncio</AppText>
+                <AppText style={styles.subtitle}>
                     Confira se está tudo certo antes de publicar
-                </Text>
+                </AppText>
 
                 {/* Tipo e Transação */}
                 <SectionCard
@@ -57,11 +58,11 @@ export default function Step9Review({ formData, mediaFiles, videoUrls = [], onEd
                     iconColor="#9b59b6"
                     onEdit={() => onEditStep(2)}
                 >
-                    <Text style={styles.titlePreview}>{formData.title}</Text>
+                    <AppText style={styles.titlePreview}>{formData.title}</AppText>
                     {formData.description && (
-                        <Text style={styles.descriptionPreview} numberOfLines={3}>
+                        <AppText style={styles.descriptionPreview} numberOfLines={3}>
                             {formData.description}
-                        </Text>
+                        </AppText>
                     )}
                 </SectionCard>
 
@@ -75,13 +76,13 @@ export default function Step9Review({ formData, mediaFiles, videoUrls = [], onEd
                     <View style={styles.addressContainer}>
                         <Ionicons name="pin" size={16} color="#27ae60" />
                         <View style={styles.addressContent}>
-                            <Text style={styles.addressText}>{formData.address}</Text>
+                            <AppText style={styles.addressText}>{formData.address}</AppText>
                             {formData.neighborhood && (
-                                <Text style={styles.addressText}>{formData.neighborhood}</Text>
+                                <AppText style={styles.addressText}>{formData.neighborhood}</AppText>
                             )}
-                            <Text style={styles.addressText}>
+                            <AppText style={styles.addressText}>
                                 {formData.city}, {formData.state}
-                            </Text>
+                            </AppText>
                         </View>
                     </View>
                 </SectionCard>
@@ -96,24 +97,24 @@ export default function Step9Review({ formData, mediaFiles, videoUrls = [], onEd
                     <View style={styles.characteristicsGrid}>
                         <View style={styles.characteristicItem}>
                             <Ionicons name="bed" size={20} color="#3498db" />
-                            <Text style={styles.characteristicValue}>{formData.bedrooms || 0}</Text>
-                            <Text style={styles.characteristicLabel}>Quartos</Text>
+                            <AppText style={styles.characteristicValue}>{formData.bedrooms || 0}</AppText>
+                            <AppText style={styles.characteristicLabel}>Quartos</AppText>
                         </View>
                         <View style={styles.characteristicItem}>
                             <Ionicons name="water" size={20} color="#9b59b6" />
-                            <Text style={styles.characteristicValue}>{formData.bathrooms || 0}</Text>
-                            <Text style={styles.characteristicLabel}>Banheiros</Text>
+                            <AppText style={styles.characteristicValue}>{formData.bathrooms || 0}</AppText>
+                            <AppText style={styles.characteristicLabel}>Banheiros</AppText>
                         </View>
                         <View style={styles.characteristicItem}>
                             <Ionicons name="car" size={20} color="#e74c3c" />
-                            <Text style={styles.characteristicValue}>{formData.parkingSpaces || 0}</Text>
-                            <Text style={styles.characteristicLabel}>Vagas</Text>
+                            <AppText style={styles.characteristicValue}>{formData.parkingSpaces || 0}</AppText>
+                            <AppText style={styles.characteristicLabel}>Vagas</AppText>
                         </View>
                         {formData.area && (
                             <View style={styles.characteristicItem}>
                                 <Ionicons name="resize" size={20} color="#f39c12" />
-                                <Text style={styles.characteristicValue}>{formData.area}</Text>
-                                <Text style={styles.characteristicLabel}>m²</Text>
+                                <AppText style={styles.characteristicValue}>{formData.area}</AppText>
+                                <AppText style={styles.characteristicLabel}>m²</AppText>
                             </View>
                         )}
                     </View>
@@ -148,10 +149,10 @@ export default function Step9Review({ formData, mediaFiles, videoUrls = [], onEd
                         iconColor="#2563EB"
                         onEdit={() => onEditStep(6)}
                     >
-                        <Text style={styles.developerName}>
+                        <AppText style={styles.developerName}>
                             {/* Nome será carregado do service */}
                             Construtora selecionada
-                        </Text>
+                        </AppText>
                     </SectionCard>
                 )}
 
@@ -165,11 +166,11 @@ export default function Step9Review({ formData, mediaFiles, videoUrls = [], onEd
                     <View style={styles.mediaStats}>
                         <View style={styles.mediaStat}>
                             <Ionicons name="images" size={18} color="#3498db" />
-                            <Text style={styles.mediaStatText}>{imagesCount} foto{imagesCount !== 1 ? 's' : ''}</Text>
+                            <AppText style={styles.mediaStatText}>{imagesCount} foto{imagesCount !== 1 ? 's' : ''}</AppText>
                         </View>
                         <View style={styles.mediaStat}>
                             <Ionicons name="videocam" size={18} color="#e74c3c" />
-                            <Text style={styles.mediaStatText}>{videosCount} vídeo{videosCount !== 1 ? 's' : ''}</Text>
+                            <AppText style={styles.mediaStatText}>{videosCount} vídeo{videosCount !== 1 ? 's' : ''}</AppText>
                         </View>
                     </View>
                     {(mediaFiles.length > 0 || videoUrls.length > 0) && (
@@ -197,7 +198,7 @@ export default function Step9Review({ formData, mediaFiles, videoUrls = [], onEd
                             })}
                             {(mediaFiles.length + videoUrls.length) > 4 && (
                                 <View style={[styles.mediaThumb, styles.mediaThumbMore]}>
-                                    <Text style={styles.mediaThumbMoreText}>+{(mediaFiles.length + videoUrls.length) - 4}</Text>
+                                    <AppText style={styles.mediaThumbMoreText}>+{(mediaFiles.length + videoUrls.length) - 4}</AppText>
                                 </View>
                             )}
                         </View>
@@ -207,9 +208,9 @@ export default function Step9Review({ formData, mediaFiles, videoUrls = [], onEd
                 {/* Info Final */}
                 <View style={styles.finalInfo}>
                     <Ionicons name="information-circle" size={20} color="#3498db" />
-                    <Text style={styles.finalInfoText}>
+                    <AppText style={styles.finalInfoText}>
                         Após publicar, seu anúncio passará por uma análise. Você será notificado assim que for aprovado.
-                    </Text>
+                    </AppText>
                 </View>
             </View>
         </ScrollView>

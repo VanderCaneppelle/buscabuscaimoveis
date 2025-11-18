@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AppText from '../../AppText';
 
 const PROPERTY_TYPES = [
     { value: 'Casa', icon: 'home', color: '#3498db' },
@@ -19,10 +20,10 @@ export default function Step1PropertyType({ formData, updateFormData }) {
             <View style={styles.content}>
                 {/* Título e Descrição */}
                 <View style={styles.header}>
-                    <Text style={styles.title}>Que tipo de imóvel você quer anunciar?</Text>
-                    <Text style={styles.subtitle}>
+                    <AppText style={styles.title}>Que tipo de imóvel você quer anunciar?</AppText>
+                    <AppText style={styles.subtitle}>
                         Escolha a categoria que melhor descreve seu imóvel
-                    </Text>
+                    </AppText>
                 </View>
 
                 {/* Grid de Tipos */}
@@ -44,12 +45,12 @@ export default function Step1PropertyType({ formData, updateFormData }) {
                                     color={formData.propertyType === type.value ? type.color : '#6B7280'} 
                                 />
                             </View>
-                            <Text style={[
+                            <AppText style={[
                                 styles.typeText,
                                 formData.propertyType === type.value && styles.typeTextSelected
                             ]}>
                                 {type.value}
-                            </Text>
+                            </AppText>
                             {formData.propertyType === type.value && (
                                 <View style={styles.checkmarkContainer}>
                                     <Ionicons name="checkmark-circle" size={24} color={type.color} />
@@ -63,10 +64,10 @@ export default function Step1PropertyType({ formData, updateFormData }) {
                 {formData.propertyType && (
                     <View style={styles.infoCard}>
                         <Ionicons name="information-circle" size={20} color="#3498db" />
-                        <Text style={styles.infoText}>
-                            Ótimo! Você selecionou <Text style={styles.infoBold}>{formData.propertyType}</Text>. 
+                        <AppText style={styles.infoText}>
+                            Ótimo! Você selecionou <AppText style={styles.infoBold}>{formData.propertyType}</AppText>. 
                             Clique em continuar para prosseguir.
-                        </Text>
+                        </AppText>
                     </View>
                 )}
             </View>

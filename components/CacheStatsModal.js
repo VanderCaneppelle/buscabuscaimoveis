@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
     View,
-    Text,
     StyleSheet,
     Modal,
     TouchableOpacity,
@@ -12,6 +11,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { getCacheStats, clearAllCache, verifyCacheIntegrity } from '../lib/mediaCacheService';
 import PropertyCacheService from '../lib/propertyCacheService';
+import AppText from './AppText';
 
 export default function CacheStatsModal({ visible, onClose }) {
     const [mediaStats, setMediaStats] = useState(null);
@@ -101,7 +101,7 @@ export default function CacheStatsModal({ visible, onClose }) {
             <View style={styles.overlay}>
                 <View style={styles.container}>
                     <View style={styles.header}>
-                        <Text style={styles.title}>📊 Estatísticas do Cache</Text>
+                        <AppText style={styles.title}>📊 Estatísticas do Cache</AppText>
                         <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                             <Ionicons name="close" size={24} color="#64748b" />
                         </TouchableOpacity>
@@ -111,7 +111,7 @@ export default function CacheStatsModal({ visible, onClose }) {
                         {loading ? (
                             <View style={styles.loadingContainer}>
                                 <ActivityIndicator size="large" color="#00335e" />
-                                <Text style={styles.loadingText}>Carregando estatísticas...</Text>
+                                <AppText style={styles.loadingText}>Carregando estatísticas...</AppText>
                             </View>
                         ) : (
                             <>
@@ -119,29 +119,29 @@ export default function CacheStatsModal({ visible, onClose }) {
                                 <View style={styles.section}>
                                     <View style={styles.sectionHeader}>
                                         <Ionicons name="images" size={20} color="#00335e" />
-                                        <Text style={styles.sectionTitle}>Cache de Mídia</Text>
+                                        <AppText style={styles.sectionTitle}>Cache de Mídia</AppText>
                                     </View>
 
                                     {mediaStats && (
                                         <View style={styles.statsGrid}>
                                             <View style={styles.statItem}>
-                                                <Text style={styles.statLabel}>Total de Arquivos</Text>
-                                                <Text style={styles.statValue}>{mediaStats.totalFiles}</Text>
+                                                <AppText style={styles.statLabel}>Total de Arquivos</AppText>
+                                                <AppText style={styles.statValue}>{mediaStats.totalFiles}</AppText>
                                             </View>
 
                                             <View style={styles.statItem}>
-                                                <Text style={styles.statLabel}>Stories</Text>
-                                                <Text style={styles.statValue}>{mediaStats.storyFiles}</Text>
+                                                <AppText style={styles.statLabel}>Stories</AppText>
+                                                <AppText style={styles.statValue}>{mediaStats.storyFiles}</AppText>
                                             </View>
 
                                             <View style={styles.statItem}>
-                                                <Text style={styles.statLabel}>Outros</Text>
-                                                <Text style={styles.statValue}>{mediaStats.generalFiles}</Text>
+                                                <AppText style={styles.statLabel}>Outros</AppText>
+                                                <AppText style={styles.statValue}>{mediaStats.generalFiles}</AppText>
                                             </View>
 
                                             <View style={styles.statItem}>
-                                                <Text style={styles.statLabel}>Tamanho Total</Text>
-                                                <Text style={styles.statValue}>{mediaStats.totalSizeMB} MB</Text>
+                                                <AppText style={styles.statLabel}>Tamanho Total</AppText>
+                                                <AppText style={styles.statValue}>{mediaStats.totalSizeMB} MB</AppText>
                                             </View>
                                         </View>
                                     )}
@@ -160,9 +160,9 @@ export default function CacheStatsModal({ visible, onClose }) {
                                                     ]}
                                                 />
                                             </View>
-                                            <Text style={styles.progressText}>
+                                            <AppText style={styles.progressText}>
                                                 {getUsagePercentage(parseFloat(mediaStats.totalSizeMB), mediaStats.maxSizeMB)}% usado
-                                            </Text>
+                                            </AppText>
                                         </View>
                                     )}
                                 </View>
@@ -171,26 +171,26 @@ export default function CacheStatsModal({ visible, onClose }) {
                                 <View style={styles.section}>
                                     <View style={styles.sectionHeader}>
                                         <Ionicons name="home" size={20} color="#00335e" />
-                                        <Text style={styles.sectionTitle}>Cache de Propriedades</Text>
+                                        <AppText style={styles.sectionTitle}>Cache de Propriedades</AppText>
                                     </View>
 
                                     {propertyStats && (
                                         <View style={styles.statsGrid}>
                                             <View style={styles.statItem}>
-                                                <Text style={styles.statLabel}>Propriedades</Text>
-                                                <Text style={styles.statValue}>{propertyStats.totalProperties}</Text>
+                                                <AppText style={styles.statLabel}>Propriedades</AppText>
+                                                <AppText style={styles.statValue}>{propertyStats.totalProperties}</AppText>
                                             </View>
 
                                             <View style={styles.statItem}>
-                                                <Text style={styles.statLabel}>Tamanho</Text>
-                                                <Text style={styles.statValue}>{formatBytes(propertyStats.totalSizeBytes)}</Text>
+                                                <AppText style={styles.statLabel}>Tamanho</AppText>
+                                                <AppText style={styles.statValue}>{formatBytes(propertyStats.totalSizeBytes)}</AppText>
                                             </View>
 
                                             <View style={styles.statItem}>
-                                                <Text style={styles.statLabel}>Última Atualização</Text>
-                                                <Text style={styles.statValue}>
+                                                <AppText style={styles.statLabel}>Última Atualização</AppText>
+                                                <AppText style={styles.statValue}>
                                                     {propertyStats.lastUpdate ? new Date(propertyStats.lastUpdate).toLocaleTimeString() : 'Nunca'}
-                                                </Text>
+                                                </AppText>
                                             </View>
                                         </View>
                                     )}
@@ -203,7 +203,7 @@ export default function CacheStatsModal({ visible, onClose }) {
                                         onPress={handleVerifyIntegrity}
                                     >
                                         <Ionicons name="checkmark-circle" size={20} color="#27ae60" />
-                                        <Text style={styles.actionButtonText}>Verificar Integridade</Text>
+                                        <AppText style={styles.actionButtonText}>Verificar Integridade</AppText>
                                     </TouchableOpacity>
 
                                     <TouchableOpacity
@@ -216,9 +216,9 @@ export default function CacheStatsModal({ visible, onClose }) {
                                         ) : (
                                             <Ionicons name="trash" size={20} color="#fff" />
                                         )}
-                                        <Text style={[styles.actionButtonText, styles.clearButtonText]}>
+                                        <AppText style={[styles.actionButtonText, styles.clearButtonText]}>
                                             {clearing ? 'Limpando...' : 'Limpar Todo Cache'}
-                                        </Text>
+                                        </AppText>
                                     </TouchableOpacity>
                                 </View>
                             </>

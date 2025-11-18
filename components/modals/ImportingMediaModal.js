@@ -1,13 +1,13 @@
 import React from 'react';
 import {
     View,
-    Text,
     StyleSheet,
     Modal,
     ActivityIndicator,
     Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AppText from "../../components/AppText";
 
 const { width } = Dimensions.get('window');
 
@@ -28,17 +28,17 @@ export default function ImportingMediaModal({ visible, mediaCount = 0 }) {
                         </View>
                     </View>
 
-                    <Text style={styles.title}>Importando Mídias</Text>
+                    <AppText style={styles.title}>Importando Mídias</AppText>
                     
                     {mediaCount > 0 && (
-                        <Text style={styles.subtitle}>
+                        <AppText style={styles.subtitle}>
                             Processando {mediaCount} {mediaCount === 1 ? 'arquivo' : 'arquivos'}...
-                        </Text>
+                        </AppText>
                     )}
 
-                    <Text style={styles.message}>
+                    <AppText style={styles.message}>
                         Por favor, aguarde um momento
-                    </Text>
+                    </AppText>
 
                     <View style={styles.loadingBar}>
                         <View style={styles.loadingBarFill} />

@@ -1,6 +1,8 @@
 import React, { useRef } from 'react';
-import { View, Text, StyleSheet, TextInput, ScrollView, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AppText from '../../AppText';
+import AppTextInput from '../../AppTextInput';
 
 const formatCurrency = (value) => {
     // Remove tudo exceto números
@@ -56,13 +58,13 @@ export default function Step5Pricing({ formData, updateFormData }) {
                     keyboardShouldPersistTaps="handled"
                 >
                     <View style={styles.content}>
-                <Text style={styles.title}>Qual o valor do imóvel?</Text>
-                <Text style={styles.subtitle}>
+                <AppText style={styles.title}>Qual o valor do imóvel?</AppText>
+                <AppText style={styles.subtitle}>
                     {formData.transactionType === 'Aluguel' 
                         ? 'Informe o valor do aluguel mensal'
                         : 'Defina o preço de venda do imóvel'
                     }
-                </Text>
+                </AppText>
 
                 {/* Preço Principal */}
                 <View style={styles.priceSection}>
@@ -71,15 +73,15 @@ export default function Step5Pricing({ formData, updateFormData }) {
                             <Ionicons name="cash" size={24} color="#10B981" />
                         </View>
                         <View style={styles.priceLabelContent}>
-                            <Text style={styles.priceLabel}>
+                            <AppText style={styles.priceLabel}>
                                 {formData.transactionType === 'Aluguel' ? 'Valor do Aluguel' : 'Preço de Venda'}
-                            </Text>
-                            <Text style={styles.required}>*</Text>
+                            </AppText>
+                            <AppText style={styles.required}>*</AppText>
                         </View>
                     </View>
                     <View style={styles.priceInputContainer}>
-                        <Text style={styles.currencySymbol}>R$</Text>
-                        <TextInput
+                        <AppText style={styles.currencySymbol}>R$</AppText>
+                        <AppTextInput
                             ref={priceInputRef}
                             style={styles.priceInput}
                             value={formData.price}
@@ -92,9 +94,9 @@ export default function Step5Pricing({ formData, updateFormData }) {
                             blurOnSubmit={false}
                         />
                     </View>
-                    <Text style={styles.hint}>
+                    <AppText style={styles.hint}>
                         Pesquise preços de imóveis similares na região para definir um valor competitivo
-                    </Text>
+                    </AppText>
                 </View>
 
                 {/* Preço Promocional */}
@@ -104,16 +106,16 @@ export default function Step5Pricing({ formData, updateFormData }) {
                             <Ionicons name="pricetag" size={24} color="#F59E0B" />
                         </View>
                         <View style={styles.priceLabelContent}>
-                            <Text style={styles.priceLabel}>Preço Promocional</Text>
-                            <Text style={styles.optional}>(opcional)</Text>
+                            <AppText style={styles.priceLabel}>Preço Promocional</AppText>
+                            <AppText style={styles.optional}>(opcional)</AppText>
                         </View>
                     </View>
                     <View style={[
                         styles.priceInputContainer,
                         hasDiscount && styles.priceInputContainerPromo
                     ]}>
-                        <Text style={styles.currencySymbol}>R$</Text>
-                        <TextInput
+                        <AppText style={styles.currencySymbol}>R$</AppText>
+                        <AppTextInput
                             ref={salePriceInputRef}
                             style={styles.priceInput}
                             value={formData.salePrice}
@@ -130,37 +132,37 @@ export default function Step5Pricing({ formData, updateFormData }) {
                     {hasDiscount && (
                         <View style={styles.discountBadge}>
                             <Ionicons name="trending-down" size={16} color="#10B981" />
-                            <Text style={styles.discountText}>
+                            <AppText style={styles.discountText}>
                                 {discountPercent}% de desconto
-                            </Text>
+                            </AppText>
                         </View>
                     )}
 
-                    <Text style={styles.hint}>
+                    <AppText style={styles.hint}>
                         Use para destacar promoções ou negociações especiais
-                    </Text>
+                    </AppText>
                 </View>
 
                 {/* Comparação de Preços */}
                 {hasDiscount && (
                     <View style={styles.comparisonCard}>
                         <View style={styles.comparisonRow}>
-                            <Text style={styles.comparisonLabel}>Preço original:</Text>
-                            <Text style={styles.comparisonValueStrike}>
+                            <AppText style={styles.comparisonLabel}>Preço original:</AppText>
+                            <AppText style={styles.comparisonValueStrike}>
                                 R$ {formData.price}
-                            </Text>
+                            </AppText>
                         </View>
                         <View style={[styles.comparisonRow, styles.comparisonRowHighlight]}>
-                            <Text style={styles.comparisonLabelPromo}>Preço promocional:</Text>
-                            <Text style={styles.comparisonValuePromo}>
+                            <AppText style={styles.comparisonLabelPromo}>Preço promocional:</AppText>
+                            <AppText style={styles.comparisonValuePromo}>
                                 R$ {formData.salePrice}
-                            </Text>
+                            </AppText>
                         </View>
                         <View style={styles.savingsRow}>
                             <Ionicons name="checkmark-circle" size={18} color="#10B981" />
-                            <Text style={styles.savingsText}>
+                            <AppText style={styles.savingsText}>
                                 Economia de R$ {formatCurrency((priceValue - salePriceValue).toString() + '00')}
-                            </Text>
+                            </AppText>
                         </View>
                     </View>
                 )}
@@ -169,11 +171,11 @@ export default function Step5Pricing({ formData, updateFormData }) {
                 <View style={styles.infoCard}>
                     <Ionicons name="bulb" size={20} color="#F59E0B" />
                     <View style={styles.infoContent}>
-                        <Text style={styles.infoTitle}>💡 Dica de especialista</Text>
-                        <Text style={styles.infoText}>
+                        <AppText style={styles.infoTitle}>💡 Dica de especialista</AppText>
+                        <AppText style={styles.infoText}>
                             Preços competitivos e promocionais atraem mais visualizações. 
                             Imóveis com desconto recebem até 3x mais contatos!
-                        </Text>
+                        </AppText>
                     </View>
                 </View>
                     </View>

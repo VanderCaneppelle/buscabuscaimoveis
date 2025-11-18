@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
     View,
-    Text,
     StyleSheet,
     TouchableOpacity,
     Alert,
@@ -9,6 +8,7 @@ import {
     Platform,
     Modal
 } from 'react-native';
+import AppText from "../components/AppText";
 import MapView, { Marker, PROVIDER_GOOGLE, PROVIDER_DEFAULT } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
@@ -220,17 +220,17 @@ const MapaEscolherEndereco = ({
                 <View style={styles.header}>
                     <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
                         <Ionicons name="close" size={24} color="#6B7280" />
-                        <Text style={styles.cancelButtonText}>Cancelar</Text>
+                        <AppText style={styles.cancelButtonText}>Cancelar</AppText>
                     </TouchableOpacity>
-                    <Text style={styles.title}>Escolher Endereço</Text>
+                    <AppText style={styles.title}>Escolher Endereço</AppText>
                     <TouchableOpacity
                         style={[styles.confirmButton, (!selectedCoordinate || !addressInfo) && styles.confirmButtonDisabled]}
                         onPress={handleConfirm}
                         disabled={!selectedCoordinate || !addressInfo}
                     >
-                        <Text style={[styles.confirmButtonText, (!selectedCoordinate || !addressInfo) && styles.confirmButtonTextDisabled]}>
+                        <AppText style={[styles.confirmButtonText, (!selectedCoordinate || !addressInfo) && styles.confirmButtonTextDisabled]}>
                             Confirmar
-                        </Text>
+                        </AppText>
                         <Ionicons 
                             name="checkmark" 
                             size={20} 
@@ -298,29 +298,29 @@ const MapaEscolherEndereco = ({
             </MapView>
 
             <View style={styles.infoContainer}>
-                <Text style={styles.instructionText}>
+                <AppText style={styles.instructionText}>
                     Toque no mapa ou arraste o marcador para escolher o endereço
-                </Text>
+                </AppText>
 
                 {loading && (
                     <View style={styles.loadingInfo}>
                         <ActivityIndicator size="small" color="#007AFF" />
-                        <Text style={styles.loadingInfoText}>Obtendo endereço...</Text>
+                        <AppText style={styles.loadingInfoText}>Obtendo endereço...</AppText>
                     </View>
                 )}
 
                 {addressInfo && !loading && (
                     <View style={styles.addressContainer}>
-                        <Text style={styles.addressTitle}>Endereço Selecionado:</Text>
-                        <Text style={styles.addressText}>{addressInfo.formattedAddress}</Text>
+                        <AppText style={styles.addressTitle}>Endereço Selecionado:</AppText>
+                        <AppText style={styles.addressText}>{addressInfo.formattedAddress}</AppText>
                         {addressInfo.address && (
-                            <Text style={styles.addressDetail}>Rua: {addressInfo.address}</Text>
+                            <AppText style={styles.addressDetail}>Rua: {addressInfo.address}</AppText>
                         )}
                         {addressInfo.neighborhood && (
-                            <Text style={styles.addressDetail}>Bairro: {addressInfo.neighborhood}</Text>
+                            <AppText style={styles.addressDetail}>Bairro: {addressInfo.neighborhood}</AppText>
                         )}
                         {addressInfo.city && (
-                            <Text style={styles.addressDetail}>Cidade: {addressInfo.city}</Text>
+                            <AppText style={styles.addressDetail}>Cidade: {addressInfo.city}</AppText>
                         )}
                     </View>
                 )}

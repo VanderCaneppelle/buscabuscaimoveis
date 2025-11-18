@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
     View,
-    Text,
     StyleSheet,
     Modal,
     TouchableOpacity,
@@ -11,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
 import { checkTermsAcceptance, saveTermsAcceptance } from '../lib/termsConfig';
 import TermsAndPrivacyScreen from './TermsAndPrivacyScreen';
+import AppText from './AppText';
 
 export default function TermsAcceptanceCheck({ user, onTermsAccepted }) {
     console.log('Rendered TermsAcceptanceCheck');
@@ -103,12 +103,12 @@ export default function TermsAcceptanceCheck({ user, onTermsAccepted }) {
                             <Ionicons name="document-text" size={60} color="#3498db" />
                         </View>
 
-                        <Text style={styles.title}>Atualização dos Termos</Text>
+                        <AppText style={styles.title}>Atualização dos Termos</AppText>
 
-                        <Text style={styles.message}>
+                        <AppText style={styles.message}>
                             Os Termos de Uso e Política de Privacidade foram atualizados.
                             Para continuar usando o aplicativo, você precisa aceitar as novas versões.
-                        </Text>
+                        </AppText>
 
                         <View style={styles.checkboxContainer}>
                             <View style={styles.checkboxRow}>
@@ -122,9 +122,9 @@ export default function TermsAcceptanceCheck({ user, onTermsAccepted }) {
                                         )}
                                     </View>
                                 </TouchableOpacity>
-                                <Text style={styles.checkboxText}>
+                                <AppText style={styles.checkboxText}>
                                     Li e aceito os{' '}
-                                    <Text
+                                    <AppText
                                         style={styles.termsLink}
                                         onPress={() => {
                                             setTermsType('terms');
@@ -132,9 +132,9 @@ export default function TermsAcceptanceCheck({ user, onTermsAccepted }) {
                                         }}
                                     >
                                         Termos de Uso
-                                    </Text>
+                                    </AppText>
                                     {' '}e{' '}
-                                    <Text
+                                    <AppText
                                         style={styles.termsLink}
                                         onPress={() => {
                                             setTermsType('privacy');
@@ -142,8 +142,8 @@ export default function TermsAcceptanceCheck({ user, onTermsAccepted }) {
                                         }}
                                     >
                                         Política de Privacidade
-                                    </Text>
-                                </Text>
+                                    </AppText>
+                                </AppText>
                             </View>
                         </View>
 
@@ -152,7 +152,7 @@ export default function TermsAcceptanceCheck({ user, onTermsAccepted }) {
                                 style={[styles.button, styles.declineButton]}
                                 onPress={handleDeclineTerms}
                             >
-                                <Text style={styles.declineButtonText}>Recusar</Text>
+                                <AppText style={styles.declineButtonText}>Recusar</AppText>
                             </TouchableOpacity>
 
                             <TouchableOpacity
@@ -166,9 +166,9 @@ export default function TermsAcceptanceCheck({ user, onTermsAccepted }) {
                                     color="#fff"
                                     style={styles.buttonIcon}
                                 />
-                                <Text style={styles.acceptButtonText}>
+                                <AppText style={styles.acceptButtonText}>
                                     {isLoading ? 'Salvando...' : 'Aceitar e Continuar'}
-                                </Text>
+                                </AppText>
                             </TouchableOpacity>
                         </View>
                     </View>

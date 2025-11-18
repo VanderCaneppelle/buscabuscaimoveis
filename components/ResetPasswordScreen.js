@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
     View,
-    Text,
-    TextInput,
     TouchableOpacity,
     StyleSheet,
     Alert,
@@ -15,6 +13,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
 import * as Linking from 'expo-linking';
+import AppText from './AppText';
+import AppTextInput from './AppTextInput';
 
 export default function ResetPasswordScreen() {
     const [newPassword, setNewPassword] = useState('');
@@ -127,15 +127,15 @@ export default function ResetPasswordScreen() {
                         <View style={styles.iconContainer}>
                             <Ionicons name="lock-open" size={60} color="#3498db" />
                         </View>
-                        <Text style={styles.title}>Nova Senha</Text>
-                        <Text style={styles.subtitle}>
+                        <AppText style={styles.title}>Nova Senha</AppText>
+                        <AppText style={styles.subtitle}>
                             {resetToken ? 'Digite sua nova senha' : 'Carregando...'}
-                        </Text>
+                        </AppText>
 
                         <View style={styles.form}>
                             <View style={styles.inputContainer}>
                                 <Ionicons name="lock-closed-outline" size={20} color="#7f8c8d" style={styles.inputIcon} />
-                                <TextInput
+                                <AppTextInput
                                     style={styles.input}
                                     placeholder="Nova senha"
                                     placeholderTextColor="#7f8c8d"
@@ -148,7 +148,7 @@ export default function ResetPasswordScreen() {
 
                             <View style={styles.inputContainer}>
                                 <Ionicons name="lock-closed-outline" size={20} color="#7f8c8d" style={styles.inputIcon} />
-                                <TextInput
+                                <AppTextInput
                                     style={styles.input}
                                     placeholder="Confirmar nova senha"
                                     placeholderTextColor="#7f8c8d"
@@ -170,9 +170,9 @@ export default function ResetPasswordScreen() {
                                     color="#fff"
                                     style={styles.buttonIcon}
                                 />
-                                <Text style={styles.buttonText}>
+                                <AppText style={styles.buttonText}>
                                     {isLoading ? 'Alterando...' : !resetToken ? 'Carregando...' : 'Alterar Senha'}
-                                </Text>
+                                </AppText>
                             </TouchableOpacity>
 
                             <TouchableOpacity
@@ -188,7 +188,7 @@ export default function ResetPasswordScreen() {
                                 }}
                             >
                                 <Ionicons name="arrow-back-outline" size={16} color="#3498db" style={styles.backIcon} />
-                                <Text style={styles.backText}>Voltar ao login</Text>
+                                <AppText style={styles.backText}>Voltar ao login</AppText>
                             </TouchableOpacity>
                         </View>
                     </View>

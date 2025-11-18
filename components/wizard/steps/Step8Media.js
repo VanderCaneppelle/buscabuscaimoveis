@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
 import { 
     View, 
-    Text, 
     StyleSheet, 
     ScrollView, 
     TouchableOpacity, 
     Image,
     FlatList,
     Alert,
-    TextInput 
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import MediaUploadModal from '../modals/MediaUploadModal';
 import { validateYouTubeUrl, normalizeYouTubeUrl, extractYouTubeVideoId } from '../../../lib/youtubeUtils';
+import AppText from '../../AppText';
+import AppTextInput from '../../AppTextInput';
 
 export default function Step8Media({ formData, mediaFiles, setMediaFiles, videoUrls = [], setVideoUrls, plan }) {
     const [showUploadModal, setShowUploadModal] = useState(false);
@@ -99,9 +99,9 @@ export default function Step8Media({ formData, mediaFiles, setMediaFiles, videoU
             >
                 <Ionicons name="close-circle" size={24} color="#EF4444" />
             </TouchableOpacity>
-            <View style={styles.mediaTypeTag}>
-                <Text style={styles.mediaTypeText}>📷 Foto</Text>
-            </View>
+                            <View style={styles.mediaTypeTag}>
+                                <AppText style={styles.mediaTypeText}>📷 Foto</AppText>
+                            </View>
         </View>
     );
 
@@ -124,7 +124,7 @@ export default function Step8Media({ formData, mediaFiles, setMediaFiles, videoU
                 </TouchableOpacity>
                 <View style={styles.videoTypeTag}>
                     <Ionicons name="logo-youtube" size={16} color="#fff" />
-                    <Text style={styles.videoTypeText}>YouTube</Text>
+                    <AppText style={styles.videoTypeText}>YouTube</AppText>
                 </View>
             </View>
         );
@@ -136,30 +136,30 @@ export default function Step8Media({ formData, mediaFiles, setMediaFiles, videoU
     return (
         <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
             <View style={styles.content}>
-                <Text style={styles.title}>Fotos e Vídeos</Text>
-                <Text style={styles.subtitle}>
+                <AppText style={styles.title}>Fotos e Vídeos</AppText>
+                <AppText style={styles.subtitle}>
                     Imagens atrativas aumentam em até 5x as chances de visualização!
-                </Text>
+                </AppText>
 
                 {/* Plan Limits Info */}
                 <View style={styles.limitsCard}>
                     <View style={styles.limitRow}>
                         <Ionicons name="images" size={20} color="#3498db" />
-                        <Text style={styles.limitText}>
-                            Fotos: <Text style={styles.limitValue}>{imagesCount}/{maxImages}</Text>
-                        </Text>
+                        <AppText style={styles.limitText}>
+                            Fotos: <AppText style={styles.limitValue}>{imagesCount}/{maxImages}</AppText>
+                        </AppText>
                     </View>
                     <View style={styles.limitRow}>
                         <Ionicons name="videocam" size={20} color="#e74c3c" />
-                        <Text style={styles.limitText}>
-                            Vídeos: <Text style={styles.limitValue}>{videosCount}/{maxVideos}</Text>
-                        </Text>
+                        <AppText style={styles.limitText}>
+                            Vídeos: <AppText style={styles.limitValue}>{videosCount}/{maxVideos}</AppText>
+                        </AppText>
                     </View>
                 </View>
 
                 {/* Fotos Section */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>📷 Fotos</Text>
+                    <AppText style={styles.sectionTitle}>📷 Fotos</AppText>
                     {mediaFiles.length > 0 && (
                         <FlatList
                             data={mediaFiles}
@@ -180,24 +180,24 @@ export default function Step8Media({ formData, mediaFiles, setMediaFiles, videoU
                             <View style={styles.addButtonIcon}>
                                 <Ionicons name="add" size={32} color="#3498db" />
                             </View>
-                            <Text style={styles.addButtonText}>
+                            <AppText style={styles.addButtonText}>
                                 {mediaFiles.length > 0 ? 'Adicionar mais fotos' : 'Adicionar fotos'}
-                            </Text>
+                            </AppText>
                         </TouchableOpacity>
                     )}
                 </View>
 
                 {/* Vídeos YouTube Section */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>🎥 Vídeos</Text>
-                    <Text style={styles.sectionSubtitle}>
+                    <AppText style={styles.sectionTitle}>🎥 Vídeos</AppText>
+                    <AppText style={styles.sectionSubtitle}>
                         Cole o link do vídeo do YouTube (vídeos normais ou Shorts)
-                    </Text>
+                    </AppText>
 
                     {/* YouTube URL Input */}
                     {canAddVideos && (
                         <View style={styles.youtubeInputContainer}>
-                            <TextInput
+                            <AppTextInput
                                 style={styles.youtubeInput}
                                 placeholder="https://www.youtube.com/watch?v=..."
                                 value={youtubeUrlInput}
@@ -211,7 +211,7 @@ export default function Step8Media({ formData, mediaFiles, setMediaFiles, videoU
                                 onPress={handleAddYouTubeUrl}
                                 activeOpacity={0.7}
                             >
-                                <Text style={styles.addYouTubeButtonText}>Adicionar</Text>
+                                <AppText style={styles.addYouTubeButtonText}>Adicionar</AppText>
                             </TouchableOpacity>
                         </View>
                     )}
@@ -232,31 +232,31 @@ export default function Step8Media({ formData, mediaFiles, setMediaFiles, videoU
                     {!canAddVideos && videoUrls.length === 0 && (
                         <View style={styles.limitReachedCard}>
                             <Ionicons name="information-circle" size={20} color="#F59E0B" />
-                            <Text style={styles.limitReachedText}>
+                            <AppText style={styles.limitReachedText}>
                                 Seu plano não permite adicionar vídeos.
-                            </Text>
+                            </AppText>
                         </View>
                     )}
                 </View>
 
                 {/* Tips */}
                 <View style={styles.tipsCard}>
-                    <Text style={styles.tipsTitle}>📸 Dicas para boas fotos:</Text>
+                    <AppText style={styles.tipsTitle}>📸 Dicas para boas fotos:</AppText>
                     <View style={styles.tipItem}>
                         <Ionicons name="sunny" size={16} color="#F59E0B" />
-                        <Text style={styles.tipText}>Prefira luz natural</Text>
+                        <AppText style={styles.tipText}>Prefira luz natural</AppText>
                     </View>
                     <View style={styles.tipItem}>
                         <Ionicons name="expand" size={16} color="#F59E0B" />
-                        <Text style={styles.tipText}>Mostre diferentes ângulos</Text>
+                        <AppText style={styles.tipText}>Mostre diferentes ângulos</AppText>
                     </View>
                     <View style={styles.tipItem}>
                         <Ionicons name="sparkles" size={16} color="#F59E0B" />
-                        <Text style={styles.tipText}>Mantenha o ambiente limpo e organizado</Text>
+                        <AppText style={styles.tipText}>Mantenha o ambiente limpo e organizado</AppText>
                     </View>
                     <View style={styles.tipItem}>
                         <Ionicons name="images" size={16} color="#F59E0B" />
-                        <Text style={styles.tipText}>Inclua todos os cômodos importantes</Text>
+                        <AppText style={styles.tipText}>Inclua todos os cômodos importantes</AppText>
                     </View>
                 </View>
             </View>

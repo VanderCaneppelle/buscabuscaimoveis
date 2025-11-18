@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
     View,
-    Text,
     StyleSheet,
-    TextInput,
     ScrollView,
     TouchableOpacity,
     ActivityIndicator,
@@ -16,6 +14,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { DeveloperService } from '../../../lib/developerService';
 import { useAuth } from '../../../contexts/AuthContext';
+import AppText from '../../AppText';
+import AppTextInput from '../../AppTextInput';
 
 export default function Step6Developer({ formData, updateFormData, onNext }) {
     const [developers, setDevelopers] = useState([]);
@@ -137,34 +137,34 @@ export default function Step6Developer({ formData, updateFormData, onNext }) {
     return (
         <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
             <View style={styles.content}>
-                <Text style={styles.title}>Construtora ou Incorporadora</Text>
-                <Text style={styles.subtitle}>
+                <AppText style={styles.title}>Construtora ou Incorporadora</AppText>
+                <AppText style={styles.subtitle}>
                     Informe a construtora responsável pelo imóvel (opcional)
-                </Text>
+                </AppText>
 
                 {/* Selected Developer */}
                 {selectedDeveloper ? (
                     <View style={styles.selectedCard}>
                         <View style={styles.selectedHeader}>
                             <Ionicons name="checkmark-circle" size={24} color="#10B981" />
-                            <Text style={styles.selectedTitle}>Construtora selecionada</Text>
+                            <AppText style={styles.selectedTitle}>Construtora selecionada</AppText>
                         </View>
                         <View style={styles.selectedContent}>
                             <View style={styles.selectedIconContainer}>
                                 <Ionicons name="business" size={32} color="#3498db" />
                             </View>
                             <View style={styles.selectedInfo}>
-                                <Text style={styles.selectedName}>{selectedDeveloper.full_name}</Text>
+                                <AppText style={styles.selectedName}>{selectedDeveloper.full_name}</AppText>
                                 {selectedDeveloper.city_name && (
-                                    <Text style={styles.selectedLocation}>
+                                    <AppText style={styles.selectedLocation}>
                                         📍 {selectedDeveloper.city_name}/{selectedDeveloper.city_uf}
-                                    </Text>
+                                    </AppText>
                                 )}
                             </View>
                         </View>
                         <TouchableOpacity style={styles.clearButton} onPress={handleClear}>
                             <Ionicons name="close-circle" size={18} color="#EF4444" />
-                            <Text style={styles.clearButtonText}>Remover seleção</Text>
+                            <AppText style={styles.clearButtonText}>Remover seleção</AppText>
                         </TouchableOpacity>
                     </View>
                 ) : (
@@ -172,7 +172,7 @@ export default function Step6Developer({ formData, updateFormData, onNext }) {
                         {/* Search */}
                         <View style={styles.searchContainer}>
                             <Ionicons name="search" size={20} color="#6B7280" style={styles.searchIcon} />
-                            <TextInput
+                            <AppTextInput
                                 style={styles.searchInput}
                                 value={searchQuery}
                                 onChangeText={setSearchQuery}
@@ -190,32 +190,32 @@ export default function Step6Developer({ formData, updateFormData, onNext }) {
                         {loading ? (
                             <View style={styles.loadingContainer}>
                                 <ActivityIndicator size="large" color="#ffcc1e" />
-                                <Text style={styles.loadingText}>Carregando construtoras...</Text>
+                                <AppText style={styles.loadingText}>Carregando construtoras...</AppText>
                             </View>
                         ) : filteredDevelopers.length === 0 ? (
                             <View style={styles.emptyContainer}>
                                 <Ionicons name="business-outline" size={64} color="#D1D5DB" />
-                                <Text style={styles.emptyTitle}>Nenhuma construtora encontrada</Text>
-                                <Text style={styles.emptyText}>
+                                <AppText style={styles.emptyTitle}>Nenhuma construtora encontrada</AppText>
+                                <AppText style={styles.emptyText}>
                                     {searchQuery 
                                         ? 'Tente buscar com outro termo'
                                         : 'Não há construtoras cadastradas'
                                     }
-                                </Text>
+                                </AppText>
 
                                 <TouchableOpacity
                                     style={styles.missingButton}
                                     onPress={handleOpenMissingModal}
                                 >
                                     <Ionicons name="alert-circle" size={20} color="#1F2937" />
-                                    <Text style={styles.missingButtonText}>Não encontrei a construtora</Text>
+                                    <AppText style={styles.missingButtonText}>Não encontrei a construtora</AppText>
                                 </TouchableOpacity>
                             </View>
                         ) : (
                             <View style={styles.resultsContainer}>
-                                <Text style={styles.resultsCount}>
+                                <AppText style={styles.resultsCount}>
                                     {filteredDevelopers.length} construtora{filteredDevelopers.length !== 1 ? 's' : ''} encontrada{filteredDevelopers.length !== 1 ? 's' : ''}
-                                </Text>
+                                </AppText>
                                 <FlatList
                                     data={filteredDevelopers}
                                     keyExtractor={(item) => item.id}
@@ -229,11 +229,11 @@ export default function Step6Developer({ formData, updateFormData, onNext }) {
                                                 <Ionicons name="business" size={24} color="#3498db" />
                                             </View>
                                             <View style={styles.developerInfo}>
-                                                <Text style={styles.developerName}>{item.full_name}</Text>
+                                                <AppText style={styles.developerName}>{item.full_name}</AppText>
                                                 {item.city_name && (
-                                                    <Text style={styles.developerLocation}>
+                                                    <AppText style={styles.developerLocation}>
                                                         📍 {item.city_name}/{item.city_uf}
-                                                    </Text>
+                                                    </AppText>
                                                 )}
                                             </View>
                                             <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
@@ -257,7 +257,7 @@ export default function Step6Developer({ formData, updateFormData, onNext }) {
                             }
                         }}
                     >
-                        <Text style={styles.skipButtonText}>Pular esta etapa</Text>
+                        <AppText style={styles.skipButtonText}>Pular esta etapa</AppText>
                         <Ionicons name="arrow-forward" size={18} color="#6B7280" />
                     </TouchableOpacity>
                 )}
@@ -279,10 +279,10 @@ export default function Step6Developer({ formData, updateFormData, onNext }) {
                                 <Ionicons name="alert-circle" size={28} color="#1e3a8a" />
                             </View>
                             <View style={{ flex: 1 }}>
-                                <Text style={styles.modalTitle}>Solicitar nova construtora</Text>
-                                <Text style={styles.modalSubtitle}>
+                                <AppText style={styles.modalTitle}>Solicitar nova construtora</AppText>
+                                <AppText style={styles.modalSubtitle}>
                                     Informe o nome da construtora que não encontrou. Vamos avisar os administradores para cadastrar.
-                                </Text>
+                                </AppText>
                             </View>
                             <TouchableOpacity
                                 onPress={() => !submittingRequest && setShowMissingModal(false)}
@@ -293,8 +293,8 @@ export default function Step6Developer({ formData, updateFormData, onNext }) {
                         </View>
 
                         <View style={styles.modalBody}>
-                            <Text style={styles.modalLabel}>Nome da construtora *</Text>
-                            <TextInput
+                            <AppText style={styles.modalLabel}>Nome da construtora *</AppText>
+                            <AppTextInput
                                 style={styles.modalInput}
                                 value={missingDeveloperName}
                                 onChangeText={setMissingDeveloperName}
@@ -303,8 +303,8 @@ export default function Step6Developer({ formData, updateFormData, onNext }) {
                                 editable={!submittingRequest}
                             />
 
-                            <Text style={styles.modalLabel}>Observações (opcional)</Text>
-                            <TextInput
+                            <AppText style={styles.modalLabel}>Observações (opcional)</AppText>
+                            <AppTextInput
                                 style={[styles.modalInput, styles.modalTextArea]}
                                 value={missingNotes}
                                 onChangeText={setMissingNotes}
@@ -318,9 +318,9 @@ export default function Step6Developer({ formData, updateFormData, onNext }) {
 
                             <View style={styles.modalHintBox}>
                                 <Ionicons name="information-circle-outline" size={18} color="#1e3a8a" />
-                                <Text style={styles.modalHintText}>
+                                <AppText style={styles.modalHintText}>
                                     Você pode continuar criando o anúncio normalmente. Vamos avisar quando a construtora estiver disponível.
-                                </Text>
+                                </AppText>
                             </View>
                         </View>
 
@@ -334,7 +334,7 @@ export default function Step6Developer({ formData, updateFormData, onNext }) {
                             ) : (
                                 <>
                                     <Ionicons name="send" size={18} color="#fff" />
-                                    <Text style={styles.modalButtonText}>Enviar para avaliação</Text>
+                                    <AppText style={styles.modalButtonText}>Enviar para avaliação</AppText>
                                 </>
                             )}
                         </TouchableOpacity>

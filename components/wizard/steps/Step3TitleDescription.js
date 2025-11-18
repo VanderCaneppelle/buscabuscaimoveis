@@ -1,7 +1,9 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import AppText from '../../AppText';
+import AppTextInput from '../../AppTextInput';
 
 export default function Step2TitleDescription({ formData, updateFormData }) {
     const titleInputRef = useRef(null);
@@ -61,14 +63,14 @@ export default function Step2TitleDescription({ formData, updateFormData }) {
                 {/* Título */}
                 <View style={styles.section}>
                     <View style={styles.labelContainer}>
-                        <Text style={styles.label}>Título do anúncio</Text>
-                        <Text style={styles.required}>*</Text>
+                        <AppText style={styles.label}>Título do anúncio</AppText>
+                        <AppText style={styles.required}>*</AppText>
                     </View>
-                    <Text style={styles.hint}>
+                    <AppText style={styles.hint}>
                         Crie um título atrativo que destaque as melhores características
-                    </Text>
+                    </AppText>
                     <View style={styles.inputContainer}>
-                        <TextInput
+                        <AppTextInput
                             ref={titleInputRef}
                             style={styles.titleInput}
                             value={formData.title}
@@ -89,30 +91,30 @@ export default function Step2TitleDescription({ formData, updateFormData }) {
                             submitBehavior="submit"
                         />
                         <View style={styles.characterCount}>
-                            <Text style={[
+                            <AppText style={[
                                 styles.characterCountText,
                                 titleLength > 90 && styles.characterCountWarning
                             ]}>
                                 {titleLength}/100
-                            </Text>
+                            </AppText>
                         </View>
                     </View>
 
                     {/* Sugestões */}
                     {titleLength === 0 && (
                         <View style={styles.suggestionsContainer}>
-                            <Text style={styles.suggestionsTitle}>💡 Dicas para um bom título:</Text>
+                            <AppText style={styles.suggestionsTitle}>💡 Dicas para um bom título:</AppText>
                             <View style={styles.suggestionItem}>
                                 <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-                                <Text style={styles.suggestionText}>Mencione o tipo de imóvel</Text>
+                                <AppText style={styles.suggestionText}>Mencione o tipo de imóvel</AppText>
                             </View>
                             <View style={styles.suggestionItem}>
                                 <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-                                <Text style={styles.suggestionText}>Destaque características únicas</Text>
+                                <AppText style={styles.suggestionText}>Destaque características únicas</AppText>
                             </View>
                             <View style={styles.suggestionItem}>
                                 <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-                                <Text style={styles.suggestionText}>Inclua a localização se for atrativa</Text>
+                                <AppText style={styles.suggestionText}>Inclua a localização se for atrativa</AppText>
                             </View>
                         </View>
                     )}
@@ -121,14 +123,14 @@ export default function Step2TitleDescription({ formData, updateFormData }) {
                 {/* Descrição */}
                 <View style={styles.section}>
                     <View style={styles.labelContainer}>
-                        <Text style={styles.label}>Descrição completa</Text>
-                        <Text style={styles.optional}>(opcional)</Text>
+                        <AppText style={styles.label}>Descrição completa</AppText>
+                        <AppText style={styles.optional}>(opcional)</AppText>
                     </View>
-                    <Text style={styles.hint}>
+                    <AppText style={styles.hint}>
                         Descreva detalhes importantes sobre o imóvel
-                    </Text>
+                    </AppText>
                     <View style={styles.inputContainer}>
-                        <TextInput
+                        <AppTextInput
                             ref={descriptionInputRef}
                             style={styles.descriptionInput}
                             value={formData.description}
@@ -148,34 +150,34 @@ export default function Step2TitleDescription({ formData, updateFormData }) {
                             }}
                         />
                         <View style={styles.characterCount}>
-                            <Text style={[
+                            <AppText style={[
                                 styles.characterCountText,
                                 descriptionLength > 950 && styles.characterCountWarning
                             ]}>
                                 {descriptionLength}/1000
-                            </Text>
+                            </AppText>
                         </View>
                     </View>
 
                     {/* Sugestões de descrição */}
                     {descriptionLength === 0 && (
                         <View style={styles.suggestionsContainer}>
-                            <Text style={styles.suggestionsTitle}>📝 Inclua na descrição:</Text>
+                            <AppText style={styles.suggestionsTitle}>📝 Inclua na descrição:</AppText>
                             <View style={styles.suggestionItem}>
                                 <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-                                <Text style={styles.suggestionText}>Características principais</Text>
+                                <AppText style={styles.suggestionText}>Características principais</AppText>
                             </View>
                             <View style={styles.suggestionItem}>
                                 <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-                                <Text style={styles.suggestionText}>Acabamentos e reformas</Text>
+                                <AppText style={styles.suggestionText}>Acabamentos e reformas</AppText>
                             </View>
                             <View style={styles.suggestionItem}>
                                 <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-                                <Text style={styles.suggestionText}>Infraestrutura e comodidades</Text>
+                                <AppText style={styles.suggestionText}>Infraestrutura e comodidades</AppText>
                             </View>
                             <View style={styles.suggestionItem}>
                                 <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-                                <Text style={styles.suggestionText}>Pontos de interesse próximos</Text>
+                                <AppText style={styles.suggestionText}>Pontos de interesse próximos</AppText>
                             </View>
                         </View>
                     )}
