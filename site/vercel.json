@@ -1,0 +1,25 @@
+{
+  "version": 2,
+  "routes": [
+    {
+      "src": "/delete-account",
+      "dest": "/delete-account.html"
+    },
+    {
+      "src": "/privacidade",
+      "dest": "/privacidade.html"
+    },
+    {
+      "src": "/termos",
+      "dest": "/termos.html"
+    },
+    {
+      "src": "/confirmacao",
+      "dest": "/confirmacao.html"
+    },
+    {
+      "handle": "filesystem"
+    }
+  ]
+}
+
