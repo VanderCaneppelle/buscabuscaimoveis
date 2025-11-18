@@ -744,7 +744,7 @@ export default function HomeScreen({ navigation }) {
                     {/* Endereço com ícone */}
                     <View style={styles.addressContainer}>
                         <Ionicons name="location-outline" size={14} color="#666" />
-                        <AppText style={styles.propertyLocation}>
+                        <AppText style={styles.propertyLocation} numberOfLines={1}>
                             {(() => {
                                 // Padrão: Bairro, Cidade. Se não tiver bairro: Endereço, Cidade
                                 const neighborhood = item.neighborhood?.trim();
@@ -951,17 +951,13 @@ export default function HomeScreen({ navigation }) {
                                 onPress={() => handleQuickFilter('developer')}
                                 activeOpacity={0.7}
                             >
-                                {!isSmallScreen && (
-                                    <Ionicons 
-                                        name="business" 
-                                        size={14} 
-                                        color={quickFilter === 'developer' ? '#fff' : '#00335e'} 
-                                    />
-                                )}
-                                <AppText style={[
-                                    styles.quickFilterText,
-                                    quickFilter === 'developer' && styles.quickFilterTextActive
-                                ]}>
+                                <AppText 
+                                    style={[
+                                        styles.quickFilterText,
+                                        quickFilter === 'developer' && styles.quickFilterTextActive
+                                    ]}
+                                    numberOfLines={isSmallScreen ? 1 : 1}
+                                >
                                     Construtoras
                                 </AppText>
                             </TouchableOpacity>
@@ -975,17 +971,13 @@ export default function HomeScreen({ navigation }) {
                             onPress={() => handleQuickFilter('realtor')}
                             activeOpacity={0.7}
                         >
-                            {!isSmallScreen && (
-                                <Ionicons 
-                                    name="people" 
-                                    size={14} 
-                                    color={quickFilter === 'realtor' ? '#fff' : '#00335e'} 
-                                />
-                            )}
-                            <AppText style={[
-                                styles.quickFilterText,
-                                quickFilter === 'realtor' && styles.quickFilterTextActive
-                            ]}>
+                            <AppText 
+                                style={[
+                                    styles.quickFilterText,
+                                    quickFilter === 'realtor' && styles.quickFilterTextActive
+                                ]}
+                                numberOfLines={isSmallScreen ? 1 : 1}
+                            >
                                 Corretores
                             </AppText>
                         </TouchableOpacity>
@@ -998,17 +990,13 @@ export default function HomeScreen({ navigation }) {
                             onPress={() => handleQuickFilter('owner')}
                             activeOpacity={0.7}
                         >
-                            {!isSmallScreen && (
-                                <Ionicons 
-                                    name="home" 
-                                    size={14} 
-                                    color={quickFilter === 'owner' ? '#fff' : '#00335e'} 
-                                />
-                            )}
-                            <AppText style={[
-                                styles.quickFilterText,
-                                quickFilter === 'owner' && styles.quickFilterTextActive
-                            ]}>
+                            <AppText 
+                                style={[
+                                    styles.quickFilterText,
+                                    quickFilter === 'owner' && styles.quickFilterTextActive
+                                ]}
+                                numberOfLines={isSmallScreen ? 1 : 1}
+                            >
                                 Proprietários
                             </AppText>
                         </TouchableOpacity>
@@ -1994,7 +1982,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         paddingVertical: isSmallScreen ? 8 : 10,
-        paddingHorizontal: isSmallScreen ? 6 : 8, // Padding menor em telas pequenas
+        paddingHorizontal: isSmallScreen ? 2 : 4, // Padding reduzido para evitar truncamento
         backgroundColor: '#f8f9fa',
         borderRadius: 8,
         borderWidth: 1.5,

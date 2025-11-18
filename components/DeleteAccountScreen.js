@@ -177,15 +177,15 @@ export default function DeleteAccountScreen({ navigation }) {
                         </View>
                         <View style={styles.planWarningItem}>
                             <Ionicons name="cash-outline" size={20} color="#DC2626" />
-                            <Text style={styles.planWarningText}>
-                                <Text style={styles.planWarningBold}>Não haverá restituição de valores</Text> caso você ainda tenha planos válidos ou pagamentos pendentes
-                            </Text>
+                            <AppText style={styles.planWarningText}>
+                                <AppText style={styles.planWarningBold}>Não haverá restituição de valores</AppText> caso você ainda tenha planos válidos ou pagamentos pendentes
+                            </AppText>
                         </View>
                         <View style={styles.planWarningItem}>
                             <Ionicons name="alert-circle" size={20} color="#DC2626" />
-                            <Text style={styles.planWarningText}>
+                            <AppText style={styles.planWarningText}>
                                 Se você tem um plano ativo, recomendamos aguardar o término do período contratado antes de excluir sua conta
-                            </Text>
+                            </AppText>
                         </View>
                     </View>
                 </View>
@@ -194,14 +194,14 @@ export default function DeleteAccountScreen({ navigation }) {
                 <View style={styles.infoCard}>
                     <View style={styles.infoHeader}>
                         <Ionicons name="information-circle" size={24} color="#F59E0B" />
-                        <Text style={styles.infoTitle}>Informações Importantes</Text>
+                        <AppText style={styles.infoTitle}>Informações Importantes</AppText>
                     </View>
                     
                     <View style={styles.infoItem}>
-                        <Text style={styles.infoBullet}>•</Text>
-                        <Text style={styles.infoText}>
+                        <AppText style={styles.infoBullet}>•</AppText>
+                        <AppText style={styles.infoText}>
                             Você precisará criar uma nova conta para usar o app novamente
-                        </Text>
+                        </AppText>
                     </View>
 
                     <View style={styles.infoItem}>
@@ -213,9 +213,9 @@ export default function DeleteAccountScreen({ navigation }) {
 
                     <View style={styles.infoItem}>
                         <AppText style={styles.infoBullet}>•</AppText>
-                        <Text style={styles.infoText}>
+                        <AppText style={styles.infoText}>
                             Esta ação não pode ser desfeita ou cancelada após a confirmação
-                        </Text>
+                        </AppText>
                     </View>
                 </View>
 

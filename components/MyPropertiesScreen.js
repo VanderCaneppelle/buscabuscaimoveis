@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import {
-    View, Text, StyleSheet, TouchableOpacity, FlatList,
-    Alert, RefreshControl, Modal, ScrollView, TextInput, ActivityIndicator,
+    View, StyleSheet, TouchableOpacity, FlatList,
+    Alert, RefreshControl, Modal, ScrollView, ActivityIndicator,
     Dimensions, Platform, KeyboardAvoidingView, TouchableWithoutFeedback
 } from 'react-native';
 import { Image } from 'expo-image';
@@ -13,7 +13,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useUserPlanStore } from '../stores/userPlanStore';
 import { PropertyService } from '../lib/propertyService';
 import { BoostService } from '../lib/boostService';
-
+import AppText from './AppText';
+import AppTextInput from './AppTextInput';
 import { validateMediaLimitsByPlan } from '../lib/validation/mediaLimits';
 import { supabase } from '../lib/supabase';
 import { MediaServiceOptimized } from '../lib/mediaServiceOptimized';
@@ -1095,7 +1096,7 @@ export default function MyPropertiesScreen({ navigation }) {
                                 <View style={styles.formContainer}>
                                     <View style={styles.inputGroup}>
                                         <AppText style={styles.inputLabel}>Título do Anúncio *</AppText>
-                                        <TextInput
+                                        <AppTextInput
                                             style={styles.textInput}
                                             value={editForm.title}
                                             onChangeText={(value) => setEditForm(prev => ({ ...prev, title: value }))}
@@ -1106,7 +1107,7 @@ export default function MyPropertiesScreen({ navigation }) {
 
                                     <View style={styles.inputGroup}>
                                         <AppText style={styles.inputLabel}>Descrição</AppText>
-                                        <TextInput
+                                        <AppTextInput
                                             style={[styles.textInput, styles.textArea]}
                                             value={editForm.description}
                                             onChangeText={(value) => setEditForm(prev => ({ ...prev, description: value }))}
@@ -1120,7 +1121,7 @@ export default function MyPropertiesScreen({ navigation }) {
                                     <View style={styles.row}>
                                         <View style={[styles.inputGroup, styles.halfWidth]}>
                                             <AppText style={styles.inputLabel}>Preço *</AppText>
-                                            <TextInput
+                                            <AppTextInput
                                                 style={styles.textInput}
                                                 value={editForm.price}
                                                 onChangeText={handleEditPriceChange}
@@ -1131,7 +1132,7 @@ export default function MyPropertiesScreen({ navigation }) {
                                         </View>
                                         <View style={[styles.inputGroup, styles.halfWidth]}>
                                             <AppText style={styles.inputLabel}>Preço Promocional</AppText>
-                                            <TextInput
+                                            <AppTextInput
                                                 style={styles.textInput}
                                                 value={editForm.salePrice}
                                                 onChangeText={handleEditSalePriceChange}
@@ -1145,7 +1146,7 @@ export default function MyPropertiesScreen({ navigation }) {
                                     <View style={styles.row}>
                                         <View style={[styles.inputGroup, styles.halfWidth]}>
                                             <AppText style={styles.inputLabel}>Área (m²)</AppText>
-                                            <TextInput
+                                            <AppTextInput
                                                 style={styles.textInput}
                                                 value={editForm.area}
                                                 onChangeText={(value) => setEditForm(prev => ({ ...prev, area: value }))}
@@ -1400,7 +1401,7 @@ export default function MyPropertiesScreen({ navigation }) {
 
                                     <View style={styles.inputGroup}>
                                         <AppText style={styles.inputLabel}>Endereço *</AppText>
-                                        <TextInput
+                                        <AppTextInput
                                             style={styles.textInput}
                                             value={editForm.address}
                                             onChangeText={(value) => setEditForm(prev => ({ ...prev, address: value }))}
@@ -1412,7 +1413,7 @@ export default function MyPropertiesScreen({ navigation }) {
                                     <View style={styles.row}>
                                         <View style={[styles.inputGroup, styles.halfWidth]}>
                                             <AppText style={styles.inputLabel}>Bairro</AppText>
-                                            <TextInput
+                                            <AppTextInput
                                                 style={styles.textInput}
                                                 value={editForm.neighborhood}
                                                 onChangeText={(value) => setEditForm(prev => ({ ...prev, neighborhood: value }))}
@@ -1422,7 +1423,7 @@ export default function MyPropertiesScreen({ navigation }) {
                                         </View>
                                         <View style={[styles.inputGroup, styles.halfWidth]}>
                                             <AppText style={styles.inputLabel}>CEP</AppText>
-                                            <TextInput
+                                            <AppTextInput
                                                 style={styles.textInput}
                                                 value={editForm.zipCode}
                                                 onChangeText={(value) => setEditForm(prev => ({ ...prev, zipCode: value }))}
@@ -1436,7 +1437,7 @@ export default function MyPropertiesScreen({ navigation }) {
                                     <View style={styles.row}>
                                         <View style={[styles.inputGroup, styles.halfWidth]}>
                                             <AppText style={styles.inputLabel}>Cidade *</AppText>
-                                            <TextInput
+                                            <AppTextInput
                                                 style={styles.textInput}
                                                 value={editForm.city}
                                                 onChangeText={(value) => setEditForm(prev => ({ ...prev, city: value }))}
@@ -1446,7 +1447,7 @@ export default function MyPropertiesScreen({ navigation }) {
                                         </View>
                                         <View style={[styles.inputGroup, styles.halfWidth]}>
                                             <AppText style={styles.inputLabel}>Estado *</AppText>
-                                            <TextInput
+                                            <AppTextInput
                                                 style={styles.textInput}
                                                 value={editForm.state}
                                                 onChangeText={(value) => setEditForm(prev => ({ ...prev, state: value }))}
@@ -1501,7 +1502,7 @@ export default function MyPropertiesScreen({ navigation }) {
                                     <View style={styles.formGroup}>
                                         <AppText style={styles.formLabel}>Vídeos do YouTube</AppText>
                                         <View style={styles.youtubeInputContainer}>
-                                            <TextInput
+                                            <AppTextInput
                                                 style={styles.youtubeInput}
                                                 value={youtubeUrlInput}
                                                 onChangeText={setYoutubeUrlInput}
