@@ -237,7 +237,7 @@ function TabNavigator() {
                         iconName = focused ? 'search' : 'search-outline';
                     } else if (route.name === 'Oportunidades') {
                         iconName = 'logo-usd';
-                    } else if (route.name === 'Favoritos') {
+                    } else if (route.name === 'Selecionados') {
                         iconName = focused ? 'cart' : 'cart-outline';
                     } else if (route.name === 'Anuncie') {
                         iconName = focused ? 'add-circle' : 'add-circle-outline';
@@ -287,10 +287,10 @@ function TabNavigator() {
                 }}
             />
             <Tab.Screen
-                name="Favoritos"
+                name="Selecionados"
                 component={FavoritesStack}
                 options={{
-                    tabBarLabel: 'Favoritos',
+                    tabBarLabel: 'Selecionados',
                     tabBarBadge: favCount > 0 ? (favCount > 99 ? '99+' : favCount) : undefined,
                     tabBarBadgeStyle: {
                         backgroundColor: '#00335e',

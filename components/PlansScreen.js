@@ -295,28 +295,31 @@ export default function PlansScreen({ navigation, route }) {
 
     if (loading) {
         return (
-            <SafeAreaView style={styles.container}>
-                <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color="#3498db" />
-                    <AppText style={styles.loadingText}>Carregando planos...</AppText>
-                </View>
-            </SafeAreaView>
+            <View style={styles.container}>
+                <SafeAreaView style={styles.safeArea}>
+                    <View style={styles.loadingContainer}>
+                        <ActivityIndicator size="large" color="#3498db" />
+                        <AppText style={styles.loadingText}>Carregando planos...</AppText>
+                    </View>
+                </SafeAreaView>
+            </View>
         );
     }
 
     return (
-        <SafeAreaView style={styles.container}>
-            {/* Header Padrão com botão de voltar */}
-            <StandardHeader
-                title="Escolha seu Plano"
-                subtitle="Encontre o plano ideal para você"
-                showLogo={false}
-                showBackButton={true}
-                onBackPress={() => navigation.goBack()}
-            />
+        <View style={styles.container}>
+            <SafeAreaView style={styles.safeArea}>
+                {/* Header Padrão com botão de voltar */}
+                <StandardHeader
+                    title="Escolha seu Plano"
+                    subtitle="Encontre o plano ideal para você"
+                    showLogo={false}
+                    showBackButton={true}
+                    onBackPress={() => navigation.goBack()}
+                />
 
-            {/* Conteúdo Principal */}
-            <View style={styles.contentContainer}>
+                {/* Conteúdo Principal */}
+                <View style={styles.contentContainer}>
 
                 <ScrollView
                     ref={scrollViewRef}
@@ -396,6 +399,7 @@ export default function PlansScreen({ navigation, route }) {
                     </View>
                 </ScrollView>
             </View>
+            </SafeAreaView>
 
             {/* Confirmation Modal */}
             <Modal
@@ -445,7 +449,7 @@ export default function PlansScreen({ navigation, route }) {
                     </View>
                 </View>
             </Modal>
-        </SafeAreaView>
+        </View>
     );
 }
 
@@ -453,6 +457,11 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#ffcc1e',
+    },
+    
+    safeArea: {
+        flex: 1,
+        backgroundColor: 'transparent',
     },
 
     contentContainer: {
@@ -468,16 +477,23 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 3.84,
         elevation: 5,
+        overflow: 'hidden',
+        marginBottom: -50,
     },
 
     content: {
         flex: 1,
         paddingTop: 5,
+        paddingBottom: 20,
     },
     loadingContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: '#fff',
+        marginBottom: -50,
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
     },
     loadingText: {
         marginTop: 10,

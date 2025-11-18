@@ -182,8 +182,8 @@ export default function FavoritesScreen({ navigation }) {
         <SafeAreaView style={styles.container}>
             {/* Header Padrão */}
             <StandardHeader
-                title="Favoritos"
-                subtitle={`${favorites.length} imóv${favorites.length > 1 ? 'eis' : 'el'} favoritado${favorites.length !== 1 ? 's' : ''}`}
+                title="Selecionados"
+                subtitle={`${favorites.length} imóv${favorites.length > 1 ? 'eis' : 'el'} selecionado${favorites.length !== 1 ? 's' : ''}`}
                 showBackButton={false}
                 onBackPress={() => navigation.goBack()}
             />
@@ -201,9 +201,9 @@ export default function FavoritesScreen({ navigation }) {
                     ListEmptyComponent={
                         <View style={styles.emptyContainer}>
                             <Ionicons name="heart-outline" size={64} color="#bdc3c7" />
-                            <AppText style={styles.emptyText}>Nenhum favorito ainda</AppText>
+                            <AppText style={styles.emptyText}>Nenhum imóvel selecionado</AppText>
                             <AppText style={styles.emptySubtext}>
-                                Adicione imóveis aos favoritos para vê-los aqui
+                                Selecione imóveis para vê-los aqui
                             </AppText>
                             <TouchableOpacity
                                 style={styles.browseButton}
