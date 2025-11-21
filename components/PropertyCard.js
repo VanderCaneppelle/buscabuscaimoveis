@@ -1,10 +1,9 @@
 import React, { useCallback } from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import FavoriteButton from './FavoriteButton';
 import { useBoostsStore } from '../stores/boostsStore';
-import AppText from './AppText';
 
 export default function PropertyCard({ property, navigation, onPress }) {
     const isBoosted = useBoostsStore(state => state.isBoosted);
@@ -34,7 +33,7 @@ export default function PropertyCard({ property, navigation, onPress }) {
             {boosted && (
                 <View style={styles.boostBadgeTop}>
                     <Ionicons name="star" size={10} color="#fff" />
-                    <AppText style={styles.boostBadgeText}>Destaque</AppText>
+                    <Text style={styles.boostBadgeText}>Destaque</Text>
                 </View>
             )}
 
@@ -55,75 +54,67 @@ export default function PropertyCard({ property, navigation, onPress }) {
             </View>
 
             <View style={styles.propertyInfo}>
-                <AppText style={styles.propertyTitle} numberOfLines={2}>
+                <Text style={styles.propertyTitle} numberOfLines={2}>
                     {property.title ?? 'Título indisponível'}
-                </AppText>
+                </Text>
 
                 <View style={styles.addressContainer}>
                     <Ionicons name="location-outline" size={14} color="#666" />
-                    <AppText style={styles.propertyLocation} numberOfLines={1}>
-                        {(() => {
-                            const parts = [
-                                // property.neighborhood?.trim(),
-                                property.address?.trim(),
-                                property.city?.trim(),
-                                property.state?.trim()
-                            ].filter(Boolean);
-                            return parts.length > 0 ? parts.join(', ') : 'Localização não informada';
-                        })()}
-                    </AppText>
+                    <Text style={styles.propertyLocation}>
+                        {property.neighborhood ?? property.address}, {property.city ?? property.state}
+                    </Text>
                 </View>
 
                 <View style={styles.featuresContainer}>
-                    {property.bedrooms && property.bedrooms > 0 ? (
+                    {property.bedrooms != null && (
                         <View style={styles.feature}>
                             <Ionicons name="bed-outline" size={16} color="#666" />
-                            <AppText style={styles.featureText}>{String(property.bedrooms)}</AppText>
+                            <Text style={styles.featureText}>{property.bedrooms}</Text>
                         </View>
-                    ) : null}
-                    {property.bathrooms && property.bathrooms > 0 ? (
+                    )}
+                    {property.bathrooms != null && (
                         <View style={styles.feature}>
                             <Ionicons name="water-outline" size={16} color="#666" />
-                            <AppText style={styles.featureText}>{String(property.bathrooms)}</AppText>
+                            <Text style={styles.featureText}>{property.bathrooms}</Text>
                         </View>
-                    ) : null}
-                    {property.parking_spaces && property.parking_spaces > 0 ? (
+                    )}
+                    {property.parking_spaces != null && (
                         <View style={styles.feature}>
                             <Ionicons name="car-outline" size={16} color="#666" />
-                            <AppText style={styles.featureText}>{String(property.parking_spaces)}</AppText>
+                            <Text style={styles.featureText}>{property.parking_spaces}</Text>
                         </View>
-                    ) : null}
-                    {property.area && property.area > 0 ? (
+                    )}
+                    {property.area != null && (
                         <View style={styles.feature}>
                             <Ionicons name="resize-outline" size={16} color="#666" />
-                            <AppText style={styles.featureText}>{`${String(property.area)} m²`}</AppText>
+                            <Text style={styles.featureText}>{`${property.area} m²`}</Text>
                         </View>
-                    ) : null}
+                    )}
                 </View>
 
                 <View style={styles.priceContainer}>
                     {((property.sale_price ?? property.salePrice) && parseFloat(property.sale_price ?? property.salePrice) > 0) ? (
                         <View>
-                            <AppText style={styles.originalPriceRed}>
+                            <Text style={styles.originalPriceRed}>
                                 De: R$ {property.price?.toLocaleString('pt-BR') ?? 'Preço indisponível'}
-                            </AppText>
-                            <AppText style={styles.salePriceGreen}>
+                            </Text>
+                            <Text style={styles.salePriceGreen}>
                                 Por: R$ {(property.sale_price ?? property.salePrice)?.toLocaleString('pt-BR')}
-                            </AppText>
+                            </Text>
                         </View>
                     ) : (
-                        <AppText style={styles.propertyPrice}>
+                        <Text style={styles.propertyPrice}>
                             R$ {property.price?.toLocaleString('pt-BR') ?? 'Preço indisponível'}
-                        </AppText>
+                        </Text>
                     )}
                 </View>
 
                 {(property.property_type || property.transaction_type) && (
-                    <AppText style={styles.propertyType} numberOfLines={1}>
+                    <Text style={styles.propertyType} numberOfLines={1}>
                         {(property.property_type ?? '').toString().trim()}
                         {(property.property_type && property.transaction_type) ? ' - ' : ''}
                         {property.transaction_type === 'rent' ? 'Aluguel' : property.transaction_type === 'sale' ? 'Venda' : property.transaction_type === 'season' ? 'Temporada' : (property.transaction_type ?? '')}
-                    </AppText>
+                    </Text>
                 )}
             </View>
         </TouchableOpacity>

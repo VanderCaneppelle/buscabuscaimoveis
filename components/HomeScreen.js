@@ -1229,17 +1229,31 @@ export default function HomeScreen({ navigation }) {
                         ListHeaderComponent={
                             <View style={styles.propertiesSection}>
                                 <View style={styles.sectionHeader}>
-                                    <AppText style={styles.sectionTitle}>
-                                        {`Anúncios (${totalCount})`}
-                                        {searchTerm && (
-                                            <AppText style={styles.searchResultInfo}>
-                                                {` - Busca: "${searchTerm}"`}
-                                            </AppText>
+                                    <View style={styles.sectionHeaderLeft}>
+                                        <AppText style={styles.sectionTitle}>
+                                            {`Anúncios (${totalCount})`}
+                                            {searchTerm && (
+                                                <AppText style={styles.searchResultInfo}>
+                                                    {` - Busca: "${searchTerm}"`}
+                                                </AppText>
+                                            )}
+                                        </AppText>
+                                        {isSearching && (
+                                            <AppText style={styles.searchingText}>Buscando...</AppText>
                                         )}
-                                    </AppText>
-                                    {isSearching && (
-                                        <AppText style={styles.searchingText}>Buscando...</AppText>
-                                    )}
+                                    </View>
+                                    <TouchableOpacity 
+                                        onPress={onRefresh}
+                                        style={styles.refreshButton}
+                                        activeOpacity={0.6}
+                                        disabled={refreshing}
+                                    >
+                                        <Ionicons 
+                                            name="refresh" 
+                                            size={20} 
+                                            color={refreshing ? "#bdc3c7" : "#00335e"} 
+                                        />
+                                    </TouchableOpacity>
                                 </View>
                             </View>
                         }
@@ -1267,7 +1281,8 @@ export default function HomeScreen({ navigation }) {
                         scrollEnabled={true}
                         nestedScrollEnabled={false}
                         directionalLockEnabled={true}
-                        alwaysBounceVertical={false}
+                        overScrollMode="always"
+                        alwaysBounceVertical={true}
                         onEndReached={loadMoreProperties}
                         onEndReachedThreshold={0.3}
                         ListFooterComponent={
@@ -2334,6 +2349,17 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: 20,
         paddingBottom: 10,
+    },
+    sectionHeaderLeft: {
+        flex: 1,
+    },
+    refreshButton: {
+        padding: 8,
+        borderRadius: 20,
+        backgroundColor: '#f8f9fa',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginLeft: 10,
     },
     cacheInfo: {
         fontSize: 12,

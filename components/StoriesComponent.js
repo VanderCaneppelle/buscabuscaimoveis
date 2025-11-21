@@ -8,7 +8,6 @@ import {
     Image,
     Dimensions,
     Alert,
-    RefreshControl,
     Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -28,7 +27,6 @@ export default function StoriesComponent({ navigation }) {
     const { isAdmin } = useAdmin();
     const [stories, setStories] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [refreshing, setRefreshing] = useState(false);
     const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
 
     useEffect(() => {
@@ -77,14 +75,6 @@ export default function StoriesComponent({ navigation }) {
             }
         }, [])
     );
-
-    const onRefresh = React.useCallback(() => {
-        setRefreshing(true);
-        // Recarregar stories sem limpar cache de mídia
-        loadStories(true).finally(() => setRefreshing(false));
-    }, []);
-
-
 
     const loadStories = async (forceReload = false) => {
         try {
@@ -223,9 +213,12 @@ export default function StoriesComponent({ navigation }) {
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.storiesContainer}
-                refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                }
+                bounces={false}
+                alwaysBounceHorizontal={false}
+                alwaysBounceVertical={false}
+                scrollEnabled={true}
+                directionalLockEnabled={true}
+                overScrollMode="never"
             >
                 {isAdmin && renderCreateStoryButton()}
 
