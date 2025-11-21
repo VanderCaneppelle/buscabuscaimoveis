@@ -866,8 +866,22 @@ export default function HomeScreen({ navigation }) {
                             resizeMode="contain"
                         />
                         <AppText style={styles.storiesTitle}>Busca Busca Imóveis</AppText>
-                        {/* ✨ NOVO: Sininho de notificações */}
-                        <NotificationBell navigation={navigation} />
+                        {/* Botões de ação */}
+                        <View style={styles.headerActions}>
+                            <TouchableOpacity 
+                                onPress={onRefresh}
+                                style={styles.refreshButtonHeader}
+                                activeOpacity={0.6}
+                                disabled={refreshing}
+                            >
+                                <Ionicons 
+                                    name="refresh" 
+                                    size={22} 
+                                    color={refreshing ? "#bdc3c7" : "#00335e"} 
+                                />
+                            </TouchableOpacity>
+                            <NotificationBell navigation={navigation} />
+                        </View>
                     </View>
                     <View style={styles.storiesWrapper}>
                         <StoriesComponent navigation={navigation} />
@@ -1229,31 +1243,17 @@ export default function HomeScreen({ navigation }) {
                         ListHeaderComponent={
                             <View style={styles.propertiesSection}>
                                 <View style={styles.sectionHeader}>
-                                    <View style={styles.sectionHeaderLeft}>
-                                        <AppText style={styles.sectionTitle}>
-                                            {`Anúncios (${totalCount})`}
-                                            {searchTerm && (
-                                                <AppText style={styles.searchResultInfo}>
-                                                    {` - Busca: "${searchTerm}"`}
-                                                </AppText>
-                                            )}
-                                        </AppText>
-                                        {isSearching && (
-                                            <AppText style={styles.searchingText}>Buscando...</AppText>
+                                    <AppText style={styles.sectionTitle}>
+                                        {`Anúncios (${totalCount})`}
+                                        {searchTerm && (
+                                            <AppText style={styles.searchResultInfo}>
+                                                {` - Busca: "${searchTerm}"`}
+                                            </AppText>
                                         )}
-                                    </View>
-                                    <TouchableOpacity 
-                                        onPress={onRefresh}
-                                        style={styles.refreshButton}
-                                        activeOpacity={0.6}
-                                        disabled={refreshing}
-                                    >
-                                        <Ionicons 
-                                            name="refresh" 
-                                            size={20} 
-                                            color={refreshing ? "#bdc3c7" : "#00335e"} 
-                                        />
-                                    </TouchableOpacity>
+                                    </AppText>
+                                    {isSearching && (
+                                        <AppText style={styles.searchingText}>Buscando...</AppText>
+                                    )}
                                 </View>
                             </View>
                         }
@@ -1371,6 +1371,19 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#00335e',
         textAlign: 'center',
+        flex: 1,
+    },
+    headerActions: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+    },
+    refreshButtonHeader: {
+        padding: 6,
+        borderRadius: 20,
+        backgroundColor: 'rgba(0, 51, 94, 0.1)',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     header: {
         padding: 15,
@@ -2349,17 +2362,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: 20,
         paddingBottom: 10,
-    },
-    sectionHeaderLeft: {
-        flex: 1,
-    },
-    refreshButton: {
-        padding: 8,
-        borderRadius: 20,
-        backgroundColor: '#f8f9fa',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginLeft: 10,
     },
     cacheInfo: {
         fontSize: 12,
