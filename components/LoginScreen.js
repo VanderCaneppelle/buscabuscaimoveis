@@ -35,7 +35,8 @@ export default function LoginScreen() {
     const [videoError, setVideoError] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
-    const { signIn, signUp } = useAuth();
+
+    const { signIn } = useAuth();
     // const { withLoading } = useLoading();
 
     // Forçar o vídeo a carregar após um pequeno delay
@@ -61,20 +62,13 @@ export default function LoginScreen() {
             // Delay de 2.5 segundos para mostrar o vídeo
             // await new Promise(resolve => setTimeout(resolve, 2500));
 
-            const { data, error } = isSignUp
-                ? await signUp(email, password)
-                : await signIn(email, password);
+            // Fluxo padrão: apenas login.
+            // O cadastro completo é feito na tela `SignUpForm`.
+            const { data, error } = await signIn(email, password);
 
             if (error) {
                 const friendlyMessage = translateError(error);
                 Alert.alert('Erro ao entrar', friendlyMessage);
-            } else if (isSignUp) {
-                Alert.alert(
-                    'Sucesso!',
-                    'Conta criada! Verifique seu email para confirmar a conta.',
-                    [{ text: 'OK' }]
-                );
-                setIsSignUp(false);
             }
         } catch (error) {
             Alert.alert('Erro', 'Ocorreu um erro inesperado');

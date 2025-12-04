@@ -14,12 +14,12 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
-import { CONFIRM_EMAIL_URL } from '../lib/config';
 import TermsAndPrivacyScreen from './TermsAndPrivacyScreen';
 import { saveTermsAcceptance } from '../lib/termsConfig';
 import { translateError } from '../lib/errorMessages';
 import AppText from './AppText';
 import AppTextInput from './AppTextInput';
+import SignupSuccessModal from './modals/SuccessSignupModal';
 
 export default function SignUpForm({ onBack }) {
     const [formData, setFormData] = useState({
@@ -36,6 +36,7 @@ export default function SignUpForm({ onBack }) {
     const [acceptedTerms, setAcceptedTerms] = useState(false);
     const [showTerms, setShowTerms] = useState(false);
     const [termsType, setTermsType] = useState('terms');
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
 
     const updateFormData = (field, value) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -135,11 +136,8 @@ export default function SignUpForm({ onBack }) {
                 }
             }
 
-            Alert.alert(
-                'Sucesso!',
-                'Conta criada! Enviamos um e-mail para confirmação. Verifique sua caixa de entrada.',
-                [{ text: 'OK', onPress: onBack }]
-            );
+            // Sucesso no cadastro: exibir modal de conta criada
+            setShowSuccessModal(true);
 
         } catch (error) {
             const friendlyMessage = translateError(error);
@@ -365,6 +363,18 @@ export default function SignUpForm({ onBack }) {
                 visible={showTerms}
                 onClose={() => setShowTerms(false)}
                 type={termsType}
+            />
+            {/* Modal de sucesso de cadastro */}
+            <SignupSuccessModal
+                visible={showSuccessModal}
+                onClose={() => {
+                    setShowSuccessModal(false);
+                    onBack();
+                }}
+                onGoToLogin={() => {
+                    setShowSuccessModal(false);
+                    onBack();
+                }}
             />
         </View>
     );
