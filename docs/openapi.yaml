@@ -1,0 +1,682 @@
+openapi: 3.0.3
+info:
+  title: Busca Busca Imóveis API
+  version: 1.0.0
+  description: |
+    API do Busca Busca Imóveis (Vercel Functions).
+
+    Este documento é um **primeiro rascunho** baseado no código atual em `backend/api`
+    e deve ser ajustado/expandido conforme novas rotas sejam adicionadas ou alteradas.
+
+servers:
+  - url: https://buscabusca.vercel.app
+    description: Produção
+  - url: https://buscabuscaimoveis-qa.vercel.app
+    description: QA
+
+paths:
+  /api/notifications:
+    get:
+      summary: Status do sistema de notificações
+      description: Retorna o status do sistema de notificações (push e in-app).
+      parameters:
+        - in: query
+          name: action
+          required: true
+          schema:
+            type: string
+            enum: [status]
+          description: Ação a ser executada. Para este método, deve ser `status`.
+      responses:
+        '200':
+          description: Status retornado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  services:
+                    type: object
+                    additionalProperties: true
+        '400':
+          description: Ação inválida ou não especificada
+        '500':
+          description: Erro interno do servidor
+
+    post:
+      summary: Operações de notificações (register, send, schedule, property-approved, property-rejected)
+      description: |
+        Endpoint multifunção controlado via query `action`.
+
+        Ações suportadas:
+        - `register`: registrar token de dispositivo
+        - `send`: enviar notificação (para um usuário ou para todos)
+        - `schedule`: disparar notificações agendadas
+        - `property-approved`: enviar push de anúncio aprovado
+        - `property-rejected`: enviar push de anúncio rejeitado
+      parameters:
+        - in: query
+          name: action
+          required: true
+          schema:
+            type: string
+            enum:
+              - register
+              - send
+              - schedule
+              - status
+              - property-approved
+              - property-rejected
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/NotificationRegisterRequest'
+                - $ref: '#/components/schemas/NotificationSendRequest'
+                - $ref: '#/components/schemas/NotificationPropertyApprovedRequest'
+                - $ref: '#/components/schemas/NotificationPropertyRejectedRequest'
+      responses:
+        '200':
+          description: Operação concluída com sucesso
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/NotificationRegisterResponse'
+                  - $ref: '#/components/schemas/NotificationSendResponse'
+                  - $ref: '#/components/schemas/NotificationScheduleResponse'
+        '400':
+          description: Requisição inválida (parâmetros obrigatórios ausentes ou ação inválida)
+        '405':
+          description: Método não permitido
+        '500':
+          description: Erro interno do servidor
+
+  /api/payments/create:
+    post:
+      summary: Criar preferência de pagamento no Mercado Pago
+      description: Cria uma preferência de pagamento e registra o pagamento na tabela `payments`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                plan:
+                  type: object
+                  description: Dados do plano selecionado pelo usuário.
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    display_name:
+                      type: string
+                    price:
+                      type: number
+                      format: float
+                    period:
+                      type: string
+                      enum: [monthly, annual]
+                user:
+                  type: object
+                  description: Dados básicos do usuário.
+                  properties:
+                    id:
+                      type: string
+                    email:
+                      type: string
+                    name:
+                      type: string
+              required:
+                - plan
+                - user
+      responses:
+        '200':
+          description: Preferência criada e pagamento registrado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  preference:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      init_point:
+                        type: string
+                      sandbox_init_point:
+                        type: string
+                  payment:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      status:
+                        type: string
+        '400':
+          description: Dados obrigatórios ausentes
+        '500':
+          description: Erro interno ou falha ao registrar pagamento
+
+  /api/payments/status:
+    get:
+      summary: Consultar status de pagamento no Mercado Pago
+      parameters:
+        - in: query
+          name: paymentId
+          required: true
+          schema:
+            type: string
+          description: ID do pagamento no Mercado Pago.
+      responses:
+        '200':
+          description: Status do pagamento retornado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  payment:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      status:
+                        type: string
+                      preference_id:
+                        type: string
+                      external_reference:
+                        type: string
+        '400':
+          description: paymentId não informado
+        '500':
+          description: Erro interno do servidor
+
+  /api/delete-cloudinary:
+    post:
+      summary: Excluir arquivo no Cloudinary
+      description: Exclui uma imagem/vídeo/arquivo no Cloudinary a partir da URL completa.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                url:
+                  type: string
+                  description: URL pública do recurso no Cloudinary.
+              required:
+                - url
+      responses:
+        '200':
+          description: Arquivo excluído com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    additionalProperties: true
+        '400':
+          description: URL ausente ou inválida
+        '405':
+          description: Método não permitido
+        '500':
+          description: Erro interno do servidor
+
+  /api/account/delete:
+    post:
+      summary: Deletar conta do usuário (GDPR / App Store)
+      description: |
+        Deleta permanentemente a conta do usuário e todos os dados relacionados.
+
+        Requer autenticação via token Bearer do Supabase.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Conta e dados do usuário removidos (total ou parcialmente)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  warning:
+                    type: string
+                    nullable: true
+                  deleted:
+                    type: object
+                    nullable: true
+                    additionalProperties: true
+        '401':
+          description: Token ausente, inválido ou expirado
+        '405':
+          description: Método não permitido
+        '500':
+          description: Erro interno ao deletar conta ou dados
+
+  /api/admin/login:
+    post:
+      summary: Login do painel admin
+      description: Autentica um usuário admin via Supabase Auth e retorna sessão e dados básicos.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+              required:
+                - email
+                - password
+      responses:
+        '200':
+          description: Login bem-sucedido
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      email:
+                        type: string
+                      name:
+                        type: string
+                      is_admin:
+                        type: boolean
+                  session:
+                    type: object
+                    properties:
+                      access_token:
+                        type: string
+                      refresh_token:
+                        type: string
+                      expires_at:
+                        type: integer
+        '400':
+          description: Email ou senha ausentes
+        '401':
+          description: Credenciais inválidas
+        '403':
+          description: Usuário não é admin
+        '404':
+          description: Perfil do usuário não encontrado
+        '500':
+          description: Erro interno do servidor ou de banco de dados
+
+  /api/admin/properties:
+    get:
+      summary: Listar propriedades para moderação (admin)
+      description: Lista anúncios com filtros e paginação para uso no painel admin.
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+        - in: query
+          name: status
+          schema:
+            type: string
+            description: Status da propriedade (ex. pending, approved, rejected).
+        - in: query
+          name: propertyType
+          schema:
+            type: string
+        - in: query
+          name: city
+          schema:
+            type: string
+        - in: query
+          name: search
+          schema:
+            type: string
+            description: Busca por título/descrição.
+      responses:
+        '200':
+          description: Lista de propriedades retornada com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AdminProperty'
+                  pagination:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                      limit:
+                        type: integer
+                      total:
+                        type: integer
+                      pages:
+                        type: integer
+        '500':
+          description: Erro interno ou de banco de dados
+
+  /api/admin/approve:
+    post:
+      summary: Aprovar propriedade
+      description: |
+        Aprova uma propriedade, atualiza status na tabela `properties`,
+        cria notificação in-app e dispara push de aprovação.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                propertyId:
+                  type: string
+              required:
+                - propertyId
+      responses:
+        '200':
+          description: Propriedade aprovada com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  property:
+                    $ref: '#/components/schemas/AdminPropertyMinimal'
+        '400':
+          description: propertyId ausente
+        '405':
+          description: Método não permitido
+        '500':
+          description: Erro interno ou de banco de dados
+
+  /api/admin/reject:
+    post:
+      summary: Rejeitar propriedade
+      description: |
+        Rejeita uma propriedade, atualiza status na tabela `properties`,
+        cria notificação in-app e dispara push de rejeição.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                propertyId:
+                  type: string
+                reason:
+                  type: string
+                  description: Motivo da rejeição (opcional, mas recomendado).
+              required:
+                - propertyId
+      responses:
+        '200':
+          description: Propriedade rejeitada com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  property:
+                    $ref: '#/components/schemas/AdminPropertyMinimal'
+        '400':
+          description: propertyId ausente
+        '405':
+          description: Método não permitido
+        '500':
+          description: Erro interno ou de banco de dados
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    NotificationRegisterRequest:
+      type: object
+      properties:
+        token:
+          type: string
+        userId:
+          type: string
+        deviceInfo:
+          type: object
+          additionalProperties: true
+      required:
+        - token
+        - userId
+
+    NotificationRegisterResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        data:
+          type: object
+          additionalProperties: true
+
+    NotificationSendRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        body:
+          type: string
+        data:
+          type: object
+          additionalProperties: true
+        userId:
+          type: string
+        sendToAll:
+          type: boolean
+      required:
+        - title
+        - body
+
+    NotificationSendResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        sent:
+          type: integer
+        total:
+          type: integer
+        results:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+
+    NotificationScheduleResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        totalSent:
+          type: integer
+        totalDevices:
+          type: integer
+        results:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+
+    NotificationPropertyApprovedRequest:
+      type: object
+      properties:
+        userId:
+          type: string
+        propertyId:
+          type: string
+      required:
+        - userId
+        - propertyId
+
+    NotificationPropertyRejectedRequest:
+      type: object
+      properties:
+        userId:
+          type: string
+        propertyId:
+          type: string
+        reason:
+          type: string
+      required:
+        - userId
+        - propertyId
+
+    AdminProperty:
+      type: object
+      description: Representação simplificada de uma propriedade para uso no admin.
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        sale_price:
+          type: number
+          nullable: true
+        property_type:
+          type: string
+        transaction_type:
+          type: string
+        bedrooms:
+          type: integer
+          nullable: true
+        bathrooms:
+          type: integer
+          nullable: true
+        parking_spaces:
+          type: integer
+          nullable: true
+        area:
+          type: number
+          nullable: true
+        address:
+          type: string
+        neighborhood:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        zip_code:
+          type: string
+        latitude:
+          type: number
+          nullable: true
+        longitude:
+          type: number
+          nullable: true
+        images:
+          type: array
+          items:
+            type: string
+        video_urls:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+        ad_status:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+        approved_at:
+          type: string
+          format: date-time
+          nullable: true
+        rejected_at:
+          type: string
+          format: date-time
+          nullable: true
+        rejection_reason:
+          type: string
+          nullable: true
+        user_id:
+          type: string
+        developer_id:
+          type: string
+          nullable: true
+        ad_id:
+          type: string
+          nullable: true
+
+    AdminPropertyMinimal:
+      type: object
+      description: Versão reduzida usada nas respostas de approve/reject.
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        status:
+          type: string
+        ad_status:
+          type: string
+
+
+
