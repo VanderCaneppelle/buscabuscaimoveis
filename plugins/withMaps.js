@@ -44,7 +44,7 @@ const withMaps = (config) => {
             mainApplication['meta-data'].push({
                 $: {
                     'android:name': 'com.google.android.geo.API_KEY',
-                    'android:value': 'AIzaSyBDJgM6JO1tRJioBp8V8DQBteC4VKyySeQ'
+                    'android:value': 'AIzaSyCOF3YQjjpE4JrkmpSH6o-aYWBPmaW5Jus'
                 }
             });
         }
