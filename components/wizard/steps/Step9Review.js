@@ -141,21 +141,6 @@ export default function Step9Review({ formData, mediaFiles, videoUrls = [], onEd
                     )}
                 </SectionCard>
 
-                {/* Construtora (se houver) */}
-                {formData.developer_id && (
-                    <SectionCard
-                        title="Construtora"
-                        icon="business"
-                        iconColor="#2563EB"
-                        onEdit={() => onEditStep(6)}
-                    >
-                        <AppText style={styles.developerName}>
-                            {/* Nome será carregado do service */}
-                            Construtora selecionada
-                        </AppText>
-                    </SectionCard>
-                )}
-
                 {/* Mídias */}
                 <SectionCard
                     title="Fotos e Vídeos"

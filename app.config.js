@@ -1,4 +1,8 @@
 import 'dotenv/config';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+
+const pkg = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8'));
 
 console.log('✅ Carregando variáveis de ambiente:');
 console.log('API_BASE_URL =>', process.env.API_BASE_URL);
@@ -10,7 +14,7 @@ export default {
   expo: {
     name: "Busca Busca Imóveis",
     slug: "buscabuscaimoveis",
-    version: "1.3.7",
+    version: pkg.version,
     host: "lan",
     orientation: "portrait",
     icon: "./assets/logo_bb.jpg",
@@ -45,8 +49,8 @@ export default {
         backgroundColor: "#ffffff"
       },
       googleServicesFile: "./google-services.json",
-      versionCode:  7,
-      versionName: "1.3.7",
+      versionCode:  6,
+      versionName: pkg.version,
     },
     web: {
       favicon: "./assets/logo_bb.jpg"
