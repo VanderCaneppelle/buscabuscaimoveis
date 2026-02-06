@@ -28,12 +28,11 @@ import Step3TitleDescription from './wizard/steps/Step3TitleDescription';
 import Step4Location from './wizard/steps/Step4Location';
 import Step5Characteristics from './wizard/steps/Step5Characteristics';
 import Step6Pricing from './wizard/steps/Step6Pricing';
-import Step7Developer from './wizard/steps/Step7Developer';
 import Step8Media from './wizard/steps/Step8Media';
 import Step9Review from './wizard/steps/Step9Review';
 
 const { width } = Dimensions.get('window');
-const TOTAL_STEPS = 9;
+const TOTAL_STEPS = 8;
 
 export default function CreateAdWizard({ navigation }) {
     const { user } = useAuth();
@@ -166,10 +165,6 @@ export default function CreateAdWizard({ navigation }) {
                 return true;
 
             case 7:
-                // Construtora é opcional
-                return true;
-
-            case 8:
                 if (mediaFiles.length === 0) {
                     Alert.alert(
                         'Atenção',
@@ -182,7 +177,7 @@ export default function CreateAdWizard({ navigation }) {
                 }
                 return true;
 
-            case 9:
+            case 8:
                 // Review step, sem validação adicional
                 return true;
 
@@ -334,8 +329,7 @@ export default function CreateAdWizard({ navigation }) {
                 {currentStep === 4 && <Step4Location {...stepProps} />}
                 {currentStep === 5 && <Step5Characteristics {...stepProps} />}
                 {currentStep === 6 && <Step6Pricing {...stepProps} />}
-                {currentStep === 7 && <Step7Developer {...stepProps} />}
-                {currentStep === 8 && (
+                {currentStep === 7 && (
                     <Step8Media 
                         formData={formData}
                         mediaFiles={mediaFiles}
@@ -345,7 +339,7 @@ export default function CreateAdWizard({ navigation }) {
                         plan={plan}
                     />
                 )}
-                {currentStep === 9 && (
+                {currentStep === 8 && (
                     <Step9Review 
                         formData={formData}
                         mediaFiles={mediaFiles}

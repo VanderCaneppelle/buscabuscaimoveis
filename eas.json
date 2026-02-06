@@ -1,6 +1,7 @@
 {
   "cli": {
-    "version": ">= 6.0.0"
+    "version": ">= 6.0.0",
+    "appVersionSource": "remote"
   },
   "build": {
     "development": {
@@ -9,7 +10,8 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk"
-      }
+      },
+      "autoIncrement": true
     },
     "preview": {
       "environment": "preview",
@@ -33,7 +35,8 @@
         "EXPO_PUBLIC_BUNNY_API_KEY": "de277d9a-9871-4c13-8c533dd056f8-28f5-4f35",
         "EXPO_PUBLIC_BUNNY_STREAM_HOST": "vz-13c78ad2-bb6.b-cdn.net",
         "BUNNY_STREAM_WEBHOOK_KEY": "85f37c74-f1fc-4ee1-9aff-d320f4c8aef6"
-      }
+      },
+      "autoIncrement": true
     },
     "production": {
       "environment": "production",
@@ -54,7 +57,8 @@
         "EXPO_PUBLIC_BUNNY_API_KEY": "de277d9a-9871-4c13-8c533dd056f8-28f5-4f35",
         "EXPO_PUBLIC_BUNNY_STREAM_HOST": "vz-13c78ad2-bb6.b-cdn.net",
         "BUNNY_STREAM_WEBHOOK_KEY": "85f37c74-f1fc-4ee1-9aff-d320f4c8aef6"
-      }
+      },
+      "autoIncrement": true
     }
   },
   "submit": {
