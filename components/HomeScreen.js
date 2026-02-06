@@ -29,7 +29,7 @@ import { supabase } from '../lib/supabase';
 import PropertyCacheService from '../lib/propertyCacheService';
 import StoriesComponent from './StoriesComponent';
 import { CardStyleInterpolators } from '@react-navigation/stack';
-import { FiltersModal, DevelopersFilterModal, RealtorsFilterModal } from './modals';
+import { FiltersModal } from './modals';
 import NotificationBell from './NotificationBell';
 import AppText from './AppText';
 import AppTextInput from './AppTextInput';
@@ -120,12 +120,6 @@ export default function HomeScreen({ navigation }) {
     const searchInputRef = useRef(null);
     const flatListRef = useRef(null);
     
-    // ✨ NOVOS: Estados para filtros rápidos (userType)
-    const [quickFilter, setQuickFilter] = useState('all'); // 'all' | 'developer' | 'realtor' | 'owner'
-    const [selectedDeveloper, setSelectedDeveloper] = useState(null);
-    const [selectedRealtor, setSelectedRealtor] = useState(null);
-    const [showDevelopersModal, setShowDevelopersModal] = useState(false);
-    const [showRealtorsModal, setShowRealtorsModal] = useState(false);
     const [showMap, setShowMap] = useState(false);
     const [selectedProperty, setSelectedProperty] = useState(null); // Propriedade selecionada no mapa
     const [multiplePropertiesModal, setMultiplePropertiesModal] = useState(false); // Modal de múltiplos imóveis
@@ -473,118 +467,8 @@ export default function HomeScreen({ navigation }) {
         setSearchInputValue(''); // Limpar o input de busca
         setSearchTerm(''); // Limpar o termo de busca ativo
         setCurrentPage(0);
-        // ✨ NOVO: Limpar filtros rápidos também
-        setQuickFilter('all');
-        setSelectedDeveloper(null);
-        setSelectedRealtor(null);
         // Mostrar imediatamente do cache e revalidar em background
         fetchProperties(clearedFilters, '', 0, false, true);
-    };
-    
-    // ✨ NOVOS: Funções para lidar com filtros rápidos
-    const handleQuickFilter = (type) => {
-        console.log(`🔍🔍🔍 HomeScreen: FILTRO RÁPIDO: ${type} 🔍🔍🔍`);
-        
-        // Resetar filtros avançados (conforme solicitado)
-        const clearedFilters = {
-            city: '',
-            propertyType: [],
-            minPrice: '',
-            maxPrice: '',
-            userType: type,
-            developerId: null,
-            realtorId: null,
-        };
-        
-        if (type === 'all') {
-            // Limpar tudo
-            setQuickFilter('all');
-            setSelectedDeveloper(null);
-            setSelectedRealtor(null);
-            setFilters(clearedFilters);
-            setTempFilters(clearedFilters);
-            setSearchInputValue('');
-            setSearchTerm('');
-            setCurrentPage(0);
-            fetchProperties(clearedFilters, '', 0, true, true);
-        } else if (type === 'developer') {
-            // Abrir modal de construtoras
-            setShowDevelopersModal(true);
-        } else if (type === 'realtor') {
-            // Abrir modal de corretores
-            setShowRealtorsModal(true);
-        } else if (type === 'owner') {
-            // Aplicar filtro de proprietários direto
-            setQuickFilter('owner');
-            setSelectedDeveloper(null);
-            setSelectedRealtor(null);
-            setFilters(clearedFilters);
-            setTempFilters(clearedFilters);
-            setSearchInputValue('');
-            setSearchTerm('');
-            setCurrentPage(0);
-            fetchProperties(clearedFilters, '', 0, true, true);
-        }
-    };
-    
-    const handleSelectDeveloper = (developer) => {
-        if (!developer) {
-            // Limpar filtro de construtora (voltar para "Todos")
-            handleQuickFilter('all');
-            return;
-        }
-        
-        console.log(`🏗️ HomeScreen: Construtora selecionada:`, developer.full_name);
-        
-        const newFilters = {
-            city: '',
-            propertyType: [],
-            minPrice: '',
-            maxPrice: '',
-            userType: 'developer',
-            developerId: developer.id,
-            realtorId: null,
-        };
-        
-        setQuickFilter('developer');
-        setSelectedDeveloper(developer);
-        setSelectedRealtor(null);
-        setFilters(newFilters);
-        setTempFilters(newFilters);
-        setSearchInputValue('');
-        setSearchTerm('');
-        setCurrentPage(0);
-        fetchProperties(newFilters, '', 0, true, true);
-    };
-    
-    const handleSelectRealtor = (realtor) => {
-        if (!realtor) {
-            // Limpar filtro de corretor (voltar para "Todos")
-            handleQuickFilter('all');
-            return;
-        }
-        
-        console.log(`🏢 HomeScreen: Corretor selecionado:`, realtor.full_name);
-        
-        const newFilters = {
-            city: '',
-            propertyType: [],
-            minPrice: '',
-            maxPrice: '',
-            userType: 'realtor',
-            developerId: null,
-            realtorId: realtor.id,
-        };
-        
-        setQuickFilter('realtor');
-        setSelectedRealtor(realtor);
-        setSelectedDeveloper(null);
-        setFilters(newFilters);
-        setTempFilters(newFilters);
-        setSearchInputValue('');
-        setSearchTerm('');
-        setCurrentPage(0);
-        fetchProperties(newFilters, '', 0, true, true);
     };
 
     const openFiltersModal = () => {
@@ -938,85 +822,6 @@ export default function HomeScreen({ navigation }) {
                         </View>
                     </View>
 
-                    {/* ✨ NOVO: Segunda linha: Filtros Rápidos (userType) */}
-                    <View style={styles.quickFiltersRow}>
-                        <TouchableOpacity 
-                            style={[
-                                styles.quickFilterButton,
-                                quickFilter === 'all' && styles.quickFilterButtonActive
-                            ]}
-                            onPress={() => handleQuickFilter('all')}
-                            activeOpacity={0.7}
-                        >
-                            <AppText style={[
-                                styles.quickFilterText,
-                                quickFilter === 'all' && styles.quickFilterTextActive
-                            ]}>
-                                Todos
-                            </AppText>
-                        </TouchableOpacity>
-                        
-                        {isAdmin && (
-                            <TouchableOpacity 
-                                style={[
-                                    styles.quickFilterButton,
-                                    quickFilter === 'developer' && styles.quickFilterButtonActive
-                                ]}
-                                onPress={() => handleQuickFilter('developer')}
-                                activeOpacity={0.7}
-                            >
-                                <AppText 
-                                    style={[
-                                        styles.quickFilterText,
-                                        quickFilter === 'developer' && styles.quickFilterTextActive
-                                    ]}
-                                    numberOfLines={isSmallScreen ? 1 : 1}
-                                >
-                                    Construtoras
-                                </AppText>
-                            </TouchableOpacity>
-                        )}
-                        
-                        <TouchableOpacity 
-                            style={[
-                                styles.quickFilterButton,
-                                quickFilter === 'realtor' && styles.quickFilterButtonActive
-                            ]}
-                            onPress={() => handleQuickFilter('realtor')}
-                            activeOpacity={0.7}
-                        >
-                            <AppText 
-                                style={[
-                                    styles.quickFilterText,
-                                    quickFilter === 'realtor' && styles.quickFilterTextActive
-                                ]}
-                                numberOfLines={isSmallScreen ? 1 : 1}
-                            >
-                                Corretores
-                            </AppText>
-                        </TouchableOpacity>
-                        
-                        <TouchableOpacity 
-                            style={[
-                                styles.quickFilterButton,
-                                quickFilter === 'owner' && styles.quickFilterButtonActive
-                            ]}
-                            onPress={() => handleQuickFilter('owner')}
-                            activeOpacity={0.7}
-                        >
-                            <AppText 
-                                style={[
-                                    styles.quickFilterText,
-                                    quickFilter === 'owner' && styles.quickFilterTextActive
-                                ]}
-                                numberOfLines={isSmallScreen ? 1 : 1}
-                            >
-                                Proprietários
-                            </AppText>
-                        </TouchableOpacity>
-                    </View>
-
-                    
                 </View>
 
                 {/* Content: alterna entre lista e mapa embutido */}
@@ -1314,21 +1119,6 @@ export default function HomeScreen({ navigation }) {
                     filters={tempFilters}
                     onApplyFilters={applyFilters}
                     cities={cities}
-                />
-                
-                {/* ✨ NOVOS: Modais de Filtros Rápidos */}
-                <DevelopersFilterModal
-                    visible={showDevelopersModal}
-                    onClose={() => setShowDevelopersModal(false)}
-                    onSelectDeveloper={handleSelectDeveloper}
-                    selectedDeveloperId={selectedDeveloper?.id}
-                />
-                
-                <RealtorsFilterModal
-                    visible={showRealtorsModal}
-                    onClose={() => setShowRealtorsModal(false)}
-                    onSelectRealtor={handleSelectRealtor}
-                    selectedRealtorId={selectedRealtor?.id}
                 />
             </View>
         </View>
@@ -1994,43 +1784,6 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 14,
         fontWeight: '600',
-    },
-
-    // ✨ NOVOS: Quick Filters Styles
-    quickFiltersRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginTop: 12,
-        marginBottom: 8,
-        gap: isSmallScreen ? 6 : 10, // Gap menor em telas pequenas
-    },
-    quickFilterButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: isSmallScreen ? 8 : 10,
-        paddingHorizontal: isSmallScreen ? 2 : 4, // Padding reduzido para evitar truncamento
-        backgroundColor: '#f8f9fa',
-        borderRadius: 8,
-        borderWidth: 1.5,
-        borderColor: 'transparent',
-        gap: 4,
-        flex: 1,
-        minHeight: 42,
-    },
-    quickFilterButtonActive: {
-        backgroundColor: '#00335e',
-        borderColor: '#00335e',
-    },
-    quickFilterText: {
-        fontSize: isSmallScreen ? 10 : 12, // Fonte menor em telas pequenas
-        fontWeight: isSmallScreen ? '500' : '600', // Peso menor em telas pequenas
-        color: '#00335e',
-        textAlign: 'center',
-    },
-    quickFilterTextActive: {
-        color: '#fff',
     },
 
     // Story Modal Styles
