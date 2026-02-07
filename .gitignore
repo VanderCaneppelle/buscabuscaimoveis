@@ -63,6 +63,10 @@ buck-out/
 # CocoaPods
 /ios/Pods/
 
+# Expo - pastas nativas geradas por prebuild (EAS gera durante o build)
+/android
+/ios
+
 # Expo
 .expo/
 dist/

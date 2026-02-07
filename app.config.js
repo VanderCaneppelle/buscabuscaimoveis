@@ -2,7 +2,13 @@ import 'dotenv/config';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-const pkg = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8'));
+let appVersion = '1.4.0';
+try {
+  const pkg = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8'));
+  appVersion = (pkg?.version && String(pkg.version)) || appVersion;
+} catch (e) {
+  console.warn('⚠️ Não foi possível ler package.json, usando versão fallback:', appVersion);
+}
 
 console.log('✅ Carregando variáveis de ambiente:');
 console.log('API_BASE_URL =>', process.env.API_BASE_URL);
@@ -14,7 +20,7 @@ export default {
   expo: {
     name: "Busca Busca Imóveis",
     slug: "buscabuscaimoveis",
-    version: pkg.version,
+    version: appVersion,
     host: "lan",
     orientation: "portrait",
     icon: "./assets/logo_bb.jpg",
@@ -31,7 +37,6 @@ export default {
       bundleIdentifier: "com.buscabuscaimoveis.app",
       supportsTablet: true,
       jsEngine: "hermes",
-      buildNumber: '8',
       config: {
         usesNonExemptEncryption: false
       },
@@ -49,8 +54,7 @@ export default {
         backgroundColor: "#ffffff"
       },
       googleServicesFile: "./google-services.json",
-      versionCode:  6,
-      versionName: pkg.version,
+      versionName: appVersion,
     },
     web: {
       favicon: "./assets/logo_bb.jpg"
