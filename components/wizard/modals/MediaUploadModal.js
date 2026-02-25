@@ -34,12 +34,6 @@ export default function MediaUploadModal({
         }
 
         try {
-            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-            if (status !== 'granted') {
-                Alert.alert('Permissão necessária', 'Precisamos de permissão para acessar suas fotos.');
-                return;
-            }
-
             const remainingSlots = maxImages - imagesCount;
 
             const result = await ImagePicker.launchImageLibraryAsync({
@@ -73,12 +67,6 @@ export default function MediaUploadModal({
         }
 
         try {
-            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-            if (status !== 'granted') {
-                Alert.alert('Permissão necessária', 'Precisamos de permissão para acessar seus vídeos.');
-                return;
-            }
-
             const result = await ImagePicker.launchImageLibraryAsync({
                 mediaTypes: ImagePicker.MediaTypeOptions.Videos,
                 allowsMultipleSelection: false,

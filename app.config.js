@@ -80,7 +80,25 @@ export default {
     plugins: [
       "expo-notifications",
       "expo-font",
-      "./plugins/withMaps.js"
+      "./plugins/withMaps.js",
+      [
+        "expo-build-properties",
+        {
+          android: {
+            blockedPermissions: [
+              "android.permission.READ_MEDIA_IMAGES",
+              "android.permission.READ_MEDIA_VIDEO",
+              "android.permission.READ_MEDIA_AUDIO"
+            ]
+          }
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          photosPermission: false
+        }
+      ]
     ],
     scheme: "buscabuscaimoveis",
   

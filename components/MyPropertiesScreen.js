@@ -461,13 +461,6 @@ export default function MyPropertiesScreen({ navigation }) {
 
     const addMedia = async () => {
         try {
-            // Solicitar permissões
-            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-            if (status !== 'granted') {
-                Alert.alert('Permissão necessária', 'Precisamos de permissão para acessar sua galeria');
-                return;
-            }
-
             const result = await ImagePicker.launchImageLibraryAsync({
                 mediaTypes: ImagePicker.MediaTypeOptions.Images, // Apenas imagens
                 allowsMultipleSelection: true,

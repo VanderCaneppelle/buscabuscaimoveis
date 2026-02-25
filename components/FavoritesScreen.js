@@ -108,25 +108,7 @@ export default function FavoritesScreen({ navigation }) {
                 .from('favorites')
                 .select(`
                     *,
-                    properties (
-                        id,
-                        title,
-                        description,
-                        price,
-                        sale_price,
-                        property_type,
-                        transaction_type,
-                        bedrooms,
-                        bathrooms,
-                        area,
-                        address,
-                        neighborhood,
-                        city,
-                        state,
-                        images,
-                        status,
-                        ad_status
-                    )
+                    properties (*)
                 `)
                 .eq('user_id', user.id)
                 .eq('properties.status', 'approved')
