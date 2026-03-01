@@ -78,6 +78,7 @@ export default {
       EXPO_PUBLIC_ENVIRONMENT: process.env.EXPO_PUBLIC_ENVIRONMENT,
     },
     plugins: [
+      "react-native-iap",
       "expo-notifications",
       "expo-font",
       "./plugins/withMaps.js",

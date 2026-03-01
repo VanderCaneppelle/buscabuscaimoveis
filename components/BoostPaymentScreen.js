@@ -9,11 +9,19 @@ import {
     Image,
     Alert,
     Modal,
+    Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { WebView } from 'react-native-webview';
 import BackendService from '../lib/backendService';
 import { useAuth } from '../contexts/AuthContext';
+import {
+    initIAP,
+    purchaseProduct,
+    getReceipt,
+    finishPurchase,
+    getAppleProductIdForBoost,
+} from '../lib/iapService';
 import { useBoostsStore } from '../stores/boostsStore';
 import StandardHeader from './StandardHeader';
 import AppText from './AppText';
@@ -49,7 +57,47 @@ export default function BoostPaymentScreen({ navigation, route }) {
                 user: user.email
             });
 
-            // Criar pagamento no backend (será implementado)
+            // iOS: In-App Purchase
+            if (Platform.OS === 'ios') {
+                const productId = getAppleProductIdForBoost(boostPlan);
+                if (!productId) {
+                    throw new Error('Product ID não configurado para este boost');
+                }
+                await initIAP();
+                const purchaseResult = await purchaseProduct(productId);
+                if (purchaseResult.cancelled) {
+                    setLoading(false);
+                    return;
+                }
+                if (!purchaseResult.success || !purchaseResult.purchase) {
+                    throw new Error(purchaseResult.error || 'Compra não concluída');
+                }
+                const receiptData = await getReceipt();
+                if (!receiptData) {
+                    throw new Error('Não foi possível obter o comprovante da compra');
+                }
+                const verifyResult = await BackendService.verifyIAPReceipt({
+                    type: 'boost',
+                    receipt: receiptData,
+                    userId: user.id,
+                    boostPlanId: boostPlan.id,
+                    propertyId: property.id,
+                    transactionId: purchaseResult.purchase.transactionId || purchaseResult.purchase.id,
+                    productId,
+                });
+                await finishPurchase(purchaseResult.purchase);
+                if (verifyResult.success || verifyResult.alreadyProcessed) {
+                    addBoost(property.id);
+                    invalidateCache();
+                    setShowBoostSuccessModal(true);
+                } else {
+                    throw new Error(verifyResult.error || 'Erro ao ativar boost');
+                }
+                setLoading(false);
+                return;
+            }
+
+            // Android: Mercado Pago
             const result = await BackendService.createBoostPayment({
                 property,
                 boostPlan,
@@ -58,26 +106,15 @@ export default function BoostPaymentScreen({ navigation, route }) {
 
             console.log('✅ Pagamento criado:', result);
 
-            // Guardar paymentId para polling
             if (result?.payment?.id) {
                 setCurrentPaymentId(result.payment.id);
             }
 
-            // Abrir Mercado Pago dentro do app (WebView)
-            // Priorizar init_point (produção) e só usar sandbox se não existir init_point
             const paymentUrl = result?.preference?.init_point || result?.preference?.sandbox_init_point;
-            console.log('🔗 URLs disponíveis:', {
-                init_point: result?.preference?.init_point ? '✅ Presente' : '❌ Ausente',
-                sandbox_init_point: result?.preference?.sandbox_init_point ? '✅ Presente' : '❌ Ausente',
-                url_usada: paymentUrl
-            });
-            console.log('🔗 Abrindo URL no WebView:', paymentUrl);
-
             if (!paymentUrl) {
                 throw new Error('URL de checkout não encontrada na preferência');
             }
 
-            // Validar que a URL é válida antes de abrir
             if (!paymentUrl.startsWith('http://') && !paymentUrl.startsWith('https://')) {
                 throw new Error('URL de checkout inválida');
             }
@@ -245,24 +282,28 @@ export default function BoostPaymentScreen({ navigation, route }) {
 
                         <View style={styles.solidDivider} />
 
-                        {/* Seção Pagamento */}
+                        {/* Seção Pagamento - Android: Mercado Pago; iOS: texto neutro */}
                         <View style={styles.receiptSection}>
                             <AppText style={styles.sectionTitle}>FORMA DE PAGAMENTO</AppText>
                             <View style={styles.paymentRow}>
                                 <Ionicons name="card" size={24} color="#27ae60" />
                                 <View style={styles.paymentInfo}>
-                                    <AppText style={styles.paymentMethod}>Mercado Pago</AppText>
+                                    <AppText style={styles.paymentMethod}>
+                                        {Platform.OS === 'ios' ? 'Pagamento seguro' : 'Mercado Pago'}
+                                    </AppText>
                                     <AppText style={styles.paymentSubtext}>
-                                        Pix, Cartão, Boleto e mais opções
+                                        {Platform.OS === 'ios' ? 'Apple Pay e cartão' : 'Pix, Cartão, Boleto e mais opções'}
                                     </AppText>
                                 </View>
                             </View>
-                            <View style={styles.receiptFooter}>
-                                <Ionicons name="shield-checkmark" size={18} color="#27ae60" />
-                                <AppText style={styles.footerText}>
-                                    Transação 100% segura via Mercado Pago
-                                </AppText>
-                            </View>
+                            {Platform.OS === 'android' && (
+                                <View style={styles.receiptFooter}>
+                                    <Ionicons name="shield-checkmark" size={18} color="#27ae60" />
+                                    <AppText style={styles.footerText}>
+                                        Transação 100% segura via Mercado Pago
+                                    </AppText>
+                                </View>
+                            )}
                         </View>
 
                         <View style={styles.solidDivider} />
@@ -325,7 +366,9 @@ export default function BoostPaymentScreen({ navigation, route }) {
                         <TouchableOpacity onPress={handleWebViewClose}>
                             <Ionicons name="close" size={28} color="#00335e" />
                         </TouchableOpacity>
-                        <AppText style={styles.webViewTitle}>Mercado Pago</AppText>
+                        <AppText style={styles.webViewTitle}>
+                            {Platform.OS === 'ios' ? 'Pagamento' : 'Mercado Pago'}
+                        </AppText>
                         <View style={{ width: 28 }} />
                     </View>
                     {checkoutUrl ? (

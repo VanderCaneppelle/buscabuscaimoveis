@@ -1,39 +1,18 @@
 {
-    "version": 2,
-    "functions": {
-        "api/env.js": {
-            "maxDuration": 10
-        },
-        "api/webhook/bunny-stream.js": {
-            "maxDuration": 30
-        },
-        "api/webhook/mercadopago.js": {
-            "maxDuration": 30
-        },
-        "api/payments/create.js": {
-            "maxDuration": 30
-        },
-        "api/payments/status.js": {
-            "maxDuration": 30
-        },
-        "api/delete-cloudinary.js": {
-            "maxDuration": 30
-        },
-        "api/notifications.js": {
-            "maxDuration": 30
-        }
-    },
-    "routes": [
-        {
-            "handle": "filesystem"
-        },
-        {
-            "src": "/reset-password",
-            "dest": "/reset-password.html"
-        },
-        {
-            "src": "/logo_bb.jpg",
-            "dest": "/logo_bb.jpg"
-        }
-    ]
+  "version": 2,
+  "functions": {
+    "api/env.js": {"maxDuration": 10},
+    "api/webhook/bunny-stream.js": {"maxDuration": 30},
+    "api/webhook/mercadopago.js": {"maxDuration": 30},
+    "api/payments/create.js": {"maxDuration": 30},
+    "api/payments/status.js": {"maxDuration": 30},
+    "api/delete-cloudinary.js": {"maxDuration": 30},
+    "api/notifications.js": {"maxDuration": 30},
+    "api/iap/ios/verify.js": {"maxDuration": 30}
+  },
+  "routes": [
+    {"handle": "filesystem"},
+    {"src": "/reset-password", "dest": "/reset-password.html"},
+    {"src": "/logo_bb.jpg", "dest": "/logo_bb.jpg"}
+  ]
 }

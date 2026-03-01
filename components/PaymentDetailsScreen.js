@@ -7,12 +7,20 @@ import {
     Alert,
     ActivityIndicator,
     SafeAreaView,
-    Modal
+    Modal,
+    Platform
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { Ionicons } from '@expo/vector-icons';
 import BackendService from '../lib/backendService';
 import { PushNotificationService } from '../lib/pushNotificationService';
+import {
+    initIAP,
+    purchaseProduct,
+    getReceipt,
+    finishPurchase,
+    getAppleProductIdForPlan,
+} from '../lib/iapService';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase.js';
 import StandardHeader from './StandardHeader';
@@ -263,21 +271,57 @@ export default function PaymentDetailsScreen({ route, navigation }) {
 
             console.log('✅ Validação aprovada:', validation);
 
-            // Criar pagamento no backend
+            // iOS: In-App Purchase
+            if (Platform.OS === 'ios') {
+                const productId = getAppleProductIdForPlan(selectedPlan);
+                if (!productId) {
+                    throw new Error('Product ID não configurado para este plano');
+                }
+                await initIAP();
+                const purchaseResult = await purchaseProduct(productId);
+                if (purchaseResult.cancelled) {
+                    setLoading(false);
+                    return;
+                }
+                if (!purchaseResult.success || !purchaseResult.purchase) {
+                    throw new Error(purchaseResult.error || 'Compra não concluída');
+                }
+                const receiptData = await getReceipt();
+                if (!receiptData) {
+                    throw new Error('Não foi possível obter o comprovante da compra');
+                }
+                const verifyResult = await BackendService.verifyIAPReceipt({
+                    type: 'plan',
+                    receipt: receiptData,
+                    userId: user.id,
+                    planId: selectedPlan.id,
+                    transactionId: purchaseResult.purchase.transactionId || purchaseResult.purchase.id,
+                    productId,
+                });
+                await finishPurchase(purchaseResult.purchase);
+                if (verifyResult.success) {
+                    Alert.alert('Pagamento aprovado', 'Sua assinatura foi ativada com sucesso.');
+                    navigation.navigate('PaymentConfirmation', { plan });
+                } else if (verifyResult.alreadyProcessed) {
+                    Alert.alert('Pagamento aprovado', 'Sua assinatura já estava ativa.');
+                    navigation.navigate('PaymentConfirmation', { plan });
+                } else {
+                    throw new Error(verifyResult.error || 'Erro ao ativar assinatura');
+                }
+                setLoading(false);
+                return;
+            }
+
+            // Android: Mercado Pago
             const result = await BackendService.createPayment(selectedPlan, user);
             console.log('✅ Pagamento criado:', result);
-            // Guardar paymentId para acompanhar via polling
             if (result?.payment?.id) {
                 setCurrentPaymentId(result.payment.id);
             }
-
-            // Abrir Mercado Pago dentro do app (WebView)
             const paymentUrl = result?.preference?.init_point || result?.preference?.sandbox_init_point;
-            console.log('🔗 Abrindo URL no WebView:', paymentUrl);
             if (!paymentUrl) {
                 throw new Error('URL de checkout não encontrada na preferência');
             }
-
             setCheckoutUrl(paymentUrl);
             setWebViewVisible(true);
 
@@ -607,16 +651,17 @@ export default function PaymentDetailsScreen({ route, navigation }) {
                         </View>
                     ) : null}
 
-                    {/* Payment Method Card */}
-                    <View style={styles.paymentMethodCard}>
-
-                        <View style={styles.mercadopagoInfo}>
-                            <Ionicons name="shield-checkmark" size={20} color="#27ae60" />
-                            <AppText style={styles.mercadopagoText}>
-                                Mercado Pago - Pagamento 100% seguro
-                            </AppText>
+                    {/* Payment Method Card - Android: Mercado Pago; iOS: oculto (IAP) */}
+                    {Platform.OS === 'android' && (
+                        <View style={styles.paymentMethodCard}>
+                            <View style={styles.mercadopagoInfo}>
+                                <Ionicons name="shield-checkmark" size={20} color="#27ae60" />
+                                <AppText style={styles.mercadopagoText}>
+                                    Mercado Pago - Pagamento 100% seguro
+                                </AppText>
+                            </View>
                         </View>
-                    </View>
+                    )}
 
                     {/* Security Info
                         <View style={styles.securityCard}>
@@ -675,7 +720,7 @@ export default function PaymentDetailsScreen({ route, navigation }) {
                     >
                         <Ionicons name="card" size={24} color="#fff" />
                         <AppText style={styles.paymentButtonText}>
-                            Pagar com Mercado Pago
+                            {Platform.OS === 'ios' ? 'Contratar Plano' : 'Pagar com Mercado Pago'}
                         </AppText>
                     </TouchableOpacity>
 
