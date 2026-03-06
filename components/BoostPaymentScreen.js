@@ -47,7 +47,7 @@ export default function BoostPaymentScreen({ navigation, route }) {
 
     const handlePayment = async () => {
         if (!user) {
-            Alert.alert('Erro', 'Usuário não autenticado');
+            Alert.alert('Erro', 'Faça login para continuar');
             return;
         }
 
@@ -72,8 +72,8 @@ export default function BoostPaymentScreen({ navigation, route }) {
                 if (availableProducts.length === 0) {
                     setLoading(false);
                     Alert.alert(
-                        'Produto não encontrado',
-                        `O produto "${productId}" não está disponível na App Store. Verifique conta Sandbox (Settings > Developer) e Product IDs no App Store Connect.`
+                        'Produto não disponível',
+                        'Este produto não está disponível no momento. Tente novamente mais tarde.'
                     );
                     return;
                 }
@@ -138,8 +138,10 @@ export default function BoostPaymentScreen({ navigation, route }) {
 
         } catch (error) {
             console.error('❌ Erro no pagamento:', error);
-            const msg = error?.message || String(error) || 'Erro desconhecido';
-            Alert.alert('Erro no pagamento', msg);
+            Alert.alert(
+                'Erro no pagamento',
+                'Ocorreu um erro no pagamento. Por favor, tente novamente mais tarde. Se o problema continuar, entre em contato com o suporte.'
+            );
         } finally {
             setLoading(false);
         }

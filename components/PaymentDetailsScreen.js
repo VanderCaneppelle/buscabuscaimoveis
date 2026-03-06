@@ -249,7 +249,7 @@ export default function PaymentDetailsScreen({ route, navigation }) {
             const selectedPlan = selectedPeriod === 'annual' ? planOptions.annual : planOptions.monthly;
 
             if (!selectedPlan) {
-                Alert.alert('Erro', 'Plano não encontrado');
+                Alert.alert('Erro', 'Este plano não está disponível no momento.');
                 setLoading(false);
                 return;
             }
@@ -285,8 +285,8 @@ export default function PaymentDetailsScreen({ route, navigation }) {
                 if (availableProducts.length === 0) {
                     setLoading(false);
                     Alert.alert(
-                        'Produto não encontrado',
-                        `O produto "${productId}" não está disponível na App Store. Verifique conta Sandbox (Settings > Developer) e Product IDs no App Store Connect.`
+                        'Produto não disponível',
+                        'Este produto não está disponível no momento. Tente novamente mais tarde.'
                     );
                     return;
                 }
@@ -342,8 +342,10 @@ export default function PaymentDetailsScreen({ route, navigation }) {
 
         } catch (error) {
             console.error('❌ Erro no pagamento:', error);
-            const msg = error?.message || String(error) || 'Erro desconhecido';
-            Alert.alert('Erro no pagamento', msg);
+            Alert.alert(
+                'Erro no pagamento',
+                'Ocorreu um erro no pagamento. Por favor, tente novamente mais tarde. Se o problema continuar, entre em contato com o suporte.'
+            );
         } finally {
             setLoading(false);
         }

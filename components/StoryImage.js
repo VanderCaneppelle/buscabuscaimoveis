@@ -1,8 +1,5 @@
 import React from 'react';
-import { View, Image, StyleSheet, Dimensions } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-
-const { width, height } = Dimensions.get('window');
+import { View, Image, StyleSheet } from 'react-native';
 
 export default function StoryImage({ imageUrl, optimizedUrl }) {
     const imageSource = optimizedUrl || imageUrl;
@@ -14,32 +11,20 @@ export default function StoryImage({ imageUrl, optimizedUrl }) {
                 style={styles.media}
                 resizeMode="contain"
             />
-            {/* <View style={styles.mediaTypeIndicator}>
-                <Ionicons name="image" size={20} color="#fff" />
-            </View> */}
         </View>
     );
 }
 
 const styles = StyleSheet.create({
     mediaContainer: {
+        flex: 1,
         position: "relative",
-        width,
-        height,
         backgroundColor: 'black',
         alignItems: 'center',
         justifyContent: 'center',
     },
     media: {
-        width: width,
-        height: height,
-    },
-    mediaTypeIndicator: {
-        position: "absolute",
-        top: 20,
-        right: 20,
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
-        borderRadius: 15,
-        padding: 5,
+        width: '100%',
+        height: '100%',
     },
 });
