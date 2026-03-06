@@ -133,30 +133,27 @@ async function activatePlan(res, { userId, planId, appleTransactionId, appleProd
         return res.status(500).json({ error: 'Erro ao registrar pagamento' });
     }
 
-    const { data: existingSub } = await supabase
+    // Cancelar assinatura anterior se existir (mesmo comportamento do Mercado Pago)
+    const { error: cancelError } = await supabase
         .from('user_subscriptions')
-        .select('id')
+        .update({
+            status: 'cancelled',
+            updated_at: new Date().toISOString(),
+        })
         .eq('user_id', userId)
-        .single();
+        .in('status', ['active', 'expired']);
 
-    if (existingSub) {
-        const { error: updateError } = await supabase
-            .from('user_subscriptions')
-            .update({
-                plan_id: planId,
-                status: 'active',
-                start_date: new Date().toISOString(),
-                end_date: endDate.toISOString(),
-                payment_id: payment.id,
-                updated_at: new Date().toISOString(),
-            })
-            .eq('user_id', userId);
-        if (updateError) {
-            console.error('❌ Erro ao atualizar assinatura:', updateError);
-            return res.status(500).json({ error: 'Erro ao ativar assinatura' });
-        }
+    if (cancelError) {
+        console.error('❌ Erro ao cancelar assinatura anterior:', cancelError);
+        // Continua - pode não haver assinatura anterior (primeira compra)
     } else {
-        const { error: insertError } = await supabase.from('user_subscriptions').insert({
+        console.log('✅ Assinatura anterior cancelada (se existia)');
+    }
+
+    // Inserir nova assinatura (preserva histórico)
+    const { error: insertError } = await supabase
+        .from('user_subscriptions')
+        .insert({
             user_id: userId,
             plan_id: planId,
             status: 'active',
@@ -164,10 +161,10 @@ async function activatePlan(res, { userId, planId, appleTransactionId, appleProd
             end_date: endDate.toISOString(),
             payment_id: payment.id,
         });
-        if (insertError) {
-            console.error('❌ Erro ao criar assinatura:', insertError);
-            return res.status(500).json({ error: 'Erro ao ativar assinatura' });
-        }
+
+    if (insertError) {
+        console.error('❌ Erro ao criar assinatura:', insertError);
+        return res.status(500).json({ error: 'Erro ao ativar assinatura' });
     }
 
     console.log('✅ Plano ativado via IAP:', plan.name, userId);

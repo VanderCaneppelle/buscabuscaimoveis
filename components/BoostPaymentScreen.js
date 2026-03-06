@@ -21,6 +21,7 @@ import {
     getReceipt,
     finishPurchase,
     getAppleProductIdForBoost,
+    getProducts,
 } from '../lib/iapService';
 import { useBoostsStore } from '../stores/boostsStore';
 import StandardHeader from './StandardHeader';
@@ -42,6 +43,7 @@ export default function BoostPaymentScreen({ navigation, route }) {
     const [currentPaymentId, setCurrentPaymentId] = useState(null);
     const [checkingStatus, setCheckingStatus] = useState(false);
     const [showBoostSuccessModal, setShowBoostSuccessModal] = useState(false);
+    const [testingIAP, setTestingIAP] = useState(false);
 
     const handlePayment = async () => {
         if (!user) {
@@ -59,11 +61,23 @@ export default function BoostPaymentScreen({ navigation, route }) {
 
             // iOS: In-App Purchase
             if (Platform.OS === 'ios') {
+                console.log('🍎 [BoostPayment] boostPlan:', { id: boostPlan?.id, name: boostPlan?.name, duration_days: boostPlan?.duration_days });
                 const productId = getAppleProductIdForBoost(boostPlan);
                 if (!productId) {
                     throw new Error('Product ID não configurado para este boost');
                 }
+                console.log('🍎 [BoostPayment] Product ID para compra:', productId);
                 await initIAP();
+                const availableProducts = await getProducts([productId]);
+                if (availableProducts.length === 0) {
+                    setLoading(false);
+                    Alert.alert(
+                        'Produto não encontrado',
+                        `O produto "${productId}" não está disponível na App Store. Verifique conta Sandbox (Settings > Developer) e Product IDs no App Store Connect.`
+                    );
+                    return;
+                }
+                console.log('🍎 [BoostPayment] Produto encontrado:', availableProducts[0]?.title, availableProducts[0]?.price);
                 const purchaseResult = await purchaseProduct(productId);
                 if (purchaseResult.cancelled) {
                     setLoading(false);
@@ -124,7 +138,8 @@ export default function BoostPaymentScreen({ navigation, route }) {
 
         } catch (error) {
             console.error('❌ Erro no pagamento:', error);
-            Alert.alert('Erro', 'Não foi possível processar o pagamento. Tente novamente.');
+            const msg = error?.message || String(error) || 'Erro desconhecido';
+            Alert.alert('Erro no pagamento', msg);
         } finally {
             setLoading(false);
         }

@@ -1,6 +1,6 @@
 {
   "name": "buscabuscaimoveis",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "start": "expo start --clear",
@@ -46,6 +46,7 @@
     "react-native-keyboard-aware-scroll-view": "^0.9.5",
     "react-native-map-clustering": "^4.0.0",
     "react-native-maps": "1.20.1",
+    "react-native-nitro-modules": "^0.31.10",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
     "react-native-url-polyfill": "^2.0.0",

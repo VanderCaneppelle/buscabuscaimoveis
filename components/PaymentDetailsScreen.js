@@ -20,6 +20,7 @@ import {
     getReceipt,
     finishPurchase,
     getAppleProductIdForPlan,
+    getProducts,
 } from '../lib/iapService';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase.js';
@@ -273,11 +274,23 @@ export default function PaymentDetailsScreen({ route, navigation }) {
 
             // iOS: In-App Purchase
             if (Platform.OS === 'ios') {
+                console.log('🍎 [PaymentDetails] selectedPlan:', { id: selectedPlan?.id, name: selectedPlan?.name, period: selectedPlan?.period });
                 const productId = getAppleProductIdForPlan(selectedPlan);
                 if (!productId) {
                     throw new Error('Product ID não configurado para este plano');
                 }
+                console.log('🍎 [PaymentDetails] Product ID para compra:', productId);
                 await initIAP();
+                const availableProducts = await getProducts([productId]);
+                if (availableProducts.length === 0) {
+                    setLoading(false);
+                    Alert.alert(
+                        'Produto não encontrado',
+                        `O produto "${productId}" não está disponível na App Store. Verifique conta Sandbox (Settings > Developer) e Product IDs no App Store Connect.`
+                    );
+                    return;
+                }
+                console.log('🍎 [PaymentDetails] Produto encontrado:', availableProducts[0]?.title, availableProducts[0]?.price);
                 const purchaseResult = await purchaseProduct(productId);
                 if (purchaseResult.cancelled) {
                     setLoading(false);
@@ -287,9 +300,11 @@ export default function PaymentDetailsScreen({ route, navigation }) {
                     throw new Error(purchaseResult.error || 'Compra não concluída');
                 }
                 const receiptData = await getReceipt();
+                console.log('🍎 [PaymentDetails] Receipt obtido:', receiptData ? `${receiptData.substring(0, 50)}...` : 'null');
                 if (!receiptData) {
                     throw new Error('Não foi possível obter o comprovante da compra');
                 }
+                console.log('🍎 [PaymentDetails] Enviando para verificação:', { type: 'plan', planId: selectedPlan.id, transactionId: purchaseResult.purchase?.transactionId || purchaseResult.purchase?.id });
                 const verifyResult = await BackendService.verifyIAPReceipt({
                     type: 'plan',
                     receipt: receiptData,
@@ -327,10 +342,8 @@ export default function PaymentDetailsScreen({ route, navigation }) {
 
         } catch (error) {
             console.error('❌ Erro no pagamento:', error);
-            Alert.alert(
-                'Erro',
-                'Não foi possível processar o pagamento. Tente novamente.'
-            );
+            const msg = error?.message || String(error) || 'Erro desconhecido';
+            Alert.alert('Erro no pagamento', msg);
         } finally {
             setLoading(false);
         }

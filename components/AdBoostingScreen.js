@@ -56,7 +56,7 @@ export default function AdBoostingScreen({ navigation }) {
                             <AppText style={styles.idText}>#{String(item.id).slice(0, 8)}</AppText>
                         </View>
                         <AppText numberOfLines={1} style={styles.address}>{[item.address, item.neighborhood, item.city].filter(Boolean).join(', ')}</AppText>
-                        <AppText style={styles.price}>R$ {(item.sale_price ?? item.price ?? 0).toLocaleString('pt-BR')}</AppText>
+                        <AppText style={styles.price}>R$ {(parseFloat(item.sale_price ?? item.salePrice) > 0 ? (item.sale_price ?? item.salePrice) : (item.price ?? 0)).toLocaleString('pt-BR')}</AppText>
 
                         {/* Badge de impulsionado */}
                         {isBoosted && (
