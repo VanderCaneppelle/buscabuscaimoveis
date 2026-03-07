@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     StyleSheet,
@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
+import { useUserPlanStore } from '../stores/userPlanStore';
 import StandardHeader from './StandardHeader';
 import { CommonActions } from '@react-navigation/native';
 import AppText from './AppText';
@@ -18,8 +19,18 @@ export default function PaymentConfirmationScreen({ route, navigation }) {
 
     const { plan } = route.params;
     const { user } = useAuth();
+    const invalidateCache = useUserPlanStore(state => state.invalidateCache);
+    const fetchUserPlanData = useUserPlanStore(state => state.fetchUserPlanData);
 
     const [status] = useState('success');
+
+    // Atualizar plano imediatamente após pagamento aprovado (iOS IAP ou Android Mercado Pago)
+    useEffect(() => {
+        if (user?.id) {
+            invalidateCache();
+            fetchUserPlanData(user.id, true);
+        }
+    }, [user?.id]);
 
     const handleAnunciar = () => {
         navigation.navigate('CreateAd');
