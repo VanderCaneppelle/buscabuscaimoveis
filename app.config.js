@@ -86,6 +86,7 @@ export default {
         "expo-build-properties",
         {
           android: {
+            kotlinVersion: "2.1.20",
             blockedPermissions: [
               "android.permission.READ_MEDIA_IMAGES",
               "android.permission.READ_MEDIA_VIDEO",
