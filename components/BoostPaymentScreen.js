@@ -309,7 +309,7 @@ export default function BoostPaymentScreen({ navigation, route }) {
                                         {Platform.OS === 'ios' ? 'Pagamento seguro' : 'Mercado Pago'}
                                     </AppText>
                                     <AppText style={styles.paymentSubtext}>
-                                        {Platform.OS === 'ios' ? 'Apple Pay e cartão' : 'Pix, Cartão, Boleto e mais opções'}
+                                        {Platform.OS === 'ios' ? 'Apple Pay' : 'Pix, Cartão, Boleto e mais opções'}
                                     </AppText>
                                 </View>
                             </View>

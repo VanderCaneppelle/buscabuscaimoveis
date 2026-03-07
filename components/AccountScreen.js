@@ -341,10 +341,10 @@ export default function AccountScreen({ navigation }) {
 
                         {renderMenuItem(
                             'Sobre o App',
-                            'Versão 1.0.0',
+                            'Versão 1.4.3',
                             'information-circle',
                             '#7f8c8d',
-                            () => Alert.alert('Sobre', 'Busca Busca Imóveis\n\nVersão 1.0.0\n\nDesenvolvido por: TW Consultoria de TI\n\nContato: (47) 99241-4455')
+                            () => Alert.alert('Sobre', 'Busca Busca Imóveis\n\nVersão 1.4.3\n\nDesenvolvido por: TW Consultoria de TI\n\nContato: (47) 99241-4455')
                         )}
 
                         {renderMenuItem(
