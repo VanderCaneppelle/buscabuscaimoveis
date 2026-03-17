@@ -739,12 +739,12 @@ async function approveProperty(propertyId) {
     if (!confirm('Tem certeza que deseja aprovar este anúncio?')) return;
 
     try {
-        // Usar serviço centralizado via global
         await window.ModerationService.approveProperty(propertyId);
 
         showSuccess('Anúncio aprovado e ativado com sucesso!');
-        await loadProperties();
-        applyFilters();
+        currentPage = 1;
+        await fetchPropertiesServer();
+        await updateStatsServer();
     } catch (error) {
         console.error('Erro ao aprovar propriedade:', error);
         showError('Erro ao aprovar anúncio. Tente novamente.');
@@ -756,12 +756,12 @@ async function rejectProperty(propertyId) {
     const reason = prompt('Motivo da rejeição (opcional):');
 
     try {
-        // Usar serviço centralizado via global
         await window.ModerationService.rejectProperty(propertyId, reason);
 
         showSuccess('Anúncio rejeitado com sucesso!');
-        await loadProperties();
-        applyFilters();
+        currentPage = 1;
+        await fetchPropertiesServer();
+        await updateStatsServer();
     } catch (error) {
         console.error('Erro ao rejeitar propriedade:', error);
         showError('Erro ao rejeitar anúncio. Tente novamente.');
